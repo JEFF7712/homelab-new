@@ -4,7 +4,7 @@
 
 **Goal:** Declare and validate a three-server NixOS k3s control plane that is ready for Cilium custom-CNI bootstrap without configuring any physical host.
 
-**Architecture:** A reusable NixOS k3s-server module takes role-specific hostname and node IP inputs. Three host declarations consume that module, use embedded etcd, disable flannel and built-in network policy, and expose no workload configuration. Cilium installation remains a separate GitOps workstream after the router VLAN 30 plan is reviewed.
+**Architecture:** A reusable NixOS k3s-server module takes role-specific hostname, node IP, cluster-init, server endpoint, and token-file inputs. Three host profiles consume that module, use embedded etcd, disable flannel and built-in network policy, and expose no workload configuration. The first node performs cluster initialization; joining nodes use a runtime-provisioned token file. Cilium installation remains a separate GitOps workstream after the router VLAN 30 plan is reviewed.
 
 **Tech Stack:** Nix flakes, NixOS modules, k3s, static evaluation tests.
 
@@ -14,7 +14,7 @@
 
 **Files:**
 - Create: `flake/modules/k3s-server.nix`
-- Create: `flake/tests/test_k3s_module_contract.py`
+- Create: `tests/test_k3s_module_contract.py`
 
 - [ ] **Step 1: Write the failing module contract test**
 
@@ -22,12 +22,13 @@
 module = (ROOT / "flake/modules/k3s-server.nix").read_text()
 self.assertIn("--flannel-backend=none", module)
 self.assertIn("--disable-network-policy", module)
-self.assertIn("--cluster-init", module)
+self.assertIn("clusterInit", module)
+self.assertIn("tokenFile", module)
 ```
 
 - [ ] **Step 2: Run the test and confirm it fails because the module is absent**
 
-Run: `nix develop ./flake -c python -m unittest flake/tests/test_k3s_module_contract.py -v`
+Run: `nix develop ./flake -c python -m unittest tests/test_k3s_module_contract.py -v`
 
 Expected: `FileNotFoundError` for `flake/modules/k3s-server.nix`.
 
@@ -39,8 +40,12 @@ Expected: `FileNotFoundError` for `flake/modules/k3s-server.nix`.
   services.k3s = {
     enable = true;
     role = "server";
+    clusterInit = cfg.clusterInit;
+    tokenFile = cfg.tokenFile;
+    serverAddr = lib.mkIf (cfg.serverAddress != null) cfg.serverAddress;
     extraFlags = [
-      "--cluster-init"
+      "--node-ip=${cfg.nodeIp}"
+      "--advertise-address=${cfg.nodeIp}"
       "--flannel-backend=none"
       "--disable-network-policy"
     ];
@@ -50,7 +55,7 @@ Expected: `FileNotFoundError` for `flake/modules/k3s-server.nix`.
 
 - [ ] **Step 4: Re-run the test and commit**
 
-Run: `nix develop ./flake -c python -m unittest flake/tests/test_k3s_module_contract.py -v`
+Run: `nix develop ./flake -c python -m unittest tests/test_k3s_module_contract.py -v`
 
 Commit: `feat: add k3s server module`
 
@@ -76,7 +81,7 @@ Run: `nix develop ./flake -c python -m unittest flake/tests/test_k3s_module_cont
 
 Expected: assertion failure for `homelab-01`.
 
-- [ ] **Step 3: Add host declarations with no physical installation target**
+- [ ] **Step 3: Add host profiles with no physical installation target**
 
 ```nix
 {
@@ -85,13 +90,13 @@ Expected: assertion failure for `homelab-01`.
 }
 ```
 
-Repeat with `homelab-02` and `homelab-03`. Add the three `nixosConfigurations` entries to `flake/flake.nix` without disk, hardware, or secret settings.
+Repeat with `homelab-02` and `homelab-03`. The profiles carry the planned node addresses but are not `nixosConfigurations` until hardware and filesystem modules are captured from the actual servers. Add a static profile contract instead of pretending a generic NixOS evaluation is installable.
 
-- [ ] **Step 4: Re-run static test and evaluate each configuration**
+- [ ] **Step 4: Re-run static tests**
 
-Run: `nix flake check ./flake`
+Run: `nix develop ./flake -c python -m unittest discover -s tests -v`
 
-Expected: evaluation succeeds without contacting a physical host.
+Expected: the three profiles satisfy the k3s control-plane contract without configuring a physical host.
 
 - [ ] **Step 5: Commit**
 
