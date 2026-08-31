@@ -28,6 +28,12 @@ in
       default = null;
       description = "Runtime-provisioned file containing the k3s cluster token.";
     };
+
+    bootstrapCilium = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Bootstrap the pinned Cilium CNI through the k3s Helm controller.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -39,6 +45,10 @@ in
       {
         assertion = !(cfg.clusterInit && cfg.serverAddress != null);
         message = "The k3s cluster-init server must not join another server.";
+      }
+      {
+        assertion = !cfg.bootstrapCilium || cfg.clusterInit;
+        message = "Cilium bootstrap must run only on the cluster-init server.";
       }
     ];
 
@@ -53,6 +63,29 @@ in
         "--flannel-backend=none"
         "--disable-network-policy"
       ];
+    };
+
+    services.k3s.manifests.cilium.content = lib.mkIf cfg.bootstrapCilium {
+      apiVersion = "helm.cattle.io/v1";
+      kind = "HelmChart";
+      metadata = {
+        name = "cilium";
+        namespace = "kube-system";
+      };
+      spec = {
+        bootstrap = true;
+        chart = "cilium";
+        createNamespace = false;
+        repo = "https://helm.cilium.io";
+        targetNamespace = "kube-system";
+        version = "1.20.1";
+        valuesContent = builtins.toJSON {
+          bgpControlPlane.enabled = true;
+          k8sServiceHost = "127.0.0.1";
+          k8sServicePort = 6443;
+          kubeProxyReplacement = true;
+        };
+      };
     };
   };
 }

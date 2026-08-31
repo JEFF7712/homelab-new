@@ -7,5 +7,6 @@
     enable = true;
     nodeIp = "10.0.30.11";
     clusterInit = true;
+    bootstrapCilium = true;
   };
 }

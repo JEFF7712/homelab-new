@@ -104,39 +104,46 @@ Commit: `feat: declare three k3s servers`
 ### Task 3: Add Cilium bootstrap contract
 
 **Files:**
-- Create: `gitops/clusters/homelab-01/cilium/values.yaml`
-- Create: `gitops/clusters/homelab-01/cilium/kustomization.yaml`
-- Create: `gitops/tests/test_cilium_contract.py`
+- Modify: `flake/modules/k3s-server.nix`
+- Modify: `flake/hosts/homelab-01/default.nix`
+- Modify: `tests/test_k3s_module_contract.py`
 
-- [ ] **Step 1: Write the failing Cilium values test**
+- [x] **Step 1: Write the failing Cilium bootstrap test**
 
 ```python
-values = (ROOT / "gitops/clusters/homelab-01/cilium/values.yaml").read_text()
-self.assertIn("kubeProxyReplacement: true", values)
-self.assertIn("bgpControlPlane:", values)
+module = (ROOT / "flake/modules/k3s-server.nix").read_text()
+self.assertIn('version = "1.20.1"', module)
+self.assertIn("kubeProxyReplacement = true", module)
+self.assertIn('k8sServiceHost = "127.0.0.1"', module)
 ```
 
-- [ ] **Step 2: Run and confirm the path is absent**
+- [x] **Step 2: Run and confirm the contract fails**
 
-Run: `nix develop ./flake -c python -m unittest gitops/tests/test_cilium_contract.py -v`
+Run: `nix develop ./flake -c python -m unittest tests/test_k3s_module_contract.py -v`
 
-Expected: `FileNotFoundError`.
+Expected: assertion failures for the missing bootstrap manifest.
 
-- [ ] **Step 3: Add a Cilium values contract with no peer addresses**
+- [x] **Step 3: Add the primary-server Cilium bootstrap manifest**
 
-```yaml
-kubeProxyReplacement: true
-bgpControlPlane:
-  enabled: true
+```nix
+services.k3s.manifests.cilium.content = {
+  apiVersion = "helm.cattle.io/v1";
+  kind = "HelmChart";
+  spec = {
+    chart = "cilium";
+    repo = "https://helm.cilium.io";
+    version = "1.20.1";
+  };
+};
 ```
 
-Use a kustomization that references only this values file. Do not add BGP peers until VLAN 30 nodes and OPNsense interface assignment are live.
+Only the cluster-init server emits this manifest. The k3s Helm controller bootstraps Cilium before Flux exists; Flux takes over subsequent Kubernetes reconciliation. Do not add BGP peers until VLAN 30 nodes and OPNsense interface assignment are live.
 
-- [ ] **Step 4: Run the test and YAML lint**
+- [x] **Step 4: Evaluate the generated manifest**
 
-Run: `nix develop ./flake -c python -m unittest gitops/tests/test_cilium_contract.py -v && nix develop ./flake -c yamllint gitops`
+Run: `nix eval --impure --json --expr '<evaluate services.k3s.manifests.cilium.content.spec>'`
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: Run full verification and commit**
 
 Commit: `feat: add Cilium bootstrap contract`
 
