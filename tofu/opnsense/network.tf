@@ -2,7 +2,6 @@ resource "opnsense_interfaces_vlan" "managed" {
   for_each = var.vlans
 
   description = each.value.description
-  device      = each.value.device
   parent      = each.value.parent
   tag         = each.value.tag
 }

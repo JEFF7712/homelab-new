@@ -1,37 +1,31 @@
 vlans = {
   management = {
     description = "management"
-    device      = "vlan10"
     parent      = "igb0"
     tag         = 10
   }
   clients = {
     description = "clients"
-    device      = "vlan20"
     parent      = "igb0"
     tag         = 20
   }
   infrastructure = {
     description = "infrastructure"
-    device      = "vlan30"
     parent      = "igb0"
     tag         = 30
   }
   load-balancers = {
     description = "load-balancers"
-    device      = "vlan40"
     parent      = "igb0"
     tag         = 40
   }
   guest-iot = {
     description = "guest-iot"
-    device      = "vlan50"
     parent      = "igb0"
     tag         = 50
   }
   netbird = {
     description = "netbird"
-    device      = "vlan60"
     parent      = "igb0"
     tag         = 60
   }

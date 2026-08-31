@@ -6,7 +6,6 @@ variable "opnsense_uri" {
 variable "vlans" {
   type = map(object({
     description = string
-    device      = string
     parent      = string
     tag         = number
   }))
