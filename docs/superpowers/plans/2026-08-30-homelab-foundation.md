@@ -230,13 +230,15 @@ Create flake/flake.nix:
 Run:
 
 ~~~bash
+git add flake/flake.nix
 nix flake lock ./flake
+git add flake/flake.lock
 nix develop ./flake -c python -m unittest discover -s tests -v
 nix fmt ./flake
 nix flake check ./flake
 ~~~
 
-Expected: both test modules pass, the formatter makes no remaining changes, and Nix evaluates the check.
+Expected: both test modules pass, the formatter makes no remaining changes, and Nix evaluates the check. Nix reads a Git repository through its index, so stage the flake before every Nix command that evaluates it.
 
 - [ ] **Step 5: Commit**
 
