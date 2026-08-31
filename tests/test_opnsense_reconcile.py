@@ -2,7 +2,7 @@ import unittest
 import json
 from pathlib import Path
 
-from opnsense_reconciler.reconcile import reconcile_interfaces, verify_bgp
+from opnsense_reconciler.reconcile import reconcile_interfaces, resolve_vlan_devices, verify_bgp
 
 
 class FakeClient:
@@ -17,6 +17,31 @@ class FakeClient:
 
 
 class ReconcileInterfaceTests(unittest.TestCase):
+    def test_resolve_vlan_devices_uses_live_parent_and_tag(self) -> None:
+        desired = [{"descr": "clients", "parent": "igb0", "tag": 20, "ipaddr": "10.0.20.1/24"}]
+        live_vlans = {
+            "rows": [
+                {
+                    "if": "igb0",
+                    "tag": "20",
+                    "vlanif": "vlan01 [CLUSTER]",
+                }
+            ]
+        }
+
+        resolved = resolve_vlan_devices(desired, live_vlans)
+
+        self.assertEqual(
+            resolved,
+            [{"descr": "clients", "if": "vlan01", "ipaddr": "10.0.20.1/24"}],
+        )
+
+    def test_resolve_vlan_devices_refuses_missing_tag(self) -> None:
+        desired = [{"descr": "infrastructure", "parent": "igb0", "tag": 30}]
+
+        with self.assertRaisesRegex(RuntimeError, "igb0 tag 30"):
+            resolve_vlan_devices(desired, {"rows": []})
+
     def test_reconcile_interfaces_refuses_unavailable_assignment_api(self) -> None:
         client = FakeClient()
 
@@ -58,6 +83,8 @@ class ReconcileInterfaceTests(unittest.TestCase):
 
             def get(self, path: str) -> object:
                 self.calls.append(("GET", path, None))
+                if path == "/api/interfaces/vlan_settings/search_item":
+                    return {"rows": [{"if": "igb0", "tag": "10", "vlanif": "vlan02 [management]"}]}
                 return {"rows": []}
 
             def post(self, path: str, payload: object) -> object:
@@ -69,21 +96,29 @@ class ReconcileInterfaceTests(unittest.TestCase):
             "descr": "management",
             "disablevlanhwfilter": "0",
             "enable": "1",
-            "if": "vlan10",
             "ipaddr": "10.0.10.1/24",
             "lock": "1",
+            "parent": "igb0",
+            "tag": 10,
             "type4": "staticv4",
             "type6": "none",
             "dhcp6-ia-pd-len": "0",
         }
 
         reconcile_interfaces(client, True, [desired])
+        resolved_desired = {key: value for key, value in desired.items() if key not in {"parent", "tag"}}
+        resolved_desired["if"] = "vlan02"
 
         self.assertEqual(
             client.calls,
             [
+                ("GET", "/api/interfaces/vlan_settings/search_item", None),
                 ("GET", "/api/interfaces/assignment/search_item", None),
-                ("POST", "/api/interfaces/assignment/add_item", {"interface": desired}),
+                (
+                    "POST",
+                    "/api/interfaces/assignment/add_item",
+                    {"interface": resolved_desired},
+                ),
                 ("POST", "/api/interfaces/assignment/reconfigure", {}),
             ],
         )
@@ -93,8 +128,8 @@ class ReconcileInterfaceTests(unittest.TestCase):
         assignments = json.loads(path.read_text())
 
         self.assertEqual(
-            {assignment["if"] for assignment in assignments},
-            {"vlan10", "vlan20", "vlan30", "vlan40", "vlan50", "vlan60"},
+            {(assignment["parent"], assignment["tag"]) for assignment in assignments},
+            {("igb0", 10), ("igb0", 20), ("igb0", 30), ("igb0", 40), ("igb0", 50), ("igb0", 60)},
         )
         self.assertEqual(
             {assignment["ipaddr"] for assignment in assignments},

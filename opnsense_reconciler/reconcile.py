@@ -13,17 +13,61 @@ class Client(Reader, Protocol):
 def reconcile_interfaces(
     client: Client,
     assignment_api_available: bool,
-    desired_interfaces: list[dict[str, str]],
+    desired_interfaces: list[dict[str, object]],
 ) -> None:
     if not assignment_api_available:
         raise RuntimeError("assignment API unavailable")
+    resolved_interfaces = (
+        resolve_vlan_devices(
+            desired_interfaces,
+            client.get("/api/interfaces/vlan_settings/search_item"),
+        )
+        if desired_interfaces
+        else []
+    )
     assignments = client.get("/api/interfaces/assignment/search_item")
     existing_devices = _assignment_devices(assignments)
-    additions = [desired for desired in desired_interfaces if desired["if"] not in existing_devices]
+    additions = [desired for desired in resolved_interfaces if desired["if"] not in existing_devices]
     for desired in additions:
         client.post("/api/interfaces/assignment/add_item", {"interface": desired})
     if additions:
         client.post("/api/interfaces/assignment/reconfigure", {})
+
+
+def resolve_vlan_devices(
+    desired_interfaces: list[dict[str, object]],
+    live_vlans: object,
+) -> list[dict[str, object]]:
+    rows = live_vlans.get("rows") if isinstance(live_vlans, dict) else None
+    if not isinstance(rows, list):
+        rows = []
+    live_devices = {
+        (parent, tag): device.split(" ", maxsplit=1)[0]
+        for row in rows
+        if isinstance(row, dict)
+        for parent in [row.get("if")]
+        for raw_tag in [row.get("tag")]
+        for device in [row.get("vlanif")]
+        if isinstance(parent, str)
+        and isinstance(raw_tag, (str, int))
+        and str(raw_tag).isdigit()
+        and isinstance(device, str)
+        and device
+        for tag in [int(raw_tag)]
+    }
+    resolved: list[dict[str, object]] = []
+    for desired in desired_interfaces:
+        parent = desired.get("parent")
+        tag = desired.get("tag")
+        if not isinstance(parent, str) or not isinstance(tag, int):
+            raise ValueError("desired VLAN assignment requires parent and integer tag")
+        device = live_devices.get((parent, tag))
+        if device is None:
+            raise RuntimeError(f"VLAN device unavailable for {parent} tag {tag}")
+        assignment = {key: value for key, value in desired.items() if key not in {"parent", "tag"}}
+        assignment["if"] = device
+        resolved.append(assignment)
+    return resolved
 
 
 @dataclass(frozen=True)
