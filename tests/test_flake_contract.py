@@ -34,6 +34,10 @@ class FlakeContractTests(unittest.TestCase):
         flake = (ROOT / "flake/flake.nix").read_text()
         self.assertIn("formatter = pkgs.nixfmt;", flake)
 
+    def test_flake_check_runs_repository_tests(self) -> None:
+        flake = (ROOT / "flake/flake.nix").read_text()
+        self.assertIn("python -m unittest discover -s tests", flake)
+
 
 if __name__ == "__main__":
     unittest.main()

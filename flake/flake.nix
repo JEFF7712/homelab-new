@@ -34,9 +34,16 @@
           ];
         };
 
-        checks.repository-contract = pkgs.runCommand "repository-contract" {
-          nativeBuildInputs = [ pkgs.python313 ];
-        } "touch $out";
+        checks.repository-contract =
+          pkgs.runCommand "repository-contract"
+            {
+              nativeBuildInputs = [ pkgs.python313 ];
+            }
+            ''
+              cd ${../.}
+              python -m unittest discover -s tests
+              touch $out
+            '';
       }
     );
 }

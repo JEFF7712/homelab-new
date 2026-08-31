@@ -1,0 +1,30 @@
+image: nixos/nix:latest
+
+stages:
+  - lint
+  - test
+  - security
+
+variables:
+  NIX_CONFIG: "experimental-features = nix-command flakes"
+
+nix_format:
+  stage: lint
+  script:
+    - cd flake && nix fmt -- --check flake.nix
+
+repository_tests:
+  stage: test
+  script:
+    - nix develop ./flake -c python -m unittest discover -s tests -v
+    - nix flake check ./flake
+
+yaml_schema:
+  stage: test
+  script:
+    - nix develop ./flake -c yamllint .
+
+secret_scan:
+  stage: security
+  script:
+    - nix develop ./flake -c gitleaks detect --source . --redact
