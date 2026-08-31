@@ -31,6 +31,7 @@ class OPNsenseTofuContractTests(unittest.TestCase):
         self.assertNotIn("device      = each.value.device", network)
         self.assertNotIn("device      = string", variables)
         self.assertNotIn('device      = "vlan', values)
+        self.assertIn("ignore_changes = [device]", network)
 
 
 if __name__ == "__main__":

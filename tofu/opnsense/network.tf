@@ -4,6 +4,10 @@ resource "opnsense_interfaces_vlan" "managed" {
   description = each.value.description
   parent      = each.value.parent
   tag         = each.value.tag
+
+  lifecycle {
+    ignore_changes = [device]
+  }
 }
 
 resource "opnsense_kea_dhcpv4_subnet" "managed" {
