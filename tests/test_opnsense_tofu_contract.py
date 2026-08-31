@@ -35,6 +35,21 @@ class OPNsenseTofuContractTests(unittest.TestCase):
         self.assertNotIn('device      = "vlan', values)
         self.assertIn("ignore_changes = [device]", network)
 
+    def test_firewall_policy_declares_management_and_isolated_vlan_rules(self) -> None:
+        values = (ROOT / "tofu/opnsense/homelab.auto.tfvars").read_text()
+
+        for rule in (
+            "management-allow-any",
+            "clients-allow-dns",
+            "clients-block-private",
+            "infrastructure-allow-opnsense-api",
+            "infrastructure-block-private",
+            "guest-iot-block-private",
+            "netbird-allow-private",
+        ):
+            with self.subTest(rule=rule):
+                self.assertIn(rule, values)
+
 
 if __name__ == "__main__":
     unittest.main()
