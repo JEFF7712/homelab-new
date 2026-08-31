@@ -41,6 +41,24 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertIn('$CI_COMMIT_BRANCH == "main"', apply_block)
         self.assertIn("apply desired.tfplan", apply_block)
 
+    def test_opnsense_pipeline_uses_locked_gitlab_state(self) -> None:
+        backend = (ROOT / "tofu/opnsense/backend.tf").read_text()
+        pipeline = (ROOT / ".gitlab-ci.yml").read_text()
+
+        self.assertIn('backend "http"', backend)
+        for value in (
+            "TF_STATE_NAME: opnsense-production",
+            "TF_HTTP_ADDRESS:",
+            "TF_HTTP_LOCK_ADDRESS:",
+            "TF_HTTP_UNLOCK_ADDRESS:",
+            "TF_HTTP_LOCK_METHOD: POST",
+            "TF_HTTP_UNLOCK_METHOD: DELETE",
+            "init -reconfigure",
+        ):
+            with self.subTest(value=value):
+                self.assertIn(value, pipeline)
+        self.assertNotIn("init -backend=false", pipeline)
+
 
 if __name__ == "__main__":
     unittest.main()

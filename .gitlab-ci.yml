@@ -8,6 +8,15 @@ stages:
 
 variables:
   NIX_CONFIG: "experimental-features = nix-command flakes"
+  TF_STATE_NAME: opnsense-production
+  TF_HTTP_ADDRESS: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${TF_STATE_NAME}"
+  TF_HTTP_LOCK_ADDRESS: "${TF_HTTP_ADDRESS}/lock"
+  TF_HTTP_UNLOCK_ADDRESS: "${TF_HTTP_ADDRESS}/lock"
+  TF_HTTP_USERNAME: gitlab-ci-token
+  TF_HTTP_PASSWORD: $CI_JOB_TOKEN
+  TF_HTTP_LOCK_METHOD: POST
+  TF_HTTP_UNLOCK_METHOD: DELETE
+  TF_HTTP_RETRY_WAIT_MIN: "5"
 
 nix_format:
   stage: lint
@@ -54,7 +63,7 @@ opnsense_plan:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
     - test "$(nix develop ./flake -c python -c 'import json; print(str(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"]).lower())')" = true
-    - nix develop ./flake -c tofu -chdir=tofu/opnsense init -backend=false
+    - nix develop ./flake -c tofu -chdir=tofu/opnsense init -reconfigure
     - nix develop ./flake -c tofu -chdir=tofu/opnsense validate
     - nix develop ./flake -c tofu -chdir=tofu/opnsense plan -refresh-only -out=refresh-only.tfplan
     - nix develop ./flake -c tofu -chdir=tofu/opnsense plan -out=desired.tfplan
@@ -76,4 +85,5 @@ opnsense_apply:
       when: manual
   script:
     - test "$(nix develop ./flake -c python -c 'import json; print(str(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"]).lower())')" = true
+    - nix develop ./flake -c tofu -chdir=tofu/opnsense init -reconfigure
     - nix develop ./flake -c tofu -chdir=tofu/opnsense apply desired.tfplan
