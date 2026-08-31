@@ -6,13 +6,15 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { nixpkgs, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    { nixpkgs, flake-utils, ... }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs { inherit system; };
       in
       {
-        formatter = pkgs.nixfmt-rfc-style;
+        formatter = pkgs.nixfmt;
 
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
@@ -22,7 +24,7 @@
             kubeconform
             kubectl
             kubernetes-helm
-            nixfmt-rfc-style
+            nixfmt
             opentofu
             pyright
             python313
@@ -35,5 +37,6 @@
         checks.repository-contract = pkgs.runCommand "repository-contract" {
           nativeBuildInputs = [ pkgs.python313 ];
         } "touch $out";
-      });
+      }
+    );
 }
