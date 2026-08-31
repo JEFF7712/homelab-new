@@ -6,11 +6,11 @@ import unittest
 
 from opnsense_reconciler.inventory import (
     Credentials,
-    HttpsClient,
     collect_provider_inventory,
     collect_inventory,
     main,
     parse_credentials,
+    validate_api_path,
     write_inventory_artifacts,
 )
 
@@ -47,10 +47,8 @@ class AssignmentApiUnavailableClient(FakeClient):
 
 class InventoryTests(unittest.TestCase):
     def test_client_rejects_non_api_path(self) -> None:
-        client = HttpsClient("https://192.168.1.1", Credentials("key", "secret"), "secrets/keys/opnsense-ca.pem")
-
         with self.assertRaisesRegex(ValueError, "API path"):
-            client.get("/not-api")
+            validate_api_path("/not-api")
 
     def test_parse_credentials_reads_labelled_key_and_secret(self) -> None:
         credentials = parse_credentials("key: api-key\nsecret: api-secret\n")

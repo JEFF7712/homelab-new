@@ -36,8 +36,7 @@ class HttpsClient:
         return json.loads(self.get_bytes(path).decode())
 
     def get_bytes(self, path: str) -> bytes:
-        if not path.startswith("/api/"):
-            raise ValueError("API path must start with /api/")
+        validate_api_path(path)
         password = self._credentials.secret
         import base64
         token = base64.b64encode(f"{self._credentials.key}:{password}".encode()).decode()
@@ -51,6 +50,11 @@ class HttpsClient:
             return body
         finally:
             connection.close()
+
+
+def validate_api_path(path: str) -> None:
+    if not path.startswith("/api/"):
+        raise ValueError("API path must start with /api/")
 
 
 class _VerifiedConnection(HTTPSConnection):
