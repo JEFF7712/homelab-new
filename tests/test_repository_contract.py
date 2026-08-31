@@ -39,6 +39,7 @@ class RepositoryContractTests(unittest.TestCase):
         apply_block = pipeline.split("opnsense_apply:", maxsplit=1)[1]
         self.assertIn("when: manual", apply_block)
         self.assertIn('$CI_COMMIT_BRANCH == "main"', apply_block)
+        self.assertIn("apply desired.tfplan", apply_block)
 
 
 if __name__ == "__main__":

@@ -53,10 +53,12 @@ opnsense_plan:
     - nix develop ./flake -c tofu -chdir=tofu/opnsense init -backend=false
     - nix develop ./flake -c tofu -chdir=tofu/opnsense validate
     - nix develop ./flake -c tofu -chdir=tofu/opnsense plan -refresh-only -out=refresh-only.tfplan
+    - nix develop ./flake -c tofu -chdir=tofu/opnsense plan -out=desired.tfplan
   artifacts:
     expire_in: 7 days
     paths:
       - tofu/opnsense/refresh-only.tfplan
+      - tofu/opnsense/desired.tfplan
 
 opnsense_apply:
   stage: opnsense
@@ -70,4 +72,4 @@ opnsense_apply:
       when: manual
   script:
     - test "$(nix develop ./flake -c python -c 'import json; print(str(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"]).lower())')" = true
-    - nix develop ./flake -c tofu -chdir=tofu/opnsense apply refresh-only.tfplan
+    - nix develop ./flake -c tofu -chdir=tofu/opnsense apply desired.tfplan
