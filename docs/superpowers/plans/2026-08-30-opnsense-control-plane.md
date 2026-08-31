@@ -90,9 +90,9 @@ Run: nix develop ./flake -c python -m unittest opnsense-reconciler/tests/test_re
 
 Expected: FAIL with ImportError for reconcile_interfaces.
 
-- [ ] **Step 3: Implement one coherent interface transaction**
+- [ ] **Step 3: Implement one coherent assignment transaction**
 
-The reconciler must read current assignment records, compare canonical desired records, POST add_item or set_item only for changed interfaces, call POST reconfigure exactly once, then verify assigned device, IPv4 CIDR, route, and management reachability. It must refuse a transaction that changes the management interface and every other LAN interface together.
+The reconciler must read current assignment records, compare canonical desired assignment metadata, POST add_item or set_item only for changed assignments, call POST reconfigure exactly once, then verify the assigned device and management reachability. It must refuse a transaction that changes the management assignment and every other LAN assignment together. Static IPv4 addresses, routes, and gateway configuration stay outside this reconciler until OPNsense publishes a stable per-interface L3 API.
 
 - [ ] **Step 4: Re-run the test suite**
 
@@ -201,4 +201,3 @@ Expected: all commands exit 0.
 - [ ] The first live job produces only read-only evidence and an encrypted configuration export.
 - [ ] No apply is enabled until the installed firewall exposes the assignment API, the console recovery path is recorded, and OpenTofu imports produce a refresh-only plan with no unexpected replacement.
 - [ ] The first BGP apply proves all Cilium peers established and its canary LoadBalancer route present before application traffic is migrated.
-

@@ -11,9 +11,11 @@ from typing import Callable, Mapping, Protocol
 from http.client import HTTPSConnection
 
 
-class Client(Protocol):
+class JsonClient(Protocol):
     def get(self, path: str) -> object: ...
 
+
+class Client(JsonClient, Protocol):
     def get_bytes(self, path: str) -> bytes: ...
 
 
@@ -73,6 +75,15 @@ class Inventory:
     vlans: object
 
 
+@dataclass(frozen=True)
+class ProviderInventory:
+    dhcp_reservation_ids: set[str]
+    dhcp_subnet_ids: set[str]
+    firewall_filter_ids: set[str]
+    unbound_forward_ids: set[str]
+    vlan_ids: set[str]
+
+
 def collect_inventory(client: Client) -> Inventory:
     providers = client.get("/api/core/backup/providers")
     backup_provider = _first_identifier(providers)
@@ -95,6 +106,16 @@ def collect_inventory(client: Client) -> Inventory:
         backup_provider=backup_provider,
         interfaces=interfaces,
         vlans=vlans,
+    )
+
+
+def collect_provider_inventory(client: JsonClient) -> ProviderInventory:
+    return ProviderInventory(
+        vlan_ids=_row_uuids(client.get("/api/interfaces/vlan_settings/search_item")),
+        dhcp_subnet_ids=_row_uuids(client.get("/api/kea/dhcpv4/search_subnet")),
+        dhcp_reservation_ids=_row_uuids(client.get("/api/kea/dhcpv4/search_reservation")),
+        firewall_filter_ids=_row_uuids(client.get("/api/firewall/filter/search_rule")),
+        unbound_forward_ids=_row_uuids(client.get("/api/unbound/settings/search_forward")),
     )
 
 
@@ -161,6 +182,21 @@ def _first_identifier(response: object) -> str:
     if not isinstance(identifier, str) or not identifier:
         raise ValueError("OPNsense response row has no id")
     return identifier
+
+
+def _row_uuids(response: object) -> set[str]:
+    if not isinstance(response, dict):
+        raise ValueError("OPNsense response is not an object")
+    rows = response.get("rows")
+    if not isinstance(rows, list):
+        raise ValueError("OPNsense response contains no rows")
+    return {
+        uuid
+        for row in rows
+        if isinstance(row, dict)
+        for uuid in [row.get("uuid")]
+        if isinstance(uuid, str) and uuid
+    }
 
 
 def main(

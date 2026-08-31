@@ -7,6 +7,7 @@ import unittest
 from opnsense_reconciler.inventory import (
     Credentials,
     HttpsClient,
+    collect_provider_inventory,
     collect_inventory,
     main,
     parse_credentials,
@@ -163,6 +164,35 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(seen["server_name"], "OPNsense.internal")
         self.assertEqual(seen["artifact_dir"], Path("/tmp/opnsense-evidence"))
         self.assertEqual(seen["recipient"], "age1example")
+
+    def test_collect_provider_inventory_reads_only_supported_resource_lists(self) -> None:
+        class ProviderClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str]] = []
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path))
+                return {"rows": [{"uuid": f"uuid-{len(self.calls)}"}]}
+
+        client = ProviderClient()
+
+        inventory = collect_provider_inventory(client)
+
+        self.assertEqual(inventory.vlan_ids, {"uuid-1"})
+        self.assertEqual(inventory.dhcp_subnet_ids, {"uuid-2"})
+        self.assertEqual(inventory.dhcp_reservation_ids, {"uuid-3"})
+        self.assertEqual(inventory.firewall_filter_ids, {"uuid-4"})
+        self.assertEqual(inventory.unbound_forward_ids, {"uuid-5"})
+        self.assertEqual(
+            client.calls,
+            [
+                ("GET", "/api/interfaces/vlan_settings/search_item"),
+                ("GET", "/api/kea/dhcpv4/search_subnet"),
+                ("GET", "/api/kea/dhcpv4/search_reservation"),
+                ("GET", "/api/firewall/filter/search_rule"),
+                ("GET", "/api/unbound/settings/search_forward"),
+            ],
+        )
 
 
 if __name__ == "__main__":
