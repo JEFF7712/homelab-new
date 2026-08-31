@@ -4,6 +4,7 @@ stages:
   - lint
   - test
   - security
+  - opnsense
 
 variables:
   NIX_CONFIG: "experimental-features = nix-command flakes"
@@ -28,3 +29,45 @@ secret_scan:
   stage: security
   script:
     - nix develop ./flake -c gitleaks detect --source . --redact
+
+opnsense_inventory:
+  stage: opnsense
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - nix develop ./flake -c python -m opnsense_reconciler.inventory --artifact-dir artifacts/opnsense
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - artifacts/opnsense/
+
+opnsense_plan:
+  stage: opnsense
+  needs:
+    - job: opnsense_inventory
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - test "$(nix develop ./flake -c python -c 'import json; print(str(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"]).lower())')" = true
+    - nix develop ./flake -c tofu -chdir=tofu/opnsense init -backend=false
+    - nix develop ./flake -c tofu -chdir=tofu/opnsense validate
+    - nix develop ./flake -c tofu -chdir=tofu/opnsense plan -refresh-only -out=refresh-only.tfplan
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - tofu/opnsense/refresh-only.tfplan
+
+opnsense_apply:
+  stage: opnsense
+  needs:
+    - job: opnsense_inventory
+      artifacts: true
+    - job: opnsense_plan
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - test "$(nix develop ./flake -c python -c 'import json; print(str(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"]).lower())')" = true
+    - nix develop ./flake -c tofu -chdir=tofu/opnsense apply refresh-only.tfplan

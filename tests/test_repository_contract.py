@@ -31,6 +31,15 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertIn("nix develop ./flake", pipeline)
         self.assertIn("nix flake check ./flake", pipeline)
 
+    def test_opnsense_pipeline_requires_manual_main_apply(self) -> None:
+        pipeline = (ROOT / ".gitlab-ci.yml").read_text()
+
+        for job in ("opnsense_inventory:", "opnsense_plan:", "opnsense_apply:"):
+            self.assertIn(job, pipeline)
+        apply_block = pipeline.split("opnsense_apply:", maxsplit=1)[1]
+        self.assertIn("when: manual", apply_block)
+        self.assertIn('$CI_COMMIT_BRANCH == "main"', apply_block)
+
 
 if __name__ == "__main__":
     unittest.main()
