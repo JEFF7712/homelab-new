@@ -1,4 +1,6 @@
 import unittest
+import json
+from pathlib import Path
 
 from opnsense_reconciler.reconcile import reconcile_interfaces, verify_bgp
 
@@ -84,6 +86,26 @@ class ReconcileInterfaceTests(unittest.TestCase):
                 ("POST", "/api/interfaces/assignment/add_item", {"interface": desired}),
                 ("POST", "/api/interfaces/assignment/reconfigure", {}),
             ],
+        )
+
+    def test_assignment_config_declares_all_vlan_gateways(self) -> None:
+        path = Path(__file__).resolve().parents[1] / "opnsense_reconciler/assignments.json"
+        assignments = json.loads(path.read_text())
+
+        self.assertEqual(
+            {assignment["if"] for assignment in assignments},
+            {"vlan10", "vlan20", "vlan30", "vlan40", "vlan50", "vlan60"},
+        )
+        self.assertEqual(
+            {assignment["ipaddr"] for assignment in assignments},
+            {
+                "10.0.10.1/24",
+                "10.0.20.1/24",
+                "10.0.30.1/24",
+                "10.0.40.1/24",
+                "10.0.50.1/24",
+                "10.0.60.1/24",
+            },
         )
 
 

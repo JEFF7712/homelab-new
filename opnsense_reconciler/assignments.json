@@ -1,0 +1,68 @@
+[
+  {
+    "descr": "management",
+    "dhcp6-ia-pd-len": "0",
+    "disablevlanhwfilter": "0",
+    "enable": "1",
+    "if": "vlan10",
+    "ipaddr": "10.0.10.1/24",
+    "lock": "1",
+    "type4": "staticv4",
+    "type6": "none"
+  },
+  {
+    "descr": "clients",
+    "dhcp6-ia-pd-len": "0",
+    "disablevlanhwfilter": "0",
+    "enable": "1",
+    "if": "vlan20",
+    "ipaddr": "10.0.20.1/24",
+    "lock": "1",
+    "type4": "staticv4",
+    "type6": "none"
+  },
+  {
+    "descr": "infrastructure",
+    "dhcp6-ia-pd-len": "0",
+    "disablevlanhwfilter": "0",
+    "enable": "1",
+    "if": "vlan30",
+    "ipaddr": "10.0.30.1/24",
+    "lock": "1",
+    "type4": "staticv4",
+    "type6": "none"
+  },
+  {
+    "descr": "load_balancers",
+    "dhcp6-ia-pd-len": "0",
+    "disablevlanhwfilter": "0",
+    "enable": "1",
+    "if": "vlan40",
+    "ipaddr": "10.0.40.1/24",
+    "lock": "1",
+    "type4": "staticv4",
+    "type6": "none"
+  },
+  {
+    "descr": "guest_iot",
+    "dhcp6-ia-pd-len": "0",
+    "disablevlanhwfilter": "0",
+    "enable": "1",
+    "if": "vlan50",
+    "ipaddr": "10.0.50.1/24",
+    "lock": "1",
+    "type4": "staticv4",
+    "type6": "none"
+  },
+  {
+    "descr": "netbird",
+    "dhcp6-ia-pd-len": "0",
+    "disablevlanhwfilter": "0",
+    "enable": "1",
+    "if": "vlan60",
+    "ipaddr": "10.0.60.1/24",
+    "lock": "1",
+    "type4": "staticv4",
+    "type6": "none"
+  }
+]
