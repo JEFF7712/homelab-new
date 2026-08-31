@@ -146,7 +146,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class FlakeContractTests(unittest.TestCase):
     def test_flake_declares_required_tools(self) -> None:
-        flake = (ROOT / "flake/flake.nix").read_text()
+        flake_path = ROOT / "flake/flake.nix"
+        self.assertTrue(flake_path.is_file())
+        flake = flake_path.read_text()
         for package in (
             "age",
             "sops",
@@ -161,7 +163,9 @@ class FlakeContractTests(unittest.TestCase):
                 self.assertIn(package, flake)
 
     def test_flake_exposes_formatter_and_shell(self) -> None:
-        flake = (ROOT / "flake/flake.nix").read_text()
+        flake_path = ROOT / "flake/flake.nix"
+        self.assertTrue(flake_path.is_file())
+        flake = flake_path.read_text()
         self.assertIn("formatter =", flake)
         self.assertIn("devShells.default =", flake)
 
@@ -174,7 +178,7 @@ if __name__ == "__main__":
 
 Run: python -m unittest tests/test_flake_contract.py -v
 
-Expected: ERROR with FileNotFoundError for flake/flake.nix.
+Expected: FAIL because flake/flake.nix does not exist.
 
 - [ ] **Step 3: Implement the Nix flake**
 
