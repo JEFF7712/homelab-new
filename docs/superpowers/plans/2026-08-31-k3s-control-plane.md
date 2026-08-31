@@ -16,7 +16,7 @@
 - Create: `flake/modules/k3s-server.nix`
 - Create: `tests/test_k3s_module_contract.py`
 
-- [ ] **Step 1: Write the failing module contract test**
+- [x] **Step 1: Write the failing module contract test**
 
 ```python
 module = (ROOT / "flake/modules/k3s-server.nix").read_text()
@@ -26,13 +26,13 @@ self.assertIn("clusterInit", module)
 self.assertIn("tokenFile", module)
 ```
 
-- [ ] **Step 2: Run the test and confirm it fails because the module is absent**
+- [x] **Step 2: Run the test and confirm it fails because the module is absent**
 
 Run: `nix develop ./flake -c python -m unittest tests/test_k3s_module_contract.py -v`
 
 Expected: `FileNotFoundError` for `flake/modules/k3s-server.nix`.
 
-- [ ] **Step 3: Implement the module**
+- [x] **Step 3: Implement the module**
 
 ```nix
 { lib, ... }:
@@ -53,7 +53,7 @@ Expected: `FileNotFoundError` for `flake/modules/k3s-server.nix`.
 }
 ```
 
-- [ ] **Step 4: Re-run the test and commit**
+- [x] **Step 4: Re-run the test and commit**
 
 Run: `nix develop ./flake -c python -m unittest tests/test_k3s_module_contract.py -v`
 
@@ -65,19 +65,18 @@ Commit: `feat: add k3s server module`
 - Create: `flake/hosts/homelab-01/default.nix`
 - Create: `flake/hosts/homelab-02/default.nix`
 - Create: `flake/hosts/homelab-03/default.nix`
-- Modify: `flake/flake.nix`
 
 - [ ] **Step 1: Write the failing host-count test**
 
 ```python
-flake = (ROOT / "flake/flake.nix").read_text()
 for host in ("homelab-01", "homelab-02", "homelab-03"):
-    self.assertIn(host, flake)
+    profile = (ROOT / f"flake/hosts/{host}/default.nix").read_text()
+    self.assertIn(f'networking.hostName = "{host}"', profile)
 ```
 
 - [ ] **Step 2: Run and confirm failure**
 
-Run: `nix develop ./flake -c python -m unittest flake/tests/test_k3s_module_contract.py -v`
+Run: `nix develop ./flake -c python -m unittest tests/test_k3s_module_contract.py -v`
 
 Expected: assertion failure for `homelab-01`.
 
