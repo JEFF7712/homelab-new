@@ -1,0 +1,16 @@
+.direnv/
+result
+result-*
+secrets/keys/
+*.decrypted.yaml
+*.decrypted.yml
+*.decrypted.json
+.env
+.envrc
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.terraform/
+*.tfstate
+*.tfstate.*
