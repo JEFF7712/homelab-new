@@ -10,6 +10,9 @@ class FakeClient:
     def get(self, path: str) -> object:
         raise AssertionError(f"unexpected read: {path}")
 
+    def post(self, path: str, payload: object) -> object:
+        raise AssertionError(f"unexpected write: {path}")
+
 
 class ReconcileInterfaceTests(unittest.TestCase):
     def test_reconcile_interfaces_refuses_unavailable_assignment_api(self) -> None:
@@ -45,6 +48,43 @@ class ReconcileInterfaceTests(unittest.TestCase):
         )
 
         self.assertEqual(client.calls, [("GET", "/api/interfaces/assignment/search_item")])
+
+    def test_reconcile_interfaces_adds_one_explicit_static_ipv4_assignment(self) -> None:
+        class AssignmentClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str, object | None]] = []
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path, None))
+                return {"rows": []}
+
+            def post(self, path: str, payload: object) -> object:
+                self.calls.append(("POST", path, payload))
+                return {"result": "saved"}
+
+        client = AssignmentClient()
+        desired = {
+            "descr": "management",
+            "disablevlanhwfilter": "0",
+            "enable": "1",
+            "if": "vlan10",
+            "ipaddr": "10.0.10.1/24",
+            "lock": "1",
+            "type4": "staticv4",
+            "type6": "none",
+            "dhcp6-ia-pd-len": "0",
+        }
+
+        reconcile_interfaces(client, True, [desired])
+
+        self.assertEqual(
+            client.calls,
+            [
+                ("GET", "/api/interfaces/assignment/search_item", None),
+                ("POST", "/api/interfaces/assignment/add_item", {"interface": desired}),
+                ("POST", "/api/interfaces/assignment/reconfigure", {}),
+            ],
+        )
 
 
 class BgpVerificationTests(unittest.TestCase):

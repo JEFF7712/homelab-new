@@ -11,13 +11,19 @@ class Client(Reader, Protocol):
 
 
 def reconcile_interfaces(
-    client: Reader,
+    client: Client,
     assignment_api_available: bool,
-    desired_interfaces: list[object],
+    desired_interfaces: list[dict[str, str]],
 ) -> None:
     if not assignment_api_available:
         raise RuntimeError("assignment API unavailable")
-    client.get("/api/interfaces/assignment/search_item")
+    assignments = client.get("/api/interfaces/assignment/search_item")
+    existing_devices = _assignment_devices(assignments)
+    additions = [desired for desired in desired_interfaces if desired["if"] not in existing_devices]
+    for desired in additions:
+        client.post("/api/interfaces/assignment/add_item", {"interface": desired})
+    if additions:
+        client.post("/api/interfaces/assignment/reconfigure", {})
 
 
 @dataclass(frozen=True)
@@ -81,4 +87,19 @@ def _route_prefixes(routes: object) -> set[str]:
         if isinstance(row, dict)
         for prefix in [row.get("prefix")]
         if isinstance(prefix, str)
+    }
+
+
+def _assignment_devices(assignments: object) -> set[str]:
+    if not isinstance(assignments, dict):
+        return set()
+    rows = assignments.get("rows")
+    if not isinstance(rows, list):
+        return set()
+    return {
+        device
+        for row in rows
+        if isinstance(row, dict)
+        for device in [row.get("if")]
+        if isinstance(device, str) and device
     }

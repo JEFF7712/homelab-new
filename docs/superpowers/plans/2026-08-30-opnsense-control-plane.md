@@ -92,7 +92,7 @@ Expected: FAIL with ImportError for reconcile_interfaces.
 
 - [ ] **Step 3: Implement one coherent assignment transaction**
 
-The reconciler must read current assignment records, compare canonical desired assignment metadata, POST add_item or set_item only for changed assignments, call POST reconfigure exactly once, then verify the assigned device and management reachability. It must refuse a transaction that changes the management assignment and every other LAN assignment together. Static IPv4 addresses, routes, and gateway configuration stay outside this reconciler until OPNsense publishes a stable per-interface L3 API.
+The reconciler must read current assignment records, compare canonical desired assignment metadata, POST add_item or set_item only for changed assignments, call POST reconfigure exactly once, then verify the assigned device, IPv4 CIDR, and management reachability. Because `get_item` does not hydrate existing legacy L3 state, static IPv4 writes must use complete explicit desired records and runtime overview must be the read-after-write proof. It must refuse a transaction that changes the management assignment and every other LAN assignment together.
 
 - [ ] **Step 4: Re-run the test suite**
 
