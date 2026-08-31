@@ -4,7 +4,13 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from opnsense_reconciler.inventory import Credentials
-from opnsense_reconciler.reconcile import main, reconcile_interfaces, resolve_vlan_devices, verify_bgp
+from opnsense_reconciler.reconcile import (
+    main,
+    reconcile_interfaces,
+    reconcile_kea_interfaces,
+    resolve_vlan_devices,
+    verify_bgp,
+)
 
 
 class FakeClient:
@@ -39,15 +45,28 @@ class ReconcileInterfaceTests(unittest.TestCase):
             seen["assignment_api_available"] = assignment_api_available
             seen["desired"] = desired
 
+        def reconcile_kea(client: object, desired: set[str]) -> None:
+            seen["kea_client"] = client
+            seen["kea_interfaces"] = desired
+
         with TemporaryDirectory() as directory:
             root = Path(directory)
             assignments = root / "assignments.json"
             inventory = root / "inventory.json"
+            kea_interfaces = root / "kea-interfaces.json"
             assignments.write_text('[{"parent":"igb0","tag":30}]')
             inventory.write_text('{"assignment_api_available":true}')
+            kea_interfaces.write_text('["opt1","opt2"]')
 
             main(
-                ["--assignments", str(assignments), "--inventory", str(inventory)],
+                [
+                    "--assignments",
+                    str(assignments),
+                    "--inventory",
+                    str(inventory),
+                    "--kea-interfaces",
+                    str(kea_interfaces),
+                ],
                 environ={
                     "OPNSENSE_URL": "https://192.168.1.1",
                     "OPNSENSE_API_KEY": "api-key",
@@ -57,11 +76,13 @@ class ReconcileInterfaceTests(unittest.TestCase):
                 },
                 client_factory=client_factory,
                 reconcile=reconcile,
+                reconcile_kea=reconcile_kea,
             )
 
         self.assertEqual(seen["credentials"], Credentials("api-key", "api-secret"))
         self.assertEqual(seen["assignment_api_available"], True)
         self.assertEqual(seen["desired"], [{"parent": "igb0", "tag": 30}])
+        self.assertEqual(seen["kea_interfaces"], {"opt1", "opt2"})
 
     def test_resolve_vlan_devices_uses_live_parent_and_tag(self) -> None:
         desired = [{"descr": "clients", "parent": "igb0", "tag": 20, "ipaddr": "10.0.20.1/24"}]
@@ -199,6 +220,59 @@ class ReconcileInterfaceTests(unittest.TestCase):
 
         with self.assertRaisesRegex(RuntimeError, "OPNsense 26.7 assignment API cannot configure"):
             reconcile_interfaces(DriftClient(), True, desired)
+
+    def test_reconcile_kea_interfaces_updates_and_verifies_listener_set(self) -> None:
+        class KeaClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str, object | None]] = []
+                self.reads = 0
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path, None))
+                if path == "/api/kea/service/status":
+                    return {"status": "running"}
+                self.reads += 1
+                selected = {"opt1"} if self.reads == 1 else {"opt1", "opt2", "opt3", "opt5"}
+                return {
+                    "dhcpv4": {
+                        "general": {
+                            "interfaces": {
+                                name: {"selected": int(name in selected), "value": name}
+                                for name in ("lan", "opt1", "opt2", "opt3", "opt5")
+                            }
+                        }
+                    }
+                }
+
+            def post(self, path: str, payload: object) -> object:
+                self.calls.append(("POST", path, payload))
+                return {"result": "saved"}
+
+        client = KeaClient()
+        desired = {"opt1", "opt2", "opt3", "opt5"}
+
+        reconcile_kea_interfaces(client, desired)
+
+        self.assertIn(
+            (
+                "POST",
+                "/api/kea/dhcpv4/set",
+                {
+                    "dhcpv4": {
+                        "general": {
+                            "enabled": "1",
+                            "manual_config": "0",
+                            "interfaces": "opt1,opt2,opt3,opt5",
+                            "valid_lifetime": "4000",
+                            "fwrules": "1",
+                            "dhcp_socket_type": "raw",
+                        }
+                    }
+                },
+            ),
+            client.calls,
+        )
+        self.assertIn(("POST", "/api/kea/service/reconfigure", {}), client.calls)
 
     def test_assignment_config_declares_all_vlan_gateways(self) -> None:
         path = Path(__file__).resolve().parents[1] / "opnsense_reconciler/assignments.json"

@@ -54,6 +54,33 @@ def reconcile_interfaces(
         )
 
 
+def reconcile_kea_interfaces(client: Client, desired_interfaces: set[str]) -> None:
+    current = client.get("/api/kea/dhcpv4/get")
+    if _kea_interfaces(current) != desired_interfaces:
+        client.post(
+            "/api/kea/dhcpv4/set",
+            {
+                "dhcpv4": {
+                    "general": {
+                        "enabled": "1",
+                        "manual_config": "0",
+                        "interfaces": ",".join(sorted(desired_interfaces)),
+                        "valid_lifetime": "4000",
+                        "fwrules": "1",
+                        "dhcp_socket_type": "raw",
+                    }
+                }
+            },
+        )
+        client.post("/api/kea/service/reconfigure", {})
+    verified = client.get("/api/kea/dhcpv4/get")
+    if _kea_interfaces(verified) != desired_interfaces:
+        raise RuntimeError("Kea DHCPv4 interface verification failed")
+    status = client.get("/api/kea/service/status")
+    if not isinstance(status, dict) or status.get("status") != "running":
+        raise RuntimeError("Kea DHCPv4 service is not running")
+
+
 def resolve_vlan_devices(
     desired_interfaces: list[dict[str, object]],
     live_vlans: object,
@@ -180,15 +207,32 @@ def _runtime_interfaces(interfaces: object) -> dict[object, tuple[object, object
     }
 
 
+def _kea_interfaces(configuration: object) -> set[str]:
+    if not isinstance(configuration, dict):
+        return set()
+    dhcpv4 = configuration.get("dhcpv4")
+    general = dhcpv4.get("general") if isinstance(dhcpv4, dict) else None
+    interfaces = general.get("interfaces") if isinstance(general, dict) else None
+    if not isinstance(interfaces, dict):
+        return set()
+    return {
+        name
+        for name, value in interfaces.items()
+        if isinstance(name, str) and isinstance(value, dict) and value.get("selected") in (1, "1", True)
+    }
+
+
 def main(
     argv: list[str] | None = None,
     environ: Mapping[str, str] | None = None,
     client_factory: Callable[[str, Credentials, str, str | None], Client] = HttpsClient,
     reconcile: Callable[[Client, bool, list[dict[str, object]]], None] = reconcile_interfaces,
+    reconcile_kea: Callable[[Client, set[str]], None] = reconcile_kea_interfaces,
 ) -> None:
     parser = argparse.ArgumentParser(description="Reconcile OPNsense interface assignments")
     parser.add_argument("--assignments", required=True, type=Path)
     parser.add_argument("--inventory", required=True, type=Path)
+    parser.add_argument("--kea-interfaces", required=True, type=Path)
     arguments = parser.parse_args(argv)
     environment = environ if environ is not None else os.environ
     required = ("OPNSENSE_URL", "OPNSENSE_API_KEY", "OPNSENSE_API_SECRET", "OPNSENSE_CA_FILE")
@@ -197,10 +241,15 @@ def main(
         raise ValueError(f"missing required environment variables: {', '.join(missing)}")
     inventory = json.loads(arguments.inventory.read_text())
     desired = json.loads(arguments.assignments.read_text())
+    desired_kea_interfaces = json.loads(arguments.kea_interfaces.read_text())
     if not isinstance(inventory, dict) or not isinstance(inventory.get("assignment_api_available"), bool):
         raise ValueError("inventory must contain assignment_api_available")
     if not isinstance(desired, list) or not all(isinstance(item, dict) for item in desired):
         raise ValueError("assignments must contain a list of objects")
+    if not isinstance(desired_kea_interfaces, list) or not all(
+        isinstance(item, str) and item for item in desired_kea_interfaces
+    ):
+        raise ValueError("Kea interfaces must contain a list of interface identifiers")
     client = client_factory(
         environment["OPNSENSE_URL"],
         Credentials(environment["OPNSENSE_API_KEY"], environment["OPNSENSE_API_SECRET"]),
@@ -208,7 +257,13 @@ def main(
         environment.get("OPNSENSE_TLS_SERVER_NAME"),
     )
     reconcile(client, inventory["assignment_api_available"], desired)
-    print(json.dumps({"assignment_count": len(desired)}, sort_keys=True))
+    reconcile_kea(client, set(desired_kea_interfaces))
+    print(
+        json.dumps(
+            {"assignment_count": len(desired), "kea_interface_count": len(desired_kea_interfaces)},
+            sort_keys=True,
+        )
+    )
 
 
 if __name__ == "__main__":

@@ -87,4 +87,4 @@ opnsense_apply:
     - test "$(nix develop ./flake -c python -c 'import json; print(str(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"]).lower())')" = true
     - nix develop ./flake -c tofu -chdir=tofu/opnsense init -reconfigure
     - nix develop ./flake -c tofu -chdir=tofu/opnsense apply desired.tfplan
-    - nix develop ./flake -c python -m opnsense_reconciler.reconcile --assignments opnsense_reconciler/assignments.json --inventory artifacts/opnsense/inventory.json
+    - nix develop ./flake -c python -m opnsense_reconciler.reconcile --assignments opnsense_reconciler/assignments.json --inventory artifacts/opnsense/inventory.json --kea-interfaces opnsense_reconciler/kea-interfaces.json
