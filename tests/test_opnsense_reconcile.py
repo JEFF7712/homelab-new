@@ -122,7 +122,7 @@ class ReconcileInterfaceTests(unittest.TestCase):
 
         self.assertEqual(client.calls, [("GET", "/api/interfaces/assignment/search_item")])
 
-    def test_reconcile_interfaces_adds_one_explicit_static_ipv4_assignment(self) -> None:
+    def test_reconcile_interfaces_adds_assignment_and_verifies_runtime(self) -> None:
         class AssignmentClient:
             def __init__(self) -> None:
                 self.calls: list[tuple[str, str, object | None]] = []
@@ -131,7 +131,13 @@ class ReconcileInterfaceTests(unittest.TestCase):
                 self.calls.append(("GET", path, None))
                 if path == "/api/interfaces/vlan_settings/search_item":
                     return {"rows": [{"if": "igb0", "tag": "10", "vlanif": "vlan02 [management]"}]}
-                return {"rows": []}
+                if path == "/api/interfaces/assignment/search_item":
+                    return {"rows": []}
+                if path == "/api/interfaces/overview/interfaces_info/true":
+                    return {
+                        "rows": [{"device": "vlan02", "addr4": "10.0.10.1/24", "description": "management"}]
+                    }
+                raise AssertionError(f"unexpected read: {path}")
 
             def post(self, path: str, payload: object) -> object:
                 self.calls.append(("POST", path, payload))
@@ -166,8 +172,33 @@ class ReconcileInterfaceTests(unittest.TestCase):
                     {"interface": resolved_desired},
                 ),
                 ("POST", "/api/interfaces/assignment/reconfigure", {}),
+                ("GET", "/api/interfaces/overview/interfaces_info/true", None),
             ],
         )
+
+    def test_reconcile_interfaces_refuses_static_l3_runtime_drift(self) -> None:
+        class DriftClient:
+            def get(self, path: str) -> object:
+                responses = {
+                    "/api/interfaces/vlan_settings/search_item": {
+                        "rows": [{"if": "igb0", "tag": "10", "vlanif": "vlan02 [management]"}]
+                    },
+                    "/api/interfaces/assignment/search_item": {
+                        "rows": [{"if": "vlan02", "identifier": "opt2"}]
+                    },
+                    "/api/interfaces/overview/interfaces_info/true": {
+                        "rows": [{"device": "vlan02", "addr4": None, "description": "management"}]
+                    },
+                }
+                return responses[path]
+
+            def post(self, path: str, payload: object) -> object:
+                raise AssertionError(f"runtime drift must not invoke unsupported write: {path}")
+
+        desired = [{"parent": "igb0", "tag": 10, "descr": "management", "ipaddr": "10.0.10.1/24"}]
+
+        with self.assertRaisesRegex(RuntimeError, "OPNsense 26.7 assignment API cannot configure"):
+            reconcile_interfaces(DriftClient(), True, desired)
 
     def test_assignment_config_declares_all_vlan_gateways(self) -> None:
         path = Path(__file__).resolve().parents[1] / "opnsense_reconciler/assignments.json"

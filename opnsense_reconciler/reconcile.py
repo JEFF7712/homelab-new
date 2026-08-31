@@ -32,12 +32,26 @@ def reconcile_interfaces(
         else []
     )
     assignments = client.get("/api/interfaces/assignment/search_item")
+    if not resolved_interfaces:
+        return
     existing_devices = _assignment_devices(assignments)
     additions = [desired for desired in resolved_interfaces if desired["if"] not in existing_devices]
     for desired in additions:
         client.post("/api/interfaces/assignment/add_item", {"interface": desired})
     if additions:
         client.post("/api/interfaces/assignment/reconfigure", {})
+    runtime = _runtime_interfaces(client.get("/api/interfaces/overview/interfaces_info/true"))
+    mismatches = [
+        desired
+        for desired in resolved_interfaces
+        if runtime.get(desired["if"]) != (desired.get("ipaddr"), desired.get("descr"))
+    ]
+    if mismatches:
+        devices = ", ".join(str(desired["if"]) for desired in mismatches)
+        raise RuntimeError(
+            "interface runtime drift for "
+            f"{devices}; OPNsense 26.7 assignment API cannot configure static L3 fields"
+        )
 
 
 def resolve_vlan_devices(
@@ -152,6 +166,17 @@ def _assignment_devices(assignments: object) -> set[str]:
         if isinstance(row, dict)
         for device in [row.get("if")]
         if isinstance(device, str) and device
+    }
+
+
+def _runtime_interfaces(interfaces: object) -> dict[object, tuple[object, object]]:
+    rows = interfaces.get("rows") if isinstance(interfaces, dict) else None
+    if not isinstance(rows, list):
+        return {}
+    return {
+        row.get("device"): (row.get("addr4"), row.get("description"))
+        for row in rows
+        if isinstance(row, dict) and row.get("device")
     }
 
 

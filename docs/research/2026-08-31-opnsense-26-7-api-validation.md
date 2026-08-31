@@ -10,6 +10,6 @@ The router was upgraded to OPNsense 26.7.1_1. TLS-verified API checks confirmed:
 
 ## Revised ownership boundary
 
-The 26.7 assignment model accepts static IPv4 fields and its `reconfigure` action persists assignment changes. Its `get_item` response does not hydrate existing legacy L3 state, so it cannot support read-modify-write configuration. The reconciler must instead send complete explicit desired records, apply one coherent change set, and verify addresses from runtime interface overview data.
+The released 26.7 assignment model does not define static IPv4 fields. The assignment endpoints persist device assignment metadata, but silently discard fields such as `type4` and `ipaddr`. Full L3 fields exist on the upstream development branch and are not a production contract for 26.7.
 
-OpenTofu owns VLAN devices, Kea DHCP objects, MVC firewall rules, and supported Unbound objects. The Python reconciler owns interface assignments and explicit L3 configuration only after an explicit reviewed change plan. It must refuse a transaction that includes the management interface and every other LAN interface.
+OpenTofu owns VLAN devices, Kea DHCP objects, MVC firewall rules, and supported Unbound objects. The Python reconciler owns interface assignment metadata and verifies the complete explicit L3 desired state against runtime overview data. On 26.7 it fails closed on L3 drift instead of reporting success after an ineffective API write.
