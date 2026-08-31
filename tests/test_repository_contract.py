@@ -40,6 +40,11 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertIn("when: manual", apply_block)
         self.assertIn('$CI_COMMIT_BRANCH == "main"', apply_block)
         self.assertIn("apply desired.tfplan", apply_block)
+        self.assertIn("python -m opnsense_reconciler.reconcile", apply_block)
+        self.assertLess(
+            apply_block.index("apply desired.tfplan"),
+            apply_block.index("python -m opnsense_reconciler.reconcile"),
+        )
 
     def test_opnsense_pipeline_uses_locked_gitlab_state(self) -> None:
         backend = (ROOT / "tofu/opnsense/backend.tf").read_text()

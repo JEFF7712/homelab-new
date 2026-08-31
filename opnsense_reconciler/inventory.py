@@ -36,13 +36,23 @@ class HttpsClient:
         return json.loads(self.get_bytes(path).decode())
 
     def get_bytes(self, path: str) -> bytes:
+        return self._request("GET", path)
+
+    def post(self, path: str, payload: object) -> object:
+        return json.loads(self._request("POST", path, payload).decode())
+
+    def _request(self, method: str, path: str, payload: object | None = None) -> bytes:
         validate_api_path(path)
         password = self._credentials.secret
         import base64
         token = base64.b64encode(f"{self._credentials.key}:{password}".encode()).decode()
+        body = json.dumps(payload).encode() if payload is not None else None
+        headers = {"Accept": "application/json", "Authorization": f"Basic {token}"}
+        if body is not None:
+            headers["Content-Type"] = "application/json"
         connection = _VerifiedConnection(self._host, self._server_name, self._context)
         try:
-            connection.request("GET", path, headers={"Accept": "application/json", "Authorization": f"Basic {token}"})
+            connection.request(method, path, body=body, headers=headers)
             response = connection.getresponse()
             body = response.read()
             if response.status >= 400:

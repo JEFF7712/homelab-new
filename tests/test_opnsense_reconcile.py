@@ -1,8 +1,10 @@
 import unittest
 import json
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
-from opnsense_reconciler.reconcile import reconcile_interfaces, resolve_vlan_devices, verify_bgp
+from opnsense_reconciler.inventory import Credentials
+from opnsense_reconciler.reconcile import main, reconcile_interfaces, resolve_vlan_devices, verify_bgp
 
 
 class FakeClient:
@@ -17,6 +19,50 @@ class FakeClient:
 
 
 class ReconcileInterfaceTests(unittest.TestCase):
+    def test_main_loads_protected_environment_and_desired_assignments(self) -> None:
+        seen: dict[str, object] = {}
+
+        def client_factory(
+            url: str,
+            credentials: Credentials,
+            ca_file: str,
+            server_name: str | None,
+        ) -> FakeClient:
+            seen["url"] = url
+            seen["credentials"] = credentials
+            seen["ca_file"] = ca_file
+            seen["server_name"] = server_name
+            return FakeClient()
+
+        def reconcile(client: object, assignment_api_available: bool, desired: list[dict[str, object]]) -> None:
+            seen["client"] = client
+            seen["assignment_api_available"] = assignment_api_available
+            seen["desired"] = desired
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            assignments = root / "assignments.json"
+            inventory = root / "inventory.json"
+            assignments.write_text('[{"parent":"igb0","tag":30}]')
+            inventory.write_text('{"assignment_api_available":true}')
+
+            main(
+                ["--assignments", str(assignments), "--inventory", str(inventory)],
+                environ={
+                    "OPNSENSE_URL": "https://192.168.1.1",
+                    "OPNSENSE_API_KEY": "api-key",
+                    "OPNSENSE_API_SECRET": "api-secret",
+                    "OPNSENSE_CA_FILE": "/tmp/opnsense-ca.pem",
+                    "OPNSENSE_TLS_SERVER_NAME": "OPNsense.internal",
+                },
+                client_factory=client_factory,
+                reconcile=reconcile,
+            )
+
+        self.assertEqual(seen["credentials"], Credentials("api-key", "api-secret"))
+        self.assertEqual(seen["assignment_api_available"], True)
+        self.assertEqual(seen["desired"], [{"parent": "igb0", "tag": 30}])
+
     def test_resolve_vlan_devices_uses_live_parent_and_tag(self) -> None:
         desired = [{"descr": "clients", "parent": "igb0", "tag": 20, "ipaddr": "10.0.20.1/24"}]
         live_vlans = {

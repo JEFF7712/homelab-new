@@ -1,5 +1,11 @@
+import argparse
 from dataclasses import dataclass
-from typing import Protocol
+import json
+import os
+from pathlib import Path
+from typing import Callable, Mapping, Protocol
+
+from opnsense_reconciler.inventory import Credentials, HttpsClient
 
 
 class Reader(Protocol):
@@ -147,3 +153,38 @@ def _assignment_devices(assignments: object) -> set[str]:
         for device in [row.get("if")]
         if isinstance(device, str) and device
     }
+
+
+def main(
+    argv: list[str] | None = None,
+    environ: Mapping[str, str] | None = None,
+    client_factory: Callable[[str, Credentials, str, str | None], Client] = HttpsClient,
+    reconcile: Callable[[Client, bool, list[dict[str, object]]], None] = reconcile_interfaces,
+) -> None:
+    parser = argparse.ArgumentParser(description="Reconcile OPNsense interface assignments")
+    parser.add_argument("--assignments", required=True, type=Path)
+    parser.add_argument("--inventory", required=True, type=Path)
+    arguments = parser.parse_args(argv)
+    environment = environ if environ is not None else os.environ
+    required = ("OPNSENSE_URL", "OPNSENSE_API_KEY", "OPNSENSE_API_SECRET", "OPNSENSE_CA_FILE")
+    missing = [name for name in required if not environment.get(name)]
+    if missing:
+        raise ValueError(f"missing required environment variables: {', '.join(missing)}")
+    inventory = json.loads(arguments.inventory.read_text())
+    desired = json.loads(arguments.assignments.read_text())
+    if not isinstance(inventory, dict) or not isinstance(inventory.get("assignment_api_available"), bool):
+        raise ValueError("inventory must contain assignment_api_available")
+    if not isinstance(desired, list) or not all(isinstance(item, dict) for item in desired):
+        raise ValueError("assignments must contain a list of objects")
+    client = client_factory(
+        environment["OPNSENSE_URL"],
+        Credentials(environment["OPNSENSE_API_KEY"], environment["OPNSENSE_API_SECRET"]),
+        environment["OPNSENSE_CA_FILE"],
+        environment.get("OPNSENSE_TLS_SERVER_NAME"),
+    )
+    reconcile(client, inventory["assignment_api_available"], desired)
+    print(json.dumps({"assignment_count": len(desired)}, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
