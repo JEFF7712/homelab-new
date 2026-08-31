@@ -32,6 +32,7 @@ class ApplianceContractTests(unittest.TestCase):
 
         self.assertIn('fsType = "tmpfs"', host)
         self.assertIn('device = "none"', host)
+        self.assertIn('fileSystems."/persist".neededForBoot = true', host)
         self.assertIn('"ahci"', hardware)
         self.assertIn('"sd_mod"', hardware)
         self.assertIn('"r8169"', hardware)
@@ -56,8 +57,9 @@ class ApplianceContractTests(unittest.TestCase):
         self.assertIn('PasswordAuthentication = false', role)
         for path in (
             '"/etc/ssh"',
-            '"/var/lib/AdGuardHome"',
+            '"/var/lib/private/AdGuardHome"',
             '"/var/lib/netbird"',
+            '"/var/lib/nixos"',
             '"/var/lib/systemd"',
         ):
             with self.subTest(path=path):
