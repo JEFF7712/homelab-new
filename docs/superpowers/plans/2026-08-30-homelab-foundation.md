@@ -169,6 +169,10 @@ class FlakeContractTests(unittest.TestCase):
         self.assertIn("formatter =", flake)
         self.assertIn("devShells.default =", flake)
 
+    def test_flake_uses_current_nixfmt_attribute(self) -> None:
+        flake = (ROOT / "flake/flake.nix").read_text()
+        self.assertIn("formatter = pkgs.nixfmt;", flake)
+
 
 if __name__ == "__main__":
     unittest.main()
@@ -198,7 +202,7 @@ Create flake/flake.nix:
       let
         pkgs = import nixpkgs { inherit system; };
       in {
-        formatter = pkgs.nixfmt-rfc-style;
+        formatter = pkgs.nixfmt;
 
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
@@ -208,7 +212,7 @@ Create flake/flake.nix:
             kubeconform
             kubectl
             kubernetes-helm
-            nixfmt-rfc-style
+            nixfmt
             opentofu
             pyright
             python313
@@ -234,7 +238,7 @@ git add flake/flake.nix
 nix flake lock ./flake
 git add flake/flake.lock
 nix develop ./flake -c python -m unittest discover -s tests -v
-nix fmt ./flake
+(cd flake && nix fmt -- flake.nix && nix fmt -- --check flake.nix)
 nix flake check ./flake
 ~~~
 
@@ -290,7 +294,7 @@ variables:
 nix_format:
   stage: lint
   script:
-    - nix fmt ./flake -- --check
+    - cd flake && nix fmt -- --check flake.nix
 
 repository_tests:
   stage: test
@@ -314,7 +318,7 @@ secret_scan:
 Run:
 
 ~~~bash
-nix fmt ./flake -- --check
+(cd flake && nix fmt -- --check flake.nix)
 nix develop ./flake -c python -m unittest discover -s tests -v
 nix flake check ./flake
 nix develop ./flake -c yamllint .
@@ -371,7 +375,7 @@ git commit -m "docs: map homelab implementation workstreams"
 - [ ] Run:
 
 ~~~bash
-nix fmt ./flake -- --check
+(cd flake && nix fmt -- --check flake.nix)
 nix develop ./flake -c python -m unittest discover -s tests -v
 nix flake check ./flake
 nix develop ./flake -c yamllint .
