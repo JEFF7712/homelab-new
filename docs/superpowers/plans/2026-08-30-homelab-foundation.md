@@ -284,7 +284,7 @@ variables:
 nix_format:
   stage: lint
   script:
-    - nix fmt -- --check ./flake
+    - nix fmt ./flake -- --check
 
 repository_tests:
   stage: test
@@ -308,7 +308,7 @@ secret_scan:
 Run:
 
 ~~~bash
-nix fmt -- --check ./flake
+nix fmt ./flake -- --check
 nix develop ./flake -c python -m unittest discover -s tests -v
 nix flake check ./flake
 nix develop ./flake -c yamllint .
@@ -365,7 +365,7 @@ git commit -m "docs: map homelab implementation workstreams"
 - [ ] Run:
 
 ~~~bash
-nix fmt -- --check ./flake
+nix fmt ./flake -- --check
 nix develop ./flake -c python -m unittest discover -s tests -v
 nix flake check ./flake
 nix develop ./flake -c yamllint .
@@ -374,4 +374,3 @@ git status --short
 ~~~
 
 Expected: all validations pass and git status --short has no output.
-
