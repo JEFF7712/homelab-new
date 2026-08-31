@@ -12,5 +12,6 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .terraform/
+artifacts/
 *.tfstate
 *.tfstate.*

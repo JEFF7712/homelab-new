@@ -2,19 +2,22 @@ from dataclasses import dataclass
 from typing import Protocol
 
 
-class Client(Protocol):
+class Reader(Protocol):
     def get(self, path: str) -> object: ...
 
+
+class Client(Reader, Protocol):
     def post(self, path: str, payload: object) -> object: ...
 
 
 def reconcile_interfaces(
-    client: Client,
+    client: Reader,
     assignment_api_available: bool,
     desired_interfaces: list[object],
 ) -> None:
     if not assignment_api_available:
         raise RuntimeError("assignment API unavailable")
+    client.get("/api/interfaces/assignment/search_item")
 
 
 @dataclass(frozen=True)
@@ -26,7 +29,7 @@ class BgpProof:
 
 
 def verify_bgp(
-    client: Client,
+    client: Reader,
     expected_peers: dict[str, int],
     expected_routes: set[str],
 ) -> BgpProof:

@@ -7,6 +7,9 @@ class FakeClient:
     def __init__(self) -> None:
         self.calls: list[tuple[str, str]] = []
 
+    def get(self, path: str) -> object:
+        raise AssertionError(f"unexpected read: {path}")
+
 
 class ReconcileInterfaceTests(unittest.TestCase):
     def test_reconcile_interfaces_refuses_unavailable_assignment_api(self) -> None:
@@ -20,6 +23,28 @@ class ReconcileInterfaceTests(unittest.TestCase):
             )
 
         self.assertEqual(client.calls, [])
+
+    def test_reconcile_interfaces_reads_current_assignments_before_noop(self) -> None:
+        class AssignmentClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str]] = []
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path))
+                return {"rows": []}
+
+            def post(self, path: str, payload: object) -> object:
+                raise AssertionError("no-op reconciliation must not write")
+
+        client = AssignmentClient()
+
+        reconcile_interfaces(
+            client=client,
+            assignment_api_available=True,
+            desired_interfaces=[],
+        )
+
+        self.assertEqual(client.calls, [("GET", "/api/interfaces/assignment/search_item")])
 
 
 class BgpVerificationTests(unittest.TestCase):

@@ -55,10 +55,11 @@ class _VerifiedConnection(HTTPSConnection):
     def __init__(self, host: str, server_name: str, context: ssl.SSLContext) -> None:
         super().__init__(host, context=context)
         self._server_name = server_name
+        self._verified_context = context
 
     def connect(self) -> None:
-        self.sock = socket.create_connection((self.host, self.port), self.timeout, self.source_address)
-        self.sock = self._context.wrap_socket(self.sock, server_hostname=self._server_name)
+        socket_connection = socket.create_connection((self.host, self.port), self.timeout)
+        self.sock = self._verified_context.wrap_socket(socket_connection, server_hostname=self._server_name)
 
 
 @dataclass(frozen=True)

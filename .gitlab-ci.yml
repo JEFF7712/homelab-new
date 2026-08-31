@@ -43,6 +43,10 @@ opnsense_inventory:
 
 opnsense_plan:
   stage: opnsense
+  variables:
+    OPNSENSE_URI: $OPNSENSE_URL
+    SSL_CERT_FILE: $OPNSENSE_CA_FILE
+    TF_VAR_opnsense_uri: $OPNSENSE_URL
   needs:
     - job: opnsense_inventory
       artifacts: true
