@@ -14,6 +14,7 @@
   networking = {
     useDHCP = false;
     useNetworkd = true;
+    nftables.enable = true;
     firewall = {
       enable = true;
       allowedUDPPorts = [ 51820 ];
@@ -53,6 +54,18 @@
 
   services.openssh = {
     enable = true;
+    openFirewall = false;
+    hostKeys = [
+      {
+        path = "/persist/etc/ssh/ssh_host_ed25519_key";
+        type = "ed25519";
+      }
+      {
+        bits = 4096;
+        path = "/persist/etc/ssh/ssh_host_rsa_key";
+        type = "rsa";
+      }
+    ];
     settings = {
       KbdInteractiveAuthentication = false;
       PasswordAuthentication = false;
@@ -128,10 +141,28 @@
     };
   };
 
+  systemd.services = {
+    adguardhome = {
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      serviceConfig.StateDirectoryMode = "0700";
+    };
+    netbird = {
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+    };
+  };
+
+  systemd.tmpfiles.rules = [
+    "d /var/lib/private 0700 root root -"
+    "d /persist/etc/ssh 0700 root root -"
+    "d /persist/var/lib/private 0700 root root -"
+    "d /persist/var/lib/private/AdGuardHome 0700 nobody nogroup -"
+  ];
+
   environment.persistence."/persist" = {
     hideMounts = true;
     directories = [
-      "/etc/ssh"
       "/var/lib/netbird"
       "/var/lib/nixos"
       "/var/lib/private/AdGuardHome"

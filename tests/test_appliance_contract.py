@@ -45,6 +45,7 @@ class ApplianceContractTests(unittest.TestCase):
         self.assertIn('Gateway = "10.0.30.1"', role)
         self.assertIn('Id = 60', role)
         self.assertIn('Address = "10.0.60.2/24"', role)
+        self.assertIn('nftables.enable = true', role)
 
     def test_services_and_persistence_are_declarative(self) -> None:
         role = (ROOT / "flake/modules/adguard-netbird-appliance.nix").read_text()
@@ -55,8 +56,18 @@ class ApplianceContractTests(unittest.TestCase):
         self.assertIn('useRoutingFeatures = "server"', role)
         self.assertIn('mutableSettings = false', role)
         self.assertIn('PasswordAuthentication = false', role)
+        self.assertIn('openFirewall = false', role)
+        self.assertNotIn('      "/etc/ssh"\n', role)
+        self.assertIn('path = "/persist/etc/ssh/ssh_host_ed25519_key"', role)
+        self.assertIn('path = "/persist/etc/ssh/ssh_host_rsa_key"', role)
+        self.assertIn('after = [ "network-online.target" ]', role)
+        self.assertIn('wants = [ "network-online.target" ]', role)
+        self.assertIn('serviceConfig.StateDirectoryMode = "0700"', role)
+        self.assertIn('d /var/lib/private 0700 root root -', role)
+        self.assertIn(
+            'd /persist/var/lib/private/AdGuardHome 0700 nobody nogroup -', role
+        )
         for path in (
-            '"/etc/ssh"',
             '"/var/lib/private/AdGuardHome"',
             '"/var/lib/netbird"',
             '"/var/lib/nixos"',
