@@ -36,6 +36,14 @@
           ./hosts/nas-01
         ];
       };
+      nixosConfigurations.homelab-02 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          impermanence.nixosModules.impermanence
+          ./hosts/homelab-02
+        ];
+      };
     }
     // flake-utils.lib.eachDefaultSystem (
       system:

@@ -44,7 +44,7 @@ class K3sModuleContractTests(unittest.TestCase):
             with self.subTest(hostname=hostname):
                 profile = (ROOT / f"flake/hosts/{hostname}/default.nix").read_text()
                 self.assertIn('serverAddress = "https://10.0.30.11:6443"', profile)
-                self.assertIn('tokenFile = "/run/secrets/k3s-token"', profile)
+                self.assertIn('tokenFile = "/persist/secrets/k3s-token"', profile)
 
     def test_primary_profile_bootstraps_pinned_cilium_before_flux(self) -> None:
         module = (ROOT / "flake/modules/k3s-server.nix").read_text()
@@ -52,7 +52,7 @@ class K3sModuleContractTests(unittest.TestCase):
 
         for value in (
             "bootstrapCilium",
-            "services.k3s.manifests.cilium.content",
+            "services.k3s.manifests = lib.mkIf cfg.bootstrapCilium",
             'apiVersion = "helm.cattle.io/v1"',
             'version = "1.20.1"',
             "kubeProxyReplacement = true",

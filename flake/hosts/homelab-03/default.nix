@@ -7,6 +7,6 @@
     enable = true;
     nodeIp = "10.0.30.13";
     serverAddress = "https://10.0.30.11:6443";
-    tokenFile = "/run/secrets/k3s-token";
+    tokenFile = "/persist/secrets/k3s-token";
   };
 }

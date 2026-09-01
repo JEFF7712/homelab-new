@@ -62,6 +62,16 @@ class K3sNodeInstallationContractTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertIn(value, role)
 
+    def test_joining_node_omits_the_entire_cilium_manifest(self) -> None:
+        role = (ROOT / "flake/modules/k3s-server.nix").read_text()
+
+        self.assertIn(
+            "services.k3s.manifests = lib.mkIf cfg.bootstrapCilium", role
+        )
+        self.assertNotIn(
+            "services.k3s.manifests.cilium.content = lib.mkIf", role
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
