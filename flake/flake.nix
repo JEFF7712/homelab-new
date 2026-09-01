@@ -28,6 +28,14 @@
           ./hosts/adguard-netbird-01
         ];
       };
+      nixosConfigurations.nas-01 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          impermanence.nixosModules.impermanence
+          ./hosts/nas-01
+        ];
+      };
     }
     // flake-utils.lib.eachDefaultSystem (
       system:
