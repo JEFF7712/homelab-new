@@ -46,6 +46,10 @@ class ApplianceContractTests(unittest.TestCase):
         self.assertIn('Id = 60', role)
         self.assertIn('Address = "10.0.60.2/24"', role)
         self.assertIn('nftables.enable = true', role)
+        self.assertIn(
+            'iifname "wt0" tcp dport { 22, 53, 3000 } accept', role
+        )
+        self.assertIn('iifname "wt0" udp dport 53 accept', role)
 
     def test_services_and_persistence_are_declarative(self) -> None:
         role = (ROOT / "flake/modules/adguard-netbird-appliance.nix").read_text()
