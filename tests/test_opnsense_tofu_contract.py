@@ -50,6 +50,12 @@ class OPNsenseTofuContractTests(unittest.TestCase):
             with self.subTest(rule=rule):
                 self.assertIn(rule, values)
 
+    def test_infrastructure_dhcp_advertises_adguard_dns(self) -> None:
+        values = (ROOT / "tofu/opnsense/homelab.auto.tfvars").read_text()
+        infrastructure = values.split("  infrastructure = {", 2)[2].split("  }", 1)[0]
+
+        self.assertIn('dns_servers = ["10.0.30.10"]', infrastructure)
+
 
 if __name__ == "__main__":
     unittest.main()
