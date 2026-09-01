@@ -290,15 +290,16 @@ git commit -m "feat: declare NAS system storage"
       grub = {
         enable = true;
         efiSupport = true;
-        device = "nodev";
         mirroredBoots = [
           {
             path = "/boot";
-            devices = [ "nodev" ];
+            devices = [ "/dev/disk/by-id/nvme-WDC_PC_SN520_SDAPNUW-256G-1006_2022C1800396" ];
+            efiBootloaderId = "NixOS-a";
           }
           {
             path = "/boot-fallback";
-            devices = [ "nodev" ];
+            devices = [ "/dev/disk/by-id/nvme-WDC_PC_SN520_SDAPNUW-256G-1006_2022BA804857" ];
+            efiBootloaderId = "NixOS-b";
           }
         ];
       };
