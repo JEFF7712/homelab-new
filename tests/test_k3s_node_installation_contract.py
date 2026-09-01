@@ -4,6 +4,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 HOST = ROOT / "flake/hosts/homelab-02"
+HOST_03 = ROOT / "flake/hosts/homelab-03"
 
 
 class K3sNodeInstallationContractTests(unittest.TestCase):
@@ -14,6 +15,12 @@ class K3sNodeInstallationContractTests(unittest.TestCase):
         self.assertIn("./hosts/homelab-02", flake)
         self.assertIn("disko.nixosModules.disko", flake)
         self.assertIn("impermanence.nixosModules.impermanence", flake)
+
+    def test_flake_exports_installable_homelab_03(self) -> None:
+        flake = (ROOT / "flake/flake.nix").read_text()
+
+        self.assertIn("nixosConfigurations.homelab-03", flake)
+        self.assertIn("./hosts/homelab-03", flake)
 
     def test_storage_targets_only_observed_internal_ssd(self) -> None:
         storage = (HOST / "disk-config.nix").read_text()
@@ -40,6 +47,26 @@ class K3sNodeInstallationContractTests(unittest.TestCase):
         self.assertIn('fileSystems."/persist".neededForBoot = true', host)
         self.assertIn('primaryInterface = "enp1s0"', host)
         self.assertIn('nodeIp = "10.0.30.12"', host)
+        self.assertIn('tokenFile = "/persist/secrets/k3s-token"', host)
+
+    def test_homelab_03_targets_observed_hardware(self) -> None:
+        host = (HOST_03 / "default.nix").read_text()
+        hardware = (HOST_03 / "hardware-configuration.nix").read_text()
+        storage = (HOST_03 / "disk-config.nix").read_text()
+
+        self.assertIn(
+            "/dev/disk/by-id/ata-FORESEE_64GB_SSD_0000007798__FMA39721",
+            storage,
+        )
+        self.assertNotIn("/dev/sdb", storage)
+        self.assertNotIn('type = "luks"', storage)
+        for module in ("xhci_pci", "ahci", "sd_mod", "r8169", "kvm-amd"):
+            with self.subTest(module=module):
+                self.assertIn(module, hardware)
+        self.assertIn('fsType = "tmpfs"', host)
+        self.assertIn('fileSystems."/persist".neededForBoot = true', host)
+        self.assertIn('primaryInterface = "enp1s0"', host)
+        self.assertIn('nodeIp = "10.0.30.13"', host)
         self.assertIn('tokenFile = "/persist/secrets/k3s-token"', host)
 
     def test_role_provides_uefi_network_security_and_persistence(self) -> None:
