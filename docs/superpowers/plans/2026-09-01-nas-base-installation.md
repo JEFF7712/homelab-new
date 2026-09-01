@@ -536,7 +536,8 @@ git commit -m "feat: export installable NAS host"
 Run remotely against the installer:
 
 ```bash
-systemctl is-failed nas-exos-burnin.service
+test -z "$(pgrep -x fio || true)"
+grep -q "err= 0" /tmp/nas-exos-burnin.log
 tail -80 /tmp/nas-exos-burnin.log
 smartctl -x /dev/disk/by-id/scsi-35000c500d91a3f4f
 ```
@@ -555,7 +556,16 @@ Expected: the key exists only in the local secret directory with mode `0600`.
 
 - [ ] **Step 3: Install without rebooting**
 
-Run `nixos-anywhere` against `nixos@10.0.30.158`, build locally, pass `/home/rupan/.local/share/homelab/secrets/nas-01-system-recovery.key` to remote `/tmp/nas-01-system.key`, and stop after the kexec, Disko, and install phases.
+```bash
+nix run github:nix-community/nixos-anywhere -- \
+  --flake ./flake#nas-01 \
+  --target-host nixos@10.0.30.158 \
+  --build-on local \
+  --disk-encryption-keys \
+    /tmp/nas-01-system.key \
+    /home/rupan/.local/share/homelab/secrets/nas-01-system-recovery.key \
+  --phases kexec,disko,install
+```
 
 Expected: only the two exact NVMe devices are repartitioned; the 2 TB XFS disk and 10 TB Exos remain absent from the Disko plan.
 
