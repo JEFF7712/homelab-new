@@ -3,11 +3,18 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+HOST_01 = ROOT / "flake/hosts/homelab-01"
 HOST = ROOT / "flake/hosts/homelab-02"
 HOST_03 = ROOT / "flake/hosts/homelab-03"
 
 
 class K3sNodeInstallationContractTests(unittest.TestCase):
+    def test_flake_exports_installable_homelab_01(self) -> None:
+        flake = (ROOT / "flake/flake.nix").read_text()
+
+        self.assertIn("nixosConfigurations.homelab-01", flake)
+        self.assertIn("./hosts/homelab-01", flake)
+
     def test_flake_exports_installable_homelab_02(self) -> None:
         flake = (ROOT / "flake/flake.nix").read_text()
 
@@ -68,6 +75,38 @@ class K3sNodeInstallationContractTests(unittest.TestCase):
         self.assertIn('primaryInterface = "enp1s0"', host)
         self.assertIn('nodeIp = "10.0.30.13"', host)
         self.assertIn('tokenFile = "/persist/secrets/k3s-token"', host)
+
+    def test_homelab_01_separates_system_and_persistent_storage(self) -> None:
+        host = (HOST_01 / "default.nix").read_text()
+        hardware = (HOST_01 / "hardware-configuration.nix").read_text()
+        storage = (HOST_01 / "disk-config.nix").read_text()
+
+        self.assertIn(
+            "/dev/disk/by-id/ata-CT500MX500SSD1_2126E5B4C617", storage
+        )
+        self.assertIn(
+            "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4701b701",
+            storage,
+        )
+        self.assertNotIn("/dev/sdb", storage)
+        self.assertNotIn('type = "luks"', storage)
+        for module in (
+            "xhci_pci",
+            "ahci",
+            "nvme",
+            "sd_mod",
+            "e1000e",
+            "igb",
+            "kvm-intel",
+        ):
+            with self.subTest(module=module):
+                self.assertIn(module, hardware)
+        self.assertIn('fsType = "tmpfs"', host)
+        self.assertIn('fileSystems."/persist".neededForBoot = true', host)
+        self.assertIn('primaryInterface = "eno1"', host)
+        self.assertIn('nodeIp = "10.0.30.11"', host)
+        self.assertIn("clusterInit = true", host)
+        self.assertIn("bootstrapCilium = true", host)
 
     def test_role_provides_uefi_network_security_and_persistence(self) -> None:
         role = (ROOT / "flake/modules/k3s-server.nix").read_text()
