@@ -4,3 +4,10 @@ metadata:
   name: external-secrets
   labels:
     app.kubernetes.io/managed-by: flux
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+  labels:
+    app.kubernetes.io/managed-by: flux
