@@ -98,5 +98,5 @@ nas_proof:
   script:
     - hostname
     - ip -4 -brief address show
-    - ping -c 2 -W 2 10.0.30.1
+    - ping -c 2 -W 2 8.8.8.8
     - ping -c 2 -W 2 10.0.30.11
