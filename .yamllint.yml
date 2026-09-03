@@ -1,0 +1,15 @@
+---
+extends: default
+
+ignore: |
+  .git/
+  .direnv/
+  .worktrees/
+  artifacts/
+  gitops/clusters/*/flux-system/gotk-*.yaml
+  **/*.sops.yaml
+
+rules:
+  document-start: disable
+  line-length:
+    max: 120

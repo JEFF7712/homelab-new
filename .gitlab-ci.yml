@@ -62,7 +62,10 @@ opnsense_plan:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
-    - test "$(nix develop ./flake -c python -c 'import json; print(str(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"]).lower())')" = true
+    - >-
+      test "$(nix develop ./flake -c python -c
+      'import json;print(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"])')"
+      = True
     - nix develop ./flake -c tofu -chdir=tofu/opnsense init -reconfigure
     - nix develop ./flake -c tofu -chdir=tofu/opnsense validate
     - nix develop ./flake -c tofu -chdir=tofu/opnsense plan -refresh-only -out=refresh-only.tfplan
@@ -84,10 +87,19 @@ opnsense_apply:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
   script:
-    - test "$(nix develop ./flake -c python -c 'import json; print(str(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"]).lower())')" = true
+    - >-
+      test "$(nix develop ./flake -c python -c
+      'import json;print(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"])')"
+      = True
     - nix develop ./flake -c tofu -chdir=tofu/opnsense init -reconfigure
     - nix develop ./flake -c tofu -chdir=tofu/opnsense apply desired.tfplan
-    - nix develop ./flake -c python -m opnsense_reconciler.reconcile --assignments opnsense_reconciler/assignments.json --inventory artifacts/opnsense/inventory.json --kea-interfaces opnsense_reconciler/kea-interfaces.json --bgp-neighbors opnsense_reconciler/bgp-neighbors.json --bgp-expected-routes opnsense_reconciler/bgp-expected-routes.json
+    - >-
+      nix develop ./flake -c python -m opnsense_reconciler.reconcile
+      --assignments opnsense_reconciler/assignments.json
+      --inventory artifacts/opnsense/inventory.json
+      --kea-interfaces opnsense_reconciler/kea-interfaces.json
+      --bgp-neighbors opnsense_reconciler/bgp-neighbors.json
+      --bgp-expected-routes opnsense_reconciler/bgp-expected-routes.json
 
 nas_proof:
   stage: test
