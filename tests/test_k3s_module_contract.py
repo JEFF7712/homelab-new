@@ -64,6 +64,21 @@ class K3sModuleContractTests(unittest.TestCase):
 
         self.assertIn("bootstrapCilium = true", primary)
 
+    def test_module_permits_pod_traffic_to_node_plane(self) -> None:
+        module = (ROOT / "flake/modules/k3s-server.nix").read_text()
+
+        for value in (
+            "--cluster-cidr=10.42.0.0/16",
+            "--service-cidr=10.43.0.0/16",
+            "ip saddr 10.42.0.0/16 tcp dport { 6443, 10250 } accept",
+            "extraReversePathFilterRules",
+            "clusterPoolIPv4PodCIDRList",
+            "ipv4NativeRoutingCIDR",
+            "replicas = 1;",
+        ):
+            with self.subTest(value=value):
+                self.assertIn(value, module)
+
 
 if __name__ == "__main__":
     unittest.main()

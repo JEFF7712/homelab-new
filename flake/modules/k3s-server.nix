@@ -79,10 +79,12 @@ in
       nftables.enable = true;
       firewall = {
         enable = true;
+        extraReversePathFilterRules = "ip saddr 10.42.0.0/16 accept";
         extraInputRules = ''
           ip saddr 10.0.10.0/24 tcp dport 22 accept
           ip saddr 10.0.30.0/24 tcp dport { 22, 179, 2379, 2380, 6443, 6444, 10250, 4240 } accept
           ip saddr 10.0.30.0/24 udp dport 8472 accept
+          ip saddr 10.42.0.0/16 tcp dport { 6443, 10250 } accept
         '';
       };
     };
@@ -149,6 +151,8 @@ in
         "--advertise-address=${cfg.nodeIp}"
         "--flannel-backend=none"
         "--disable-network-policy"
+        "--cluster-cidr=10.42.0.0/16"
+        "--service-cidr=10.43.0.0/16"
         "--disable-kube-proxy"
         "--disable=servicelb"
         "--disable=traefik"
@@ -177,9 +181,12 @@ in
           version = "1.20.1";
           valuesContent = builtins.toJSON {
             bgpControlPlane.enabled = true;
+            ipam.operator.clusterPoolIPv4PodCIDRList = [ "10.42.0.0/16" ];
+            ipv4NativeRoutingCIDR = "10.42.0.0/16";
             k8sServiceHost = "127.0.0.1";
             k8sServicePort = 6443;
             kubeProxyReplacement = true;
+            operator.replicas = 1;
           };
         };
       };
