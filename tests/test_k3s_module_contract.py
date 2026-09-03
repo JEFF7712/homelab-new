@@ -99,6 +99,8 @@ class K3sModuleContractTests(unittest.TestCase):
             "io.cilium/bgp-control-plane",
             "bgp-canary",
             "NET_BIND_SERVICE",
+            "ingressController.enabled = true",
+            "gatewayAPI.enabled = true",
         ):
             with self.subTest(value=value):
                 self.assertIn(value, module)

@@ -182,6 +182,8 @@ in
           version = "1.20.1";
           valuesContent = builtins.toJSON {
             bgpControlPlane.enabled = true;
+            gatewayAPI.enabled = true;
+            ingressController.enabled = true;
             ipam.operator.clusterPoolIPv4PodCIDRList = [ "10.42.0.0/16" ];
             ipv4NativeRoutingCIDR = "10.42.0.0/16";
             k8sServiceHost = "127.0.0.1";
