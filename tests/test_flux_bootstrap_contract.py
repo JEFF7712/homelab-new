@@ -23,7 +23,7 @@ class FluxBootstrapContractTests(unittest.TestCase):
         self.assertIn("version: ", release)
 
     def test_layers_chain_with_depends_on(self) -> None:
-        eso = (ROOT / "gitops/eso/kustomization.yaml").read_text()
+        eso = (ROOT / "gitops/clusters/homelab-01/eso.yaml").read_text()
         self.assertIn("dependsOn", eso)
         self.assertIn("name: secrets", eso)
 
