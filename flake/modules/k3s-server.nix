@@ -342,6 +342,7 @@ in
       curl
       ethtool
       kubectl
+      nfs-utils
       tcpdump
     ];
 

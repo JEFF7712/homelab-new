@@ -80,6 +80,10 @@ class K3sModuleContractTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertIn(value, module)
 
+    def test_nodes_carry_nfs_client_tooling(self) -> None:
+        module = (ROOT / "flake/modules/k3s-server.nix").read_text()
+        self.assertIn("nfs-utils", module)
+
     def test_module_declares_bgp_peering_and_canary(self) -> None:
         module = (ROOT / "flake/modules/k3s-server.nix").read_text()
 
