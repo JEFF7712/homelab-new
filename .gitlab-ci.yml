@@ -93,6 +93,8 @@ nas_proof:
   stage: test
   tags:
     - nas
+  variables:
+    GIT_STRATEGY: none
   script:
     - hostname
     - ip -4 -brief address show
