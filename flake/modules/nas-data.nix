@@ -79,7 +79,12 @@
           [
             bash
             coreutils
+            findutils
             git
+            gnugrep
+            gnused
+            gnutar
+            gzip
             nix
           ]
         );
