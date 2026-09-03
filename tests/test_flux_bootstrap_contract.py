@@ -37,8 +37,7 @@ class FluxBootstrapContractTests(unittest.TestCase):
             with self.subTest(path=str(path)):
                 self.assertNotRegex(path.read_text(), r"glpat-[A-Za-z0-9_-]{20,}")
 
-    def test_storage_layer_declares_nfs_provisioner(self) -> None:
-        release = (ROOT / "gitops/storage/nfs/release.yaml").read_text()
+    def test_storage_layer_declares_nfs_provisioner(self) -> None:        release = (ROOT / "gitops/storage/nfs/release.yaml").read_text()
         for value in (
             "chart: nfs-subdir-external-provisioner",
             "version: ",
@@ -51,6 +50,24 @@ class FluxBootstrapContractTests(unittest.TestCase):
 
         layer = (ROOT / "gitops/clusters/homelab-01/storage.yaml").read_text()
         self.assertIn("name: platform", layer)
+
+    def test_ingress_layer_declares_gateway_proof(self) -> None:
+        gatewayclass = (
+            ROOT / "gitops/ingress/gatewayclass.yaml"
+        ).read_text()
+        self.assertIn("kind: GatewayClass", gatewayclass)
+        self.assertIn("io.cilium/gateway-controller", gatewayclass)
+
+        gateway = (ROOT / "gitops/ingress/gateway.yaml").read_text()
+        self.assertIn("kind: Gateway", gateway)
+        self.assertIn("bgp-advertise", gateway)
+
+        route = (ROOT / "gitops/ingress/httproute.yaml").read_text()
+        self.assertIn("kind: HTTPRoute", route)
+        self.assertIn("bgp-canary", route)
+
+        layer = (ROOT / "gitops/clusters/homelab-01/ingress.yaml").read_text()
+        self.assertIn("name: ingress-crds", layer)
 
 
 if __name__ == "__main__":

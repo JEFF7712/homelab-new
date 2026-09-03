@@ -276,7 +276,6 @@ in
               stop = "10.0.40.19";
             }
           ];
-          serviceSelector.matchLabels.bgp-advertise = "true";
         };
       };
       bgp-canary.content = {
