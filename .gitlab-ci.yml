@@ -41,6 +41,8 @@ secret_scan:
 
 opnsense_inventory:
   stage: opnsense
+  tags:
+    - nas
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
@@ -52,6 +54,8 @@ opnsense_inventory:
 
 opnsense_plan:
   stage: opnsense
+  tags:
+    - nas
   variables:
     OPNSENSE_URI: $OPNSENSE_URL
     SSL_CERT_FILE: $OPNSENSE_CA_FILE
@@ -78,6 +82,8 @@ opnsense_plan:
 
 opnsense_apply:
   stage: opnsense
+  tags:
+    - nas
   needs:
     - job: opnsense_inventory
       artifacts: true
