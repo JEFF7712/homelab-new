@@ -19,7 +19,6 @@ class NasDataContractTests(unittest.TestCase):
             'mountpoint = "/tank/backups"',
             'mountpoint = "/tank/cluster"',
             'mountpoint = "/tank/attic"',
-            'mountpoint = "/tank/gitlab-runner"',
             'recordsize = "1M"',
         ):
             with self.subTest(value=value):
@@ -74,7 +73,6 @@ class NasDataContractTests(unittest.TestCase):
             '"tank/cluster".useTemplate = [ "operational" ]',
             '"tank/media".useTemplate = [ "weekly" ]',
             '"tank/attic".useTemplate = [ "weekly" ]',
-            '"tank/gitlab-runner".useTemplate = [ "weekly" ]',
         ):
             with self.subTest(value=value):
                 self.assertIn(value, role)
@@ -90,6 +88,8 @@ class NasDataContractTests(unittest.TestCase):
             'executor = "shell"',
             'buildsDir = "/tmp/gitlab-runner-builds"',
             '"OPNsense.internal"',
+            'DynamicUser = lib.mkForce false',
+            'User = "gitlab-runner"',
             "environmentVariables",
             "makeBinPath",
             "GIT_SSL_CAINFO",

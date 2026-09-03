@@ -75,11 +75,6 @@
           mountpoint = "/tank/attic";
           options.mountpoint = "legacy";
         };
-        gitlab-runner = {
-          type = "zfs_fs";
-          mountpoint = "/tank/gitlab-runner";
-          options.mountpoint = "legacy";
-        };
       };
     };
   };

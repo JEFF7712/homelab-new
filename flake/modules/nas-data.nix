@@ -55,7 +55,6 @@
       "tank/cluster".useTemplate = [ "operational" ];
       "tank/media".useTemplate = [ "weekly" ];
       "tank/attic".useTemplate = [ "weekly" ];
-      "tank/gitlab-runner".useTemplate = [ "weekly" ];
     };
   };
 
@@ -69,6 +68,22 @@
         path = "/tank/attic";
       };
     };
+  };
+
+  # The runner executes downloaded binaries (tofu providers) from its builds
+  # dir, so DynamicUser is a poor fit: its state mount is noexec and its
+  # recycled UID leaves job files owned by an unresolvable nobody alias.
+  # A static service user keeps ownership stable across restarts.
+  users.users.gitlab-runner = {
+    isSystemUser = true;
+    group = "gitlab-runner";
+  };
+  users.groups.gitlab-runner = { };
+
+  systemd.services.gitlab-runner.serviceConfig = {
+    DynamicUser = lib.mkForce false;
+    User = "gitlab-runner";
+    Group = "gitlab-runner";
   };
 
   services.gitlab-runner = {
