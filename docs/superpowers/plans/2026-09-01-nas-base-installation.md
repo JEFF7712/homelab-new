@@ -591,3 +591,9 @@ ip -brief address show enp5s0
 ```
 
 Expected: `nas-01` boots unattended at `10.0.30.20`, `zroot` is an online two-device mirror, both EFI partitions are mounted, persistent paths are ZFS-backed, and SSH plus disk-health services are active.
+
+### Field notes (2026-09-03 install)
+
+- GRUB must be EFI-only: `boot.loader.grub.devices = [ "nodev" ]`, otherwise the installer attempts an `i386-pc` install onto the GPT disk and fails. Contract-covered in `tests/test_nas_contract.py`.
+- Disko consumes the LUKS `passwordFile` without its trailing newline. The effective passphrase is `head -c 64` of the uploaded key file; keep this in mind for any later `cryptsetup` or `systemd-cryptenroll --unlock-key-file` invocation.
+- Before the first disk boot, export the pool from the installer (`zpool export zroot`, close the LUKS mappers). A pool left imported in the installer kernel is refused by the new system and drops it to emergency mode. TPM unlock itself worked on first try.
