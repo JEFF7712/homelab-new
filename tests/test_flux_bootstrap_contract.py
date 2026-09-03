@@ -37,6 +37,21 @@ class FluxBootstrapContractTests(unittest.TestCase):
             with self.subTest(path=str(path)):
                 self.assertNotRegex(path.read_text(), r"glpat-[A-Za-z0-9_-]{20,}")
 
+    def test_storage_layer_declares_nfs_provisioner(self) -> None:
+        release = (ROOT / "gitops/storage/nfs/release.yaml").read_text()
+        for value in (
+            "chart: nfs-subdir-external-provisioner",
+            "version: ",
+            "10.0.30.20",
+            "/tank/cluster",
+            "nfs-cluster",
+        ):
+            with self.subTest(value=value):
+                self.assertIn(value, release)
+
+        layer = (ROOT / "gitops/clusters/homelab-01/storage.yaml").read_text()
+        self.assertIn("name: platform", layer)
+
 
 if __name__ == "__main__":
     unittest.main()
