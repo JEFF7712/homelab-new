@@ -25,6 +25,18 @@ spec:
       auth_enabled: false
       storage:
         type: filesystem
+      schema_config:
+        configs:
+          - from: 2024-04-01
+            store: tsdb
+            object_store: filesystem
+            schema: v13
+            index:
+              prefix: index_
+              period: 24h
+      storage_config:
+        filesystem:
+          directory: /var/loki/chunks
     singleBinary:
       replicas: 1
       persistence:
