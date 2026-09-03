@@ -31,5 +31,6 @@
 - `tank` was created manually (`sgdisk` single `BF01` partition, `zpool create` with the declared options) rather than via a disko run, to avoid re-running disko against the live `zroot`. The disko declaration remains the reinstall source of truth.
 - The 2 TB backup disk partition identity held: `ata-ST2000DM008-2FR102_ZFL60NJG-part1`. Its existing Longhorn data is untouched; copies land in `photos/` and `documents/` subdirs only.
 - Appliance-side NFS mounts fail with a client `fsconfig()` error (its nfs-utils); server side verified via `showmount`, `exportfs`, and dataset mounts. Real client validation moves to the k3s nodes.
+- `authenticationTokenConfigFile` is sourced as shell: it must contain `CI_SERVER_URL="..."` and `CI_SERVER_TOKEN="..."` assignments, not the bare token. Runner state must stay out of impermanence (`DynamicUser` conflicts with the persisted bind mount).
 5. Verify: `zpool status tank`, `zfs list`, NFS mount from a k3s node, `sanoid --monitor-health`, Attic push/pull round-trip, one pipeline job on the NAS runner, manual `systemctl start nas-backup-2tb` plus a restore spot-check from `/mnt/backup-2tb`.
 6. Acceptance per the rebuild design spec: sample NFS PVC, etcd snapshot landing in `/tank/cluster`, and a NAS dataset restore all proven before old infrastructure is removed.
