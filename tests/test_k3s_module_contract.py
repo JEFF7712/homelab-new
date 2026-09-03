@@ -79,6 +79,24 @@ class K3sModuleContractTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertIn(value, module)
 
+    def test_module_declares_bgp_peering_and_canary(self) -> None:
+        module = (ROOT / "flake/modules/k3s-server.nix").read_text()
+
+        for value in (
+            "CiliumBGPClusterConfig",
+            "CiliumBGPPeerConfig",
+            "CiliumBGPAdvertisement",
+            "CiliumLoadBalancerIPPool",
+            "localASN = 64512",
+            "peerASN = 64513",
+            "peerAddress = \"10.0.30.1\";",
+            "10.0.40.10",
+            "io.cilium/bgp-control-plane",
+            "bgp-canary",
+        ):
+            with self.subTest(value=value):
+                self.assertIn(value, module)
+
 
 if __name__ == "__main__":
     unittest.main()

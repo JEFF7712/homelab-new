@@ -190,6 +190,119 @@ in
           };
         };
       };
+      bgp-peer.content = {
+        apiVersion = "cilium.io/v2alpha1";
+        kind = "CiliumBGPPeerConfig";
+        metadata.name = "homelab-peer-config";
+        spec.families = [
+          {
+            afi = "ipv4";
+            safi = "unicast";
+            advertisements.matchLabels.advertise = "bgp";
+          }
+        ];
+      };
+      bgp-cluster.content = {
+        apiVersion = "cilium.io/v2alpha1";
+        kind = "CiliumBGPClusterConfig";
+        metadata.name = "homelab-opnsense";
+        spec = {
+          nodeSelector.matchExpressions = [
+            {
+              key = "kubernetes.io/hostname";
+              operator = "In";
+              values = [ "homelab-01" "homelab-02" "homelab-03" ];
+            }
+          ];
+          bgpInstances = [
+            {
+              name = "homelab";
+              localASN = 64512;
+              localPort = 179;
+              peers = [
+                {
+                  name = "opnsense-vlan30";
+                  peerAddress = "10.0.30.1";
+                  peerASN = 64513;
+                  peerConfigRef.name = "homelab-peer-config";
+                }
+              ];
+            }
+          ];
+        };
+      };
+      bgp-advertisement.content = {
+        apiVersion = "cilium.io/v2alpha1";
+        kind = "CiliumBGPAdvertisement";
+        metadata = {
+          name = "homelab-lb";
+          labels.advertise = "bgp";
+        };
+        spec.advertisements = [
+          {
+            advertisementType = "Service";
+            service.addresses = [ "LoadBalancerIP" ];
+            selector.matchLabels.bgp-advertise = "true";
+          }
+        ];
+      };
+      lb-pool.content = {
+        apiVersion = "cilium.io/v2alpha1";
+        kind = "CiliumLoadBalancerIPPool";
+        metadata.name = "vlan40-pool";
+        spec = {
+          blocks = [
+            {
+              start = "10.0.40.10";
+              stop = "10.0.40.19";
+            }
+          ];
+          serviceSelector.matchLabels.bgp-advertise = "true";
+        };
+      };
+      bgp-canary.content = {
+        apiVersion = "v1";
+        kind = "List";
+        items = [
+          {
+            apiVersion = "apps/v1";
+            kind = "Deployment";
+            metadata = {
+              name = "bgp-canary";
+              namespace = "default";
+            };
+            spec = {
+              replicas = 1;
+              selector.matchLabels.app = "bgp-canary";
+              template = {
+                metadata.labels.app = "bgp-canary";
+                spec.containers = [
+                  {
+                    name = "web";
+                    image = "docker.io/library/nginx:1.27-alpine";
+                    ports = [ { containerPort = 80; } ];
+                  }
+                ];
+              };
+            };
+          }
+          {
+            apiVersion = "v1";
+            kind = "Service";
+            metadata = {
+              name = "bgp-canary";
+              namespace = "default";
+              labels.bgp-advertise = "true";
+            };
+            spec = {
+              type = "LoadBalancer";
+              loadBalancerClass = "io.cilium/bgp-control-plane";
+              selector.app = "bgp-canary";
+              ports = [ { port = 80; } ];
+            };
+          }
+        ];
+      };
     };
 
     systemd.tmpfiles.rules = [
