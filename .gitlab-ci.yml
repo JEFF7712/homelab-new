@@ -88,3 +88,13 @@ opnsense_apply:
     - nix develop ./flake -c tofu -chdir=tofu/opnsense init -reconfigure
     - nix develop ./flake -c tofu -chdir=tofu/opnsense apply desired.tfplan
     - nix develop ./flake -c python -m opnsense_reconciler.reconcile --assignments opnsense_reconciler/assignments.json --inventory artifacts/opnsense/inventory.json --kea-interfaces opnsense_reconciler/kea-interfaces.json --bgp-neighbors opnsense_reconciler/bgp-neighbors.json --bgp-expected-routes opnsense_reconciler/bgp-expected-routes.json
+
+nas_proof:
+  stage: test
+  tags:
+    - nas
+  script:
+    - hostname
+    - ip -4 -brief address show
+    - ping -c 2 -W 2 10.0.30.1
+    - ping -c 2 -W 2 10.0.30.11
