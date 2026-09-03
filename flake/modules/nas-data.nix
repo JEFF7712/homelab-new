@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   networking.firewall.allowedTCPPorts = [
     2049
@@ -67,16 +67,26 @@
 
   services.gitlab-runner = {
     enable = true;
-    # Shell jobs inherit the daemon PATH, which is minimal by default.
-    # The runner must check out repos and drive the flake, so provide git and nix here.
-    extraPackages = with pkgs; [
-      cacert
-      git
-      nix
-    ];
     services.nas = {
       executor = "shell";
       authenticationTokenConfigFile = "/persist/gitlab-runner/authentication-token";
+      # Shell jobs do not inherit the daemon PATH, so pin the tools CI jobs need
+      # (checkout via git, then `nix develop`) into the build environment.
+      # NOTE: applied at registration time; re-register the runner after changing this.
+      environmentVariables = {
+        PATH = lib.makeBinPath (
+          with pkgs;
+          [
+            bash
+            coreutils
+            git
+            nix
+          ]
+        );
+        GIT_SSL_CAINFO = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+        CURL_CA_BUNDLE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+        NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+      };
     };
   };
 
