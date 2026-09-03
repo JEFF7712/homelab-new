@@ -27,7 +27,12 @@ spec:
           }
 
           loki.source.kubernetes "pods" {
+            targets    = discovery.kubernetes.pods.targets
             forward_to = [loki.write.local.receiver]
+          }
+
+          discovery.kubernetes "pods" {
+            role = "pod"
           }
 
           loki.source.journal "journal" {
