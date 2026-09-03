@@ -191,6 +191,22 @@ firewall_filters = {
       destination = { net = "10.0.40.0/24", port = "" }
     }
   }
+  infrastructure-allow-bgp = {
+    description = "Allow infrastructure BGP to OPNsense"
+    enabled     = true
+    sequence    = 315
+    interface   = { interface = ["opt3"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet"
+      protocol    = "TCP"
+      quick       = true
+      log         = true
+      source      = { net = "10.0.30.0/24", port = "" }
+      destination = { net = "10.0.30.1", port = "179" }
+    }
+  }
   infrastructure-block-private = {
     description = "Block infrastructure from initiating to other private VLANs"
     enabled     = true
