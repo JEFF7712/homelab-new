@@ -7,6 +7,7 @@
       grub = {
         enable = true;
         efiSupport = true;
+        devices = [ "nodev" ];
         mirroredBoots = [
           {
             path = "/boot";

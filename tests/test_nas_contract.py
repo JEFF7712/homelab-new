@@ -56,6 +56,7 @@ class NasContractTests(unittest.TestCase):
             "services.smartd",
             "services.zfs.autoScrub",
             "services.zfs.trim",
+            'devices = [ "nodev" ]',
             'path = "/boot"',
             'path = "/boot-fallback"',
         ):
