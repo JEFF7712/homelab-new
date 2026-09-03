@@ -105,7 +105,6 @@
 
   environment.persistence."/persist".directories = [
     "/var/lib/nfs"
-    "/var/lib/gitlab-runner"
   ];
 
   environment.systemPackages = with pkgs; [ rsync ];
