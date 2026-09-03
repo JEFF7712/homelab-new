@@ -6,7 +6,6 @@ secrets/keys/
 *.decrypted.yml
 *.decrypted.json
 .env
-.envrc
 __pycache__/
 .pytest_cache/
 .mypy_cache/
