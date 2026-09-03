@@ -88,6 +88,7 @@ class NasDataContractTests(unittest.TestCase):
             "services.gitlab-runner",
             'authenticationTokenConfigFile = "/persist/gitlab-runner/authentication-token"',
             'executor = "shell"',
+            "extraPackages",
             "ata-ST2000DM008-2FR102_ZFL60NJG-part1",
             "nas-backup-2tb",
             "OnCalendar = \"daily\"",

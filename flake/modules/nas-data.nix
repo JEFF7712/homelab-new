@@ -67,6 +67,13 @@
 
   services.gitlab-runner = {
     enable = true;
+    # Shell jobs inherit the daemon PATH, which is minimal by default.
+    # The runner must check out repos and drive the flake, so provide git and nix here.
+    extraPackages = with pkgs; [
+      cacert
+      git
+      nix
+    ];
     services.nas = {
       executor = "shell";
       authenticationTokenConfigFile = "/persist/gitlab-runner/authentication-token";
