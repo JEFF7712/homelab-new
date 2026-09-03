@@ -186,7 +186,7 @@ in
             k8sServiceHost = "127.0.0.1";
             k8sServicePort = 6443;
             kubeProxyReplacement = true;
-            operator.replicas = 1;
+            operator.replicas = 2;
           };
         };
       };

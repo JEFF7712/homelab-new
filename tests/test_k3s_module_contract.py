@@ -74,7 +74,7 @@ class K3sModuleContractTests(unittest.TestCase):
             "extraReversePathFilterRules",
             "clusterPoolIPv4PodCIDRList",
             "ipv4NativeRoutingCIDR",
-            "replicas = 1;",
+            "replicas = 2;",
         ):
             with self.subTest(value=value):
                 self.assertIn(value, module)
