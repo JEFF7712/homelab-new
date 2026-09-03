@@ -88,6 +88,7 @@ class NasDataContractTests(unittest.TestCase):
             "services.gitlab-runner",
             'authenticationTokenConfigFile = "/persist/gitlab-runner/authentication-token"',
             'executor = "shell"',
+            'buildsDir = "/tmp/gitlab-runner-builds"',
             "environmentVariables",
             "makeBinPath",
             "GIT_SSL_CAINFO",

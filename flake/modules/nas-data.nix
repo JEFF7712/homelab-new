@@ -70,6 +70,11 @@
     services.nas = {
       executor = "shell";
       authenticationTokenConfigFile = "/persist/gitlab-runner/authentication-token";
+      # Builds must live outside the DynamicUser state dir: systemd mounts it
+      # noexec, which breaks any tool that executes downloaded binaries there
+      # (e.g. tofu provider plugins). /tmp is exec-capable and writable.
+      # NOTE: applied at registration time; re-register the runner after changing this.
+      buildsDir = "/tmp/gitlab-runner-builds";
       # Shell jobs do not inherit the daemon PATH, so pin the tools CI jobs need
       # (checkout via git, then `nix develop`) into the build environment.
       # NOTE: applied at registration time; re-register the runner after changing this.
