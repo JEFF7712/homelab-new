@@ -36,8 +36,8 @@ class NasDataContractTests(unittest.TestCase):
         disk = (ROOT / "flake/hosts/nas-01/tank-config.nix").read_text()
 
         self.assertEqual(disk.count('encryption = "aes-256-gcm"'), 2)
-        self.assertIn("keylocation = \"file:///tmp/nas-01-tank-photos.key\"", disk)
-        self.assertIn("keylocation = \"file:///tmp/nas-01-tank-documents.key\"", disk)
+        self.assertIn("keylocation = \"file:///persist/keys/tank-photos.key\"", disk)
+        self.assertIn("keylocation = \"file:///persist/keys/tank-documents.key\"", disk)
         self.assertNotIn("/persist", disk)
 
     def test_nfs_exports_only_intended_datasets(self) -> None:

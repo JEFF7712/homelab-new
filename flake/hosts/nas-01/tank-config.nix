@@ -47,7 +47,7 @@
             mountpoint = "legacy";
             encryption = "aes-256-gcm";
             keyformat = "passphrase";
-            keylocation = "file:///tmp/nas-01-tank-photos.key";
+            keylocation = "file:///persist/keys/tank-photos.key";
           };
         };
         documents = {
@@ -57,7 +57,7 @@
             mountpoint = "legacy";
             encryption = "aes-256-gcm";
             keyformat = "passphrase";
-            keylocation = "file:///tmp/nas-01-tank-documents.key";
+            keylocation = "file:///persist/keys/tank-documents.key";
           };
         };
         backups = {

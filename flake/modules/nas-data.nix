@@ -98,6 +98,7 @@
   systemd.tmpfiles.rules = [
     "d /persist/attic 0700 root root -"
     "d /persist/gitlab-runner 0700 root root -"
+    "d /persist/keys 0700 root root -"
     "d /mnt/backup-2tb/photos 0755 root root -"
     "d /mnt/backup-2tb/documents 0755 root root -"
   ];

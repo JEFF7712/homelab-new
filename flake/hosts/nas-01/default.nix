@@ -2,7 +2,9 @@
   imports = [
     ./disk-config.nix
     ./hardware-configuration.nix
+    ./tank-config.nix
     ../../modules/nas-base.nix
+    ../../modules/nas-data.nix
   ];
 
   networking.hostName = "nas-01";
