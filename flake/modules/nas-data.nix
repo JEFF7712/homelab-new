@@ -19,7 +19,7 @@
     exports = ''
       /tank/media     10.0.30.0/24(rw,sync,no_subtree_check) 10.0.10.0/24(ro,sync,no_subtree_check)
       /tank/backups   10.0.30.0/24(rw,sync,no_subtree_check)
-      /tank/cluster   10.0.30.0/24(rw,sync,no_subtree_check)
+      /tank/cluster   10.0.30.0/24(rw,sync,no_subtree_check,no_root_squash)
     '';
   };
 

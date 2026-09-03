@@ -48,6 +48,7 @@ class NasDataContractTests(unittest.TestCase):
             "/tank/backups",
             "/tank/cluster",
             "10.0.30.0/24(rw,sync,no_subtree_check)",
+            "/tank/cluster   10.0.30.0/24(rw,sync,no_subtree_check,no_root_squash)",
             "10.0.10.0/24(ro,sync,no_subtree_check)",
         ):
             with self.subTest(value=value):
