@@ -17,6 +17,7 @@ class FlakeContractTests(unittest.TestCase):
             "yamllint",
             "kubeconform",
             "gitleaks",
+            "glab",
             "pyright",
             "ruff",
         ):

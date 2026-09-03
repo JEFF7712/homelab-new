@@ -74,6 +74,7 @@
             age
             git
             gitleaks
+            glab
             kubeconform
             kubectl
             kubernetes-helm
