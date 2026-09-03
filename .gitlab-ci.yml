@@ -57,9 +57,12 @@ opnsense_plan:
   tags:
     - nas
   variables:
-    OPNSENSE_URI: $OPNSENSE_URL
+    # The firewall serves its default self-signed cert (SAN: OPNsense.internal,
+    # no IP SANs) and the tofu provider has no TLS server-name override, so it
+    # must address the firewall by its certificate DNS name, not the IP literal.
+    OPNSENSE_URI: "https://OPNsense.internal"
     SSL_CERT_FILE: $OPNSENSE_CA_FILE
-    TF_VAR_opnsense_uri: $OPNSENSE_URL
+    TF_VAR_opnsense_uri: "https://OPNsense.internal"
   needs:
     - job: opnsense_inventory
       artifacts: true
@@ -84,6 +87,9 @@ opnsense_apply:
   stage: opnsense
   tags:
     - nas
+  variables:
+    OPNSENSE_URI: "https://OPNsense.internal"
+    SSL_CERT_FILE: $OPNSENSE_CA_FILE
   needs:
     - job: opnsense_inventory
       artifacts: true

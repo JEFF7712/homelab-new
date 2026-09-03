@@ -5,6 +5,12 @@
     8080
   ];
 
+  # The OPNsense API cert only carries DNS:OPNsense.internal (no IP SANs), so
+  # CI jobs on this host must resolve that name to reach the firewall by TLS.
+  networking.hosts = {
+    "192.168.1.1" = [ "OPNsense.internal" ];
+  };
+
   fileSystems."/mnt/backup-2tb" = {
     device = "/dev/disk/by-id/ata-ST2000DM008-2FR102_ZFL60NJG-part1";
     fsType = "xfs";
