@@ -1,0 +1,26 @@
+[
+  {
+    "address": "10.0.30.11",
+    "description": "cilium-homelab-01",
+    "enabled": "1",
+    "nexthopself": "1",
+    "remoteas": "64512",
+    "updatesource": "opt3"
+  },
+  {
+    "address": "10.0.30.12",
+    "description": "cilium-homelab-02",
+    "enabled": "1",
+    "nexthopself": "1",
+    "remoteas": "64512",
+    "updatesource": "opt3"
+  },
+  {
+    "address": "10.0.30.13",
+    "description": "cilium-homelab-03",
+    "enabled": "1",
+    "nexthopself": "1",
+    "remoteas": "64512",
+    "updatesource": "opt3"
+  }
+]
