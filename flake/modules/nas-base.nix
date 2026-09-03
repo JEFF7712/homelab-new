@@ -38,6 +38,7 @@
       enable = true;
       extraInputRules = ''
         ip saddr 10.0.10.0/24 tcp dport 22 accept
+        ip saddr 10.0.30.0/24 tcp dport 22 accept
         ip saddr 100.64.0.0/10 tcp dport 22 accept
       '';
     };

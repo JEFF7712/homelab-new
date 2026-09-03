@@ -56,6 +56,7 @@ class NasContractTests(unittest.TestCase):
             "services.smartd",
             "services.zfs.autoScrub",
             "services.zfs.trim",
+            "ip saddr 10.0.30.0/24 tcp dport 22 accept",
             'devices = [ "nodev" ]',
             'path = "/boot"',
             'path = "/boot-fallback"',
