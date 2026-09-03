@@ -71,6 +71,7 @@ class K3sModuleContractTests(unittest.TestCase):
             "--cluster-cidr=10.42.0.0/16",
             "--service-cidr=10.43.0.0/16",
             "ip saddr 10.42.0.0/16 tcp dport { 6443, 10250 } accept",
+            "ip saddr 10.0.10.0/24 tcp dport 6443 accept",
             "extraReversePathFilterRules",
             "clusterPoolIPv4PodCIDRList",
             "ipv4NativeRoutingCIDR",
