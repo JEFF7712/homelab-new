@@ -187,6 +187,22 @@ in
             k8sServicePort = 6443;
             kubeProxyReplacement = true;
             operator.replicas = 2;
+            securityContext.capabilities.ciliumAgent = [
+              "CHOWN"
+              "KILL"
+              "NET_ADMIN"
+              "NET_RAW"
+              "IPC_LOCK"
+              "SYS_MODULE"
+              "SYS_ADMIN"
+              "SYS_RESOURCE"
+              "DAC_OVERRIDE"
+              "FOWNER"
+              "SETGID"
+              "SETUID"
+              "SYSLOG"
+              "NET_BIND_SERVICE"
+            ];
           };
         };
       };

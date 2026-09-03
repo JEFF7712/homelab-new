@@ -93,6 +93,7 @@ class K3sModuleContractTests(unittest.TestCase):
             "10.0.40.10",
             "io.cilium/bgp-control-plane",
             "bgp-canary",
+            "NET_BIND_SERVICE",
         ):
             with self.subTest(value=value):
                 self.assertIn(value, module)
