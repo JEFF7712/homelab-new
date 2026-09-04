@@ -11,7 +11,7 @@ spec:
       protocol: HTTP
       allowedRoutes:
         namespaces:
-          from: Same
+          from: All
   infrastructure:
     labels:
       bgp-advertise: "true"
