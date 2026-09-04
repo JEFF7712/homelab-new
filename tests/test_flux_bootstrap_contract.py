@@ -67,8 +67,33 @@ class FluxBootstrapContractTests(unittest.TestCase):
         self.assertIn("kind: HTTPRoute", route)
         self.assertIn("bgp-canary", route)
 
+        grafana = (ROOT / "gitops/ingress/grafana.yaml").read_text()
+        self.assertIn("grafana.homelab", grafana)
+
         layer = (ROOT / "gitops/clusters/homelab-01/ingress.yaml").read_text()
         self.assertIn("name: ingress-crds", layer)
+
+    def test_observability_layer_declares_lightweight_stack(self) -> None:
+        kps = (ROOT / "gitops/observability/kube-prometheus-stack/release.yaml").read_text()
+        for value in (
+            "chart: kube-prometheus-stack",
+            "version: ",
+            "retention: 7d",
+            "nfs-cluster",
+            "existingSecret: grafana-admin-creds",
+        ):
+            with self.subTest(value=value):
+                self.assertIn(value, kps)
+
+        loki = (ROOT / "gitops/observability/loki/release.yaml").read_text()
+        self.assertIn("SingleBinary", loki)
+        self.assertIn("auth_enabled: false", loki)
+
+        alloy = (ROOT / "gitops/observability/alloy/release.yaml").read_text()
+        self.assertIn("daemonset", alloy.lower())
+
+        layer = (ROOT / "gitops/clusters/homelab-01/observability.yaml").read_text()
+        self.assertIn("name: storage", layer)
 
 
 if __name__ == "__main__":

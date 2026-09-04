@@ -4,3 +4,5 @@ resources:
   - gatewayclass.yaml
   - gateway.yaml
   - httproute.yaml
+  - grafana.yaml
+  - referencegrant.yaml
