@@ -90,6 +90,8 @@ class NasDataContractTests(unittest.TestCase):
             '"OPNsense.internal"',
             'DynamicUser = lib.mkForce false',
             'User = "gitlab-runner"',
+            '"network-online.target"',
+            'Restart = "on-failure"',
             "environmentVariables",
             "makeBinPath",
             "GIT_SSL_CAINFO",

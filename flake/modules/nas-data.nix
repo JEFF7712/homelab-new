@@ -80,10 +80,16 @@
   };
   users.groups.gitlab-runner = { };
 
-  systemd.services.gitlab-runner.serviceConfig = {
-    DynamicUser = lib.mkForce false;
-    User = "gitlab-runner";
-    Group = "gitlab-runner";
+  systemd.services.gitlab-runner = {
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    serviceConfig = {
+      DynamicUser = lib.mkForce false;
+      User = "gitlab-runner";
+      Group = "gitlab-runner";
+      Restart = "on-failure";
+      RestartSec = "30s";
+    };
   };
 
   services.gitlab-runner = {
