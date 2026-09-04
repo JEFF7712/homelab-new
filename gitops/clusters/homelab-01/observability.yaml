@@ -17,7 +17,3 @@ spec:
       kind: Deployment
       name: kube-prometheus-stack-grafana
       namespace: observability
-    - apiVersion: apps/v1
-      kind: StatefulSet
-      name: loki
-      namespace: observability
