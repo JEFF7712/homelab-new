@@ -77,7 +77,7 @@ All NixOS hosts use explicit persistence and ephemeral roots. SSH host keys, SOP
 | `k3s-server-02` | CLI ar9070 | LUKS2 and Btrfs impermanence; local SSD for embedded-etcd member data |
 | `k3s-server-03` | CLI ar9070 | LUKS2 and Btrfs impermanence; local SSD for embedded-etcd member data |
 
-`tank` ZFS datasets are `media`, `photos`, `documents`, `backups`, `cluster`, `attic`, and `gitlab-runner`. `photos` and `documents` retain 48 hourly, 30 daily, and 12 monthly snapshots and copy daily to the 2 TB disk. `backups` and `cluster` retain 30 daily snapshots. `media`, `attic`, and `gitlab-runner` retain seven daily snapshots and are not copied to the 2 TB disk. `tank` is not a redundant storage pool until the second 10 TB disk has been attached.
+`tank` ZFS datasets are `media`, `photos`, `documents`, `backups`, `cluster`, and `attic`. `photos` and `documents` retain 48 hourly, 30 daily, and 12 monthly snapshots and copy daily to the 2 TB disk. `backups` and `cluster` retain 30 daily snapshots. `media` and `attic` retain seven daily snapshots and are not copied to the 2 TB disk. `tank` is not a redundant storage pool until the second 10 TB disk has been attached. (The planned `gitlab-runner` dataset was dropped: CI builds run from the runner's exec-capable `/tmp`, so there is nothing worth snapshotting.)
 
 NFS is the default Kubernetes storage medium. PostgreSQL and other fsync-heavy databases use Mini-local volumes and are independently backed up to the NAS. The NAS is never a Kubernetes node.
 

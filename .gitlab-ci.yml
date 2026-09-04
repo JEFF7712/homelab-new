@@ -100,6 +100,10 @@ opnsense_apply:
       when: manual
   script:
     - >-
+      nix develop ./flake -c tofu -chdir=tofu/opnsense show -json desired.tfplan
+      > /tmp/desired.json && nix develop ./flake -c python -m
+      opnsense_reconciler.check_plan --plan /tmp/desired.json --expect-uri "$OPNSENSE_URI"
+    - >-
       test "$(nix develop ./flake -c python -c
       'import json;print(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"])')"
       = True
