@@ -18,6 +18,9 @@ spec:
   upgrade:
     crds: CreateReplace
   values:
+    crds:
+      enabled: true
+      keep: true
     prometheus:
       enabled: true
       servicemonitor:
