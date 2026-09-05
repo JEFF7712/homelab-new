@@ -57,6 +57,8 @@ class ApplianceContractTests(unittest.TestCase):
         self.assertIn("services.adguardhome", role)
         self.assertIn('host = "10.0.30.10"', role)
         self.assertIn('"https://dns.quad9.net/dns-query"', role)
+        self.assertIn('domain = "grafana.homelab"', role)
+        self.assertIn('answer = "10.0.40.13"', role)
         self.assertIn('useRoutingFeatures = "server"', role)
         self.assertIn('mutableSettings = false', role)
         self.assertIn('PasswordAuthentication = false', role)
