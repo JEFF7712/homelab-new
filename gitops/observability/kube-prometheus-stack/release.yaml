@@ -54,7 +54,7 @@ spec:
         receivers:
           - name: ntfy
             webhook_configs:
-              - url: http://ntfy.observability.svc.cluster.local/homelab-alerts
+              - url: http://ntfy-ntfy.observability.svc.cluster.local/homelab-alerts
           - name: "null"
     grafana:
       replicas: 1
