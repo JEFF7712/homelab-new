@@ -134,6 +134,8 @@ deploy_host:
   stage: deploy
   tags:
     - nas
+  needs:
+    - repository_tests
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
