@@ -1,17 +1,19 @@
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
-  name: eso-canary
-  namespace: external-secrets
+  name: cloudflare-api-token
+  namespace: cert-manager
 spec:
   refreshInterval: 1h
   secretStoreRef:
     kind: ClusterSecretStore
     name: gitlab-project
   target:
-    name: eso-canary
+    name: cloudflare-api-token
     creationPolicy: Owner
+    template:
+      type: Opaque
   data:
-    - secretKey: canary
+    - secretKey: api-token
       remoteRef:
-        key: FLUX_ESO_CANARY
+        key: CF_API_TOKEN
