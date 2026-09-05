@@ -35,7 +35,8 @@ spec:
       storage:
         type: filesystem
         filesystem:
-          directory: /var/loki/chunks
+          chunks_directory: /var/loki/chunks
+          rules_directory: /var/loki/rules
     singleBinary:
       replicas: 1
       persistence:
