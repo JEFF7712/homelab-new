@@ -6,3 +6,4 @@ resources:
   - loki/repository.yaml
   - loki/release.yaml
   - alloy/release.yaml
+  - grafana/service.yaml
