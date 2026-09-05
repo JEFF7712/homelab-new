@@ -50,6 +50,8 @@ spec:
                       key: r2-secret-access-key
                 - name: AWS_DEFAULT_REGION
                   value: us-east-1
+                - name: HOME
+                  value: /tmp
               command:
                 - /bin/sh
                 - -c
@@ -65,13 +67,9 @@ spec:
                   readOnly: true
                 - name: tmp
                   mountPath: /tmp
-                - name: cache
-                  mountPath: /home/restic/.cache
           volumes:
             - name: dumps
               persistentVolumeClaim:
                 claimName: db-dumps
             - name: tmp
-              emptyDir: {}
-            - name: cache
               emptyDir: {}

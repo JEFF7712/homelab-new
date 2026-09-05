@@ -38,6 +38,8 @@ spec:
                     secretKeyRef:
                       name: immich-backup-secrets
                       key: restic-password
+                - name: HOME
+                  value: /tmp
               command:
                 - /bin/sh
                 - -c
@@ -54,8 +56,6 @@ spec:
                   mountPath: /repo
                 - name: tmp
                   mountPath: /tmp
-                - name: cache
-                  mountPath: /home/restic/.cache
           volumes:
             - name: library
               persistentVolumeClaim:
@@ -64,6 +64,4 @@ spec:
               persistentVolumeClaim:
                 claimName: immich-local-repo
             - name: tmp
-              emptyDir: {}
-            - name: cache
               emptyDir: {}
