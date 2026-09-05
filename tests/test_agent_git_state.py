@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 
@@ -180,6 +181,126 @@ class GitStateTest(unittest.TestCase):
                     self.assertEqual(raised.exception.base, base)
                     self.assertIn("git base", str(raised.exception).lower())
                     self.assertIn("unavailable", str(raised.exception).lower())
+
+    def test_conflicted_index_has_a_stable_fingerprint(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-git-conflict-") as directory:
+            repository = make_repository(Path(directory))
+            target = repository / "conflict.txt"
+            target.write_bytes(b"initial")
+            commit(repository, "initial")
+            git(repository, "checkout", "-qb", "other")
+            target.write_bytes(b"other")
+            commit(repository, "other")
+            git(repository, "checkout", "-q", "main")
+            target.write_bytes(b"main")
+            commit(repository, "main")
+            result = subprocess.run(
+                ["git", "merge", "other"],
+                cwd=repository,
+                capture_output=True,
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 0)
+
+            first = collect_git_state(repository)
+            second = collect_git_state(repository)
+
+        self.assertTrue(first.dirty)
+        self.assertIn(
+            ("conflict.txt", ChangeKind.UNMERGED, ChangeSource.INDEX),
+            {(change.path, change.kind, change.source) for change in first.changes},
+        )
+        self.assertEqual(first.fingerprint, second.fingerprint)
+
+    def test_worktree_symlink_target_is_fingerprinted_without_following_it(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-git-symlink-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "base-target").write_bytes(b"same content")
+            (repository / "first-target").write_bytes(b"same content")
+            (repository / "second-target").write_bytes(b"same content")
+            link = repository / "link"
+            link.symlink_to("base-target")
+            commit(repository, "initial")
+            link.unlink()
+            link.symlink_to("first-target")
+            first = collect_git_state(repository)
+            link.unlink()
+            link.symlink_to("second-target")
+
+            second = collect_git_state(repository)
+
+        self.assertNotEqual(first.fingerprint, second.fingerprint)
+        self.assertIn(
+            ("link", ChangeKind.MODIFIED, ChangeSource.WORKTREE),
+            {(change.path, change.kind, change.source) for change in second.changes},
+        )
+
+    def test_worktree_symlink_to_directory_does_not_raise(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-git-symlink-dir-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "first-directory").mkdir()
+            (repository / "second-directory").mkdir()
+            link = repository / "directory-link"
+            link.symlink_to("first-directory", target_is_directory=True)
+            commit(repository, "initial")
+            link.unlink()
+            link.symlink_to("second-directory", target_is_directory=True)
+
+            state = collect_git_state(repository)
+
+        self.assertTrue(state.dirty)
+        self.assertIn(
+            ("directory-link", ChangeKind.MODIFIED, ChangeSource.WORKTREE),
+            {(change.path, change.kind, change.source) for change in state.changes},
+        )
+
+    def test_modified_gitlink_does_not_read_its_directory_as_a_file(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-git-gitlink-") as directory:
+            root = Path(directory)
+            nested = root / "nested"
+            nested.mkdir()
+            make_repository(nested)
+            (nested / "tracked.txt").write_bytes(b"first")
+            commit(nested, "first")
+            (nested / "tracked.txt").write_bytes(b"second")
+            commit(nested, "second")
+            repository = root / "super"
+            repository.mkdir()
+            make_repository(repository)
+            git(
+                repository,
+                "-c",
+                "protocol.file.allow=always",
+                "submodule",
+                "add",
+                "-q",
+                str(nested),
+                "module",
+            )
+            git(repository / "module", "checkout", "-q", "HEAD~1")
+            commit(repository, "initial submodule")
+            clean = collect_git_state(repository)
+            git(repository / "module", "checkout", "-q", "main")
+
+            changed = collect_git_state(repository)
+
+        self.assertNotEqual(clean.fingerprint, changed.fingerprint)
+        self.assertIn(
+            ("module", ChangeKind.MODIFIED, ChangeSource.WORKTREE),
+            {(change.path, change.kind, change.source) for change in changed.changes},
+        )
+
+    def test_repository_root_with_newline_is_preserved(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-git-root-") as directory:
+            repository = Path(directory) / "repository\n"
+            repository.mkdir()
+            make_repository(repository)
+            (repository / "tracked.txt").write_bytes(b"tracked")
+            commit(repository, "initial")
+
+            state = collect_git_state(repository)
+
+        self.assertEqual(state.root, repository.resolve())
 
 
 if __name__ == "__main__":

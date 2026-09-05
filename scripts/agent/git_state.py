@@ -4,6 +4,7 @@ import hashlib
 import os
 from pathlib import Path
 import posixpath
+import stat
 import subprocess
 
 from .models import ChangeCounts, ChangedPath, ChangeKind, ChangeSource, GitBase, GitState
@@ -41,6 +42,10 @@ def _normalise_path(path: bytes) -> bytes:
     if normalised == b".":
         raise GitStateError("git returned an empty repository path")
     return normalised.removeprefix(b"./")
+
+
+def _without_output_terminator(output: bytes) -> bytes:
+    return output[:-1] if output.endswith(b"\n") else output
 
 
 def _excluded(path: bytes) -> bool:
@@ -134,24 +139,94 @@ def _base_state(root: Path, head: str | None, base: str | None) -> GitBase:
     resolved = _git("rev-parse", "--verify", "--quiet", f"{base}^{{commit}}", cwd=root, allow_failure=True)
     if not resolved:
         raise GitBaseError(base, f"Git base '{base}' is unavailable. Fetch or choose a valid commit.")
-    resolved_base = resolved.rstrip(b"\n").decode("ascii")
+    resolved_base = _without_output_terminator(resolved).decode("ascii")
     merge_base = _git("merge-base", resolved_base, head, cwd=root, allow_failure=True)
     if not merge_base:
         raise GitBaseError(base, f"Git base '{base}' has no merge base with HEAD.")
-    return GitBase(True, base, resolved_base, merge_base.rstrip(b"\n").decode("ascii"))
+    return GitBase(
+        True,
+        base,
+        resolved_base,
+        _without_output_terminator(merge_base).decode("ascii"),
+    )
+
+
+def _index_entries(root: Path, path: bytes) -> tuple[tuple[bytes, bytes, bytes], ...]:
+    output = _git(
+        "ls-files",
+        "--stage",
+        "-z",
+        "--",
+        _decode_path(path),
+        cwd=root,
+    )
+    entries = []
+    for record in output.split(b"\0"):
+        metadata, separator, _ = record.partition(b"\t")
+        if not separator:
+            continue
+        fields = metadata.split(b" ")
+        if len(fields) != 3:
+            raise GitStateError("git returned an invalid index entry")
+        entries.append((fields[0], fields[1], fields[2]))
+    return tuple(entries)
+
+
+def _conflict_content(root: Path, path: bytes) -> bytes:
+    entries = _index_entries(root, path)
+    stages = sorted(stage + b":" + object_id for _, object_id, stage in entries)
+    if not stages:
+        raise GitStateError("git returned no conflict stages for an unmerged path")
+    return b"unmerged\0" + b"\0".join(stages)
+
+
+def _gitlink_content(target: Path) -> bytes:
+    head = _git("rev-parse", "--verify", "HEAD", cwd=target, allow_failure=True)
+    if not head:
+        raise GitStateError(f"gitlink '{target}' has no checked out commit")
+    status = _git("status", "--porcelain=v1", "-z", cwd=target)
+    return b"gitlink\0" + _without_output_terminator(head) + b"\0" + hashlib.sha256(status).digest()
+
+
+def _worktree_content(root: Path, change: ChangedPath) -> bytes | None:
+    target = root / os.fsdecode(change.path_bytes)
+    try:
+        metadata = target.lstat()
+    except FileNotFoundError:
+        return None
+    except OSError as error:
+        raise GitStateError(f"cannot inspect working path '{change.path}': {error}") from error
+    if stat.S_ISLNK(metadata.st_mode):
+        try:
+            return b"symlink\0" + os.fsencode(os.readlink(target))
+        except OSError as error:
+            raise GitStateError(f"cannot read symlink '{change.path}': {error}") from error
+    if stat.S_ISREG(metadata.st_mode):
+        try:
+            return b"file\0" + target.read_bytes()
+        except OSError as error:
+            raise GitStateError(f"cannot read working path '{change.path}': {error}") from error
+    if stat.S_ISDIR(metadata.st_mode):
+        entries = _index_entries(root, change.path_bytes)
+        if any(mode == b"160000" for mode, _, _ in entries):
+            return _gitlink_content(target)
+        return b"directory\0"
+    return b"special\0" + str(metadata.st_mode).encode("ascii")
 
 
 def _content(root: Path, change: ChangedPath) -> bytes | None:
+    if change.kind == ChangeKind.UNMERGED:
+        return _conflict_content(root, change.path_bytes)
     if change.kind == ChangeKind.DELETED:
         return None
     if change.source in (ChangeSource.WORKTREE, ChangeSource.UNTRACKED):
-        target = root / os.fsdecode(change.path_bytes)
-        try:
-            return target.read_bytes()
-        except FileNotFoundError:
-            return None
+        return _worktree_content(root, change)
     revision = ":./" if change.source == ChangeSource.INDEX else "HEAD:./"
-    return _git("show", f"{revision}{_decode_path(change.path_bytes)}", cwd=root)
+    return b"tracked\0" + _git(
+        "show",
+        f"{revision}{_decode_path(change.path_bytes)}",
+        cwd=root,
+    )
 
 
 def _fingerprint(root: Path, head: str | None, base: GitBase, changes: tuple[ChangedPath, ...]) -> str:
@@ -186,11 +261,11 @@ def _counts(changes: tuple[ChangedPath, ...]) -> ChangeCounts:
 
 def collect_git_state(cwd: Path | None = None, base: str | None = None) -> GitState:
     root_output = _git("rev-parse", "--show-toplevel", cwd=cwd)
-    root = Path(os.fsdecode(root_output.rstrip(b"\n"))).resolve()
+    root = Path(os.fsdecode(_without_output_terminator(root_output))).resolve()
     head_output = _git("rev-parse", "--verify", "HEAD", cwd=root, allow_failure=True)
-    head = head_output.rstrip(b"\n").decode("ascii") if head_output else None
+    head = _without_output_terminator(head_output).decode("ascii") if head_output else None
     branch_output = _git("symbolic-ref", "--quiet", "--short", "HEAD", cwd=root, allow_failure=True)
-    branch = os.fsdecode(branch_output).strip() if branch_output else None
+    branch = os.fsdecode(_without_output_terminator(branch_output)) if branch_output else None
     git_base = _base_state(root, head, base)
 
     changes = _parse_name_status(
