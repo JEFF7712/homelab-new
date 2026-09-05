@@ -112,13 +112,10 @@
         upstream_dns = [ "https://dns.quad9.net/dns-query" ];
         fallback_dns = [ "1.1.1.1" ];
         protection_enabled = true;
-        rewrites = [
-          {
-            domain = "grafana.homelab";
-            answer = "10.0.40.13";
-          }
-        ];
       };
+      user_rules = [
+        "@@||grafana.homelab^$dnsrewrite=10.0.40.13"
+      ];
       dhcp.enabled = false;
       filtering = {
         enabled = true;
