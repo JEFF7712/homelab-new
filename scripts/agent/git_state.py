@@ -240,6 +240,56 @@ def _local_changes(root: Path) -> tuple[ChangedPath, ...]:
     )
 
 
+def _tracked_gitlinks(root: Path) -> tuple[ChangedPath, ...]:
+    output = _git("ls-files", "--stage", "-z", cwd=root)
+    gitlinks = []
+    for record in output.split(b"\0"):
+        metadata, separator, raw_path = record.partition(b"\t")
+        if not separator:
+            continue
+        fields = metadata.split(b" ")
+        if len(fields) != 3:
+            raise GitStateError("git returned an invalid index entry")
+        mode, _, stage = fields
+        path = _normalise_path(raw_path)
+        if mode != b"160000" or stage != b"0" or _excluded(path):
+            continue
+        gitlinks.append(
+            ChangedPath(
+                path=_decode_path(path),
+                path_bytes=path,
+                kind=ChangeKind.MODIFIED,
+                source=ChangeSource.WORKTREE,
+            )
+        )
+    return tuple(gitlinks)
+
+
+def _unreported_dirty_gitlinks(root: Path) -> tuple[ChangedPath, ...]:
+    changes = []
+    for gitlink in _tracked_gitlinks(root):
+        target = root / os.fsdecode(gitlink.path_bytes)
+        try:
+            metadata = target.lstat()
+        except FileNotFoundError:
+            continue
+        except OSError as error:
+            raise GitStateError(f"cannot inspect gitlink '{gitlink.path}': {error}") from error
+        if not stat.S_ISDIR(metadata.st_mode):
+            continue
+        is_repository = _git(
+            "rev-parse",
+            "--is-inside-work-tree",
+            cwd=target,
+            allow_failure=True,
+        )
+        if is_repository != b"true\n":
+            continue
+        if _local_changes(target):
+            changes.append(gitlink)
+    return tuple(changes)
+
+
 def _nested_checkout_fingerprint(
     root: Path,
     depth: int,
@@ -359,6 +409,7 @@ def collect_git_state(cwd: Path | None = None, base: str | None = None) -> GitSt
     git_base = _base_state(root, head, base)
 
     changes = list(_local_changes(root))
+    changes.extend(_unreported_dirty_gitlinks(root))
     if git_base.available and git_base.merge_base:
         changes.extend(
             _parse_name_status(

@@ -322,6 +322,45 @@ class GitStateTest(unittest.TestCase):
 
         self.assertNotEqual(first.fingerprint, second.fingerprint)
 
+    def test_untracked_only_gitlink_is_dirty_and_fingerprints_nested_bytes(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-git-gitlink-untracked-") as directory:
+            root = Path(directory)
+            nested = root / "nested"
+            nested.mkdir()
+            make_repository(nested)
+            (nested / "tracked.txt").write_bytes(b"committed")
+            commit(nested, "initial")
+            repository = root / "super"
+            repository.mkdir()
+            make_repository(repository)
+            git(
+                repository,
+                "-c",
+                "protocol.file.allow=always",
+                "submodule",
+                "add",
+                "-q",
+                str(nested),
+                "module",
+            )
+            commit(repository, "initial submodule")
+            clean = collect_git_state(repository)
+            target = repository / "module" / "untracked.txt"
+            target.write_bytes(b"first untracked content")
+            first = collect_git_state(repository)
+            target.write_bytes(b"second untracked content")
+
+            second = collect_git_state(repository)
+
+        self.assertFalse(clean.dirty)
+        self.assertTrue(first.dirty)
+        self.assertNotEqual(clean.fingerprint, first.fingerprint)
+        self.assertNotEqual(first.fingerprint, second.fingerprint)
+        self.assertIn(
+            ("module", ChangeKind.MODIFIED, ChangeSource.WORKTREE),
+            {(change.path, change.kind, change.source) for change in first.changes},
+        )
+
     def test_repository_root_with_newline_is_preserved(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-root-") as directory:
             repository = Path(directory) / "repository\n"
