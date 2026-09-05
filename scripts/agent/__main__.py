@@ -2,64 +2,31 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
-import subprocess
 import sys
 from typing import Sequence
+
+from .git_state import collect_git_state
 
 
 UNAVAILABLE = 69
 
 
-def git(*arguments: str, cwd: Path | None = None) -> str:
-    result = subprocess.run(
-        ["git", *arguments],
-        cwd=cwd,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        message = result.stderr.strip() or "git command failed"
-        raise RuntimeError(message)
-    return result.stdout
-
-
-def nul_paths(output: str) -> list[str]:
-    return [path for path in output.split("\0") if path]
-
-
 def context_payload() -> dict[str, object]:
-    root = Path(git("rev-parse", "--show-toplevel").strip()).resolve()
-    head = git("rev-parse", "HEAD", cwd=root).strip()
-    branch_result = subprocess.run(
-        ["git", "symbolic-ref", "--quiet", "--short", "HEAD"],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    branch = branch_result.stdout.strip() if branch_result.returncode == 0 else None
-    staged = nul_paths(git("diff", "--cached", "--name-only", "-z", cwd=root))
-    unstaged = nul_paths(git("diff", "--name-only", "-z", cwd=root))
-    untracked = nul_paths(
-        git("ls-files", "--others", "--exclude-standard", "-z", cwd=root)
-    )
-    files = sorted(set(staged) | set(unstaged) | set(untracked))
+    state = collect_git_state()
     return {
         "schema_version": 1,
         "command": "context",
         "repository": {
-            "root": str(root),
-            "branch": branch,
-            "detached": branch is None,
-            "head": head,
-            "dirty": bool(files),
+            "root": str(state.root),
+            "branch": state.branch,
+            "detached": state.detached,
+            "head": state.head,
+            "dirty": state.dirty,
             "dirty_summary": {
-                "staged": len(staged),
-                "unstaged": len(unstaged),
-                "untracked": len(untracked),
-                "files": files,
+                "staged": state.counts.staged,
+                "unstaged": state.counts.unstaged,
+                "untracked": state.counts.untracked,
+                "files": list(state.affected_paths),
             },
         },
     }
