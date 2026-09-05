@@ -109,13 +109,13 @@
           "9.9.9.9"
           "149.112.112.112"
         ];
-        upstream_dns = [ "https://dns.quad9.net/dns-query" ];
+        upstream_dns = [
+          "[/homelab/]10.0.30.1"
+          "https://dns.quad9.net/dns-query"
+        ];
         fallback_dns = [ "1.1.1.1" ];
         protection_enabled = true;
       };
-      user_rules = [
-        "@@||grafana.homelab^$dnsrewrite=10.0.40.13"
-      ];
       dhcp.enabled = false;
       filtering = {
         enabled = true;
