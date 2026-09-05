@@ -66,6 +66,22 @@ class RepositoryContractTests(unittest.TestCase):
                 self.assertIn(value, pipeline)
         self.assertNotIn("init -backend=false", pipeline)
 
+    def test_deploy_job_runs_from_nas_runner_with_deploy_key(self) -> None:
+        pipeline = (ROOT / ".gitlab-ci.yml").read_text()
+
+        self.assertIn("deploy_host:", pipeline)
+        deploy_block = pipeline.split("deploy_host:", maxsplit=1)[1]
+        for value in (
+            "- nas",
+            "when: manual",
+            "SSH_DEPLOY_KEY",
+            "StrictHostKeyChecking=yes",
+            "nixos-rebuild",
+            "--use-remote-sudo",
+        ):
+            with self.subTest(value=value):
+                self.assertIn(value, deploy_block)
+
 
 if __name__ == "__main__":
     unittest.main()
