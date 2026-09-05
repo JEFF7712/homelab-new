@@ -12,6 +12,7 @@ __pycache__/
 .ruff_cache/
 .terraform/
 artifacts/
+.agent-state/
 .worktrees/
 *.tfstate
 *.tfstate.*
