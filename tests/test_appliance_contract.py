@@ -58,6 +58,8 @@ class ApplianceContractTests(unittest.TestCase):
         self.assertIn('host = "10.0.30.10"', role)
         self.assertIn('"https://dns.quad9.net/dns-query"', role)
         self.assertIn('"[/homelab/]10.0.30.1"', role)
+        self.assertIn('"https://big.oisd.nl"', role)
+        self.assertIn('filter_11.txt', role)
         self.assertIn('useRoutingFeatures = "server"', role)
         self.assertIn('mutableSettings = false', role)
         self.assertIn('PasswordAuthentication = false', role)

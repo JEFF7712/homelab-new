@@ -99,7 +99,7 @@
       users = [
         {
           name = "admin";
-          password = "$2b$05$3OSxlPpIaeb7MFHKiRnMpeYYtOptanouC.abJWRC/axkq/n7AlrGW";
+          password = "$2b$10$QLgZ3jAkP5DO9QRIamMGpu3Fkfv5mR2vYy6FlMz.Ou2bCl28LP6vS";
         }
       ];
       dns = {
@@ -128,6 +128,18 @@
           id = 1;
           name = "AdGuard DNS filter";
           url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt";
+        }
+        {
+          enabled = true;
+          id = 2;
+          name = "OISD Big";
+          url = "https://big.oisd.nl";
+        }
+        {
+          enabled = true;
+          id = 3;
+          name = "AdGuard Mobile Ads filter";
+          url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_11.txt";
         }
       ];
     };
