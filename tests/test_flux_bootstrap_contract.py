@@ -59,16 +59,13 @@ class FluxBootstrapContractTests(unittest.TestCase):
         self.assertIn("kind: GatewayClass", gatewayclass)
         self.assertIn("io.cilium/gateway-controller", gatewayclass)
 
-        gateway = (ROOT / "gitops/ingress/gateway.yaml").read_text()
-        self.assertIn("kind: Gateway", gateway)
-        self.assertIn("bgp-advertise", gateway)
-
-        route = (ROOT / "gitops/ingress/httproute.yaml").read_text()
-        self.assertIn("kind: HTTPRoute", route)
-        self.assertIn("bgp-canary", route)
-
-        grafana = (ROOT / "gitops/ingress/grafana.yaml").read_text()
-        self.assertIn("grafana.homelab", grafana)
+        for stale in (
+            "gitops/ingress/gateway.yaml",
+            "gitops/ingress/httproute.yaml",
+            "gitops/ingress/grafana.yaml",
+        ):
+            with self.subTest(stale=stale):
+                self.assertFalse((ROOT / stale).exists())
 
         layer = (ROOT / "gitops/clusters/homelab-01/ingress.yaml").read_text()
         self.assertIn("name: ingress-crds", layer)
