@@ -49,6 +49,8 @@ class ApplianceContractTests(unittest.TestCase):
         self.assertIn(
             'iifname "wt0" tcp dport { 22, 53, 3000 } accept', role
         )
+        self.assertIn('ip saddr 10.0.10.0/24 tcp dport 53 accept', role)
+        self.assertIn('ip saddr 10.0.10.0/24 udp dport 53 accept', role)
         self.assertIn('iifname "wt0" udp dport 53 accept', role)
 
     def test_services_and_persistence_are_declarative(self) -> None:
