@@ -1,0 +1,77 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dumps-to-r2
+  namespace: backups
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: restic
+              image: docker.io/restic/restic:0.19.1
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 1000
+                runAsGroup: 1000
+              env:
+                - name: R2_REPO
+                  value: s3:https://5d99d63dea23dde67ccb07e5dfb31107.r2.cloudflarestorage.com
+                - name: RESTIC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-secrets
+                      key: restic-password
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-secrets
+                      key: r2-access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-secrets
+                      key: r2-secret-access-key
+                - name: AWS_DEFAULT_REGION
+                  value: us-east-1
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  export RESTIC_REPOSITORY="$R2_REPO/homelab-longhorn-backup/restic-dumps"
+                  restic snapshots >/dev/null 2>&1 || restic init
+                  restic backup /dumps
+                  restic forget --keep-daily 7 --keep-weekly 4 --prune
+              volumeMounts:
+                - name: dumps
+                  mountPath: /dumps
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+                - name: cache
+                  mountPath: /home/restic/.cache
+          volumes:
+            - name: dumps
+              persistentVolumeClaim:
+                claimName: db-dumps
+            - name: tmp
+              emptyDir: {}
+            - name: cache
+              emptyDir: {}

@@ -1,0 +1,69 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: library-to-local-repo
+  namespace: immich
+spec:
+  schedule: "0 1 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 21600
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: restic
+              image: docker.io/restic/restic:0.19.1
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 1000
+                runAsGroup: 1000
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: /repo/immich-library
+                - name: RESTIC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-backup-secrets
+                      key: restic-password
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  restic snapshots >/dev/null 2>&1 || restic init
+                  restic backup /library
+                  restic forget --keep-last 7 --prune
+              volumeMounts:
+                - name: library
+                  mountPath: /library
+                  readOnly: true
+                - name: repo
+                  mountPath: /repo
+                - name: tmp
+                  mountPath: /tmp
+                - name: cache
+                  mountPath: /home/restic/.cache
+          volumes:
+            - name: library
+              persistentVolumeClaim:
+                claimName: immich-library
+            - name: repo
+              persistentVolumeClaim:
+                claimName: immich-local-repo
+            - name: tmp
+              emptyDir: {}
+            - name: cache
+              emptyDir: {}

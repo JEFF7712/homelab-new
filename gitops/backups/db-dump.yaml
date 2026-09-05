@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: immich-db-dump
+  namespace: backups
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: pg-dump
+              image: docker.io/library/postgres:14-alpine
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 70
+                runAsGroup: 70
+              env:
+                - name: PGHOST
+                  value: immich-postgres.immich
+                - name: PGUSER
+                  value: immich
+                - name: PGDATABASE
+                  value: immich
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backup-secrets
+                      key: db-password
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  stamp=$(date +%Y%m%d)
+                  pg_dump --format=custom --file=/dumps/immich-$stamp.dump
+                  gzip -f /dumps/immich-$stamp.dump
+                  find /dumps -name 'immich-*.dump.gz' -mtime +7 -delete
+              volumeMounts:
+                - name: dumps
+                  mountPath: /dumps
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: dumps
+              persistentVolumeClaim:
+                claimName: db-dumps
+            - name: tmp
+              emptyDir: {}
