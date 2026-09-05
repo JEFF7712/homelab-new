@@ -144,8 +144,11 @@ deploy_host:
     - mkdir -p ~/.ssh
     - cp "$SSH_DEPLOY_KEY" ~/.ssh/id_ed25519
     - chmod 600 ~/.ssh/id_ed25519
-    - printf '%s\n' '10.0.30.11 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIORsIz/OxVGnwGCaVTCpA3hGNHQCpFMxOS4qoQ9tsS3m' '10.0.30.12 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMdBycmzrCPvWWuHJoySTJNaA2Jm9Tl8K18xaE6PZiuu' '10.0.30.13 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPaLKiJo7dbQnkXx8xDwng/5sPWFY/hSyrugmH+BMXyC' '10.0.30.20 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILmHU+GOXCzFU9I9gbkcDROg0SZSk0ZfLbrQ4LpV8g/C' '10.0.30.10 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILljH4QOiAAugeFZwc5pMjB3Lj6fwiiDNA81OIaAgqkR' > ~/.ssh/known_hosts
+    - cp "$HOSTS_KNOWN" ~/.ssh/known_hosts
     - chmod 600 ~/.ssh/known_hosts
   script:
-    - export NIX_SSHOPTS="-i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes -o UserKnownHostsFile=~/.ssh/known_hosts -o StrictHostKeyChecking=yes"
-    - nixos-rebuild --flake ./flake#"$DEPLOY_HOST" --target-host rupan@"$DEPLOY_ADDR" --build-host rupan@"$DEPLOY_ADDR" --use-remote-sudo switch
+    - export SSH_OPTS="-i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes"
+    - export KH_OPTS="-o UserKnownHostsFile=~/.ssh/known_hosts"
+    - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
+    - nixos-rebuild --flake ./flake#"$DEPLOY_HOST" --use-remote-sudo switch
+      --target-host rupan@"$DEPLOY_ADDR" --build-host rupan@"$DEPLOY_ADDR"
