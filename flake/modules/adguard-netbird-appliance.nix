@@ -99,7 +99,7 @@
       users = [
         {
           name = "admin";
-          password = "$2b$10$QLgZ3jAkP5DO9QRIamMGpu3Fkfv5mR2vYy6FlMz.Ou2bCl28LP6vS";
+          password = "$2b$10$EY4fb1ANVYrI8ud2FQnJFOrnx5coVM3wwvZau1SOKoKNKdb9snryi";
         }
       ];
       dns = {
