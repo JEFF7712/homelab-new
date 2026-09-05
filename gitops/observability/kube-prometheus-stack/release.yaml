@@ -36,6 +36,7 @@ spec:
     alertmanager:
       alertmanagerSpec:
         replicas: 1
+        configSecret: alertmanager-kube-prometheus-stack-alertmanager
         resources:
           requests:
             cpu: 100m
