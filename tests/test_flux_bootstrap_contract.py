@@ -86,7 +86,8 @@ class FluxBootstrapContractTests(unittest.TestCase):
         kps = (ROOT / "gitops/observability/kube-prometheus-stack/release.yaml").read_text()
         self.assertIn("ntfy.observability", kps)
 
-    def test_observability_layer_declares_lightweight_stack(self) -> None:        kps = (ROOT / "gitops/observability/kube-prometheus-stack/release.yaml").read_text()
+    def test_observability_layer_declares_lightweight_stack(self) -> None:
+        kps = (ROOT / "gitops/observability/kube-prometheus-stack/release.yaml").read_text()
         for value in (
             "chart: kube-prometheus-stack",
             "version: ",
