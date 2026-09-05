@@ -244,6 +244,6 @@ def collect_git_state(cwd: Path | None = None, base: str | None = None) -> GitSt
         base=git_base,
         counts=counts,
         changes=ordered,
-        dirty=counts.total > 0,
+        dirty=counts.local_total > 0,
         fingerprint=_fingerprint(root, head, git_base, ordered),
     )

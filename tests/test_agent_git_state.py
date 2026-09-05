@@ -165,6 +165,7 @@ class GitStateTest(unittest.TestCase):
             {(change.path, change.kind, change.source) for change in state.changes},
         )
         self.assertEqual(state.counts.committed, 1)
+        self.assertFalse(state.dirty)
 
     def test_invalid_or_unavailable_base_is_actionable_typed_error(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-invalid-base-") as directory:

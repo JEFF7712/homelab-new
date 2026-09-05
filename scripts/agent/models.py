@@ -52,6 +52,10 @@ class ChangeCounts:
     def total(self) -> int:
         return self.index + self.worktree + self.untracked + self.committed
 
+    @property
+    def local_total(self) -> int:
+        return self.index + self.worktree + self.untracked
+
 
 @dataclass(frozen=True)
 class GitBase:
