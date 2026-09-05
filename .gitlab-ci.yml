@@ -149,6 +149,7 @@ deploy_host:
     - cp "$HOSTS_KNOWN" ~/.ssh/known_hosts
     - chmod 600 ~/.ssh/known_hosts
   script:
+    - export PATH="/run/current-system/sw/bin:$PATH"
     - export SSH_OPTS="-i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes"
     - export KH_OPTS="-o UserKnownHostsFile=~/.ssh/known_hosts"
     - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
