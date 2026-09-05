@@ -361,6 +361,77 @@ class GitStateTest(unittest.TestCase):
             {(change.path, change.kind, change.source) for change in first.changes},
         )
 
+    def test_untracked_depth_two_gitlink_is_detected_without_ignored_state(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-git-gitlink-depth-two-") as directory:
+            root = Path(directory)
+            deepest = root / "deepest"
+            deepest.mkdir()
+            make_repository(deepest)
+            (deepest / ".gitignore").write_text("ignored/\n", encoding="utf-8")
+            (deepest / "tracked.txt").write_bytes(b"committed")
+            commit(deepest, "initial")
+            middle = root / "middle"
+            middle.mkdir()
+            make_repository(middle)
+            git(
+                middle,
+                "-c",
+                "protocol.file.allow=always",
+                "submodule",
+                "add",
+                "-q",
+                str(deepest),
+                "deep",
+            )
+            commit(middle, "initial nested submodule")
+            repository = root / "super"
+            repository.mkdir()
+            make_repository(repository)
+            git(
+                repository,
+                "-c",
+                "protocol.file.allow=always",
+                "submodule",
+                "add",
+                "-q",
+                str(middle),
+                "middle",
+            )
+            git(
+                repository / "middle",
+                "-c",
+                "protocol.file.allow=always",
+                "submodule",
+                "update",
+                "--init",
+                "-q",
+            )
+            commit(repository, "initial nested submodule")
+            clean = collect_git_state(repository)
+            nested = repository / "middle" / "deep"
+            (nested / "ignored").mkdir()
+            (nested / "ignored" / "skip.txt").write_bytes(b"ignored")
+            (nested / ".agent-state").mkdir()
+            (nested / ".agent-state" / "state.json").write_bytes(b"state")
+            ignored = collect_git_state(repository)
+            target = nested / "untracked.txt"
+            target.write_bytes(b"first untracked content")
+            first = collect_git_state(repository)
+            target.write_bytes(b"second untracked content")
+
+            second = collect_git_state(repository)
+
+        self.assertFalse(clean.dirty)
+        self.assertFalse(ignored.dirty)
+        self.assertEqual(clean.fingerprint, ignored.fingerprint)
+        self.assertTrue(first.dirty)
+        self.assertNotEqual(clean.fingerprint, first.fingerprint)
+        self.assertNotEqual(first.fingerprint, second.fingerprint)
+        self.assertIn(
+            ("middle", ChangeKind.MODIFIED, ChangeSource.WORKTREE),
+            {(change.path, change.kind, change.source) for change in first.changes},
+        )
+
     def test_repository_root_with_newline_is_preserved(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-root-") as directory:
             repository = Path(directory) / "repository\n"

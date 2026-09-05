@@ -211,18 +211,7 @@ def _write_change_fingerprint(
     digest.update(b"\0")
 
 
-def _local_changes(root: Path) -> tuple[ChangedPath, ...]:
-    changes = _parse_name_status(
-        _git("diff", "--cached", "--name-status", "-z", "-M", cwd=root),
-        ChangeSource.INDEX,
-    )
-    changes.extend(
-        _parse_name_status(
-            _git("diff", "--name-status", "-z", "-M", cwd=root),
-            ChangeSource.WORKTREE,
-        )
-    )
-    changes.extend(_untracked(root))
+def _deduplicate_changes(changes: list[ChangedPath]) -> tuple[ChangedPath, ...]:
     deduplicated = {
         (change.source, change.kind, change.old_path_bytes, change.path_bytes): change
         for change in changes
@@ -238,6 +227,21 @@ def _local_changes(root: Path) -> tuple[ChangedPath, ...]:
             ),
         )
     )
+
+
+def _local_changes(root: Path) -> tuple[ChangedPath, ...]:
+    changes = _parse_name_status(
+        _git("diff", "--cached", "--name-status", "-z", "-M", cwd=root),
+        ChangeSource.INDEX,
+    )
+    changes.extend(
+        _parse_name_status(
+            _git("diff", "--name-status", "-z", "-M", cwd=root),
+            ChangeSource.WORKTREE,
+        )
+    )
+    changes.extend(_untracked(root))
+    return _deduplicate_changes(changes)
 
 
 def _tracked_gitlinks(root: Path) -> tuple[ChangedPath, ...]:
@@ -265,7 +269,17 @@ def _tracked_gitlinks(root: Path) -> tuple[ChangedPath, ...]:
     return tuple(gitlinks)
 
 
-def _unreported_dirty_gitlinks(root: Path) -> tuple[ChangedPath, ...]:
+def _unreported_dirty_gitlinks(
+    root: Path,
+    depth: int = 0,
+    ancestors: frozenset[tuple[int, int]] = frozenset(),
+) -> tuple[ChangedPath, ...]:
+    if depth >= MAX_GITLINK_DEPTH:
+        return ()
+    identity = _repository_identity(root)
+    if identity in ancestors:
+        return ()
+    nested_ancestors = ancestors | {identity}
     changes = []
     for gitlink in _tracked_gitlinks(root):
         target = root / os.fsdecode(gitlink.path_bytes)
@@ -285,7 +299,11 @@ def _unreported_dirty_gitlinks(root: Path) -> tuple[ChangedPath, ...]:
         )
         if is_repository != b"true\n":
             continue
-        if _local_changes(target):
+        if _local_changes(target) or _unreported_dirty_gitlinks(
+            target,
+            depth + 1,
+            nested_ancestors,
+        ):
             changes.append(gitlink)
     return tuple(changes)
 
@@ -307,7 +325,9 @@ def _nested_checkout_fingerprint(
     digest.update(head)
     digest.update(b"\0")
     nested_ancestors = ancestors | {identity}
-    for change in _local_changes(root):
+    changes = list(_local_changes(root))
+    changes.extend(_unreported_dirty_gitlinks(root, depth, ancestors))
+    for change in _deduplicate_changes(changes):
         _write_change_fingerprint(digest, root, change, depth + 1, nested_ancestors)
     return digest.digest()
 
@@ -426,21 +446,7 @@ def collect_git_state(cwd: Path | None = None, base: str | None = None) -> GitSt
             )
         )
 
-    deduplicated = {
-        (change.source, change.kind, change.old_path_bytes, change.path_bytes): change
-        for change in changes
-    }
-    ordered = tuple(
-        sorted(
-            deduplicated.values(),
-            key=lambda change: (
-                change.source.value,
-                change.kind.value,
-                change.old_path_bytes or b"",
-                change.path_bytes,
-            ),
-        )
-    )
+    ordered = _deduplicate_changes(changes)
     counts = _counts(ordered)
     return GitState(
         root=root,
