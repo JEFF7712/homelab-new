@@ -20,6 +20,9 @@ class GitBaseError(GitStateError):
         super().__init__(message)
 
 
+MAX_GITLINK_DEPTH = 8
+
+
 def _git(
     *arguments: str,
     cwd: Path | None = None,
@@ -180,15 +183,107 @@ def _conflict_content(root: Path, path: bytes) -> bytes:
     return b"unmerged\0" + b"\0".join(stages)
 
 
-def _gitlink_content(target: Path) -> bytes:
+def _repository_identity(root: Path) -> tuple[int, int]:
+    try:
+        metadata = root.stat()
+    except OSError as error:
+        raise GitStateError(f"cannot inspect gitlink '{root}': {error}") from error
+    return metadata.st_dev, metadata.st_ino
+
+
+def _write_change_fingerprint(
+    digest: "hashlib._Hash",
+    root: Path,
+    change: ChangedPath,
+    depth: int,
+    ancestors: frozenset[tuple[int, int]],
+) -> None:
+    digest.update(change.source.value.encode("ascii"))
+    digest.update(b"\0")
+    digest.update(change.kind.value.encode("ascii"))
+    digest.update(b"\0")
+    digest.update(change.old_path_bytes or b"")
+    digest.update(b"\0")
+    digest.update(change.path_bytes)
+    digest.update(b"\0")
+    content = _content(root, change, depth, ancestors)
+    digest.update(b"missing\0" if content is None else hashlib.sha256(content).digest())
+    digest.update(b"\0")
+
+
+def _local_changes(root: Path) -> tuple[ChangedPath, ...]:
+    changes = _parse_name_status(
+        _git("diff", "--cached", "--name-status", "-z", "-M", cwd=root),
+        ChangeSource.INDEX,
+    )
+    changes.extend(
+        _parse_name_status(
+            _git("diff", "--name-status", "-z", "-M", cwd=root),
+            ChangeSource.WORKTREE,
+        )
+    )
+    changes.extend(_untracked(root))
+    deduplicated = {
+        (change.source, change.kind, change.old_path_bytes, change.path_bytes): change
+        for change in changes
+    }
+    return tuple(
+        sorted(
+            deduplicated.values(),
+            key=lambda change: (
+                change.source.value,
+                change.kind.value,
+                change.old_path_bytes or b"",
+                change.path_bytes,
+            ),
+        )
+    )
+
+
+def _nested_checkout_fingerprint(
+    root: Path,
+    depth: int,
+    ancestors: frozenset[tuple[int, int]],
+) -> bytes:
+    head = _git("rev-parse", "--verify", "HEAD", cwd=root, allow_failure=True)
+    status = _git("status", "--porcelain=v1", "-z", cwd=root)
+    identity = _repository_identity(root)
+    if identity in ancestors:
+        return b"gitlink-cycle\0" + hashlib.sha256(status).digest()
+    if depth >= MAX_GITLINK_DEPTH:
+        return b"gitlink-depth-limit\0" + head + hashlib.sha256(status).digest()
+    digest = hashlib.sha256()
+    digest.update(b"nested-git-state-v1\0")
+    digest.update(head)
+    digest.update(b"\0")
+    nested_ancestors = ancestors | {identity}
+    for change in _local_changes(root):
+        _write_change_fingerprint(digest, root, change, depth + 1, nested_ancestors)
+    return digest.digest()
+
+
+def _gitlink_content(
+    target: Path,
+    depth: int,
+    ancestors: frozenset[tuple[int, int]],
+) -> bytes:
     head = _git("rev-parse", "--verify", "HEAD", cwd=target, allow_failure=True)
     if not head:
         raise GitStateError(f"gitlink '{target}' has no checked out commit")
-    status = _git("status", "--porcelain=v1", "-z", cwd=target)
-    return b"gitlink\0" + _without_output_terminator(head) + b"\0" + hashlib.sha256(status).digest()
+    return (
+        b"gitlink\0"
+        + _without_output_terminator(head)
+        + b"\0"
+        + _nested_checkout_fingerprint(target, depth, ancestors)
+    )
 
 
-def _worktree_content(root: Path, change: ChangedPath) -> bytes | None:
+def _worktree_content(
+    root: Path,
+    change: ChangedPath,
+    depth: int,
+    ancestors: frozenset[tuple[int, int]],
+) -> bytes | None:
     target = root / os.fsdecode(change.path_bytes)
     try:
         metadata = target.lstat()
@@ -209,18 +304,23 @@ def _worktree_content(root: Path, change: ChangedPath) -> bytes | None:
     if stat.S_ISDIR(metadata.st_mode):
         entries = _index_entries(root, change.path_bytes)
         if any(mode == b"160000" for mode, _, _ in entries):
-            return _gitlink_content(target)
+            return _gitlink_content(target, depth, ancestors)
         return b"directory\0"
     return b"special\0" + str(metadata.st_mode).encode("ascii")
 
 
-def _content(root: Path, change: ChangedPath) -> bytes | None:
+def _content(
+    root: Path,
+    change: ChangedPath,
+    depth: int = 0,
+    ancestors: frozenset[tuple[int, int]] = frozenset(),
+) -> bytes | None:
     if change.kind == ChangeKind.UNMERGED:
         return _conflict_content(root, change.path_bytes)
     if change.kind == ChangeKind.DELETED:
         return None
     if change.source in (ChangeSource.WORKTREE, ChangeSource.UNTRACKED):
-        return _worktree_content(root, change)
+        return _worktree_content(root, change, depth, ancestors)
     revision = ":./" if change.source == ChangeSource.INDEX else "HEAD:./"
     return b"tracked\0" + _git(
         "show",
@@ -236,17 +336,7 @@ def _fingerprint(root: Path, head: str | None, base: GitBase, changes: tuple[Cha
         digest.update((value or "").encode("ascii"))
         digest.update(b"\0")
     for change in changes:
-        digest.update(change.source.value.encode("ascii"))
-        digest.update(b"\0")
-        digest.update(change.kind.value.encode("ascii"))
-        digest.update(b"\0")
-        digest.update(change.old_path_bytes or b"")
-        digest.update(b"\0")
-        digest.update(change.path_bytes)
-        digest.update(b"\0")
-        content = _content(root, change)
-        digest.update(b"missing\0" if content is None else hashlib.sha256(content).digest())
-        digest.update(b"\0")
+        _write_change_fingerprint(digest, root, change, 0, frozenset())
     return digest.hexdigest()
 
 
@@ -268,17 +358,7 @@ def collect_git_state(cwd: Path | None = None, base: str | None = None) -> GitSt
     branch = os.fsdecode(_without_output_terminator(branch_output)) if branch_output else None
     git_base = _base_state(root, head, base)
 
-    changes = _parse_name_status(
-        _git("diff", "--cached", "--name-status", "-z", "-M", cwd=root),
-        ChangeSource.INDEX,
-    )
-    changes.extend(
-        _parse_name_status(
-            _git("diff", "--name-status", "-z", "-M", cwd=root),
-            ChangeSource.WORKTREE,
-        )
-    )
-    changes.extend(_untracked(root))
+    changes = list(_local_changes(root))
     if git_base.available and git_base.merge_base:
         changes.extend(
             _parse_name_status(

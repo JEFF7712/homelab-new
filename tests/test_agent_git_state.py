@@ -290,6 +290,38 @@ class GitStateTest(unittest.TestCase):
             {(change.path, change.kind, change.source) for change in changed.changes},
         )
 
+    def test_dirty_gitlink_fingerprint_includes_nested_file_content(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-git-gitlink-content-") as directory:
+            root = Path(directory)
+            nested = root / "nested"
+            nested.mkdir()
+            make_repository(nested)
+            nested_target = nested / "tracked.txt"
+            nested_target.write_bytes(b"committed")
+            commit(nested, "initial")
+            repository = root / "super"
+            repository.mkdir()
+            make_repository(repository)
+            git(
+                repository,
+                "-c",
+                "protocol.file.allow=always",
+                "submodule",
+                "add",
+                "-q",
+                str(nested),
+                "module",
+            )
+            commit(repository, "initial submodule")
+            module_target = repository / "module" / "tracked.txt"
+            module_target.write_bytes(b"first dirty content")
+            first = collect_git_state(repository)
+            module_target.write_bytes(b"second dirty content")
+
+            second = collect_git_state(repository)
+
+        self.assertNotEqual(first.fingerprint, second.fingerprint)
+
     def test_repository_root_with_newline_is_preserved(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-root-") as directory:
             repository = Path(directory) / "repository\n"
