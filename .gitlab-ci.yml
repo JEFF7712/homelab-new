@@ -150,8 +150,8 @@ deploy_host:
     - chmod 600 ~/.ssh/known_hosts
   script:
     - export PATH="/run/current-system/sw/bin:$PATH"
-    - export SSH_OPTS="-i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes"
-    - export KH_OPTS="-o UserKnownHostsFile=~/.ssh/known_hosts"
+    - export SSH_OPTS="-i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes"
+    - export KH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts"
     - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
     - nixos-rebuild --flake ./flake#"$DEPLOY_HOST" --use-remote-sudo switch
       --target-host rupan@"$DEPLOY_ADDR" --build-host rupan@"$DEPLOY_ADDR"
