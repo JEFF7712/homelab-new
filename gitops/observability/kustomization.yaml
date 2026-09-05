@@ -7,3 +7,5 @@ resources:
   - loki/release.yaml
   - alloy/release.yaml
   - grafana/service.yaml
+  - ntfy/repository.yaml
+  - ntfy/release.yaml

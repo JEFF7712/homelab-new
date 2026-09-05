@@ -42,6 +42,18 @@ spec:
             memory: 256Mi
           limits:
             memory: 512Mi
+      config:
+        global:
+          resolve_timeout: 5m
+        route:
+          receiver: ntfy
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 4h
+        receivers:
+          - name: ntfy
+            webhook_configs:
+              - url: http://ntfy.observability.svc.cluster.local/homelab-alerts
     grafana:
       replicas: 1
       resources:

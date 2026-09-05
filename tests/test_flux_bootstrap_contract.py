@@ -73,8 +73,20 @@ class FluxBootstrapContractTests(unittest.TestCase):
         layer = (ROOT / "gitops/clusters/homelab-01/ingress.yaml").read_text()
         self.assertIn("name: ingress-crds", layer)
 
-    def test_observability_layer_declares_lightweight_stack(self) -> None:
+    def test_observability_layer_declares_ntfy_alerts(self) -> None:
+        release = (ROOT / "gitops/observability/ntfy/release.yaml").read_text()
+        for value in (
+            "chart: ntfy",
+            "version: ",
+            "ntfy.homelab",
+        ):
+            with self.subTest(value=value):
+                self.assertIn(value, release)
+
         kps = (ROOT / "gitops/observability/kube-prometheus-stack/release.yaml").read_text()
+        self.assertIn("ntfy.observability", kps)
+
+    def test_observability_layer_declares_lightweight_stack(self) -> None:        kps = (ROOT / "gitops/observability/kube-prometheus-stack/release.yaml").read_text()
         for value in (
             "chart: kube-prometheus-stack",
             "version: ",
