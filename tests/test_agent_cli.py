@@ -123,11 +123,12 @@ class AgentCliTest(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertNotIn("Traceback", result.stderr)
 
-    def test_unimplemented_command_fails_honestly(self) -> None:
-        result = run_agent("doctor")
+    def test_doctor_returns_its_structured_contract(self) -> None:
+        result = run_agent("doctor", "--json")
 
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("not implemented", result.stderr.lower())
+        self.assertIn(result.returncode, {0, 1})
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["command"], "doctor")
         self.assertNotIn("Traceback", result.stderr)
 
 

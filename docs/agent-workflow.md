@@ -13,7 +13,7 @@ The shared CLI is `python -m scripts.agent`; `just` provides stable recipes. Sta
 - `just task-resume ID [--json]`: report HEAD and fingerprint drift, stale verification, and the next action.
 - `just task-checkpoint ID [--json]`: read a complete record plus `expected_revision` from stdin and atomically replace it under a per-task lock.
 - `just task-export ID [--replace]`: write a sanitized Markdown handoff under `docs/agent-tasks/`.
-- `just status cluster|network [--json]`: bounded read-only live diagnostics. These commands are never part of startup or offline checks.
+- `just status cluster|network [--json] [--timeout SECONDS] [--record]`: bounded read-only live diagnostics. Cluster status reads node readiness, Flux reconciliation, and failed workloads through the current kubectl context. Network status pings configured cluster nodes and reports BGP unavailable unless read-only OPNsense credentials can be used. The default total budget is 30 seconds. `--record` writes sanitized, timestamped evidence under `.agent-state/evidence/`. These commands are never part of startup or offline checks.
 
 ## Task schema
 
