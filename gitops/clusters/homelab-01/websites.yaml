@@ -23,3 +23,31 @@ spec:
       kind: Deployment
       name: website-deploy
       namespace: distrojeff
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: pulse
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: ism
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: nixagent
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: rupanism
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: spatia
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: cr-demo
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: soluble-rupan
