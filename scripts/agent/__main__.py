@@ -6,7 +6,9 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from .checks import run_selection, select_checks
 from .context import context_payload, render_context
+from .git_state import GitBaseError, collect_git_state
 from .redact import redact
 from .tasks import TaskError, checkpoint_task, create_task, export_task, resume_task
 
@@ -32,6 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
         "check-changed", help="select checks for changed paths"
     )
     check_changed.add_argument("base", nargs="?")
+    check_changed.add_argument("--select-only", action="store_true")
     add_json_option(check_changed)
 
     task_new = subparsers.add_parser("task-new", help="create local task state")
@@ -121,6 +124,41 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         except (TaskError, RuntimeError, OSError) as error:
             print(f"task-export: {redact(str(error))}", file=sys.stderr)
+            return 2
+
+    if arguments.command == "check-changed":
+        try:
+            state = collect_git_state(base=arguments.base)
+            selection = select_checks(state)
+            payload = (
+                selection.to_dict()
+                if arguments.select_only
+                else run_selection(state.root, selection)
+            )
+            if arguments.json:
+                print(
+                    json.dumps(
+                        {"schema_version": 1, "command": "check-changed", **payload},
+                        sort_keys=True,
+                    )
+                )
+            else:
+                for item in selection.checks:
+                    print(f"{item.name}: {'; '.join(item.reasons)}")
+            return (
+                1
+                if isinstance(payload, dict) and payload.get("status") == "fail"
+                else 0
+            )
+        except (GitBaseError, RuntimeError, OSError) as error:
+            if arguments.json:
+                print(
+                    json.dumps(
+                        _task_error_payload("check-changed", error), sort_keys=True
+                    )
+                )
+            else:
+                print(f"check-changed: {redact(str(error))}", file=sys.stderr)
             return 2
 
     if arguments.command in {"task-new", "task-checkpoint", "task-resume"}:
