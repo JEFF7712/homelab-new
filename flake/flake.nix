@@ -75,6 +75,8 @@
             git
             gitleaks
             glab
+            git
+            just
             kubeconform
             kubectl
             kubernetes-helm
@@ -83,6 +85,7 @@
             pyright
             python313
             ruff
+            shellcheck
             sops
             yamllint
           ];
@@ -91,7 +94,10 @@
         checks.repository-contract =
           pkgs.runCommand "repository-contract"
             {
-              nativeBuildInputs = [ pkgs.python313 ];
+              nativeBuildInputs = [
+                pkgs.git
+                pkgs.python313
+              ];
             }
             ''
               cd ${../.}

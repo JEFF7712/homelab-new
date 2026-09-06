@@ -1,5 +1,5 @@
-import unittest
 import json
+import unittest
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -42,7 +42,11 @@ class ReconcileInterfaceTests(unittest.TestCase):
             seen["server_name"] = server_name
             return FakeClient()
 
-        def reconcile(client: object, assignment_api_available: bool, desired: list[dict[str, object]]) -> None:
+        def reconcile(
+            client: object,
+            assignment_api_available: bool,
+            desired: list[dict[str, object]],
+        ) -> None:
             seen["client"] = client
             seen["assignment_api_available"] = assignment_api_available
             seen["desired"] = desired
@@ -51,12 +55,16 @@ class ReconcileInterfaceTests(unittest.TestCase):
             seen["kea_client"] = client
             seen["kea_interfaces"] = desired
 
-        def reconcile_bgp(client: object, desired: list[dict[str, object]]) -> dict[str, int]:
+        def reconcile_bgp(
+            client: object, desired: list[dict[str, object]]
+        ) -> dict[str, int]:
             seen["bgp_client"] = client
             seen["bgp_neighbors"] = desired
             return {"10.0.30.11": 64512}
 
-        def prove_bgp(client: object, peers: dict[str, int], routes: set[str]) -> object:
+        def prove_bgp(
+            client: object, peers: dict[str, int], routes: set[str]
+        ) -> object:
             seen["proof_peers"] = peers
             seen["proof_routes"] = routes
 
@@ -110,12 +118,16 @@ class ReconcileInterfaceTests(unittest.TestCase):
         self.assertEqual(seen["assignment_api_available"], True)
         self.assertEqual(seen["desired"], [{"parent": "igb0", "tag": 30}])
         self.assertEqual(seen["kea_interfaces"], {"opt1", "opt2"})
-        self.assertEqual(seen["bgp_neighbors"], [{"address": "10.0.30.11", "remoteas": "64512"}])
+        self.assertEqual(
+            seen["bgp_neighbors"], [{"address": "10.0.30.11", "remoteas": "64512"}]
+        )
         self.assertEqual(seen["proof_peers"], {"10.0.30.11": 64512})
         self.assertEqual(seen["proof_routes"], {"10.0.40.10/32"})
 
     def test_resolve_vlan_devices_uses_live_parent_and_tag(self) -> None:
-        desired = [{"descr": "clients", "parent": "igb0", "tag": 20, "ipaddr": "10.0.20.1/24"}]
+        desired = [
+            {"descr": "clients", "parent": "igb0", "tag": 20, "ipaddr": "10.0.20.1/24"}
+        ]
         live_vlans = {
             "rows": [
                 {
@@ -171,7 +183,9 @@ class ReconcileInterfaceTests(unittest.TestCase):
             desired_interfaces=[],
         )
 
-        self.assertEqual(client.calls, [("GET", "/api/interfaces/assignment/search_item")])
+        self.assertEqual(
+            client.calls, [("GET", "/api/interfaces/assignment/search_item")]
+        )
 
     def test_reconcile_interfaces_adds_assignment_and_verifies_runtime(self) -> None:
         class AssignmentClient:
@@ -181,12 +195,22 @@ class ReconcileInterfaceTests(unittest.TestCase):
             def get(self, path: str) -> object:
                 self.calls.append(("GET", path, None))
                 if path == "/api/interfaces/vlan_settings/search_item":
-                    return {"rows": [{"if": "igb0", "tag": "10", "vlanif": "vlan02 [management]"}]}
+                    return {
+                        "rows": [
+                            {"if": "igb0", "tag": "10", "vlanif": "vlan02 [management]"}
+                        ]
+                    }
                 if path == "/api/interfaces/assignment/search_item":
                     return {"rows": []}
                 if path == "/api/interfaces/overview/interfaces_info/true":
                     return {
-                        "rows": [{"device": "vlan02", "addr4": "10.0.10.1/24", "description": "management"}]
+                        "rows": [
+                            {
+                                "device": "vlan02",
+                                "addr4": "10.0.10.1/24",
+                                "description": "management",
+                            }
+                        ]
                     }
                 raise AssertionError(f"unexpected read: {path}")
 
@@ -209,7 +233,9 @@ class ReconcileInterfaceTests(unittest.TestCase):
         }
 
         reconcile_interfaces(client, True, [desired])
-        resolved_desired = {key: value for key, value in desired.items() if key not in {"parent", "tag"}}
+        resolved_desired = {
+            key: value for key, value in desired.items() if key not in {"parent", "tag"}
+        }
         resolved_desired["if"] = "vlan02"
 
         self.assertEqual(
@@ -232,23 +258,42 @@ class ReconcileInterfaceTests(unittest.TestCase):
             def get(self, path: str) -> object:
                 responses = {
                     "/api/interfaces/vlan_settings/search_item": {
-                        "rows": [{"if": "igb0", "tag": "10", "vlanif": "vlan02 [management]"}]
+                        "rows": [
+                            {"if": "igb0", "tag": "10", "vlanif": "vlan02 [management]"}
+                        ]
                     },
                     "/api/interfaces/assignment/search_item": {
                         "rows": [{"if": "vlan02", "identifier": "opt2"}]
                     },
                     "/api/interfaces/overview/interfaces_info/true": {
-                        "rows": [{"device": "vlan02", "addr4": None, "description": "management"}]
+                        "rows": [
+                            {
+                                "device": "vlan02",
+                                "addr4": None,
+                                "description": "management",
+                            }
+                        ]
                     },
                 }
                 return responses[path]
 
             def post(self, path: str, payload: object) -> object:
-                raise AssertionError(f"runtime drift must not invoke unsupported write: {path}")
+                raise AssertionError(
+                    f"runtime drift must not invoke unsupported write: {path}"
+                )
 
-        desired = [{"parent": "igb0", "tag": 10, "descr": "management", "ipaddr": "10.0.10.1/24"}]
+        desired = [
+            {
+                "parent": "igb0",
+                "tag": 10,
+                "descr": "management",
+                "ipaddr": "10.0.10.1/24",
+            }
+        ]
 
-        with self.assertRaisesRegex(RuntimeError, "OPNsense 26.7 assignment API cannot configure"):
+        with self.assertRaisesRegex(
+            RuntimeError, "OPNsense 26.7 assignment API cannot configure"
+        ):
             reconcile_interfaces(DriftClient(), True, desired)
 
     def test_reconcile_kea_interfaces_updates_and_verifies_listener_set(self) -> None:
@@ -262,7 +307,9 @@ class ReconcileInterfaceTests(unittest.TestCase):
                 if path == "/api/kea/service/status":
                     return {"status": "running"}
                 self.reads += 1
-                selected = {"opt1"} if self.reads == 1 else {"opt1", "opt2", "opt3", "opt5"}
+                selected = (
+                    {"opt1"} if self.reads == 1 else {"opt1", "opt2", "opt3", "opt5"}
+                )
                 return {
                     "dhcpv4": {
                         "general": {
@@ -305,12 +352,21 @@ class ReconcileInterfaceTests(unittest.TestCase):
         self.assertIn(("POST", "/api/kea/service/reconfigure", {}), client.calls)
 
     def test_assignment_config_declares_all_vlan_gateways(self) -> None:
-        path = Path(__file__).resolve().parents[1] / "opnsense_reconciler/assignments.json"
+        path = (
+            Path(__file__).resolve().parents[1] / "opnsense_reconciler/assignments.json"
+        )
         assignments = json.loads(path.read_text())
 
         self.assertEqual(
             {(assignment["parent"], assignment["tag"]) for assignment in assignments},
-            {("igb0", 10), ("igb0", 20), ("igb0", 30), ("igb0", 40), ("igb0", 50), ("igb0", 60)},
+            {
+                ("igb0", 10),
+                ("igb0", 20),
+                ("igb0", 30),
+                ("igb0", 40),
+                ("igb0", 50),
+                ("igb0", 60),
+            },
         )
         self.assertEqual(
             {assignment["ipaddr"] for assignment in assignments},
@@ -332,7 +388,14 @@ class BgpVerificationTests(unittest.TestCase):
                 responses = {
                     "/api/quagga/service/status": {"status": "running"},
                     "/api/quagga/diagnostics/bgpsummary": {
-                        "response": {"peers": {"10.0.30.11": {"state": "Established", "remoteAs": 64512}}}
+                        "response": {
+                            "peers": {
+                                "10.0.30.11": {
+                                    "state": "Established",
+                                    "remoteAs": 64512,
+                                }
+                            }
+                        }
                     },
                     "/api/quagga/diagnostics/search_bgproute4": {"rows": []},
                 }
@@ -356,20 +419,35 @@ class BgpVerificationTests(unittest.TestCase):
                         "response": {
                             "ipv4Unicast": {
                                 "peers": {
-                                    "10.0.30.11": {"state": "Established", "remoteAs": 64512},
-                                    "10.0.30.12": {"state": "Established", "remoteAs": 64512},
-                                    "10.0.30.13": {"state": "Established", "remoteAs": 64512},
+                                    "10.0.30.11": {
+                                        "state": "Established",
+                                        "remoteAs": 64512,
+                                    },
+                                    "10.0.30.12": {
+                                        "state": "Established",
+                                        "remoteAs": 64512,
+                                    },
+                                    "10.0.30.13": {
+                                        "state": "Established",
+                                        "remoteAs": 64512,
+                                    },
                                 }
                             }
                         }
                     },
-                    "/api/quagga/diagnostics/search_bgproute4": {"rows": [{"prefix": "10.0.40.10"}]},
+                    "/api/quagga/diagnostics/search_bgproute4": {
+                        "rows": [{"prefix": "10.0.40.10"}]
+                    },
                 }
                 return responses[path]
 
         result = verify_bgp(
             BgpClient(),
-            expected_peers={"10.0.30.11": 64512, "10.0.30.12": 64512, "10.0.30.13": 64512},
+            expected_peers={
+                "10.0.30.11": 64512,
+                "10.0.30.12": 64512,
+                "10.0.30.13": 64512,
+            },
             expected_routes={"10.0.40.10/32"},
         )
 
@@ -380,7 +458,10 @@ class BgpVerificationTests(unittest.TestCase):
     def test_bgp_expected_routes_stay_inside_lb_pool(self) -> None:
         import ipaddress
 
-        path = Path(__file__).resolve().parents[1] / "opnsense_reconciler/bgp-expected-routes.json"
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "opnsense_reconciler/bgp-expected-routes.json"
+        )
         expected = json.loads(path.read_text())
         pool = ipaddress.ip_network("10.0.40.0/24")
 
@@ -391,7 +472,10 @@ class BgpVerificationTests(unittest.TestCase):
                 network = ipaddress.ip_network(prefix)
                 self.assertEqual(network.prefixlen, 32)
                 self.assertTrue(network.subnet_of(pool))
-                self.assertIn(int(network.network_address) - int(pool.network_address), range(10, 20))
+                self.assertIn(
+                    int(network.network_address) - int(pool.network_address),
+                    range(10, 20),
+                )
 
 
 class BgpNeighborReconciliationTests(unittest.TestCase):
@@ -455,7 +539,10 @@ class BgpNeighborReconciliationTests(unittest.TestCase):
         self.assertEqual(peers, {"10.0.30.11": 64512, "10.0.30.12": 64512})
         self.assertEqual(
             client.calls,
-            [("GET", "/api/quagga/bgp/search_neighbor"), ("GET", "/api/quagga/bgp/search_neighbor")],
+            [
+                ("GET", "/api/quagga/bgp/search_neighbor"),
+                ("GET", "/api/quagga/bgp/search_neighbor"),
+            ],
         )
 
     def test_adds_missing_peer_reconfigures_and_verifies(self) -> None:
@@ -551,7 +638,9 @@ class BgpNeighborReconciliationTests(unittest.TestCase):
             def post(self, path: str, payload: object) -> object:
                 self.calls.append(("POST", path, payload))
                 uuid = path.rsplit("/", 1)[-1]
-                neighbor = payload.get("neighbor") if isinstance(payload, dict) else None
+                neighbor = (
+                    payload.get("neighbor") if isinstance(payload, dict) else None
+                )
                 for row in self.rows:
                     if row["uuid"] == uuid and isinstance(neighbor, dict):
                         row.update(neighbor)
@@ -561,7 +650,11 @@ class BgpNeighborReconciliationTests(unittest.TestCase):
 
         reconcile_bgp_neighbors(client, self.desired())
 
-        update = [call for call in client.calls if call[1] == "/api/quagga/bgp/set_neighbor/uuid-11"]
+        update = [
+            call
+            for call in client.calls
+            if call[1] == "/api/quagga/bgp/set_neighbor/uuid-11"
+        ]
         self.assertEqual(len(update), 1)
         self.assertEqual(
             update[0][2],
@@ -604,10 +697,14 @@ class BgpNeighborReconciliationTests(unittest.TestCase):
                 }
 
             def post(self, path: str, payload: object) -> object:
-                raise AssertionError(f"unexpected peer must not be deleted automatically: {path}")
+                raise AssertionError(
+                    f"unexpected peer must not be deleted automatically: {path}"
+                )
 
         with self.assertRaisesRegex(RuntimeError, "10.0.30.99"):
-            reconcile_bgp_neighbors(client=BgpClient(), desired_neighbors=self.desired()[:1])
+            reconcile_bgp_neighbors(
+                client=BgpClient(), desired_neighbors=self.desired()[:1]
+            )
 
     def test_rejects_failed_store_result(self) -> None:
         class BgpClient:
@@ -615,17 +712,28 @@ class BgpNeighborReconciliationTests(unittest.TestCase):
                 return {"rows": []}
 
             def post(self, path: str, payload: object) -> object:
-                return {"result": "failed", "validations": {"neighbor.remoteas": "invalid"}}
+                return {
+                    "result": "failed",
+                    "validations": {"neighbor.remoteas": "invalid"},
+                }
 
         with self.assertRaisesRegex(RuntimeError, "failed"):
-            reconcile_bgp_neighbors(client=BgpClient(), desired_neighbors=self.desired()[:1])
+            reconcile_bgp_neighbors(
+                client=BgpClient(), desired_neighbors=self.desired()[:1]
+            )
 
     def test_rejects_duplicate_desired_addresses(self) -> None:
         with self.assertRaisesRegex(ValueError, "duplicate"):
-            reconcile_bgp_neighbors(client=FakeClient(), desired_neighbors=[self.desired()[0], self.desired()[0]])
+            reconcile_bgp_neighbors(
+                client=FakeClient(),
+                desired_neighbors=[self.desired()[0], self.desired()[0]],
+            )
 
     def test_bgp_neighbor_config_declares_three_cilium_peers(self) -> None:
-        path = Path(__file__).resolve().parents[1] / "opnsense_reconciler/bgp-neighbors.json"
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "opnsense_reconciler/bgp-neighbors.json"
+        )
         neighbors = json.loads(path.read_text())
 
         self.assertEqual(

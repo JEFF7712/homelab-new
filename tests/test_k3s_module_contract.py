@@ -1,6 +1,5 @@
-from pathlib import Path
 import unittest
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -22,7 +21,9 @@ class K3sModuleContractTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertIn(value, module)
 
-    def test_three_control_plane_profiles_reserve_static_infrastructure_ips(self) -> None:
+    def test_three_control_plane_profiles_reserve_static_infrastructure_ips(
+        self,
+    ) -> None:
         expected_profiles = {
             "homelab-01": "10.0.30.11",
             "homelab-02": "10.0.30.12",
@@ -94,7 +95,7 @@ class K3sModuleContractTests(unittest.TestCase):
             "CiliumLoadBalancerIPPool",
             "localASN = 64512",
             "peerASN = 64513",
-            "peerAddress = \"10.0.30.1\";",
+            'peerAddress = "10.0.30.1";',
             "10.0.40.10",
             "io.cilium/bgp-control-plane",
             "bgp-canary",

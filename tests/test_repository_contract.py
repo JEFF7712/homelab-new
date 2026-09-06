@@ -1,6 +1,5 @@
-from pathlib import Path
 import unittest
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -42,7 +41,9 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertIn("apply desired.tfplan", apply_block)
         self.assertIn("check_plan", apply_block)
         self.assertIn("python -m opnsense_reconciler.reconcile", apply_block)
-        self.assertIn("--kea-interfaces opnsense_reconciler/kea-interfaces.json", apply_block)
+        self.assertIn(
+            "--kea-interfaces opnsense_reconciler/kea-interfaces.json", apply_block
+        )
         self.assertLess(
             apply_block.index("apply desired.tfplan"),
             apply_block.index("python -m opnsense_reconciler.reconcile"),

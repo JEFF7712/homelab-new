@@ -21,12 +21,12 @@ variables:
 nix_format:
   stage: lint
   script:
-    - cd flake && nix fmt -- --check flake.nix
+    - nix develop ./flake -c just fmt-check
 
 repository_tests:
   stage: test
   script:
-    - nix develop ./flake -c python -m unittest discover -s tests -v
+    - nix develop ./flake -c just check
     - nix flake check ./flake
 
 yaml_schema:

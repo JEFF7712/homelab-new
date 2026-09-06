@@ -1,6 +1,5 @@
-from pathlib import Path
 import unittest
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -27,9 +26,9 @@ class OPNsenseTofuContractTests(unittest.TestCase):
         values = (ROOT / "tofu/opnsense/homelab.auto.tfvars").read_text()
 
         self.assertIn('opnsense_interfaces_vlan.managed["clients"]', imports)
-        self.assertIn('47cac540-15b6-4838-9de1-f7e8e7307d2b', imports)
+        self.assertIn("47cac540-15b6-4838-9de1-f7e8e7307d2b", imports)
         self.assertIn('opnsense_kea_dhcpv4_subnet.managed["clients"]', imports)
-        self.assertIn('542fde27-1972-42e1-9376-057b5cae2f5e', imports)
+        self.assertIn("542fde27-1972-42e1-9376-057b5cae2f5e", imports)
         self.assertNotIn("device      = each.value.device", network)
         self.assertNotIn("device      = string", variables)
         self.assertNotIn('device      = "vlan', values)
