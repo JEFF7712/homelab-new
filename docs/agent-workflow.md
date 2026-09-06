@@ -25,7 +25,7 @@ Verification records contain command, exit code, time, source fingerprint, evide
 
 Host Nix evaluates the affected host. Shared Nix evaluates all hosts. Reconciler Python runs Ruff, Pyright, and behavior tests. GitOps renders Kustomize boundaries and validates schemas. OpenTofu formats, initializes with its backend disabled, and validates. Workflow, CI, flake input, and unknown code changes select the full gate. Documentation selects link, reference, and whitespace checks.
 
-The GitOps gate fails when a custom-resource schema is missing. `just provision-check-deps` snapshots the served CRD schemas from the configured cluster into ignored `.agent-cache/schemas/`; subsequent validation uses that local cache. It skips encrypted SOPS manifests, whose kind is ciphertext until Flux decrypts them, and the vendored CRD definitions themselves. Live probes are reported separately from repository validation.
+The GitOps gate fails when a custom-resource schema is missing. Required CRD schemas are pinned under `schemas/kubernetes/`, so local and CI validation use the same offline inputs. `just refresh-crd-schemas` snapshots all served cluster schemas into ignored `.agent-cache/schemas/` for review when the pinned set needs updating. `just provision-check-deps` installs the locked OpenTofu provider before the offline gate. GitOps validation skips encrypted SOPS manifests, whose kind is ciphertext until Flux decrypts them, and the vendored CRD definitions themselves. Live probes are reported separately from repository validation.
 
 ## Transfer and cleanup
 

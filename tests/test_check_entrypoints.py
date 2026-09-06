@@ -6,6 +6,23 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class CheckEntrypointTest(unittest.TestCase):
+    def test_required_crd_schemas_are_pinned(self) -> None:
+        schema_root = ROOT / "schemas/kubernetes"
+        required = {
+            "clusterissuer-cert-manager-v1.json",
+            "clustersecretstore-external-secrets-v1.json",
+            "externalsecret-external-secrets-v1.json",
+            "gatewayclass-gateway-v1.json",
+            "gitrepository-source-v1.json",
+            "helmrelease-helm-v2.json",
+            "helmrepository-source-v1.json",
+            "httproute-gateway-v1.json",
+            "kustomization-kustomize-v1.json",
+            "referencegrant-gateway-v1beta1.json",
+            "referencegrant-gateway-v1.json",
+        }
+        self.assertEqual({path.name for path in schema_root.glob("*.json")}, required)
+
     def test_required_check_scripts_exist_and_are_executable(self) -> None:
         for name in (
             "python.sh",
