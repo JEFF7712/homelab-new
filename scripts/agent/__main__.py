@@ -6,32 +6,11 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from .git_state import collect_git_state
+from .context import context_payload, render_context
 from .redact import redact
-from .tasks import TaskError, checkpoint_task, create_task, resume_task
+from .tasks import TaskError, checkpoint_task, create_task, export_task, resume_task
 
 UNAVAILABLE = 69
-
-
-def context_payload() -> dict[str, object]:
-    state = collect_git_state()
-    return {
-        "schema_version": 1,
-        "command": "context",
-        "repository": {
-            "root": str(state.root),
-            "branch": state.branch,
-            "detached": state.detached,
-            "head": state.head,
-            "dirty": state.dirty,
-            "dirty_summary": {
-                "staged": state.counts.staged,
-                "unstaged": state.counts.unstaged,
-                "untracked": state.counts.untracked,
-                "files": list(state.affected_paths),
-            },
-        },
-    }
 
 
 def add_json_option(parser: argparse.ArgumentParser) -> None:
@@ -44,6 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     context = subparsers.add_parser("context", help="show local repository context")
     add_json_option(context)
+    context.add_argument("--task")
 
     doctor = subparsers.add_parser("doctor", help="diagnose local workflow tooling")
     add_json_option(doctor)
@@ -74,6 +54,7 @@ def build_parser() -> argparse.ArgumentParser:
         "task-export", help="export a sanitized handoff"
     )
     task_export.add_argument("id")
+    task_export.add_argument("--replace", action="store_true")
 
     status = subparsers.add_parser("status", help="run read-only live diagnostics")
     status.add_argument("target", choices=("cluster", "network"))
@@ -123,19 +104,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     arguments = parser.parse_args(argv)
     if arguments.command == "context":
         try:
-            payload = context_payload()
-        except RuntimeError as error:
-            parser.error(str(error))
+            payload = context_payload(task_id=arguments.task)
+        except (TaskError, RuntimeError, OSError) as error:
+            print(f"context: {redact(str(error))}", file=sys.stderr)
+            return 2
         if arguments.json:
             print(json.dumps(payload, sort_keys=True))
         else:
-            repository = payload["repository"]
-            assert isinstance(repository, dict)
-            branch = repository["branch"] or "detached HEAD"
-            print(f"Repository: {repository['root']}")
-            print(f"Revision: {branch} at {repository['head']}")
-            print(f"Dirty: {str(repository['dirty']).lower()}")
+            print(render_context(payload), end="")
         return 0
+
+    if arguments.command == "task-export":
+        try:
+            path = export_task(Path.cwd(), arguments.id, replace=arguments.replace)
+            print(path)
+            return 0
+        except (TaskError, RuntimeError, OSError) as error:
+            print(f"task-export: {redact(str(error))}", file=sys.stderr)
+            return 2
 
     if arguments.command in {"task-new", "task-checkpoint", "task-resume"}:
         try:

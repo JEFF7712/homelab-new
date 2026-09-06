@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Self
 
 from .git_state import GitBaseError, collect_git_state
+from .redact import redact
 
 TASK_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 SCHEMA_VERSION = 1
@@ -452,3 +453,44 @@ def resume_task(root: Path, task_id: str) -> dict[str, Any]:
         "verifications": stale_verifications,
         "next_action": record["next_action"],
     }
+
+
+def export_task(root: Path, task_id: str, *, replace: bool = False) -> Path:
+    inspection = resume_task(root, task_id)
+    record = inspection["task"]
+    state = collect_git_state(root)
+    destination = state.root / "docs" / "agent-tasks" / f"{task_id}.md"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    criteria = "\n".join(
+        f"- [{'x' if item['satisfied'] else ' '}] {item['description']}"
+        + (f" ({item['evidence']})" if item["evidence"] else "")
+        for item in record["acceptance_criteria"]
+    )
+    source = "\n".join(f"- `{path}`" for path in record["owned_files"])
+    remaining = "\n".join(f"- {item}" for item in record["remaining_work"]) or "- None"
+    evidence = (
+        "\n".join(
+            f"- `{item['command']}`: exit {item['exit_code']}, evidence `{item['evidence_path']}`"
+            for item in inspection["verifications"]
+        )
+        or "- None recorded"
+    )
+    content = redact(
+        f"# Agent Task: {record['task_id']}\n\n"
+        f"Status: `{record['status']}`  \nBase commit: `{record['base_commit']}`  \n"
+        f"Checkpoint HEAD: `{record['checkpoint_head']}`  \nOwner: `{record['owning_agent']}`  \n"
+        f"Session: `{record['session']}`\n\n## Objective\n\n{record['objective']}\n\n"
+        f"## Acceptance criteria\n\n{criteria}\n\n## Owned source\n\n{source}\n\n"
+        f"## Remaining work\n\n{remaining}\n\n## Verification\n\n{evidence}\n\n"
+        f"## Next action\n\n{record['next_action']}\n\n## Uncommitted work\n\n"
+        "This handoff does not contain uncommitted file content. Recover it from the original checkout, "
+        "or create and transfer a reviewed patch before moving to another machine.\n"
+    )
+    try:
+        with destination.open("w" if replace else "x", encoding="utf-8") as handle:
+            handle.write(content)
+    except FileExistsError as error:
+        raise TaskConflictError(
+            "task export already exists; pass --replace to replace it"
+        ) from error
+    return destination
