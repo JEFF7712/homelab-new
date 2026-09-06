@@ -18,7 +18,7 @@ class AgentHookTest(unittest.TestCase):
 
     def test_session_start_returns_json_and_recursion_fails_open(self) -> None:
         result = subprocess.run(
-            [str(ROOT / "hooks/session-start")],
+            ["bash", str(ROOT / "hooks/session-start")],
             cwd=ROOT,
             input='{"session_id":"fixture"}',
             capture_output=True,
@@ -28,7 +28,7 @@ class AgentHookTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIsInstance(json.loads(result.stdout), dict)
         recursive = subprocess.run(
-            [str(ROOT / "hooks/session-start")],
+            ["bash", str(ROOT / "hooks/session-start")],
             cwd=ROOT,
             env={**os.environ, "AGENT_HOOK_ACTIVE": "1"},
             input="{}",

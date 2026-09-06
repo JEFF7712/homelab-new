@@ -34,3 +34,23 @@ Exports omit raw task logs and redact common secrets and credential paths. An ex
 ## JSON envelope
 
 Structured commands return `schema_version`, `command`, and command-specific data. Failures return nonzero with `status: error`, `error_type`, and a sanitized `message`. Doctor items use `pass`, `fail`, or `unavailable`. Runtime evidence is timestamped and describes one observation, never perpetual health.
+
+## Acceptance coverage
+
+| Scenario | Executable proof |
+| --- | --- |
+| Only untracked files are dirty | `tests.test_agent_git_state.GitStateTest.test_only_untracked_files_are_dirty_and_change_the_fingerprint` |
+| Zero, one, or multiple active tasks | `tests.test_agent_context.AgentContextTest.test_no_task_lists_active_tasks_without_selecting` and `test_explicit_and_session_task_selection` |
+| Source edit makes verification stale | `tests.test_agent_tasks.TaskRecordTest.test_resume_reports_drift_unavailable_base_and_stale_verification_without_rewrite` |
+| HEAD drift or unavailable base | `tests.test_agent_tasks.TaskRecordTest.test_resume_reports_drift_unavailable_base_and_stale_verification_without_rewrite` |
+| Concurrent writers conflict | `tests.test_agent_tasks.TaskRecordTest.test_checkpoint_requires_matching_revision_and_preserves_previous_record` |
+| Invalid or interrupted checkpoint preserves state | `tests.test_agent_tasks.TaskRecordTest.test_lock_conflict_and_interrupted_replace_keep_valid_record` |
+| Spaces and unusual Git path bytes | `tests.test_agent_git_state.GitStateTest.test_collects_all_local_change_sources_with_unusual_paths` and `test_repository_root_with_newline_is_preserved` |
+| Renamed, deleted, staged, and untracked files route | `tests.test_agent_git_state.GitStateTest.test_collects_all_local_change_sources_with_unusual_paths` and `test_staged_deletion_is_an_index_change` |
+| Unknown or shared check paths select full validation | `tests.test_agent_checks.AgentCheckSelectionTest.test_routes_repository_surfaces_with_reasons` |
+| Startup remains local without credentials | `tests.test_agent_context.AgentContextTest.test_text_output_is_bounded_and_reports_truncation` and `tests.test_agent_doctor.AgentDoctorTest.test_doctor_reports_structured_results_without_secret_values` |
+| Missing required tooling fails explicitly | `nix develop ./flake -c python -m unittest tests.test_agent_doctor -v` |
+| Live timeout is bounded and nonhealthy | `tests.test_agent_status.AgentStatusTest.test_unknown_probe_is_nonhealthy_and_bounded` |
+| Secrets are removed from evidence and handoff | `tests.test_agent_status.AgentStatusTest.test_evidence_is_sanitized` and `tests.test_agent_context.AgentContextTest.test_export_redacts_and_explains_uncommitted_recovery` |
+| Unsupported hook event has an explicit fallback | `tests.test_agent_hooks.AgentHookTest.test_client_hook_configuration_is_valid_json`; use `just agent-context` where a lifecycle event is unavailable |
+| Export contains fresh-session recovery fields | `tests.test_agent_context.AgentContextTest.test_export_redacts_and_explains_uncommitted_recovery` |

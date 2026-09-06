@@ -95,7 +95,10 @@
           pkgs.runCommand "repository-contract"
             {
               nativeBuildInputs = [
+                pkgs.bash
+                pkgs.coreutils
                 pkgs.git
+                pkgs.just
                 pkgs.python313
               ];
             }

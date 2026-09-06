@@ -68,7 +68,7 @@ def status_payload(
     targets = configured_targets(root)
     probes = []
     if target == "cluster":
-        if not shutil.which("kubectl"):
+        if runner is subprocess.run and not shutil.which("kubectl"):
             probes.append({"status": "unavailable", "detail": "kubectl is missing"})
         else:
             for name, argv in (
