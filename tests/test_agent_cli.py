@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
-
+from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 COMMANDS = (
@@ -23,7 +22,9 @@ COMMANDS = (
 JSON_COMMANDS = ("context", "doctor", "check-changed", "task-resume", "status")
 
 
-def run_agent(*arguments: str, cwd: Path = REPOSITORY_ROOT) -> subprocess.CompletedProcess[str]:
+def run_agent(
+    *arguments: str, cwd: Path = REPOSITORY_ROOT
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, "-m", "scripts.agent", *arguments],
         cwd=cwd,
@@ -52,8 +53,12 @@ class AgentCliTest(unittest.TestCase):
     def test_context_json_reports_git_checkout_and_untracked_files(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent cli repo ") as directory:
             repository = Path(directory)
-            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repository, check=True)
-            subprocess.run(["git", "config", "user.name", "Agent Test"], cwd=repository, check=True)
+            subprocess.run(
+                ["git", "init", "-q", "-b", "main"], cwd=repository, check=True
+            )
+            subprocess.run(
+                ["git", "config", "user.name", "Agent Test"], cwd=repository, check=True
+            )
             subprocess.run(
                 ["git", "config", "user.email", "agent-test@example.invalid"],
                 cwd=repository,
@@ -61,7 +66,9 @@ class AgentCliTest(unittest.TestCase):
             )
             (repository / "tracked.txt").write_text("tracked\n", encoding="utf-8")
             subprocess.run(["git", "add", "tracked.txt"], cwd=repository, check=True)
-            subprocess.run(["git", "commit", "-qm", "initial"], cwd=repository, check=True)
+            subprocess.run(
+                ["git", "commit", "-qm", "initial"], cwd=repository, check=True
+            )
             (repository / "tracked.txt").write_text("modified\n", encoding="utf-8")
             (repository / "new file.txt").write_text("untracked\n", encoding="utf-8")
 
@@ -83,8 +90,12 @@ class AgentCliTest(unittest.TestCase):
     def test_context_json_reports_detached_head(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-detached-") as directory:
             repository = Path(directory)
-            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repository, check=True)
-            subprocess.run(["git", "config", "user.name", "Agent Test"], cwd=repository, check=True)
+            subprocess.run(
+                ["git", "init", "-q", "-b", "main"], cwd=repository, check=True
+            )
+            subprocess.run(
+                ["git", "config", "user.name", "Agent Test"], cwd=repository, check=True
+            )
             subprocess.run(
                 ["git", "config", "user.email", "agent-test@example.invalid"],
                 cwd=repository,
@@ -92,8 +103,12 @@ class AgentCliTest(unittest.TestCase):
             )
             (repository / "tracked.txt").write_text("tracked\n", encoding="utf-8")
             subprocess.run(["git", "add", "tracked.txt"], cwd=repository, check=True)
-            subprocess.run(["git", "commit", "-qm", "initial"], cwd=repository, check=True)
-            subprocess.run(["git", "checkout", "--detach", "-q"], cwd=repository, check=True)
+            subprocess.run(
+                ["git", "commit", "-qm", "initial"], cwd=repository, check=True
+            )
+            subprocess.run(
+                ["git", "checkout", "--detach", "-q"], cwd=repository, check=True
+            )
 
             result = run_agent("context", "--json", cwd=repository)
 

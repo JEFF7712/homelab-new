@@ -2,12 +2,19 @@ from __future__ import annotations
 
 import hashlib
 import os
-from pathlib import Path
 import posixpath
 import stat
 import subprocess
+from pathlib import Path
 
-from .models import ChangeCounts, ChangedPath, ChangeKind, ChangeSource, GitBase, GitState
+from .models import (
+    ChangeCounts,
+    ChangedPath,
+    ChangeKind,
+    ChangeSource,
+    GitBase,
+    GitState,
+)
 
 
 class GitStateError(RuntimeError):
@@ -138,10 +145,21 @@ def _base_state(root: Path, head: str | None, base: str | None) -> GitBase:
     if base is None:
         return GitBase(False, None, None, None)
     if head is None:
-        raise GitBaseError(base, f"Git base '{base}' is unavailable because HEAD has no commit")
-    resolved = _git("rev-parse", "--verify", "--quiet", f"{base}^{{commit}}", cwd=root, allow_failure=True)
+        raise GitBaseError(
+            base, f"Git base '{base}' is unavailable because HEAD has no commit"
+        )
+    resolved = _git(
+        "rev-parse",
+        "--verify",
+        "--quiet",
+        f"{base}^{{commit}}",
+        cwd=root,
+        allow_failure=True,
+    )
     if not resolved:
-        raise GitBaseError(base, f"Git base '{base}' is unavailable. Fetch or choose a valid commit.")
+        raise GitBaseError(
+            base, f"Git base '{base}' is unavailable. Fetch or choose a valid commit."
+        )
     resolved_base = _without_output_terminator(resolved).decode("ascii")
     merge_base = _git("merge-base", resolved_base, head, cwd=root, allow_failure=True)
     if not merge_base:
@@ -202,7 +220,7 @@ def _repository_identity(root: Path) -> tuple[int, int]:
 
 
 def _write_change_fingerprint(
-    digest: "hashlib._Hash",
+    digest: hashlib._Hash,
     root: Path,
     change: ChangedPath,
     depth: int,
@@ -298,7 +316,9 @@ def _unreported_dirty_gitlinks(
         except FileNotFoundError:
             continue
         except OSError as error:
-            raise GitStateError(f"cannot inspect gitlink '{gitlink.path}': {error}") from error
+            raise GitStateError(
+                f"cannot inspect gitlink '{gitlink.path}': {error}"
+            ) from error
         if not stat.S_ISDIR(metadata.st_mode):
             continue
         is_repository = _git(
@@ -370,23 +390,24 @@ def _worktree_content(
     except FileNotFoundError:
         return None
     except OSError as error:
-        raise GitStateError(f"cannot inspect working path '{change.path}': {error}") from error
+        raise GitStateError(
+            f"cannot inspect working path '{change.path}': {error}"
+        ) from error
     if stat.S_ISLNK(metadata.st_mode):
         try:
             return b"symlink\0" + os.fsencode(os.readlink(target))
         except OSError as error:
-            raise GitStateError(f"cannot read symlink '{change.path}': {error}") from error
+            raise GitStateError(
+                f"cannot read symlink '{change.path}': {error}"
+            ) from error
     if stat.S_ISREG(metadata.st_mode):
         try:
             mode = stat.S_IFMT(metadata.st_mode) | (metadata.st_mode & 0o111)
-            return (
-                b"file\0"
-                + f"{mode:o}".encode("ascii")
-                + b"\0"
-                + target.read_bytes()
-            )
+            return b"file\0" + f"{mode:o}".encode("ascii") + b"\0" + target.read_bytes()
         except OSError as error:
-            raise GitStateError(f"cannot read working path '{change.path}': {error}") from error
+            raise GitStateError(
+                f"cannot read working path '{change.path}': {error}"
+            ) from error
     if stat.S_ISDIR(metadata.st_mode):
         entries = _index_entries(root, change.path_bytes)
         if any(mode == b"160000" for mode, _, _ in entries):
@@ -426,7 +447,9 @@ def _content(
     )
 
 
-def _fingerprint(root: Path, head: str | None, base: GitBase, changes: tuple[ChangedPath, ...]) -> str:
+def _fingerprint(
+    root: Path, head: str | None, base: GitBase, changes: tuple[ChangedPath, ...]
+) -> str:
     digest = hashlib.sha256()
     digest.update(b"agent-git-state-v1\0")
     for value in (head, base.resolved, base.merge_base):
@@ -450,9 +473,17 @@ def collect_git_state(cwd: Path | None = None, base: str | None = None) -> GitSt
     root_output = _git("rev-parse", "--show-toplevel", cwd=cwd)
     root = Path(os.fsdecode(_without_output_terminator(root_output))).resolve()
     head_output = _git("rev-parse", "--verify", "HEAD", cwd=root, allow_failure=True)
-    head = _without_output_terminator(head_output).decode("ascii") if head_output else None
-    branch_output = _git("symbolic-ref", "--quiet", "--short", "HEAD", cwd=root, allow_failure=True)
-    branch = os.fsdecode(_without_output_terminator(branch_output)) if branch_output else None
+    head = (
+        _without_output_terminator(head_output).decode("ascii") if head_output else None
+    )
+    branch_output = _git(
+        "symbolic-ref", "--quiet", "--short", "HEAD", cwd=root, allow_failure=True
+    )
+    branch = (
+        os.fsdecode(_without_output_terminator(branch_output))
+        if branch_output
+        else None
+    )
     git_base = _base_state(root, head, base)
 
     changes = list(_local_changes(root))

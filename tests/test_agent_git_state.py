@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from pathlib import Path
 
 from scripts.agent.git_state import GitBaseError, collect_git_state
 from scripts.agent.models import ChangeKind, ChangeSource
@@ -58,13 +58,29 @@ class GitStateTest(unittest.TestCase):
 
             state = collect_git_state(repository)
 
-        records = {(change.path, change.kind, change.source, change.old_path) for change in state.changes}
-        self.assertIn(("staged.txt", ChangeKind.MODIFIED, ChangeSource.INDEX, None), records)
-        self.assertIn(("staged.txt", ChangeKind.MODIFIED, ChangeSource.WORKTREE, None), records)
-        self.assertIn(("unstaged.txt", ChangeKind.MODIFIED, ChangeSource.WORKTREE, None), records)
-        self.assertIn(("deleted.txt", ChangeKind.DELETED, ChangeSource.WORKTREE, None), records)
+        records = {
+            (change.path, change.kind, change.source, change.old_path)
+            for change in state.changes
+        }
         self.assertIn(
-            ("renamed name.txt", ChangeKind.RENAMED, ChangeSource.INDEX, "old name.txt"),
+            ("staged.txt", ChangeKind.MODIFIED, ChangeSource.INDEX, None), records
+        )
+        self.assertIn(
+            ("staged.txt", ChangeKind.MODIFIED, ChangeSource.WORKTREE, None), records
+        )
+        self.assertIn(
+            ("unstaged.txt", ChangeKind.MODIFIED, ChangeSource.WORKTREE, None), records
+        )
+        self.assertIn(
+            ("deleted.txt", ChangeKind.DELETED, ChangeSource.WORKTREE, None), records
+        )
+        self.assertIn(
+            (
+                "renamed name.txt",
+                ChangeKind.RENAMED,
+                ChangeSource.INDEX,
+                "old name.txt",
+            ),
             records,
         )
         for name in (
@@ -74,11 +90,15 @@ class GitStateTest(unittest.TestCase):
             "unicode-λ.txt",
             "-leading-dash.txt",
         ):
-            self.assertIn((name, ChangeKind.UNTRACKED, ChangeSource.UNTRACKED, None), records)
+            self.assertIn(
+                (name, ChangeKind.UNTRACKED, ChangeSource.UNTRACKED, None), records
+            )
             record = next(change for change in state.changes if change.path == name)
             self.assertEqual(record.path_bytes, name.encode("utf-8"))
         self.assertNotIn("ignored/skip.txt", {change.path for change in state.changes})
-        self.assertFalse(any(change.path.startswith(".agent-state") for change in state.changes))
+        self.assertFalse(
+            any(change.path.startswith(".agent-state") for change in state.changes)
+        )
         self.assertIn("old name.txt", state.affected_paths)
         self.assertIn("renamed name.txt", state.affected_paths)
         self.assertEqual(len(records), len(state.changes))
@@ -135,11 +155,16 @@ class GitStateTest(unittest.TestCase):
         self.assertNotEqual(non_executable.fingerprint, executable.fingerprint)
         self.assertIn(
             ("script.sh", ChangeKind.MODIFIED, ChangeSource.WORKTREE),
-            {(change.path, change.kind, change.source) for change in executable.changes},
+            {
+                (change.path, change.kind, change.source)
+                for change in executable.changes
+            },
         )
 
     def test_staged_deletion_is_an_index_change(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="agent-git-staged-delete-") as directory:
+        with tempfile.TemporaryDirectory(
+            prefix="agent-git-staged-delete-"
+        ) as directory:
             repository = make_repository(Path(directory))
             target = repository / "delete.txt"
             target.write_bytes(b"tracked")
@@ -236,7 +261,9 @@ class GitStateTest(unittest.TestCase):
         )
         self.assertEqual(first.fingerprint, second.fingerprint)
 
-    def test_worktree_symlink_target_is_fingerprinted_without_following_it(self) -> None:
+    def test_worktree_symlink_target_is_fingerprinted_without_following_it(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-symlink-") as directory:
             repository = make_repository(Path(directory))
             (repository / "base-target").write_bytes(b"same content")
@@ -315,7 +342,9 @@ class GitStateTest(unittest.TestCase):
         )
 
     def test_dirty_gitlink_fingerprint_includes_nested_file_content(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="agent-git-gitlink-content-") as directory:
+        with tempfile.TemporaryDirectory(
+            prefix="agent-git-gitlink-content-"
+        ) as directory:
             root = Path(directory)
             nested = root / "nested"
             nested.mkdir()
@@ -346,8 +375,12 @@ class GitStateTest(unittest.TestCase):
 
         self.assertNotEqual(first.fingerprint, second.fingerprint)
 
-    def test_untracked_only_gitlink_is_dirty_and_fingerprints_nested_bytes(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="agent-git-gitlink-untracked-") as directory:
+    def test_untracked_only_gitlink_is_dirty_and_fingerprints_nested_bytes(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory(
+            prefix="agent-git-gitlink-untracked-"
+        ) as directory:
             root = Path(directory)
             nested = root / "nested"
             nested.mkdir()
@@ -385,8 +418,12 @@ class GitStateTest(unittest.TestCase):
             {(change.path, change.kind, change.source) for change in first.changes},
         )
 
-    def test_untracked_depth_two_gitlink_is_detected_without_ignored_state(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="agent-git-gitlink-depth-two-") as directory:
+    def test_untracked_depth_two_gitlink_is_detected_without_ignored_state(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory(
+            prefix="agent-git-gitlink-depth-two-"
+        ) as directory:
             root = Path(directory)
             deepest = root / "deepest"
             deepest.mkdir()
