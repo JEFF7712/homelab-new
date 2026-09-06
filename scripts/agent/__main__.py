@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .checks import run_selection, select_checks
 from .context import context_payload, render_context
+from .doctor import run_doctor
 from .git_state import GitBaseError, collect_git_state
 from .redact import redact
 from .tasks import TaskError, checkpoint_task, create_task, export_task, resume_task
@@ -160,6 +161,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             else:
                 print(f"check-changed: {redact(str(error))}", file=sys.stderr)
             return 2
+
+    if arguments.command == "doctor":
+        payload = run_doctor(Path.cwd())
+        if arguments.json:
+            print(json.dumps(payload, sort_keys=True))
+        else:
+            for item in payload["checks"]:
+                print(f"{item['status']:11} {item['name']}: {item['detail']}")
+                if item["remedy"]:
+                    print(f"            remedy: {item['remedy']}")
+        return 1 if payload["status"] == "fail" else 0
 
     if arguments.command in {"task-new", "task-checkpoint", "task-resume"}:
         try:
