@@ -37,16 +37,15 @@ gitops/websites/
     namespace.yaml
     deployment.yaml
     service.yaml
-    route.yaml
   darkbit/
     ...
   distrojeff/
     ...
 ```
 
-Each site receives a namespace, a Deployment, a ClusterIP Service, and a Gateway API `HTTPRoute` attached to the existing `default/homelab` Gateway. Routes use the site hostname and forward `/` to the site Service on port 80. Certificate resources are not copied because public TLS is terminated by the existing Cloudflare path, while the in-cluster origin remains HTTP as with the current Immich route.
+Each site receives a namespace, a Deployment, and a ClusterIP Service. The remote-configured Cloudflare Tunnel sends each public hostname directly to its in-cluster Service DNS name on port 80. Gateway API `HTTPRoute` resources are intentionally not created because the `default/homelab` Gateway is parked in the current architecture. Certificate resources are not copied because public TLS is terminated by Cloudflare.
 
-The cluster-level Flux Kustomization will depend on `ingress` and will health-check all three Deployments. This makes the migration declarative and prevents the website layer from reporting ready before the Gateway API resources and workloads exist.
+The cluster-level Flux Kustomization will health-check all three Deployments. This keeps the Kubernetes workload layer independent from the separately managed Cloudflare Tunnel configuration.
 
 ## Workload hardening
 
@@ -64,7 +63,7 @@ The implementation will not invent health endpoints or writable mount paths. If 
 
 ## Routing and external access
 
-The initial change only creates in-cluster `HTTPRoute` resources. Cloudflare hostname routing remains an external follow-up because its configuration is outside this repository and requires live Cloudflare state verification. The website migration is considered internally successful when the Deployments, Services, Routes, and Gateway status are healthy. Public reachability is reported separately until Cloudflare routes are confirmed.
+Cloudflare hostname routing is an external configuration owned by the `homelab` tunnel. The required origins are `http://apolline-svc.apolline:80`, `http://darkbit-svc.darkbit:80`, and `http://distrojeff-site-svc.distrojeff:80`. The website migration is internally successful when the Deployments, Services, and endpoints are healthy. Public reachability requires the tunnel entries to be updated and verified separately.
 
 ## Verification
 
@@ -79,8 +78,8 @@ After authorized Flux deployment:
 1. Confirm the website Flux Kustomization is ready.
 2. Confirm all three Deployments have available replicas and no non-ready pods exist in their namespaces.
 3. Confirm Services have ready endpoints.
-4. Confirm each `HTTPRoute` is accepted and programmed by the Gateway.
-5. Test the in-cluster origin path from an appropriate cluster-local probe.
-6. Test public hostnames only after Cloudflare routing is independently confirmed.
+4. Test each Service DNS origin from an appropriate cluster-local probe.
+5. Verify the three Cloudflare tunnel entries point to the new Service DNS origins.
+6. Test all public hostnames through Cloudflare.
 
 No legacy resource will be removed until the replacement has passed these checks and the public access path, if migrated, has been verified.

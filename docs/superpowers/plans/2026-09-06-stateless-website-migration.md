@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Migrate Apolline, Darkbit, and DistroJeff into the new Flux-managed k3s cluster as stateless Gateway API applications.
+**Goal:** Migrate Apolline, Darkbit, and DistroJeff into the new Flux-managed k3s cluster as stateless Service-backed applications.
 
-**Architecture:** Add one Kustomize directory per site under `gitops/websites/`, with a Namespace, hardened Deployment, ClusterIP Service, and HTTPRoute attached to the existing `default/homelab` Gateway. Add one cluster-level Flux Kustomization that depends on the existing ingress layer and health-checks all three Deployments.
+**Architecture:** Add one Kustomize directory per site under `gitops/websites/`, with a Namespace, hardened Deployment, and ClusterIP Service. The remote-configured Cloudflare Tunnel sends public hostnames directly to those Service DNS names because the Gateway is parked. Add one cluster-level Flux Kustomization that health-checks all three Deployments.
 
-**Tech Stack:** Kubernetes Deployments and Services, Gateway API `HTTPRoute`, Kustomize, Flux Kustomize Controller, GHCR images, `kubectl`, `kubeconform`, `yamllint`.
+**Tech Stack:** Kubernetes Deployments and Services, Kustomize, Flux Kustomize Controller, Cloudflare Tunnel, GHCR images, `kubectl`, `kubeconform`, `yamllint`.
 
 ---
 
@@ -37,7 +37,6 @@ Expected: one `sha256:` digest per image. If registry inspection is unavailable,
 - Create: `gitops/websites/apolline/namespace.yaml`
 - Create: `gitops/websites/apolline/deployment.yaml`
 - Create: `gitops/websites/apolline/service.yaml`
-- Create: `gitops/websites/apolline/route.yaml`
 
 - [ ] **Step 1: Define the Kustomization resources.**
 
@@ -50,16 +49,11 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - service.yaml
-  - route.yaml
 ```
 
 - [ ] **Step 2: Define namespace, Deployment, and Service.**
 
 Use namespace `apolline`, Deployment `website-deploy`, selector label `app: apolline-web`, one replica, container port `8080`, and Service `apolline-svc` exposing port 80 to targetPort 8080. Preserve the legacy `/var/cache/nginx`, `/tmp`, and `/run` `emptyDir` mounts and run the container as UID 101 with all capabilities dropped, no privilege escalation, RuntimeDefault seccomp, and a read-only root filesystem.
-
-- [ ] **Step 3: Define the Gateway API route.**
-
-Create `HTTPRoute` `apolline-route` in namespace `apolline`, parent `default/homelab`, hostnames `apollinestore.com` and `www.apollinestore.com`, and a `/` PathPrefix backend reference to `apolline-svc:80`.
 
 ### Task 3: Add the Darkbit website manifests
 
@@ -68,11 +62,10 @@ Create `HTTPRoute` `apolline-route` in namespace `apolline`, parent `default/hom
 - Create: `gitops/websites/darkbit/namespace.yaml`
 - Create: `gitops/websites/darkbit/deployment.yaml`
 - Create: `gitops/websites/darkbit/service.yaml`
-- Create: `gitops/websites/darkbit/route.yaml`
 
 - [ ] **Step 1: Copy the Apolline manifest shape with Darkbit identities.**
 
-Use namespace `darkbit`, Deployment `website-deploy`, selector label `app: darkbit-web`, Service `darkbit-svc`, route `darkbit-route`, hostnames `darkbitapparel.com` and `www.darkbitapparel.com`, and the resolved `ghcr.io/jeff7712/darkbit:0.0.25` image digest. Preserve the same port, security context, and three `emptyDir` mounts as Apolline.
+Use namespace `darkbit`, Deployment `website-deploy`, selector label `app: darkbit-web`, Service `darkbit-svc`, and the resolved `ghcr.io/jeff7712/darkbit:0.0.25` image digest. Preserve the same port, security context, and three `emptyDir` mounts as Apolline.
 
 ### Task 4: Add the DistroJeff website manifests
 
@@ -81,11 +74,10 @@ Use namespace `darkbit`, Deployment `website-deploy`, selector label `app: darkb
 - Create: `gitops/websites/distrojeff/namespace.yaml`
 - Create: `gitops/websites/distrojeff/deployment.yaml`
 - Create: `gitops/websites/distrojeff/service.yaml`
-- Create: `gitops/websites/distrojeff/route.yaml`
 
 - [ ] **Step 1: Copy the shared manifest shape with DistroJeff identities.**
 
-Use namespace `distrojeff`, Deployment `website-deploy`, selector label `app: distrojeff-web`, Service `distrojeff-site-svc`, route `distrojeff-site-route`, hostnames `distrojeff.com` and `www.distrojeff.com`, and the resolved `ghcr.io/jeff7712/distrojeff-site:0.0.22` image digest. Preserve the legacy 500m CPU/256Mi memory limits, 100m CPU/128Mi memory requests, port 8080, security context, and three `emptyDir` mounts.
+Use namespace `distrojeff`, Deployment `website-deploy`, selector label `app: distrojeff-web`, Service `distrojeff-site-svc`, and the resolved `ghcr.io/jeff7712/distrojeff-site:0.0.22` image digest. Preserve the legacy 500m CPU/256Mi memory limits, 100m CPU/128Mi memory requests, port 8080, security context, and three `emptyDir` mounts.
 
 ### Task 5: Wire the websites into Flux
 
@@ -108,7 +100,7 @@ resources:
 
 - [ ] **Step 2: Define the Flux Kustomization.**
 
-Create Flux Kustomization `websites` in `flux-system` with path `./gitops/websites`, `prune: true`, interval `10m`, source `GitRepository/flux-system`, dependency `ingress`, and health checks for `apps/v1 Deployment/website-deploy` in namespaces `apolline`, `darkbit`, and `distrojeff`.
+Create Flux Kustomization `websites` in `flux-system` with path `./gitops/websites`, `prune: true`, interval `10m`, source `GitRepository/flux-system`, and health checks for `apps/v1 Deployment/website-deploy` in namespaces `apolline`, `darkbit`, and `distrojeff`.
 
 ### Task 6: Render and validate before deployment
 
@@ -120,7 +112,7 @@ Run:
 nix develop ./flake -c kubectl kustomize gitops/websites > /tmp/homelab-websites.yaml
 ```
 
-Expected: output contains three Namespaces, three Deployments, three Services, and three HTTPRoutes, with no deprecated Traefik or cert-manager resources.
+Expected: output contains three Namespaces, three Deployments, and three Services, with no Traefik, Gateway API, or cert-manager resources.
 
 - [ ] **Step 2: Validate rendered Kubernetes schemas.**
 
@@ -179,9 +171,9 @@ Expected: `READY=True` and the current Git revision.
 - [ ] **Step 2: Verify workloads, endpoints, and routes.**
 
 ```sh
-sudo -n k3s kubectl get pods,svc,endpoints,httproute -n apolline
-sudo -n k3s kubectl get pods,svc,endpoints,httproute -n darkbit
-sudo -n k3s kubectl get pods,svc,endpoints,httproute -n distrojeff
+sudo -n k3s kubectl get pods,svc,endpoints -n apolline
+sudo -n k3s kubectl get pods,svc,endpoints -n darkbit
+sudo -n k3s kubectl get pods,svc,endpoints -n distrojeff
 ```
 
-Expected: one ready pod and one ready endpoint per site, with each HTTPRoute accepted and programmed. Public Cloudflare reachability remains a separate external check.
+Expected: one ready pod and one ready endpoint per site. Public Cloudflare reachability remains a separate external check against the three Service DNS origins.
