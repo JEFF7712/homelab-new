@@ -1,0 +1,27 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: websites
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./gitops/websites
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: ingress
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: apolline
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: darkbit
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: distrojeff
