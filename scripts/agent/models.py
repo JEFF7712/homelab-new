@@ -23,6 +23,54 @@ class ChangeSource(str, Enum):
     COMMITTED = "committed"
 
 
+class TaskStatus(str, Enum):
+    ACTIVE = "active"
+    BLOCKED = "blocked"
+    COMPLETE = "complete"
+
+
+@dataclass(frozen=True)
+class AcceptanceCriterion:
+    description: str
+    satisfied: bool
+    evidence: str
+
+
+@dataclass(frozen=True)
+class VerificationRecord:
+    command: str
+    exit_code: int
+    time: str
+    source_fingerprint: str
+    evidence_path: str
+    stale: bool
+
+
+@dataclass(frozen=True)
+class TaskRecord:
+    schema_version: int
+    record_revision: int
+    task_id: str
+    objective: str
+    status: TaskStatus
+    acceptance_criteria: tuple[AcceptanceCriterion, ...]
+    owning_agent: str
+    session: str
+    owned_files: tuple[str, ...]
+    base_commit: str
+    checkpoint_head: str
+    timestamp: str
+    dirty_fingerprint: str
+    decisions: tuple[str, ...]
+    durable_record_links: tuple[str, ...]
+    completed_work: tuple[str, ...]
+    remaining_work: tuple[str, ...]
+    unresolved_failures: tuple[str, ...]
+    next_action: str
+    verification_records: tuple[VerificationRecord, ...]
+    blocked_on: tuple[str, ...] = ()
+
+
 @dataclass(frozen=True)
 class ChangedPath:
     path: str

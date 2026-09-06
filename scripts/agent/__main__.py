@@ -3,10 +3,11 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from typing import Sequence
+from collections.abc import Sequence
+from pathlib import Path
 
 from .git_state import collect_git_state
-
+from .tasks import TaskError, checkpoint_task, create_task, resume_task
 
 UNAVAILABLE = 69
 
@@ -54,8 +55,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     task_new = subparsers.add_parser("task-new", help="create local task state")
     task_new.add_argument("id")
+    add_json_option(task_new)
 
-    task_resume = subparsers.add_parser("task-resume", help="inspect task state and drift")
+    task_resume = subparsers.add_parser(
+        "task-resume", help="inspect task state and drift"
+    )
     task_resume.add_argument("id")
     add_json_option(task_resume)
 
@@ -63,8 +67,11 @@ def build_parser() -> argparse.ArgumentParser:
         "task-checkpoint", help="persist a validated task checkpoint"
     )
     task_checkpoint.add_argument("id")
+    add_json_option(task_checkpoint)
 
-    task_export = subparsers.add_parser("task-export", help="export a sanitized handoff")
+    task_export = subparsers.add_parser(
+        "task-export", help="export a sanitized handoff"
+    )
     task_export.add_argument("id")
 
     status = subparsers.add_parser("status", help="run read-only live diagnostics")
@@ -75,6 +82,23 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("fmt", help="format supported repository files")
     subparsers.add_parser("fmt-check", help="check formatting without mutation")
     return parser
+
+
+def _read_json_stdin() -> dict[str, object]:
+    try:
+        value = json.load(sys.stdin)
+    except json.JSONDecodeError as error:
+        raise TaskError("invalid JSON on stdin") from error
+    if not isinstance(value, dict):
+        raise TaskError("JSON stdin must contain an object")
+    return value
+
+
+def _print_task_result(record: dict[str, object], structured: bool) -> None:
+    if structured:
+        print(json.dumps(record, sort_keys=True))
+    else:
+        print(f"Task {record['task_id']} revision {record['record_revision']} saved")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -95,6 +119,34 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Revision: {branch} at {repository['head']}")
             print(f"Dirty: {str(repository['dirty']).lower()}")
         return 0
+
+    if arguments.command in {"task-new", "task-checkpoint", "task-resume"}:
+        try:
+            if arguments.command == "task-new":
+                _print_task_result(
+                    create_task(Path.cwd(), arguments.id, _read_json_stdin()),
+                    arguments.json,
+                )
+            elif arguments.command == "task-checkpoint":
+                _print_task_result(
+                    checkpoint_task(Path.cwd(), arguments.id, _read_json_stdin()),
+                    arguments.json,
+                )
+            else:
+                payload = resume_task(Path.cwd(), arguments.id)
+                if arguments.json:
+                    print(json.dumps(payload, sort_keys=True))
+                else:
+                    checkpoint = payload["checkpoint"]
+                    assert isinstance(checkpoint, dict)
+                    print(f"Task {arguments.id}: next action: {payload['next_action']}")
+                    print(
+                        f"Drift: head={str(checkpoint['head_drift']).lower()} fingerprint={str(checkpoint['fingerprint_drift']).lower()}"
+                    )
+            return 0
+        except (TaskError, RuntimeError, OSError) as error:
+            print(f"{arguments.command}: {error}", file=sys.stderr)
+            return 2
 
     print(f"{arguments.command}: not implemented in this work package", file=sys.stderr)
     return UNAVAILABLE
