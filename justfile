@@ -37,6 +37,7 @@ check-docs:
 
 provision-check-deps:
     tofu -chdir=tofu/opnsense init -backend=false
+    python scripts/checks/provision_schemas.py
 
 task-new id *args:
     python -m scripts.agent task-new {{id}} {{args}}
