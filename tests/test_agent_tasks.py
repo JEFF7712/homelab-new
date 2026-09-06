@@ -119,6 +119,21 @@ class TaskRecordTest(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_creation_rejects_empty_owned_file_boundaries(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            result = run_agent(
+                repository,
+                "task-new",
+                "state",
+                document={**creation_payload(), "owned_files": []},
+            )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("owned_files", result.stderr)
+
     def test_checkpoint_requires_matching_revision_and_preserves_previous_record(
         self,
     ) -> None:
@@ -213,6 +228,57 @@ class TaskRecordTest(unittest.TestCase):
 
         self.assertEqual(persisted, before)
 
+    def test_lock_cleanup_keeps_matching_token_owned_by_another_pid(self) -> None:
+        from scripts.agent.tasks import _TaskLock
+
+        with tempfile.TemporaryDirectory(prefix="agent-task-lock-") as directory:
+            task_directory = Path(directory)
+            lock = _TaskLock(task_directory, "session")
+            with lock:
+                payload = json.loads(lock.path.read_text())
+                payload["pid"] = os.getpid() + 1
+                lock.path.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertTrue(lock.path.exists())
+            lock.path.unlink()
+
+    def test_resume_of_unchanged_task_has_current_verification(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            self.assertEqual(
+                run_agent(
+                    repository, "task-new", "state", document=creation_payload()
+                ).returncode,
+                0,
+            )
+            path = repository / ".agent-state/tasks/state/task.json"
+            record = json.loads(path.read_text())
+            record["verification_records"] = [
+                {
+                    "command": "python -m unittest",
+                    "exit_code": 0,
+                    "time": record["timestamp"],
+                    "source_fingerprint": record["dirty_fingerprint"],
+                    "evidence_path": "evidence.txt",
+                    "stale": False,
+                }
+            ]
+            self.assertEqual(
+                run_agent(
+                    repository,
+                    "task-checkpoint",
+                    "state",
+                    document={**record, "expected_revision": 1},
+                ).returncode,
+                0,
+            )
+            result = run_agent(repository, "task-resume", "state", "--json")
+
+        payload = json.loads(result.stdout)
+        self.assertFalse(payload["checkpoint"]["fingerprint_drift"])
+        self.assertFalse(payload["verifications"][0]["stale"])
+
     def test_resume_reports_drift_unavailable_base_and_stale_verification_without_rewrite(
         self,
     ) -> None:
@@ -267,6 +333,14 @@ class TaskRecordTest(unittest.TestCase):
 
 
 class RedactionTest(unittest.TestCase):
+    def test_redacts_basic_authorization_to_end_of_line(self) -> None:
+        from scripts.agent.redact import redact
+
+        value = redact("Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
+
+        self.assertEqual(value, "Authorization: [REDACTED]")
+        self.assertNotIn("QWxhZGRpbjpvcGVuIHNlc2FtZQ==", value)
+
     def test_redacts_secrets_headers_private_keys_environment_and_machine_paths(
         self,
     ) -> None:

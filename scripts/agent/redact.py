@@ -8,7 +8,7 @@ _PRIVATE_KEY = re.compile(
     r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----.*?-----END [A-Z0-9 ]*PRIVATE KEY-----",
     re.DOTALL,
 )
-_AUTHORIZATION = re.compile(r"(?i)\b(authorization\s*:\s*)(?:bearer\s+)?[^\s\r\n]+")
+_AUTHORIZATION = re.compile(r"(?i)\b(authorization\s*:\s*)[^\r\n]*")
 _API_KEY_HEADER = re.compile(r"(?i)\b((?:x-)?api[-_ ]key\s*:\s*)[^\s\r\n]+")
 _SECRET_ASSIGNMENT = re.compile(
     r"(?i)\b([A-Z][A-Z0-9_]*(?:TOKEN|PASSWORD|PASSWD|SECRET|API_KEY|ACCESS_KEY|CREDENTIAL)[A-Z0-9_]*|"

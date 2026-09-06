@@ -84,10 +84,14 @@ def _require_string(record: Mapping[str, Any], field: str) -> str:
     return value
 
 
-def _require_strings(record: Mapping[str, Any], field: str) -> list[str]:
+def _require_strings(
+    record: Mapping[str, Any], field: str, *, nonempty: bool = False
+) -> list[str]:
     value = record.get(field)
-    if not isinstance(value, list) or any(
-        not isinstance(item, str) or not item.strip() for item in value
+    if (
+        not isinstance(value, list)
+        or (nonempty and not value)
+        or any(not isinstance(item, str) or not item.strip() for item in value)
     ):
         raise TaskValidationError(
             f"{field} is required and must be a list of nonempty strings"
@@ -160,7 +164,7 @@ def validate_task_record(
     _require_string(result, "owning_agent")
     _require_string(result, "session")
     _require_string(result, "next_action")
-    _require_strings(result, "owned_files")
+    _require_strings(result, "owned_files", nonempty=True)
     for field in (
         "decisions",
         "durable_record_links",
@@ -288,7 +292,7 @@ class _TaskLock:
             owner = json.loads(self.path.read_text(encoding="utf-8"))
         except (FileNotFoundError, json.JSONDecodeError):
             return
-        if owner.get("token") == self.token:
+        if owner.get("token") == self.token and owner.get("pid") == os.getpid():
             self.path.unlink(missing_ok=True)
 
 
@@ -365,15 +369,14 @@ def resume_task(root: Path, task_id: str) -> dict[str, Any]:
     root_state = collect_git_state(root)
     record = _read_record(task_path(root_state.root, task_id))
     try:
-        state = collect_git_state(root_state.root, base=record["base_commit"])
-        base_available = state.base.available
+        base_state = collect_git_state(root_state.root, base=record["base_commit"])
+        base_available = base_state.base.available
     except GitBaseError:
-        state = root_state
         base_available = False
     stale_verifications = [
         {
             **verification,
-            "stale": verification["source_fingerprint"] != state.fingerprint,
+            "stale": verification["source_fingerprint"] != root_state.fingerprint,
         }
         for verification in record["verification_records"]
     ]
@@ -383,11 +386,11 @@ def resume_task(root: Path, task_id: str) -> dict[str, Any]:
         "base": {"commit": record["base_commit"], "available": base_available},
         "checkpoint": {
             "recorded_head": record["checkpoint_head"],
-            "current_head": state.head,
-            "head_drift": record["checkpoint_head"] != state.head,
+            "current_head": root_state.head,
+            "head_drift": record["checkpoint_head"] != root_state.head,
             "recorded_fingerprint": record["dirty_fingerprint"],
-            "current_fingerprint": state.fingerprint,
-            "fingerprint_drift": record["dirty_fingerprint"] != state.fingerprint,
+            "current_fingerprint": root_state.fingerprint,
+            "fingerprint_drift": record["dirty_fingerprint"] != root_state.fingerprint,
         },
         "verifications": stale_verifications,
         "next_action": record["next_action"],
