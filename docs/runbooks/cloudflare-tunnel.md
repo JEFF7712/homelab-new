@@ -20,8 +20,7 @@ Do not point tunnel origins at the Gateway LB VIP (`10.0.40.12`): Cilium impleme
 Related manifests:
 
 - `gitops/cloudflare/tunnel.yaml`
-- `gitops/ingress/gateway.yaml` (`Gateway homelab`, `cilium`, `bgp-advertise: true`)
-- `gitops/immich/route.yaml` (`photos.rupan.dev`)
+- `gitops/immich/route.yaml` (`photos.rupan.dev`, inert while `Gateway homelab` is parked)
 - `gitops/immich/server.yaml`
 
 ## Ingress order (v52, 2026-09-05)
@@ -45,10 +44,9 @@ Do not place a specific `*.rupan.dev` match below the wildcard. `photos` was bri
 
 ## Add a new-cluster hostname
 
-1. Add an `HTTPRoute` in `gitops/<app>/` with `parentRefs: homelab/default` and the public `hostname`.
-2. Add tunnel ingress `{hostname, service: http://<service>.<namespace>:<port>}` above `*.rupan.dev` via dashboard or API `PUT /accounts/{id}/cfd_tunnel/{id}/configurations`.
-3. Confirm DNS `CNAME <host> -> <tunnel-id>.cfargotunnel.com` exists (dashboard creates it on hostname add).
-4. Verify: `GET cfd_tunnel/{id}` is `healthy` with connections on `ord/mci`, `GET configurations` shows the new hostname with `http://10.0.40.12` in the expected position.
+1. Add tunnel ingress `{hostname, service: http://<service>.<namespace>:<port>}` above `*.rupan.dev` via dashboard or API `PUT /accounts/{id}/cfd_tunnel/{id}/configurations`. (Skip the `HTTPRoute`/`Gateway` step while `Gateway homelab` is parked; `3985d4f` and `98ef8df` removed it.)
+2. Confirm DNS `CNAME <host> -> <tunnel-id>.cfargotunnel.com` exists (dashboard creates it on hostname add).
+3. Verify: `GET cfd_tunnel/{id}` is `healthy` with connections on `ord/mci`, `GET configurations` shows the new hostname with the in-cluster service URL in the expected position.
 
 ## Known gap
 
