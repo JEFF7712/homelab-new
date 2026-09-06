@@ -51,3 +51,11 @@ spec:
       kind: Deployment
       name: website-deploy
       namespace: soluble-rupan
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: photography
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: website-deploy
+      namespace: majorfinder
