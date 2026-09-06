@@ -14,6 +14,25 @@ spec:
         name: helmforge
         namespace: flux-system
   values:
+    ntfy:
+      baseUrl: https://ntfy.rupan.dev
+      authDefaultAccess: deny-all
+      extraEnv:
+        - name: NTFY_AUTH_USERS
+          valueFrom:
+            secretKeyRef:
+              name: ntfy-auth
+              key: ntfy-auth-users
+        - name: NTFY_AUTH_TOKENS
+          valueFrom:
+            secretKeyRef:
+              name: ntfy-auth
+              key: ntfy-auth-tokens
+        - name: NTFY_AUTH_ACCESS
+          valueFrom:
+            secretKeyRef:
+              name: ntfy-auth
+              key: ntfy-auth-access
     persistence:
       enabled: true
       size: 1Gi

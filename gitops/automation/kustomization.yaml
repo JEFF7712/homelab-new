@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - secrets.yaml
+  - ntfy-service.yaml
+  - rbac.yaml
+  - state.yaml
+  - config.yaml
+  - website-monitor-scripts.yaml
+  - cluster-sentinel-script.yaml
+  - dockerhub-retention-script.yaml
+  - renovate-reviewer-script.yaml
+  - renovate-approval-webhook-script.yaml
+  - cluster-sentinel.yaml
+  - dockerhub-retention.yaml
+  - website-monitors.yaml
+  - renovate-agent.yaml
+  - renovate-dashboard.yaml
