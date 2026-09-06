@@ -114,6 +114,30 @@ class GitStateTest(unittest.TestCase):
         self.assertEqual(clean.head, dirty.head)
         self.assertNotEqual(clean.fingerprint, dirty.fingerprint)
 
+    def test_fingerprint_detects_mode_only_tracked_file_change(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-git-mode-") as directory:
+            repository = make_repository(Path(directory))
+            target = repository / "script.sh"
+            target.write_bytes(b"#!/bin/sh\necho committed\n")
+            target.chmod(0o644)
+            commit(repository, "initial")
+            clean = collect_git_state(repository)
+            target.write_bytes(b"#!/bin/sh\necho staged\n")
+            git(repository, "add", "script.sh")
+            target.write_bytes(b"#!/bin/sh\necho worktree\n")
+            target.chmod(0o644)
+            non_executable = collect_git_state(repository)
+            target.chmod(0o755)
+
+            executable = collect_git_state(repository)
+
+        self.assertNotEqual(clean.fingerprint, non_executable.fingerprint)
+        self.assertNotEqual(non_executable.fingerprint, executable.fingerprint)
+        self.assertIn(
+            ("script.sh", ChangeKind.MODIFIED, ChangeSource.WORKTREE),
+            {(change.path, change.kind, change.source) for change in executable.changes},
+        )
+
     def test_staged_deletion_is_an_index_change(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-staged-delete-") as directory:
             repository = make_repository(Path(directory))

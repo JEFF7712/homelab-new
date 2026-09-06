@@ -175,6 +175,16 @@ def _index_entries(root: Path, path: bytes) -> tuple[tuple[bytes, bytes, bytes],
     return tuple(entries)
 
 
+def _head_mode(root: Path, path: bytes) -> bytes:
+    output = _git("ls-tree", "-z", "HEAD", "--", _decode_path(path), cwd=root)
+    record = output.split(b"\0", 1)[0]
+    metadata, separator, _ = record.partition(b"\t")
+    fields = metadata.split(b" ")
+    if not separator or len(fields) != 3:
+        raise GitStateError("git returned an invalid HEAD tree entry")
+    return fields[0]
+
+
 def _conflict_content(root: Path, path: bytes) -> bytes:
     entries = _index_entries(root, path)
     stages = sorted(stage + b":" + object_id for _, object_id, stage in entries)
@@ -368,7 +378,13 @@ def _worktree_content(
             raise GitStateError(f"cannot read symlink '{change.path}': {error}") from error
     if stat.S_ISREG(metadata.st_mode):
         try:
-            return b"file\0" + target.read_bytes()
+            mode = stat.S_IFMT(metadata.st_mode) | (metadata.st_mode & 0o111)
+            return (
+                b"file\0"
+                + f"{mode:o}".encode("ascii")
+                + b"\0"
+                + target.read_bytes()
+            )
         except OSError as error:
             raise GitStateError(f"cannot read working path '{change.path}': {error}") from error
     if stat.S_ISDIR(metadata.st_mode):
@@ -391,8 +407,19 @@ def _content(
         return None
     if change.source in (ChangeSource.WORKTREE, ChangeSource.UNTRACKED):
         return _worktree_content(root, change, depth, ancestors)
-    revision = ":./" if change.source == ChangeSource.INDEX else "HEAD:./"
-    return b"tracked\0" + _git(
+    if change.source == ChangeSource.INDEX:
+        modes = sorted(
+            mode + b":" + stage
+            for mode, _, stage in _index_entries(root, change.path_bytes)
+        )
+        if not modes:
+            raise GitStateError("git returned no index entry for a tracked path")
+        revision = ":./"
+        marker = b"index\0" + b"\0".join(modes) + b"\0"
+    else:
+        revision = "HEAD:./"
+        marker = b"committed\0" + _head_mode(root, change.path_bytes) + b"\0"
+    return marker + _git(
         "show",
         f"{revision}{_decode_path(change.path_bytes)}",
         cwd=root,
