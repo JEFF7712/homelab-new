@@ -477,8 +477,8 @@ def export_task(root: Path, task_id: str, *, replace: bool = False) -> Path:
     )
     content = redact(
         f"# Agent Task: {record['task_id']}\n\n"
-        f"Status: `{record['status']}`  \nBase commit: `{record['base_commit']}`  \n"
-        f"Checkpoint HEAD: `{record['checkpoint_head']}`  \nOwner: `{record['owning_agent']}`  \n"
+        f"Status: `{record['status']}`\n\nBase commit: `{record['base_commit']}`\n\n"
+        f"Checkpoint HEAD: `{record['checkpoint_head']}`\n\nOwner: `{record['owning_agent']}`\n\n"
         f"Session: `{record['session']}`\n\n## Objective\n\n{record['objective']}\n\n"
         f"## Acceptance criteria\n\n{criteria}\n\n## Owned source\n\n{source}\n\n"
         f"## Remaining work\n\n{remaining}\n\n## Verification\n\n{evidence}\n\n"
