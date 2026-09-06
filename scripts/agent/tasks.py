@@ -14,6 +14,7 @@ from .git_state import GitBaseError, collect_git_state
 
 TASK_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 SCHEMA_VERSION = 1
+DURABILITY_WARNING = "task record replaced but directory fsync failed"
 _CREATION_FIELDS = frozenset(
     {
         "objective",
@@ -221,17 +222,22 @@ def task_path(root: Path, task_id: str) -> Path:
     return _task_directory(root, task_id) / "task.json"
 
 
-def _read_record(path: Path) -> dict[str, Any]:
+def _read_record(path: Path, *, expected_task_id: str | None = None) -> dict[str, Any]:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError as error:
         raise TaskNotFoundError("task record does not exist") from error
-    except json.JSONDecodeError as error:
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
         raise TaskValidationError("stored task record is invalid JSON") from error
-    return validate_task_record(data)
+    record = validate_task_record(data)
+    if expected_task_id is not None and record["task_id"] != expected_task_id:
+        raise TaskValidationError(
+            "stored task_id does not match the task directory identity"
+        )
+    return record
 
 
-def _atomic_write_json(path: Path, value: Mapping[str, Any]) -> None:
+def _atomic_write_json(path: Path, value: Mapping[str, Any]) -> str | None:
     temporary = path.with_name(f".{path.name}.{os.getpid()}.{secrets.token_hex(8)}.tmp")
     directory_fd: int | None = None
     try:
@@ -241,8 +247,11 @@ def _atomic_write_json(path: Path, value: Mapping[str, Any]) -> None:
             handle.flush()
             os.fsync(handle.fileno())
         os.replace(temporary, path)
-        directory_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
-        os.fsync(directory_fd)
+        try:
+            directory_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+            os.fsync(directory_fd)
+        except OSError:
+            return DURABILITY_WARNING
     finally:
         if directory_fd is not None:
             os.close(directory_fd)
@@ -250,6 +259,18 @@ def _atomic_write_json(path: Path, value: Mapping[str, Any]) -> None:
             temporary.unlink()
         except FileNotFoundError:
             pass
+
+
+def _cleanup_failed_creation(directory: Path) -> None:
+    for temporary in directory.glob(f".task.json.{os.getpid()}.*.tmp"):
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
+    try:
+        directory.rmdir()
+    except OSError:
+        pass
 
 
 class _TaskLock:
@@ -272,16 +293,34 @@ class _TaskLock:
                     raise TaskLockError("task checkpoint is locked by another writer")
                 time.sleep(min(0.05, max(0.0, deadline - time.monotonic())))
                 continue
+            created_identity = os.fstat(descriptor)
             payload = {
                 "pid": os.getpid(),
                 "session": self.session,
                 "timestamp": _now(),
                 "token": self.token,
             }
-            with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
-                json.dump(payload, handle, sort_keys=True)
-                handle.flush()
-                os.fsync(handle.fileno())
+            try:
+                with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+                    json.dump(payload, handle, sort_keys=True)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+            except BaseException:
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    pass
+                try:
+                    current_identity = self.path.stat()
+                except FileNotFoundError:
+                    pass
+                else:
+                    if (
+                        current_identity.st_dev == created_identity.st_dev
+                        and current_identity.st_ino == created_identity.st_ino
+                    ):
+                        self.path.unlink(missing_ok=True)
+                raise
             self.acquired = True
             return self
 
@@ -321,8 +360,12 @@ def create_task(
         "blocked_on": draft.get("blocked_on", []),
     }
     record = validate_task_record(record)
-    _atomic_write_json(directory / "task.json", record)
-    return record
+    try:
+        warning = _atomic_write_json(directory / "task.json", record)
+    except BaseException:
+        _cleanup_failed_creation(directory)
+        raise
+    return {**record, "durability_warning": warning} if warning else record
 
 
 def checkpoint_task(
@@ -347,11 +390,13 @@ def checkpoint_task(
     directory = _task_directory(state.root, task_id)
     path = directory / "task.json"
     with _TaskLock(directory, proposed["session"], lock_timeout):
-        current = _read_record(path)
+        current = _read_record(path, expected_task_id=task_id)
         if current["record_revision"] != expected:
             raise TaskConflictError(
                 "revision conflict: reload the task record before checkpointing"
             )
+        if proposed["base_commit"] != current["base_commit"]:
+            raise TaskValidationError("base_commit is immutable after task creation")
         updated = {
             **proposed,
             "record_revision": expected + 1,
@@ -360,14 +405,14 @@ def checkpoint_task(
             "dirty_fingerprint": state.fingerprint,
         }
         updated = validate_task_record(updated)
-        _atomic_write_json(path, updated)
-    return updated
+        warning = _atomic_write_json(path, updated)
+    return {**updated, "durability_warning": warning} if warning else updated
 
 
 def resume_task(root: Path, task_id: str) -> dict[str, Any]:
     task_id = validate_task_id(task_id)
     root_state = collect_git_state(root)
-    record = _read_record(task_path(root_state.root, task_id))
+    record = _read_record(task_path(root_state.root, task_id), expected_task_id=task_id)
     try:
         base_state = collect_git_state(root_state.root, base=record["base_commit"])
         base_available = base_state.base.available

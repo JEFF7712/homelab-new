@@ -134,6 +134,27 @@ class TaskRecordTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("owned_files", result.stderr)
 
+    def test_create_cleans_empty_task_directory_after_write_failure(self) -> None:
+        from scripts.agent.tasks import create_task
+
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            with (
+                mock.patch(
+                    "scripts.agent.tasks._atomic_write_json",
+                    side_effect=OSError("injected"),
+                ),
+                self.assertRaises(OSError),
+            ):
+                create_task(repository, "state", creation_payload())
+            task_directory = repository / ".agent-state/tasks/state"
+            self.assertFalse(task_directory.exists())
+            created = create_task(repository, "state", creation_payload())
+
+        self.assertEqual(created["task_id"], "state")
+
     def test_checkpoint_requires_matching_revision_and_preserves_previous_record(
         self,
     ) -> None:
@@ -159,6 +180,74 @@ class TaskRecordTest(unittest.TestCase):
         self.assertIn("revision conflict", second.stderr)
         self.assertEqual(persisted["record_revision"], 2)
         self.assertEqual(persisted["next_action"], "run tests")
+
+    def test_checkpoint_rejects_changed_base_commit(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            self.assertEqual(
+                run_agent(
+                    repository, "task-new", "state", document=creation_payload()
+                ).returncode,
+                0,
+            )
+            path = repository / ".agent-state/tasks/state/task.json"
+            record = json.loads(path.read_text())
+            result = run_agent(
+                repository,
+                "task-checkpoint",
+                "state",
+                document={
+                    **record,
+                    "expected_revision": 1,
+                    "base_commit": "f" * 40,
+                },
+            )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("base_commit", result.stderr)
+
+    def test_checkpoint_refuses_tampered_stored_task_identity(self) -> None:
+        from scripts.agent.tasks import TaskValidationError, checkpoint_task
+
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            self.assertEqual(
+                run_agent(
+                    repository, "task-new", "state", document=creation_payload()
+                ).returncode,
+                0,
+            )
+            path = repository / ".agent-state/tasks/state/task.json"
+            stored = json.loads(path.read_text())
+            path.write_text(
+                json.dumps({**stored, "task_id": "different"}), encoding="utf-8"
+            )
+            with self.assertRaisesRegex(TaskValidationError, "task_id"):
+                checkpoint_task(repository, "state", {**stored, "expected_revision": 1})
+
+    def test_resume_refuses_record_moved_to_another_task_directory(self) -> None:
+        from scripts.agent.tasks import TaskValidationError, resume_task
+
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            self.assertEqual(
+                run_agent(
+                    repository, "task-new", "state", document=creation_payload()
+                ).returncode,
+                0,
+            )
+            source = repository / ".agent-state/tasks/state/task.json"
+            target = repository / ".agent-state/tasks/moved/task.json"
+            target.parent.mkdir()
+            source.rename(target)
+            with self.assertRaisesRegex(TaskValidationError, "task_id"):
+                resume_task(repository, "moved")
 
     def test_checkpoint_rejects_blocked_without_dependency_and_incomplete_complete(
         self,
@@ -241,6 +330,43 @@ class TaskRecordTest(unittest.TestCase):
             self.assertTrue(lock.path.exists())
             lock.path.unlink()
 
+    def test_lock_setup_failure_removes_only_its_new_lock_and_allows_retry(
+        self,
+    ) -> None:
+        from scripts.agent.tasks import _TaskLock
+
+        with tempfile.TemporaryDirectory(prefix="agent-task-lock-") as directory:
+            task_directory = Path(directory)
+            with (
+                mock.patch(
+                    "scripts.agent.tasks.os.fsync", side_effect=OSError("injected")
+                ),
+                self.assertRaises(OSError),
+                _TaskLock(task_directory, "session"),
+            ):
+                pass
+            self.assertFalse((task_directory / ".lock").exists())
+            with _TaskLock(task_directory, "session"):
+                self.assertTrue((task_directory / ".lock").exists())
+
+    def test_lock_payload_open_failure_closes_created_descriptor(self) -> None:
+        from scripts.agent.tasks import _TaskLock
+
+        with tempfile.TemporaryDirectory(prefix="agent-task-lock-") as directory:
+            task_directory = Path(directory)
+            with (
+                mock.patch(
+                    "scripts.agent.tasks.os.fdopen", side_effect=OSError("injected")
+                ),
+                mock.patch("scripts.agent.tasks.os.close", wraps=os.close) as close,
+                self.assertRaises(OSError),
+                _TaskLock(task_directory, "session"),
+            ):
+                pass
+
+            self.assertTrue(close.called)
+            self.assertFalse((task_directory / ".lock").exists())
+
     def test_resume_of_unchanged_task_has_current_verification(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
             repository = make_repository(Path(directory))
@@ -278,6 +404,115 @@ class TaskRecordTest(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertFalse(payload["checkpoint"]["fingerprint_drift"])
         self.assertFalse(payload["verifications"][0]["stale"])
+
+    def test_invalid_utf8_stored_record_is_validation_error_without_cli_traceback(
+        self,
+    ) -> None:
+        from scripts.agent.tasks import TaskValidationError, _read_record
+
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            self.assertEqual(
+                run_agent(
+                    repository, "task-new", "state", document=creation_payload()
+                ).returncode,
+                0,
+            )
+            path = repository / ".agent-state/tasks/state/task.json"
+            path.write_bytes(b"\xff")
+            with self.assertRaises(TaskValidationError):
+                _read_record(path)
+            result = run_agent(repository, "task-resume", "state")
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_json_task_errors_are_stable_and_structured(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            malformed = subprocess.run(
+                [sys.executable, "-m", "scripts.agent", "task-new", "state", "--json"],
+                cwd=repository,
+                env={**os.environ, "PYTHONPATH": str(REPOSITORY_ROOT)},
+                input="{bad",
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            invalid = run_agent(repository, "task-resume", "bad/id", "--json")
+            missing = run_agent(repository, "task-resume", "missing", "--json")
+            self.assertEqual(
+                run_agent(
+                    repository, "task-new", "state", document=creation_payload()
+                ).returncode,
+                0,
+            )
+            record = json.loads(
+                (repository / ".agent-state/tasks/state/task.json").read_text()
+            )
+            self.assertEqual(
+                run_agent(
+                    repository,
+                    "task-checkpoint",
+                    "state",
+                    document={**record, "expected_revision": 1},
+                ).returncode,
+                0,
+            )
+            conflict = run_agent(
+                repository,
+                "task-checkpoint",
+                "state",
+                "--json",
+                document={**record, "expected_revision": 1},
+            )
+
+        for command, result in (
+            ("task-new", malformed),
+            ("task-resume", invalid),
+            ("task-resume", missing),
+            ("task-checkpoint", conflict),
+        ):
+            with self.subTest(command=command):
+                self.assertNotEqual(result.returncode, 0)
+                payload = json.loads(result.stdout)
+                self.assertEqual(payload["schema_version"], 1)
+                self.assertEqual(payload["command"], command)
+                self.assertEqual(payload["status"], "error")
+                self.assertIn("error_type", payload)
+                self.assertIn("message", payload)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_checkpoint_reports_directory_fsync_warning_after_replacement(self) -> None:
+        from scripts.agent.tasks import checkpoint_task
+
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            self.assertEqual(
+                run_agent(
+                    repository, "task-new", "state", document=creation_payload()
+                ).returncode,
+                0,
+            )
+            path = repository / ".agent-state/tasks/state/task.json"
+            record = json.loads(path.read_text())
+            with mock.patch(
+                "scripts.agent.tasks.os.fsync",
+                side_effect=[None, None, OSError("injected")],
+            ):
+                result = checkpoint_task(
+                    repository, "state", {**record, "expected_revision": 1}
+                )
+            persisted = json.loads(path.read_text())
+
+        self.assertEqual(persisted["record_revision"], 2)
+        self.assertIn("durability_warning", result)
 
     def test_resume_reports_drift_unavailable_base_and_stale_verification_without_rewrite(
         self,
@@ -340,6 +575,18 @@ class RedactionTest(unittest.TestCase):
 
         self.assertEqual(value, "Authorization: [REDACTED]")
         self.assertNotIn("QWxhZGRpbjpvcGVuIHNlc2FtZQ==", value)
+
+    def test_redacts_common_machine_credential_path_forms(self) -> None:
+        from scripts.agent.redact import redact
+
+        value = redact(
+            "/root/.ssh/id_ed25519 /Users/alice/.config/sops/age/keys.txt "
+            "$HOME/.kube/config ${HOME}/.ssh/id_rsa ~/.config/sops/age/key.txt"
+        )
+
+        for secret in ("id_ed25519", "keys.txt", "config", "id_rsa", "key.txt"):
+            self.assertNotIn(secret, value)
+        self.assertEqual(value.count("[REDACTED]"), 5)
 
     def test_redacts_secrets_headers_private_keys_environment_and_machine_paths(
         self,

@@ -15,7 +15,10 @@ _SECRET_ASSIGNMENT = re.compile(
     r"token|password|secret|api_key)\s*=\s*([^\s'\"]+|\"[^\"]*\"|'[^']*')"
 )
 _MACHINE_CREDENTIAL_PATH = re.compile(
-    r"(?:(?:~|/home/[^/\s]+)/\.(?:ssh(?:/[^\s]*)?|config/sops/age(?:/[^\s]*)?|kube/config))"
+    r"(?<![A-Za-z0-9_./-])"
+    r"(?:~|\$HOME|\$\{HOME\}|/home/[^/\s]+|/Users/[^/\s]+|/root)"
+    r"/\.(?:ssh(?:/[^\s'\"]*)?|config/sops/age(?:/[^\s'\"]*)?|kube(?:/config)?)"
+    r"(?=$|[\s'\",;])"
 )
 
 

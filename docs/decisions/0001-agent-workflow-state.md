@@ -16,8 +16,11 @@ when that expected revision still matches.
 
 Writes acquire an exclusive per-task lock, write a fully validated temporary
 file in the task directory, flush and fsync it, replace `task.json`, and fsync
-the directory. The lock records its owner PID, session, timestamp, and token;
-cleanup removes a lock only when its token still belongs to the caller.
+the directory. If that final directory fsync fails after replacement, the
+checkpoint succeeds with a durability warning because the valid new record
+cannot be safely rolled back. The lock records its owner PID, session,
+timestamp, and token; cleanup removes a lock only when its token and PID still
+belong to the caller.
 
 Checkpoint state describes the checkout observed when the record was saved.
 Resume inspects the current checkout and reports base availability and drift.

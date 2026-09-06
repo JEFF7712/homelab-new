@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from .git_state import collect_git_state
+from .redact import redact
 from .tasks import TaskError, checkpoint_task, create_task, resume_task
 
 UNAVAILABLE = 69
@@ -98,7 +99,21 @@ def _print_task_result(record: dict[str, object], structured: bool) -> None:
     if structured:
         print(json.dumps(record, sort_keys=True))
     else:
-        print(f"Task {record['task_id']} revision {record['record_revision']} saved")
+        warning = record.get("durability_warning")
+        suffix = f" with warning: {warning}" if warning else ""
+        print(
+            f"Task {record['task_id']} revision {record['record_revision']} saved{suffix}"
+        )
+
+
+def _task_error_payload(command: str, error: BaseException) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "command": command,
+        "status": "error",
+        "error_type": type(error).__name__,
+        "message": redact(str(error)),
+    }
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -145,7 +160,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                     )
             return 0
         except (TaskError, RuntimeError, OSError) as error:
-            print(f"{arguments.command}: {error}", file=sys.stderr)
+            if arguments.json:
+                print(
+                    json.dumps(
+                        _task_error_payload(arguments.command, error), sort_keys=True
+                    )
+                )
+            else:
+                print(f"{arguments.command}: {redact(str(error))}", file=sys.stderr)
             return 2
 
     print(f"{arguments.command}: not implemented in this work package", file=sys.stderr)
