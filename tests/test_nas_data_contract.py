@@ -1,6 +1,5 @@
-from pathlib import Path
 import unittest
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -35,8 +34,8 @@ class NasDataContractTests(unittest.TestCase):
         disk = (ROOT / "flake/hosts/nas-01/tank-config.nix").read_text()
 
         self.assertEqual(disk.count('encryption = "aes-256-gcm"'), 2)
-        self.assertIn("keylocation = \"file:///persist/keys/tank-photos.key\"", disk)
-        self.assertIn("keylocation = \"file:///persist/keys/tank-documents.key\"", disk)
+        self.assertIn('keylocation = "file:///persist/keys/tank-photos.key"', disk)
+        self.assertIn('keylocation = "file:///persist/keys/tank-documents.key"', disk)
 
     def test_nfs_exports_only_intended_datasets(self) -> None:
         role = (ROOT / "flake/modules/nas-data.nix").read_text()
@@ -88,7 +87,7 @@ class NasDataContractTests(unittest.TestCase):
             'executor = "shell"',
             'buildsDir = "/tmp/gitlab-runner-builds"',
             '"OPNsense.internal"',
-            'DynamicUser = lib.mkForce false',
+            "DynamicUser = lib.mkForce false",
             'User = "gitlab-runner"',
             '"network-online.target"',
             'Restart = "on-failure"',
@@ -97,7 +96,7 @@ class NasDataContractTests(unittest.TestCase):
             "GIT_SSL_CAINFO",
             "ata-ST2000DM008-2FR102_ZFL60NJG-part1",
             "nas-backup-2tb",
-            "OnCalendar = \"daily\"",
+            'OnCalendar = "daily"',
             "/mnt/backup-2tb/photos/",
             "/mnt/backup-2tb/documents/",
             "2049",

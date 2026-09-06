@@ -1,6 +1,5 @@
-from pathlib import Path
 import unittest
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HOST_01 = ROOT / "flake/hosts/homelab-01"
@@ -36,7 +35,7 @@ class K3sNodeInstallationContractTests(unittest.TestCase):
             "/dev/disk/by-id/ata-FORESEE_64GB_SSD_0000007520__FMA39721",
             storage,
         )
-        self.assertNotIn('/dev/sdb', storage)
+        self.assertNotIn("/dev/sdb", storage)
         self.assertNotIn('type = "luks"', storage)
         self.assertIn('mountpoint = "/boot"', storage)
         for mountpoint in ("/nix", "/persist", "/var/log"):
@@ -81,9 +80,7 @@ class K3sNodeInstallationContractTests(unittest.TestCase):
         hardware = (HOST_01 / "hardware-configuration.nix").read_text()
         storage = (HOST_01 / "disk-config.nix").read_text()
 
-        self.assertIn(
-            "/dev/disk/by-id/ata-CT500MX500SSD1_2126E5B4C617", storage
-        )
+        self.assertIn("/dev/disk/by-id/ata-CT500MX500SSD1_2126E5B4C617", storage)
         self.assertIn(
             "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4701b701",
             storage,
@@ -131,12 +128,8 @@ class K3sNodeInstallationContractTests(unittest.TestCase):
     def test_joining_node_omits_the_entire_cilium_manifest(self) -> None:
         role = (ROOT / "flake/modules/k3s-server.nix").read_text()
 
-        self.assertIn(
-            "services.k3s.manifests = lib.mkIf cfg.bootstrapCilium", role
-        )
-        self.assertNotIn(
-            "services.k3s.manifests.cilium.content = lib.mkIf", role
-        )
+        self.assertIn("services.k3s.manifests = lib.mkIf cfg.bootstrapCilium", role)
+        self.assertNotIn("services.k3s.manifests.cilium.content = lib.mkIf", role)
 
 
 if __name__ == "__main__":

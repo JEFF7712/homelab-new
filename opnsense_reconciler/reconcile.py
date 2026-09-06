@@ -1,9 +1,10 @@
 import argparse
-from dataclasses import dataclass
 import json
 import os
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Mapping, Protocol
+from typing import Protocol
 
 from opnsense_reconciler.inventory import Credentials, HttpsClient
 
@@ -35,12 +36,18 @@ def reconcile_interfaces(
     if not resolved_interfaces:
         return
     existing_devices = _assignment_devices(assignments)
-    additions = [desired for desired in resolved_interfaces if desired["if"] not in existing_devices]
+    additions = [
+        desired
+        for desired in resolved_interfaces
+        if desired["if"] not in existing_devices
+    ]
     for desired in additions:
         client.post("/api/interfaces/assignment/add_item", {"interface": desired})
     if additions:
         client.post("/api/interfaces/assignment/reconfigure", {})
-    runtime = _runtime_interfaces(client.get("/api/interfaces/overview/interfaces_info/true"))
+    runtime = _runtime_interfaces(
+        client.get("/api/interfaces/overview/interfaces_info/true")
+    )
     mismatches = [
         desired
         for desired in resolved_interfaces
@@ -111,7 +118,9 @@ def resolve_vlan_devices(
         device = live_devices.get((parent, tag))
         if device is None:
             raise RuntimeError(f"VLAN device unavailable for {parent} tag {tag}")
-        assignment = {key: value for key, value in desired.items() if key not in {"parent", "tag"}}
+        assignment = {
+            key: value for key, value in desired.items() if key not in {"parent", "tag"}
+        }
         assignment["if"] = device
         resolved.append(assignment)
     return resolved
@@ -125,7 +134,14 @@ class BgpProof:
     service_running: bool
 
 
-BGP_NEIGHBOR_FIELDS = ("address", "description", "remoteas", "updatesource", "nexthopself", "enabled")
+BGP_NEIGHBOR_FIELDS = (
+    "address",
+    "description",
+    "remoteas",
+    "updatesource",
+    "nexthopself",
+    "enabled",
+)
 
 
 def reconcile_bgp_neighbors(
@@ -137,17 +153,23 @@ def reconcile_bgp_neighbors(
     unexpected = sorted(set(live_by_address) - set(desired_by_address))
     if unexpected:
         raise RuntimeError(
-            "unexpected BGP neighbors require human-directed removal: " + ", ".join(unexpected)
+            "unexpected BGP neighbors require human-directed removal: "
+            + ", ".join(unexpected)
         )
     changed = False
     for address, desired in desired_by_address.items():
         live = live_by_address.get(address)
         if live is None:
-            _require_stored(client.post("/api/quagga/bgp/add_neighbor", {"neighbor": desired}))
+            _require_stored(
+                client.post("/api/quagga/bgp/add_neighbor", {"neighbor": desired})
+            )
             changed = True
         elif {key: live.get(key) for key in BGP_NEIGHBOR_FIELDS} != desired:
             _require_stored(
-                client.post(f"/api/quagga/bgp/set_neighbor/{live['uuid']}", {"neighbor": desired})
+                client.post(
+                    f"/api/quagga/bgp/set_neighbor/{live['uuid']}",
+                    {"neighbor": desired},
+                )
             )
             changed = True
     if changed:
@@ -156,20 +178,32 @@ def reconcile_bgp_neighbors(
     mismatches = sorted(
         address
         for address, desired in desired_by_address.items()
-        if {key: verified.get(address, {}).get(key) for key in BGP_NEIGHBOR_FIELDS} != desired
+        if {key: verified.get(address, {}).get(key) for key in BGP_NEIGHBOR_FIELDS}
+        != desired
     )
     if mismatches:
-        raise RuntimeError("BGP neighbor verification failed for " + ", ".join(mismatches))
-    return {address: int(str(desired["remoteas"])) for address, desired in desired_by_address.items()}
+        raise RuntimeError(
+            "BGP neighbor verification failed for " + ", ".join(mismatches)
+        )
+    return {
+        address: int(str(desired["remoteas"]))
+        for address, desired in desired_by_address.items()
+    }
 
 
-def _desired_bgp_neighbors(desired_neighbors: list[dict[str, object]]) -> dict[str, dict[str, object]]:
+def _desired_bgp_neighbors(
+    desired_neighbors: list[dict[str, object]],
+) -> dict[str, dict[str, object]]:
     desired_by_address: dict[str, dict[str, object]] = {}
     for desired in desired_neighbors:
         if not isinstance(desired, dict):
             raise ValueError("BGP neighbors must contain objects")
         neighbor = {key: desired.get(key) for key in BGP_NEIGHBOR_FIELDS}
-        address, remoteas, enabled = neighbor["address"], neighbor["remoteas"], neighbor["enabled"]
+        address, remoteas, enabled = (
+            neighbor["address"],
+            neighbor["remoteas"],
+            neighbor["enabled"],
+        )
         if not isinstance(address, str) or not address:
             raise ValueError("BGP neighbor requires an address")
         if address in desired_by_address:
@@ -177,7 +211,10 @@ def _desired_bgp_neighbors(desired_neighbors: list[dict[str, object]]) -> dict[s
         if (
             not isinstance(remoteas, str)
             or not remoteas.isdigit()
-            or not all(isinstance(neighbor[key], str) and neighbor[key] for key in BGP_NEIGHBOR_FIELDS)
+            or not all(
+                isinstance(neighbor[key], str) and neighbor[key]
+                for key in BGP_NEIGHBOR_FIELDS
+            )
             or enabled not in ("0", "1")
         ):
             raise ValueError(f"BGP neighbor {address} has invalid managed fields")
@@ -196,7 +233,12 @@ def _live_bgp_neighbors(response: object) -> dict[str, dict[str, object]]:
         if not isinstance(row, dict):
             continue
         address, uuid = row.get("address"), row.get("uuid")
-        if not isinstance(address, str) or not address or not isinstance(uuid, str) or not uuid:
+        if (
+            not isinstance(address, str)
+            or not address
+            or not isinstance(uuid, str)
+            or not uuid
+        ):
             continue
         entry: dict[str, object] = {key: row.get(key) for key in BGP_NEIGHBOR_FIELDS}
         entry["uuid"] = uuid
@@ -205,7 +247,11 @@ def _live_bgp_neighbors(response: object) -> dict[str, dict[str, object]]:
 
 
 def _require_stored(response: object) -> None:
-    if not isinstance(response, dict) or response.get("result") == "failed" or "validations" in response:
+    if (
+        not isinstance(response, dict)
+        or response.get("result") == "failed"
+        or "validations" in response
+    ):
         raise RuntimeError(f"BGP neighbor store failed: {response}")
 
 
@@ -305,7 +351,9 @@ def _kea_interfaces(configuration: object) -> set[str]:
     return {
         name
         for name, value in interfaces.items()
-        if isinstance(name, str) and isinstance(value, dict) and value.get("selected") in (1, "1", True)
+        if isinstance(name, str)
+        and isinstance(value, dict)
+        and value.get("selected") in (1, "1", True)
     }
 
 
@@ -313,12 +361,18 @@ def main(
     argv: list[str] | None = None,
     environ: Mapping[str, str] | None = None,
     client_factory: Callable[[str, Credentials, str, str | None], Client] = HttpsClient,
-    reconcile: Callable[[Client, bool, list[dict[str, object]]], None] = reconcile_interfaces,
+    reconcile: Callable[
+        [Client, bool, list[dict[str, object]]], None
+    ] = reconcile_interfaces,
     reconcile_kea: Callable[[Client, set[str]], None] = reconcile_kea_interfaces,
-    reconcile_bgp: Callable[[Client, list[dict[str, object]]], dict[str, int]] = reconcile_bgp_neighbors,
+    reconcile_bgp: Callable[
+        [Client, list[dict[str, object]]], dict[str, int]
+    ] = reconcile_bgp_neighbors,
     prove_bgp: Callable[[Reader, dict[str, int], set[str]], BgpProof] = verify_bgp,
 ) -> None:
-    parser = argparse.ArgumentParser(description="Reconcile OPNsense interface assignments")
+    parser = argparse.ArgumentParser(
+        description="Reconcile OPNsense interface assignments"
+    )
     parser.add_argument("--assignments", required=True, type=Path)
     parser.add_argument("--inventory", required=True, type=Path)
     parser.add_argument("--kea-interfaces", required=True, type=Path)
@@ -326,18 +380,29 @@ def main(
     parser.add_argument("--bgp-expected-routes", required=True, type=Path)
     arguments = parser.parse_args(argv)
     environment = environ if environ is not None else os.environ
-    required = ("OPNSENSE_URL", "OPNSENSE_API_KEY", "OPNSENSE_API_SECRET", "OPNSENSE_CA_FILE")
+    required = (
+        "OPNSENSE_URL",
+        "OPNSENSE_API_KEY",
+        "OPNSENSE_API_SECRET",
+        "OPNSENSE_CA_FILE",
+    )
     missing = [name for name in required if not environment.get(name)]
     if missing:
-        raise ValueError(f"missing required environment variables: {', '.join(missing)}")
+        raise ValueError(
+            f"missing required environment variables: {', '.join(missing)}"
+        )
     inventory = json.loads(arguments.inventory.read_text())
     desired = json.loads(arguments.assignments.read_text())
     desired_kea_interfaces = json.loads(arguments.kea_interfaces.read_text())
     desired_bgp_neighbors = json.loads(arguments.bgp_neighbors.read_text())
     expected_routes = json.loads(arguments.bgp_expected_routes.read_text())
-    if not isinstance(inventory, dict) or not isinstance(inventory.get("assignment_api_available"), bool):
+    if not isinstance(inventory, dict) or not isinstance(
+        inventory.get("assignment_api_available"), bool
+    ):
         raise ValueError("inventory must contain assignment_api_available")
-    if not isinstance(desired, list) or not all(isinstance(item, dict) for item in desired):
+    if not isinstance(desired, list) or not all(
+        isinstance(item, dict) for item in desired
+    ):
         raise ValueError("assignments must contain a list of objects")
     if not isinstance(desired_kea_interfaces, list) or not all(
         isinstance(item, str) and item for item in desired_kea_interfaces
@@ -353,7 +418,9 @@ def main(
         raise ValueError("BGP expected routes must contain a list of prefixes")
     client = client_factory(
         environment["OPNSENSE_URL"],
-        Credentials(environment["OPNSENSE_API_KEY"], environment["OPNSENSE_API_SECRET"]),
+        Credentials(
+            environment["OPNSENSE_API_KEY"], environment["OPNSENSE_API_SECRET"]
+        ),
         environment["OPNSENSE_CA_FILE"],
         environment.get("OPNSENSE_TLS_SERVER_NAME"),
     )

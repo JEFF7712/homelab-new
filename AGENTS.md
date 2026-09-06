@@ -4,6 +4,12 @@
 
 Complete authorized work through verification. Inspect `git status`, applicable instructions, and affected code first. Preserve unrelated changes. Define observable acceptance criteria before editing; plan only multistep work. Resolve routine choices autonomously. Explain material architecture tradeoffs before implementation. Obtain authorization before publishing or changing shared infrastructure.
 
+## Workflow Entry Points
+
+Start with `just agent-context`, then use `AGENT_MAP.md` to find the owning source. Resume explicit task state with `just task-resume <id>`. Use `just check-changed` for scoped validation, `just check` for the full offline gate, and `just fmt-check` before handoff. Run live diagnostics explicitly with `just status cluster` or `just status network`.
+
+Task records and evidence under `.agent-state/` are local and ignored. Export reviewed handoffs with `just task-export <id>` and transfer uncommitted patches separately. Do not auto-stage files. Full command contracts and schemas are in `docs/agent-workflow.md`.
+
 ## Context and Ownership
 
 Read narrowly: start with `README.md`, then affected modules, tests, and runbooks. Treat plans as intent, source as implementation, and fresh observations as runtime evidence.

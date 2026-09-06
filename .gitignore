@@ -11,7 +11,9 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .terraform/
+.agent-cache/
 artifacts/
+.agent-state/
 .worktrees/
 *.tfstate
 *.tfstate.*

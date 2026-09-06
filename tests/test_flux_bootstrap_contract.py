@@ -1,7 +1,5 @@
-from pathlib import Path
-import re
 import unittest
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -53,9 +51,7 @@ class FluxBootstrapContractTests(unittest.TestCase):
         self.assertIn("name: platform", layer)
 
     def test_ingress_layer_declares_gateway_proof(self) -> None:
-        gatewayclass = (
-            ROOT / "gitops/ingress/gatewayclass.yaml"
-        ).read_text()
+        gatewayclass = (ROOT / "gitops/ingress/gatewayclass.yaml").read_text()
         self.assertIn("kind: GatewayClass", gatewayclass)
         self.assertIn("io.cilium/gateway-controller", gatewayclass)
 
@@ -80,11 +76,15 @@ class FluxBootstrapContractTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertIn(value, release)
 
-        kps = (ROOT / "gitops/observability/kube-prometheus-stack/release.yaml").read_text()
+        kps = (
+            ROOT / "gitops/observability/kube-prometheus-stack/release.yaml"
+        ).read_text()
         self.assertIn("ntfy.observability", kps)
 
     def test_observability_layer_declares_lightweight_stack(self) -> None:
-        kps = (ROOT / "gitops/observability/kube-prometheus-stack/release.yaml").read_text()
+        kps = (
+            ROOT / "gitops/observability/kube-prometheus-stack/release.yaml"
+        ).read_text()
         for value in (
             "chart: kube-prometheus-stack",
             "version: ",

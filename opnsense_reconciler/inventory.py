@@ -1,14 +1,15 @@
 import argparse
-from dataclasses import dataclass
 import hashlib
 import json
 import os
-import ssl
 import socket
+import ssl
 import subprocess
-from pathlib import Path
-from typing import Callable, Mapping, Protocol
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from http.client import HTTPSConnection
+from pathlib import Path
+from typing import Protocol
 
 
 class JsonClient(Protocol):
@@ -26,7 +27,13 @@ class Credentials:
 
 
 class HttpsClient:
-    def __init__(self, base_url: str, credentials: Credentials, ca_file: str, server_name: str | None = None) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        credentials: Credentials,
+        ca_file: str,
+        server_name: str | None = None,
+    ) -> None:
         self._host = base_url.removeprefix("https://").rstrip("/")
         self._server_name = server_name or self._host
         self._credentials = credentials
@@ -45,7 +52,10 @@ class HttpsClient:
         validate_api_path(path)
         password = self._credentials.secret
         import base64
-        token = base64.b64encode(f"{self._credentials.key}:{password}".encode()).decode()
+
+        token = base64.b64encode(
+            f"{self._credentials.key}:{password}".encode()
+        ).decode()
         body = json.dumps(payload).encode() if payload is not None else None
         headers = {"Accept": "application/json", "Authorization": f"Basic {token}"}
         if body is not None:
@@ -74,8 +84,12 @@ class _VerifiedConnection(HTTPSConnection):
         self._verified_context = context
 
     def connect(self) -> None:
-        socket_connection = socket.create_connection((self.host, self.port), self.timeout)
-        self.sock = self._verified_context.wrap_socket(socket_connection, server_hostname=self._server_name)
+        socket_connection = socket.create_connection(
+            (self.host, self.port), self.timeout
+        )
+        self.sock = self._verified_context.wrap_socket(
+            socket_connection, server_hostname=self._server_name
+        )
 
 
 @dataclass(frozen=True)
@@ -103,7 +117,9 @@ def collect_inventory(client: Client) -> Inventory:
     backup_provider = _first_identifier(providers)
     backups = client.get(f"/api/core/backup/backups/{backup_provider}")
     backup_id = _first_identifier(backups)
-    backup = client.get_bytes(f"/api/core/backup/download/{backup_provider}/{backup_id}")
+    backup = client.get_bytes(
+        f"/api/core/backup/download/{backup_provider}/{backup_id}"
+    )
     interfaces = client.get("/api/interfaces/overview/interfaces_info/true")
     vlans = client.get("/api/interfaces/vlan_settings/search_item")
     try:
@@ -127,9 +143,13 @@ def collect_provider_inventory(client: JsonClient) -> ProviderInventory:
     return ProviderInventory(
         vlan_ids=_row_uuids(client.get("/api/interfaces/vlan_settings/search_item")),
         dhcp_subnet_ids=_row_uuids(client.get("/api/kea/dhcpv4/search_subnet")),
-        dhcp_reservation_ids=_row_uuids(client.get("/api/kea/dhcpv4/search_reservation")),
+        dhcp_reservation_ids=_row_uuids(
+            client.get("/api/kea/dhcpv4/search_reservation")
+        ),
         firewall_filter_ids=_row_uuids(client.get("/api/firewall/filter/search_rule")),
-        unbound_forward_ids=_row_uuids(client.get("/api/unbound/settings/search_forward")),
+        unbound_forward_ids=_row_uuids(
+            client.get("/api/unbound/settings/search_forward")
+        ),
     )
 
 
@@ -150,7 +170,9 @@ def write_inventory_artifacts(
         "interfaces": inventory.interfaces,
         "vlans": inventory.vlans,
     }
-    (artifact_dir / "inventory.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+    (artifact_dir / "inventory.json").write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n"
+    )
 
 
 def _encrypt_with_age(backup: bytes, recipient: str, destination: Path) -> None:
@@ -219,7 +241,9 @@ def main(
     client_factory: Callable[[str, Credentials, str, str | None], Client] = HttpsClient,
     artifact_writer: Callable[[Inventory, Path, str], None] = write_inventory_artifacts,
 ) -> None:
-    parser = argparse.ArgumentParser(description="Capture encrypted OPNsense inventory evidence")
+    parser = argparse.ArgumentParser(
+        description="Capture encrypted OPNsense inventory evidence"
+    )
     parser.add_argument("--artifact-dir", required=True, type=Path)
     arguments = parser.parse_args(argv)
     environment = environ or os.environ
@@ -232,8 +256,12 @@ def main(
     )
     missing = [name for name in required if not environment.get(name)]
     if missing:
-        raise ValueError(f"missing required environment variables: {', '.join(missing)}")
-    credentials = Credentials(environment["OPNSENSE_API_KEY"], environment["OPNSENSE_API_SECRET"])
+        raise ValueError(
+            f"missing required environment variables: {', '.join(missing)}"
+        )
+    credentials = Credentials(
+        environment["OPNSENSE_API_KEY"], environment["OPNSENSE_API_SECRET"]
+    )
     client = client_factory(
         environment["OPNSENSE_URL"],
         credentials,
@@ -241,7 +269,9 @@ def main(
         environment.get("OPNSENSE_TLS_SERVER_NAME"),
     )
     inventory = collect_inventory(client)
-    artifact_writer(inventory, arguments.artifact_dir, environment["OPNSENSE_BACKUP_RECIPIENT"])
+    artifact_writer(
+        inventory, arguments.artifact_dir, environment["OPNSENSE_BACKUP_RECIPIENT"]
+    )
     print(
         json.dumps(
             {

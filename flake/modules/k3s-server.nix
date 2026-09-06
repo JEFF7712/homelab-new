@@ -231,7 +231,11 @@ in
             {
               key = "kubernetes.io/hostname";
               operator = "In";
-              values = [ "homelab-01" "homelab-02" "homelab-03" ];
+              values = [
+                "homelab-01"
+                "homelab-02"
+                "homelab-03"
+              ];
             }
           ];
           bgpInstances = [

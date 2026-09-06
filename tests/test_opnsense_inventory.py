@@ -1,13 +1,13 @@
 import hashlib
 import json
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 
 from opnsense_reconciler.inventory import (
     Credentials,
-    collect_provider_inventory,
     collect_inventory,
+    collect_provider_inventory,
     main,
     parse_credentials,
     validate_api_path,
@@ -81,14 +81,18 @@ class InventoryTests(unittest.TestCase):
             ],
         )
 
-    def test_collect_inventory_marks_unavailable_assignment_api_without_failing(self) -> None:
+    def test_collect_inventory_marks_unavailable_assignment_api_without_failing(
+        self,
+    ) -> None:
         client = AssignmentApiUnavailableClient()
 
         inventory = collect_inventory(client)
 
         self.assertFalse(inventory.assignment_api_available)
         self.assertIsNone(inventory.assignments)
-        self.assertEqual(client.calls[-1], ("GET", "/api/interfaces/assignment/search_item"))
+        self.assertEqual(
+            client.calls[-1], ("GET", "/api/interfaces/assignment/search_item")
+        )
 
     def test_collect_inventory_accepts_backup_items_list(self) -> None:
         client = FakeClient()
@@ -116,10 +120,14 @@ class InventoryTests(unittest.TestCase):
 
         with TemporaryDirectory() as directory:
             artifact_dir = Path(directory)
-            write_inventory_artifacts(inventory, artifact_dir, "age1example", encrypt=encrypt)
+            write_inventory_artifacts(
+                inventory, artifact_dir, "age1example", encrypt=encrypt
+            )
 
             summary = json.loads((artifact_dir / "inventory.json").read_text())
-            self.assertEqual(summary["backup_sha256"], hashlib.sha256(b"<config />").hexdigest())
+            self.assertEqual(
+                summary["backup_sha256"], hashlib.sha256(b"<config />").hexdigest()
+            )
             self.assertTrue((artifact_dir / "config.xml.age").is_file())
             self.assertFalse((artifact_dir / "config.xml").exists())
 
@@ -138,7 +146,9 @@ class InventoryTests(unittest.TestCase):
             seen["server_name"] = server_name
             return FakeClient()
 
-        def artifact_writer(inventory: object, artifact_dir: Path, recipient: str) -> None:
+        def artifact_writer(
+            inventory: object, artifact_dir: Path, recipient: str
+        ) -> None:
             seen["artifact_dir"] = artifact_dir
             seen["recipient"] = recipient
 
@@ -163,7 +173,9 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(seen["artifact_dir"], Path("/tmp/opnsense-evidence"))
         self.assertEqual(seen["recipient"], "age1example")
 
-    def test_collect_provider_inventory_reads_only_supported_resource_lists(self) -> None:
+    def test_collect_provider_inventory_reads_only_supported_resource_lists(
+        self,
+    ) -> None:
         class ProviderClient:
             def __init__(self) -> None:
                 self.calls: list[tuple[str, str]] = []

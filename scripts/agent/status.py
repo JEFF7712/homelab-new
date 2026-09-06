@@ -1,0 +1,138 @@
+from __future__ import annotations
+
+import re
+import shutil
+import subprocess
+import time
+from collections.abc import Callable
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+Runner = Callable[..., subprocess.CompletedProcess[str]]
+
+
+def configured_targets(root: Path) -> dict[str, Any]:
+    hosts = {}
+    for path in sorted((root / "flake/hosts").glob("homelab-*/default.nix")):
+        text = path.read_text(encoding="utf-8")
+        match = re.search(r'nodeIp\s*=\s*"([^"]+)"', text)
+        if match:
+            hosts[path.parent.name] = match.group(1)
+    primary = (root / "flake/hosts/homelab-02/default.nix").read_text(encoding="utf-8")
+    api = re.search(r'serverAddress\s*=\s*"([^"]+)"', primary)
+    ci = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
+    opnsense = re.search(r'OPNSENSE_URI:\s*"([^"]+)"', ci)
+    return {
+        "cluster_api": api.group(1) if api else None,
+        "cluster_nodes": hosts,
+        "opnsense": opnsense.group(1) if opnsense else None,
+        "kubeconfig": "$KUBECONFIG or kubectl default resolution",
+        "opnsense_ca_variable": "OPNSENSE_CA_FILE",
+        "opnsense_credential_variables": [
+            "OPNSENSE_API_KEY",
+            "OPNSENSE_API_SECRET",
+        ],
+    }
+
+
+def _run(runner: Runner, argv: list[str], timeout: float) -> dict[str, Any]:
+    try:
+        result = runner(
+            argv,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=max(0.01, timeout),
+        )
+    except (subprocess.TimeoutExpired, TimeoutError):
+        return {"status": "failed", "command": argv, "detail": "timeout"}
+    except OSError as error:
+        return {"status": "unavailable", "command": argv, "detail": str(error)}
+    return {
+        "status": "pass" if result.returncode == 0 else "failed",
+        "command": argv,
+        "exit_code": result.returncode,
+        "detail": (result.stdout + result.stderr)[-8192:],
+    }
+
+
+def status_payload(
+    root: Path,
+    target: str,
+    *,
+    total_timeout: float = 30.0,
+    runner: Runner = subprocess.run,
+) -> dict[str, Any]:
+    started = time.monotonic()
+    targets = configured_targets(root)
+    probes = []
+    if target == "cluster":
+        if runner is subprocess.run and not shutil.which("kubectl"):
+            probes.append({"status": "unavailable", "detail": "kubectl is missing"})
+        else:
+            for name, argv in (
+                (
+                    "nodes",
+                    ["kubectl", "--request-timeout=8s", "get", "nodes", "-o", "wide"],
+                ),
+                (
+                    "flux",
+                    [
+                        "kubectl",
+                        "--request-timeout=8s",
+                        "get",
+                        "kustomizations,helmreleases",
+                        "-A",
+                    ],
+                ),
+                (
+                    "workloads",
+                    [
+                        "kubectl",
+                        "--request-timeout=8s",
+                        "get",
+                        "pods",
+                        "-A",
+                        "--field-selector=status.phase!=Running,status.phase!=Succeeded",
+                    ],
+                ),
+            ):
+                remaining = total_timeout - (time.monotonic() - started)
+                if remaining <= 0:
+                    probes.append({"status": "failed", "detail": "total timeout"})
+                    break
+                probe = _run(runner, argv, min(8.0, remaining))
+                probe["name"] = name
+                probes.append(probe)
+    else:
+        for name, address in targets["cluster_nodes"].items():
+            remaining = total_timeout - (time.monotonic() - started)
+            if remaining <= 0:
+                probes.append(
+                    {"name": name, "status": "failed", "detail": "total timeout"}
+                )
+                break
+            probe = _run(
+                runner, ["ping", "-c", "1", "-W", "2", address], min(3.0, remaining)
+            )
+            probe["name"] = name
+            probes.append(probe)
+        probes.append(
+            {
+                "name": "bgp",
+                "status": "unavailable",
+                "detail": "read-only OPNsense credentials are not available to this local command",
+            }
+        )
+    complete = probes and all(item["status"] == "pass" for item in probes)
+    return {
+        "schema_version": 1,
+        "command": "status",
+        "target": target,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "selected_targets": targets,
+        "status": "pass" if complete else "incomplete",
+        "probes": probes,
+        "elapsed_seconds": round(time.monotonic() - started, 3),
+    }
