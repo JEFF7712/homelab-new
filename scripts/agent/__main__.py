@@ -95,14 +95,16 @@ def _read_json_stdin() -> dict[str, object]:
     return value
 
 
-def _print_task_result(record: dict[str, object], structured: bool) -> None:
+def _print_task_result(operation: dict[str, object], structured: bool) -> None:
     if structured:
-        print(json.dumps(record, sort_keys=True))
+        print(json.dumps(operation, sort_keys=True))
     else:
-        warning = record.get("durability_warning")
+        task = operation["task"]
+        assert isinstance(task, dict)
+        warning = operation.get("durability_warning")
         suffix = f" with warning: {warning}" if warning else ""
         print(
-            f"Task {record['task_id']} revision {record['record_revision']} saved{suffix}"
+            f"Task {task['task_id']} revision {task['record_revision']} saved{suffix}"
         )
 
 

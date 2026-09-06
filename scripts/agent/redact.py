@@ -17,7 +17,8 @@ _SECRET_ASSIGNMENT = re.compile(
 _MACHINE_CREDENTIAL_PATH = re.compile(
     r"(?<![A-Za-z0-9_./-])"
     r"(?:~|\$HOME|\$\{HOME\}|/home/[^/\s]+|/Users/[^/\s]+|/root)"
-    r"/\.(?:ssh(?:/[^\s'\"]*)?|config/sops/age(?:/[^\s'\"]*)?|kube(?:/config)?)"
+    r"/\.(?:ssh(?:/[^\s'\"]*)?|config/sops/age(?:/[^\s'\"]*)?|kube(?:/config)?|"
+    r"aws/credentials|docker/config\.json|gnupg(?:/[^\s'\"]*)?)"
     r"(?=$|[\s'\",;])"
 )
 

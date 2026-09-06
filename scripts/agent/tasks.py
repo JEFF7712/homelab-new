@@ -157,7 +157,7 @@ def validate_task_record(
             f"required task fields are missing: {', '.join(missing)}"
         )
     allowed = _RECORD_FIELDS if require_system else _CREATION_FIELDS | {"blocked_on"}
-    unexpected = sorted(set(record) - (allowed | {"expected_revision"}))
+    unexpected = sorted(set(record) - allowed)
     if unexpected:
         raise TaskValidationError(f"unexpected task fields: {', '.join(unexpected)}")
     result = dict(record)
@@ -240,6 +240,7 @@ def _read_record(path: Path, *, expected_task_id: str | None = None) -> dict[str
 def _atomic_write_json(path: Path, value: Mapping[str, Any]) -> str | None:
     temporary = path.with_name(f".{path.name}.{os.getpid()}.{secrets.token_hex(8)}.tmp")
     directory_fd: int | None = None
+    warning: str | None = None
     try:
         encoded = (json.dumps(value, sort_keys=True, indent=2) + "\n").encode("utf-8")
         with open(temporary, "xb") as handle:
@@ -251,14 +252,18 @@ def _atomic_write_json(path: Path, value: Mapping[str, Any]) -> str | None:
             directory_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
             os.fsync(directory_fd)
         except OSError:
-            return DURABILITY_WARNING
+            warning = DURABILITY_WARNING
     finally:
         if directory_fd is not None:
-            os.close(directory_fd)
+            try:
+                os.close(directory_fd)
+            except OSError:
+                warning = DURABILITY_WARNING
         try:
             temporary.unlink()
         except FileNotFoundError:
             pass
+    return warning
 
 
 def _cleanup_failed_creation(directory: Path) -> None:
@@ -271,6 +276,13 @@ def _cleanup_failed_creation(directory: Path) -> None:
         directory.rmdir()
     except OSError:
         pass
+
+
+def _operation_result(record: Mapping[str, Any], warning: str | None) -> dict[str, Any]:
+    result: dict[str, Any] = {"task": dict(record)}
+    if warning:
+        result["durability_warning"] = warning
+    return result
 
 
 class _TaskLock:
@@ -365,7 +377,7 @@ def create_task(
     except BaseException:
         _cleanup_failed_creation(directory)
         raise
-    return {**record, "durability_warning": warning} if warning else record
+    return _operation_result(record, warning)
 
 
 def checkpoint_task(
@@ -406,7 +418,7 @@ def checkpoint_task(
         }
         updated = validate_task_record(updated)
         warning = _atomic_write_json(path, updated)
-    return {**updated, "durability_warning": warning} if warning else updated
+    return _operation_result(updated, warning)
 
 
 def resume_task(root: Path, task_id: str) -> dict[str, Any]:

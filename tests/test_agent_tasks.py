@@ -134,6 +134,25 @@ class TaskRecordTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("owned_files", result.stderr)
 
+    def test_creation_rejects_transient_expected_revision(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            result = run_agent(
+                repository,
+                "task-new",
+                "state",
+                document={**creation_payload(), "expected_revision": 1},
+            )
+
+            path = repository / ".agent-state/tasks/state/task.json"
+            exists = path.exists()
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("expected_revision", result.stderr)
+        self.assertFalse(exists)
+
     def test_create_cleans_empty_task_directory_after_write_failure(self) -> None:
         from scripts.agent.tasks import create_task
 
@@ -153,7 +172,7 @@ class TaskRecordTest(unittest.TestCase):
             self.assertFalse(task_directory.exists())
             created = create_task(repository, "state", creation_payload())
 
-        self.assertEqual(created["task_id"], "state")
+        self.assertEqual(created["task"]["task_id"], "state")
 
     def test_checkpoint_requires_matching_revision_and_preserves_previous_record(
         self,
@@ -513,6 +532,53 @@ class TaskRecordTest(unittest.TestCase):
 
         self.assertEqual(persisted["record_revision"], 2)
         self.assertIn("durability_warning", result)
+        self.assertNotIn("durability_warning", result["task"])
+
+    def test_warning_checkpoint_result_round_trips_as_canonical_task(self) -> None:
+        from scripts.agent.tasks import checkpoint_task
+
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            repository = make_repository(Path(directory))
+            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+            commit(repository, "initial")
+            self.assertEqual(
+                run_agent(
+                    repository, "task-new", "state", document=creation_payload()
+                ).returncode,
+                0,
+            )
+            path = repository / ".agent-state/tasks/state/task.json"
+            record = json.loads(path.read_text())
+            with mock.patch(
+                "scripts.agent.tasks.os.fsync",
+                side_effect=[None, None, OSError("injected")],
+            ):
+                warning_result = checkpoint_task(
+                    repository, "state", {**record, "expected_revision": 1}
+                )
+            retry = checkpoint_task(
+                repository,
+                "state",
+                {**warning_result["task"], "expected_revision": 2},
+            )
+
+        self.assertIn("durability_warning", warning_result)
+        self.assertEqual(retry["task"]["record_revision"], 3)
+
+    def test_checkpoint_reports_directory_close_warning_after_replacement(self) -> None:
+        from scripts.agent.tasks import _atomic_write_json
+
+        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
+            path = Path(directory) / "task.json"
+            path.write_text(json.dumps({"record_revision": 1}), encoding="utf-8")
+            with mock.patch(
+                "scripts.agent.tasks.os.close", side_effect=OSError("injected")
+            ):
+                result = _atomic_write_json(path, {"record_revision": 2})
+            persisted = json.loads(path.read_text())
+
+        self.assertEqual(persisted["record_revision"], 2)
+        self.assertIsNotNone(result)
 
     def test_resume_reports_drift_unavailable_base_and_stale_verification_without_rewrite(
         self,
@@ -587,6 +653,24 @@ class RedactionTest(unittest.TestCase):
         for secret in ("id_ed25519", "keys.txt", "config", "id_rsa", "key.txt"):
             self.assertNotIn(secret, value)
         self.assertEqual(value.count("[REDACTED]"), 5)
+
+    def test_redacts_aws_docker_and_gnupg_credential_paths(self) -> None:
+        from scripts.agent.redact import redact
+
+        value = redact(
+            "~/.aws/credentials /root/.docker/config.json "
+            "/home/alice/.gnupg/private-keys-v1.d ${HOME}/.aws/credentials "
+            "$HOME/.gnupg /Users/alice/.docker/config.json"
+        )
+
+        for secret in (
+            "credentials",
+            "config.json",
+            "private-keys-v1.d",
+            ".gnupg",
+        ):
+            self.assertNotIn(secret, value)
+        self.assertEqual(value.count("[REDACTED]"), 6)
 
     def test_redacts_secrets_headers_private_keys_environment_and_machine_paths(
         self,
