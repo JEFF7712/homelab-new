@@ -1,0 +1,19 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: obsidian
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./gitops/obsidian
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: secrets
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: quartz-notes
+      namespace: obsidian

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quartz-notes
+  namespace: obsidian
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quartz-notes
+  template:
+    metadata:
+      labels:
+        app: quartz-notes
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull
+      securityContext:
+        fsGroup: 101
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: quartz
+          image: ghcr.io/jeff7712/quartz:0.0.278
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+            - name: tmp
+              mountPath: /tmp
+            - name: run
+              mountPath: /run
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 101
+      volumes:
+        - name: nginx-cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: run
+          emptyDir: {}
