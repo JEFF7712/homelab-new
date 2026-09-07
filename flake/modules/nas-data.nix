@@ -130,6 +130,34 @@
         NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
       };
     };
+    services.nas-ci = {
+      executor = "shell";
+      authenticationTokenConfigFile = "/persist/gitlab-runner/ci-authentication-token";
+      buildsDir = "/tmp/gitlab-runner-ci-builds";
+      limit = 1;
+      requestConcurrency = 1;
+      environmentVariables = {
+        PATH = lib.makeBinPath (
+          with pkgs;
+          [
+            bash
+            coreutils
+            findutils
+            gawk
+            git
+            gnugrep
+            gnused
+            gnutar
+            gzip
+            jq
+            nix
+          ]
+        );
+        GIT_SSL_CAINFO = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+        CURL_CA_BUNDLE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+        NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+      };
+    };
   };
 
   systemd.services.nas-backup-2tb = {

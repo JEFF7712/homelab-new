@@ -19,32 +19,86 @@ variables:
   TF_HTTP_UNLOCK_METHOD: DELETE
   TF_HTTP_RETRY_WAIT_MIN: "5"
 
-nix_format:
+.nas_ci:
+  tags:
+    - nas-ci
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+
+.shared_feature:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+
+.nix_format:
   stage: lint
   script:
     - nix develop ./flake -c just fmt-check
 
-repository_tests:
+nix_format:
+  extends:
+    - .nas_ci
+    - .nix_format
+
+nix_format_feature:
+  extends:
+    - .shared_feature
+    - .nix_format
+
+.repository_tests:
   stage: test
   script:
     - nix develop ./flake -c just provision-check-deps
     - nix develop ./flake -c just check
     - nix flake check ./flake
 
-yaml_schema:
+repository_tests:
+  extends:
+    - .nas_ci
+    - .repository_tests
+
+repository_tests_feature:
+  extends:
+    - .shared_feature
+    - .repository_tests
+
+.yaml_schema:
   stage: test
   script:
     - nix develop ./flake -c yamllint .
 
-secret_scan:
+yaml_schema:
+  extends:
+    - .nas_ci
+    - .yaml_schema
+
+yaml_schema_feature:
+  extends:
+    - .shared_feature
+    - .yaml_schema
+
+.secret_scan:
   stage: security
   script:
     - nix develop ./flake -c gitleaks detect --source . --redact
 
+secret_scan:
+  extends:
+    - .nas_ci
+    - .secret_scan
+
+secret_scan_feature:
+  extends:
+    - .shared_feature
+    - .secret_scan
+
 opnsense_inventory:
   stage: opnsense
   tags:
-    - nas
+    - nas-privileged
+  environment:
+    name: production
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
@@ -57,7 +111,9 @@ opnsense_inventory:
 opnsense_plan:
   stage: opnsense
   tags:
-    - nas
+    - nas-privileged
+  environment:
+    name: production
   variables:
     # The firewall serves its default self-signed cert (SAN: OPNsense.internal,
     # no IP SANs) and the tofu provider has no TLS server-name override, so it
@@ -88,7 +144,9 @@ opnsense_plan:
 opnsense_apply:
   stage: opnsense
   tags:
-    - nas
+    - nas-privileged
+  environment:
+    name: production
   variables:
     OPNSENSE_URI: "https://OPNsense.internal"
     SSL_CERT_FILE: $OPNSENSE_CA_FILE
@@ -120,9 +178,8 @@ opnsense_apply:
       --bgp-expected-routes opnsense_reconciler/bgp-expected-routes.json
 
 nas_proof:
+  extends: .nas_ci
   stage: test
-  tags:
-    - nas
   variables:
     GIT_STRATEGY: none
   script:
@@ -134,7 +191,9 @@ nas_proof:
 deploy_host:
   stage: deploy
   tags:
-    - nas
+    - nas-privileged
+  environment:
+    name: production
   needs:
     - repository_tests
   rules:

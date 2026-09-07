@@ -1,6 +1,8 @@
 import unittest
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -84,8 +86,13 @@ class NasDataContractTests(unittest.TestCase):
             'path = "/tank/attic"',
             "services.gitlab-runner",
             'authenticationTokenConfigFile = "/persist/gitlab-runner/authentication-token"',
+            'authenticationTokenConfigFile = "/persist/gitlab-runner/ci-authentication-token"',
             'executor = "shell"',
             'buildsDir = "/tmp/gitlab-runner-builds"',
+            'buildsDir = "/tmp/gitlab-runner-ci-builds"',
+            "services.nas-ci",
+            "limit = 1;",
+            "requestConcurrency = 1;",
             '"OPNsense.internal"',
             "DynamicUser = lib.mkForce false",
             'User = "gitlab-runner"',
@@ -107,6 +114,39 @@ class NasDataContractTests(unittest.TestCase):
 
         self.assertNotIn("ST10000NM002G", role)
         self.assertNotIn("scsi-35000c500d91a3f4f", role)
+
+    def test_ci_runner_lanes_preserve_the_credential_boundary(self) -> None:
+        pipeline = yaml.safe_load((ROOT / ".gitlab-ci.yml").read_text())
+
+        self.assertEqual(pipeline[".nas_ci"]["tags"], ["nas-ci"])
+
+        for name in (
+            "nix_format",
+            "repository_tests",
+            "yaml_schema",
+            "secret_scan",
+        ):
+            with self.subTest(job=name):
+                self.assertIn(".nas_ci", pipeline[name]["extends"])
+
+        for name in (
+            "nix_format_feature",
+            "repository_tests_feature",
+            "yaml_schema_feature",
+            "secret_scan_feature",
+        ):
+            with self.subTest(job=name):
+                self.assertIn(".shared_feature", pipeline[name]["extends"])
+
+        for name in (
+            "opnsense_inventory",
+            "opnsense_plan",
+            "opnsense_apply",
+            "deploy_host",
+        ):
+            with self.subTest(job=name):
+                self.assertEqual(pipeline[name]["tags"], ["nas-privileged"])
+                self.assertEqual(pipeline[name]["environment"], {"name": "production"})
 
 
 if __name__ == "__main__":
