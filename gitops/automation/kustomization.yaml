@@ -4,5 +4,18 @@ resources:
   - namespace.yaml
   - repository.yaml
   - secrets.yaml
+  - config.yaml
+  - state.yaml
+  - rbac.yaml
+  - cluster-sentinel-script.yaml
+  - cluster-sentinel.yaml
+  - dockerhub-retention-script.yaml
+  - dockerhub-retention.yaml
+  - website-monitor-scripts.yaml
+  - website-monitors.yaml
+  - renovate-reviewer-script.yaml
+  - renovate-agent.yaml
+  - renovate-approval-webhook-script.yaml
+  - renovate-dashboard.yaml
   - renovate-gitlab.yaml
   - renovate-github.yaml
