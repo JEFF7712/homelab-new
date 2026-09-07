@@ -55,6 +55,18 @@ class AgentHookTest(unittest.TestCase):
         )
         self.assertEqual(json.loads(recursive.stdout), {})
 
+    def test_session_start_fails_open_for_malformed_input(self) -> None:
+        result = subprocess.run(
+            ["bash", str(ROOT / "hooks/session-start")],
+            cwd=ROOT,
+            input="not-json",
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), {})
+
 
 if __name__ == "__main__":
     unittest.main()
