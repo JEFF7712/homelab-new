@@ -23,7 +23,7 @@ Related manifests:
 - `gitops/immich/route.yaml` (`photos.rupan.dev`, inert while `Gateway homelab` is parked)
 - `gitops/immich/server.yaml`
 
-## Ingress order (v52, 2026-09-05)
+## Ingress order (v62, 2026-09-07)
 
 Cloudflare evaluates top to bottom, first match wins. Keep specifics first, wildcard second to last, catch-all last.
 
@@ -32,13 +32,25 @@ Cloudflare evaluates top to bottom, first match wins. Keep specifics first, wild
 3. `api.rupan.dev -> http://rupan-api:9000`
 4. `homelab.rupan.dev -> http://homelab-api:9200`
 5. `photos.rupan.dev -> http://immich-server.immich:80`
-6. `*.rupan.dev -> https://10.0.20.180:443` (`noTLSVerify: true`)
-7. `distrojeff.com -> https://10.0.20.180:443`
-8. `apollinestore.com -> https://10.0.20.180:443`
-9. `darkbitapparel.com -> https://10.0.20.180:443`
-10. `sandhufiles.site -> https://10.0.20.180:443`
-11. `pulseagent.dev -> https://10.0.20.180:443`
-12. `http_status:404`
+6. `www.pulseagent.dev -> http://pulse-svc.pulse:80`
+7. `ism.rupan.dev -> http://ism-svc.ism:80`
+8. `nix-agent.rupan.dev -> http://nixagent-svc.nixagent:80`
+9. `rupanism.rupan.dev -> http://rupanism-svc.rupanism:80`
+10. `spatia.rupan.dev -> http://spatia-svc.spatia:80`
+11. `demo.rupan.dev -> http://cr-demo-svc.cr-demo:80`
+12. `soluble.rupan.dev -> http://soluble-rupan-svc.soluble-rupan:80`
+13. `photo.rupan.dev -> http://photography-svc.photography:80`
+14. `majorfinder.rupan.dev -> http://majorfinder-svc.majorfinder:80`
+15. `notes.rupan.dev -> http://quartz-notes.obsidian.svc.cluster.local:80`
+16. `ntfy.rupan.dev -> http://ntfy-ntfy.observability.svc.cluster.local:80`
+17. `obsidian.rupan.dev -> http://couchdb.obsidian.svc.cluster.local:5984`
+18. `*.rupan.dev -> https://10.0.20.180:443` (`noTLSVerify: true`)
+19. `distrojeff.com -> http://distrojeff-site-svc.distrojeff:80`
+20. `apollinestore.com -> http://apolline-svc.apolline:80`
+21. `darkbitapparel.com -> http://darkbit-svc.darkbit:80`
+22. `sandhufiles.site -> https://10.0.20.180:443` (`noTLSVerify: true`)
+23. `pulseagent.dev -> http://pulse-svc.pulse:80`
+24. `http_status:404`
 
 Do not place a specific `*.rupan.dev` match below the wildcard. `photos` was briefly at position 11 (v50) and would have matched the wildcard at position 6. Moved above the wildcard in v51.
 

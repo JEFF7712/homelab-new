@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: couchdb
+  namespace: obsidian
+  labels:
+    app: couchdb
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: couchdb
+  template:
+    metadata:
+      labels:
+        app: couchdb
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: copy-config
+          image: docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+          command:
+            - sh
+            - -c
+            - cp /tmp/config/10-cors.ini /opt/couchdb/etc/local.d/10-cors.ini
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: cors-config-source
+              mountPath: /tmp/config
+            - name: config-storage
+              mountPath: /opt/couchdb/etc/local.d
+      containers:
+        - name: couchdb
+          image: docker.io/library/couchdb@sha256:199ff89f9a930df6032a216570ae0169fcc36c449bb02b40fafeb6efecdb606f
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          env:
+            - name: COUCHDB_USER
+              value: admin
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb-creds
+                  key: admin-password
+          ports:
+            - name: http
+              containerPort: 5984
+          volumeMounts:
+            - name: data
+              mountPath: /opt/couchdb/data
+            - name: config-storage
+              mountPath: /opt/couchdb/etc/local.d
+            - name: tmp
+              mountPath: /tmp
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5984
+            initialDelaySeconds: 20
+            periodSeconds: 20
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: couchdb-data
+        - name: cors-config-source
+          configMap:
+            name: couchdb-cors-config
+        - name: config-storage
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: couchdb
+  namespace: obsidian
+spec:
+  selector:
+    app: couchdb
+  ports:
+    - name: http
+      port: 5984
+      targetPort: http

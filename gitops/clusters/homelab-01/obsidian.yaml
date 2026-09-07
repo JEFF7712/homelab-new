@@ -12,8 +12,13 @@ spec:
     name: flux-system
   dependsOn:
     - name: secrets
+    - name: eso
   healthChecks:
     - apiVersion: apps/v1
       kind: Deployment
       name: quartz-notes
+      namespace: obsidian
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: couchdb
       namespace: obsidian
