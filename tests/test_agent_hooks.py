@@ -16,7 +16,9 @@ class AgentHookTest(unittest.TestCase):
         ):
             self.assertIsInstance(json.loads((ROOT / path).read_text()), dict)
 
-    def test_session_start_returns_client_valid_json_and_recursion_fails_open(self) -> None:
+    def test_session_start_returns_client_valid_json_and_recursion_fails_open(
+        self,
+    ) -> None:
         result = subprocess.run(
             ["bash", str(ROOT / "hooks/session-start")],
             cwd=ROOT,
