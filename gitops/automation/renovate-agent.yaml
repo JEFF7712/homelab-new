@@ -99,19 +99,6 @@ spec:
           - name: tmp
             emptyDir: {}
 ---
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: renovate-approval-webhook-tls
-  namespace: automation
-spec:
-  secretName: renovate-approval-webhook-tls-secret
-  issuerRef:
-    name: letsencrypt-prod
-    kind: ClusterIssuer
-  dnsNames:
-  - renovate-approve.rupan.dev
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -216,20 +203,3 @@ spec:
     targetPort: 8080
   type: ClusterIP
 ---
-apiVersion: traefik.io/v1alpha1
-kind: IngressRoute
-metadata:
-  name: renovate-approval-webhook
-  namespace: automation
-spec:
-  entryPoints:
-  - websecure
-  routes:
-  - match: Host(`renovate-approve.rupan.dev`)
-    kind: Rule
-    services:
-    - name: renovate-approval-webhook
-      port: 80
-  tls:
-    secretName: renovate-approval-webhook-tls-secret
-
