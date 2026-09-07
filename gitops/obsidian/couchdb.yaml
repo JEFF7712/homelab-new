@@ -16,6 +16,8 @@ spec:
     metadata:
       labels:
         app: couchdb
+      annotations:
+        couchdb-config-version: "2"
     spec:
       securityContext:
         seccompProfile:
