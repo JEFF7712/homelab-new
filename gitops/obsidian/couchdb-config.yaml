@@ -4,9 +4,19 @@ metadata:
   name: couchdb-cors-config
   namespace: obsidian
 data:
-  10-cors.ini: |
+  10-couchdb.ini: |
+    [couchdb]
+    single_node = true
+
+    [chttpd]
+    require_valid_user = true
+
+    [chttpd_auth]
+    require_valid_user = true
+
     [httpd]
     enable_cors = true
+    WWW-Authenticate = Basic realm="couchdb"
 
     [cors]
     origins = *

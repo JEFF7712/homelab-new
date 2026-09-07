@@ -26,7 +26,7 @@ spec:
           command:
             - sh
             - -c
-            - cp /tmp/config/10-cors.ini /opt/couchdb/etc/local.d/10-cors.ini
+            - cp /tmp/config/10-couchdb.ini /opt/couchdb/etc/local.d/10-couchdb.ini
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -61,8 +61,7 @@ spec:
             - name: tmp
               mountPath: /tmp
           livenessProbe:
-            httpGet:
-              path: /
+            tcpSocket:
               port: 5984
             initialDelaySeconds: 20
             periodSeconds: 20
