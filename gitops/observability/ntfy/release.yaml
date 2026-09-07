@@ -33,6 +33,8 @@ spec:
             secretKeyRef:
               name: ntfy-auth
               key: auth-access
+    podAnnotations:
+      migration.rupan.dev/ntfy-auth-format: v2
     persistence:
       enabled: true
       size: 2Gi
