@@ -62,6 +62,16 @@ dhcpv4_subnets = {
   }
 }
 
+dhcpv4_reservations = {
+  ap_downstairs = {
+    description = "Downstairs NETGEAR R6400v2 access point"
+    hostname    = "ap-downstairs"
+    ip_address  = "10.0.20.3"
+    mac_address = "80:cc:9c:21:88:e7"
+    subnet_id   = "542fde27-1972-42e1-9376-057b5cae2f5e"
+  }
+}
+
 firewall_filters = {
   management-allow-any = {
     description = "Allow management VLAN to all destinations"
