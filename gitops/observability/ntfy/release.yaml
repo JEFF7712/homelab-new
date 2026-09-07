@@ -14,9 +14,28 @@ spec:
         name: helmforge
         namespace: flux-system
   values:
+    ntfy:
+      baseUrl: https://ntfy.rupan.dev
+      authDefaultAccess: deny-all
+      extraEnv:
+        - name: NTFY_AUTH_USERS
+          valueFrom:
+            secretKeyRef:
+              name: ntfy-auth
+              key: auth-users
+        - name: NTFY_AUTH_TOKENS
+          valueFrom:
+            secretKeyRef:
+              name: ntfy-auth
+              key: auth-tokens
+        - name: NTFY_AUTH_ACCESS
+          valueFrom:
+            secretKeyRef:
+              name: ntfy-auth
+              key: auth-access
     persistence:
       enabled: true
-      size: 1Gi
+      size: 2Gi
       storageClass: nfs-cluster
     gateway:
       enabled: true
@@ -24,4 +43,4 @@ spec:
         - name: homelab
           namespace: default
       hostnames:
-        - ntfy.homelab
+        - ntfy.rupan.dev
