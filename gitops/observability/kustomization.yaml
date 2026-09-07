@@ -9,4 +9,3 @@ resources:
   - grafana/service.yaml
   - ntfy/repository.yaml
   - ntfy/release.yaml
-  - ntfy/secret.yaml
