@@ -38,6 +38,7 @@ data:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
     OPENAI_REVIEW_MODEL = os.getenv("OPENAI_REVIEW_MODEL", os.getenv("OPENAI_MODEL", "gpt-5.4-mini"))
     OPENAI_CODING_MODEL = os.getenv("OPENAI_CODING_MODEL", "gpt-5.5")
+    MAX_NTFY_MESSAGE_LENGTH = 3500
     TOPIC = open("/config/ntfy-topic", encoding="utf-8").read().strip()
     NTFY_URL = f"http://ntfy-ntfy.observability.svc.cluster.local/{TOPIC}"
     DIGEST_ITEMS = []
@@ -169,6 +170,8 @@ data:
       print(f"cleaned {len(removals)} renovate state entries older than {STATE_RETENTION_DAYS} days")
 
     def notify(title, priority, message, actions=None, click=None):
+      if len(message) > MAX_NTFY_MESSAGE_LENGTH:
+        message = message[:MAX_NTFY_MESSAGE_LENGTH - 32].rstrip() + "\n[message truncated]"
       headers = {
         "Authorization": f"Bearer {os.environ['NTFY_TOKEN']}",
         "X-Title": title,
@@ -1346,4 +1349,3 @@ data:
 
     if __name__ == "__main__":
       main()
-
