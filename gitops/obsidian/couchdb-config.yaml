@@ -8,6 +8,9 @@ data:
     [couchdb]
     single_node = true
 
+    [cluster]
+    n = 1
+
     [chttpd]
     require_valid_user = true
 
