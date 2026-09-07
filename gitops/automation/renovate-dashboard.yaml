@@ -51,12 +51,12 @@ spec:
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
-              name: automation-secrets
+              name: renovate-secrets
               key: github-token
         - name: GITLAB_TOKEN
           valueFrom:
             secretKeyRef:
-              name: automation-secrets
+              name: renovate-secrets
               key: gitlab-token
         ports:
         - containerPort: 8080

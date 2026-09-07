@@ -36,17 +36,17 @@ spec:
             - name: NTFY_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: automation-secrets
+                  name: renovate-secrets
                   key: ntfy-token
             - name: DOCKERHUB_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: automation-secrets
+                  name: renovate-secrets
                   key: dockerhub-username
             - name: DOCKERHUB_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: automation-secrets
+                  name: renovate-secrets
                   key: dockerhub-token
             volumeMounts:
             - name: config
@@ -65,4 +65,3 @@ spec:
                   name: dockerhub-retention-config
           - name: tmp
             emptyDir: {}
-

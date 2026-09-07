@@ -37,7 +37,7 @@ spec:
             - name: NTFY_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: automation-secrets
+                  name: renovate-secrets
                   key: ntfy-token
             volumeMounts:
             - name: config
@@ -52,4 +52,3 @@ spec:
                   name: automation-config
               - configMap:
                   name: cluster-sentinel-config
-
