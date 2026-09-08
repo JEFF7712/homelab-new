@@ -26,6 +26,7 @@ let
   zotPackage = pkgs.stdenvNoCC.mkDerivation {
     pname = "zot";
     inherit (release) version;
+    nativeBuildInputs = [ pkgs.patchelf ];
     src = pkgs.fetchurl {
       url = "https://github.com/project-zot/zot/releases/download/v${release.version}/zot-linux-${zotPlatform}";
       hash = release.hashes.${pkgs.stdenv.hostPlatform.system};
@@ -34,6 +35,7 @@ let
     installPhase = ''
       runHook preInstall
       install -Dm755 "$src" "$out/bin/zot"
+      patchelf --set-interpreter ${pkgs.stdenv.cc.bintools.dynamicLinker} "$out/bin/zot"
       runHook postInstall
     '';
     meta = {

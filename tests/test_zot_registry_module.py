@@ -209,6 +209,13 @@ class ZotRegistryModuleTests(unittest.TestCase):
 
     def test_pinned_binary_verifies_runtime_assembled_configuration(self) -> None:
         package = Path(self.evaluated["packageOutPath"])
+        interpreter = subprocess.run(
+            ["patchelf", "--print-interpreter", str(package / "bin/zot")],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        self.assertTrue(interpreter.startswith("/nix/store/"), interpreter)
 
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary = Path(temporary_directory)

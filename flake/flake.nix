@@ -114,6 +114,7 @@
             nixfmt
             opentofu
             oras
+            patchelf
             pyright
             python
             ruff
@@ -134,6 +135,7 @@
                 pkgs.jq
                 pkgs.just
                 pkgs.kubectl
+                pkgs.patchelf
                 python
               ];
             }
