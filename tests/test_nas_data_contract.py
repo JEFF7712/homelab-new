@@ -85,6 +85,7 @@ class NasDataContractTests(unittest.TestCase):
             "services.atticd",
             'path = "/tank/attic"',
             "services.gitlab-runner",
+            "settings.concurrent = 2;",
             'authenticationTokenConfigFile = "/persist/gitlab-runner/authentication-token"',
             'authenticationTokenConfigFile = "/persist/gitlab-runner/ci-authentication-token"',
             'executor = "shell"',

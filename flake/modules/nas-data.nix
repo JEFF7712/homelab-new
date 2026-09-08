@@ -94,9 +94,12 @@
 
   services.gitlab-runner = {
     enable = true;
+    settings.concurrent = 2;
     services.nas = {
       executor = "shell";
       authenticationTokenConfigFile = "/persist/gitlab-runner/authentication-token";
+      limit = 1;
+      requestConcurrency = 1;
       # Builds must live outside the DynamicUser state dir: systemd mounts it
       # noexec, which breaks any tool that executes downloaded binaries there
       # (e.g. tofu provider plugins). /tmp is exec-capable and writable.
