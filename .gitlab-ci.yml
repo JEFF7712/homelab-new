@@ -458,6 +458,49 @@ deploy_host:
     - nixos-rebuild --flake ./flake#"$DEPLOY_HOST" --use-remote-sudo switch
       --target-host rupan@"$DEPLOY_ADDR" --build-host rupan@"$DEPLOY_ADDR"
 
+deploy_adguard_netbird:
+  stage: deploy
+  tags:
+    - nas-privileged
+  environment:
+    name: production
+  needs:
+    - repository_tests
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  variables:
+    DEPLOY_HOST: adguard-netbird-01
+    DEPLOY_ADDR: 10.0.30.10
+  before_script:
+    - mkdir -p ~/.ssh
+    - cp "$SSH_DEPLOY_KEY" ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - cp "$HOSTS_KNOWN" ~/.ssh/known_hosts
+    - chmod 600 ~/.ssh/known_hosts
+  script:
+    - export PATH="/run/current-system/sw/bin:$PATH"
+    - export SSH_OPTS="-i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes"
+    - export KH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+    - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
+    - >-
+      ssh $SSH_OPTS $KH_OPTS rupan@"$DEPLOY_ADDR"
+      'install -d -m 0700 /persist/secrets'
+    - >-
+      printf '%s' "$HOME_ASSISTANT_MQTT_PASSWORD" |
+      ssh $SSH_OPTS $KH_OPTS rupan@"$DEPLOY_ADDR"
+      'umask 077; cat > /persist/secrets/mosquitto-home-assistant-password.tmp &&
+      mv /persist/secrets/mosquitto-home-assistant-password.tmp
+      /persist/secrets/mosquitto-home-assistant-password'
+    - >-
+      printf '%s' "$ZIGBEE2MQTT_MQTT_PASSWORD" |
+      ssh $SSH_OPTS $KH_OPTS rupan@"$DEPLOY_ADDR"
+      'umask 077; cat > /persist/secrets/mosquitto-zigbee2mqtt-password.tmp &&
+      mv /persist/secrets/mosquitto-zigbee2mqtt-password.tmp
+      /persist/secrets/mosquitto-zigbee2mqtt-password'
+    - nixos-rebuild --flake ./flake#"$DEPLOY_HOST" --use-remote-sudo switch
+      --target-host rupan@"$DEPLOY_ADDR" --build-host rupan@"$DEPLOY_ADDR"
+
 sync_to_github:
   stage: sync
   image: nixos/nix:latest
@@ -469,7 +512,8 @@ sync_to_github:
         git remote add github "https://oauth2:$GITHUB_TOKEN@github.com/JEFF7712/homelab-new.git"
         git fetch --unshallow || git fetch --all
 
-        printf "**NOTE - This repository is a mirror.** Active development happens on [GitLab](https://gitlab.com/JEFF7712/homelab-new).\n\n%s" "$(cat README.md)" > README.md
+        mirror_warning="**NOTE - This repository is a mirror.** Active development happens on [GitLab](https://gitlab.com/JEFF7712/homelab-new)."
+        printf "%s\n\n%s" "$mirror_warning" "$(cat README.md)" > README.md
 
         git config user.email "runner@gitlab.com"
         git config user.name "GitLab Runner"

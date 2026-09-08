@@ -25,6 +25,7 @@
         ip saddr 10.0.30.20 tcp dport 22 accept
         ip saddr 10.0.30.0/24 tcp dport 53 accept
         ip saddr 10.0.30.0/24 udp dport 53 accept
+        ip saddr { 10.0.30.11, 10.0.30.12, 10.0.30.13 } tcp dport 1883 accept
         iifname "wt0" tcp dport { 22, 53, 3000 } accept
         iifname "wt0" udp dport 53 accept
       '';
@@ -168,6 +169,37 @@
     };
   };
 
+  services.mosquitto = {
+    enable = true;
+    listeners = [
+      {
+        address = "10.0.30.10";
+        port = 1883;
+        users = {
+          "home-assistant" = {
+            passwordFile = "/persist/secrets/mosquitto-home-assistant-password";
+            acl = [
+              "readwrite homeassistant/#"
+              "read zigbee2mqtt/#"
+            ];
+          };
+          zigbee2mqtt = {
+            passwordFile = "/persist/secrets/mosquitto-zigbee2mqtt-password";
+            acl = [
+              "read homeassistant/status"
+              "readwrite zigbee2mqtt/#"
+            ];
+          };
+        };
+      }
+    ];
+  };
+
+  systemd.services.mosquitto.unitConfig.ConditionPathExists = [
+    "/persist/secrets/mosquitto-home-assistant-password"
+    "/persist/secrets/mosquitto-zigbee2mqtt-password"
+  ];
+
   systemd.services = {
     adguardhome = {
       after = [ "network-online.target" ];
@@ -183,6 +215,7 @@
   systemd.tmpfiles.rules = [
     "d /var/lib/private 0700 root root -"
     "d /persist/etc/ssh 0700 root root -"
+    "d /persist/secrets 0700 root root -"
     "d /persist/var/lib/private 0700 root root -"
     "d /persist/var/lib/private/AdGuardHome 0700 nobody nogroup -"
   ];

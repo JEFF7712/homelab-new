@@ -1,0 +1,24 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: home-assistant
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./gitops/home-assistant
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: eso
+    - name: storage
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: home-assistant-postgres
+      namespace: home-assistant
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: home-assistant
+      namespace: home-assistant

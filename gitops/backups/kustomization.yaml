@@ -5,6 +5,7 @@ resources:
   - volumes.yaml
   - secrets.yaml
   - db-dump.yaml
+  - home-assistant-db-dump.yaml
   - dumps-to-r2.yaml
   - library-volumes.yaml
   - library-local.yaml

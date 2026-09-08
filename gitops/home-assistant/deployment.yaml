@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: home-assistant
+  namespace: home-assistant
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: home-assistant
+  template:
+    metadata:
+      labels:
+        app: home-assistant
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: initialize-config
+          image: busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              test -e /config/configuration.yaml || cp /bootstrap/configuration.yaml /config/configuration.yaml
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: bootstrap-config
+              mountPath: /bootstrap
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: home-assistant
+          image: ghcr.io/home-assistant/home-assistant@sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17  # yamllint disable-line rule:line-length
+          env:
+            - name: TZ
+              value: America/Chicago
+          ports:
+            - name: http
+              containerPort: 8123
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
+          startupProbe:
+            httpGet:
+              path: /manifest.json
+              port: http
+            failureThreshold: 60
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /manifest.json
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /manifest.json
+              port: http
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: secrets
+              mountPath: /config/secrets.yaml
+              subPath: secrets.yaml
+              readOnly: true
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: home-assistant-config
+        - name: bootstrap-config
+          configMap:
+            name: home-assistant-config
+        - name: secrets
+          secret:
+            secretName: home-assistant-secrets
+        - name: tmp
+          emptyDir: {}

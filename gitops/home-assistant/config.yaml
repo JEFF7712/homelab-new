@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: home-assistant-config
+  namespace: home-assistant
+data:
+  configuration.yaml: |
+    default_config:
+    recorder:
+      db_url: !secret recorder_db_url
+    mqtt:
+      broker: 10.0.30.10
+      username: home-assistant
+      password: !secret mqtt_password
