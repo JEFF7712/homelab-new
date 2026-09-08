@@ -177,6 +177,7 @@ registry_update_import:
   environment:
     name: production
   before_script:
+    - export PATH="/run/current-system/sw/bin:$PATH"
     - mkdir -p ~/.ssh
     - cp "$SSH_DEPLOY_KEY" ~/.ssh/id_ed25519
     - chmod 600 ~/.ssh/id_ed25519

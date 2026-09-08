@@ -327,6 +327,10 @@ class RegistryConsumerInventoryTests(unittest.TestCase):
 
     def test_registry_node_rollout_is_explicit_and_serial(self) -> None:
         pipeline = yaml.safe_load((ROOT / ".gitlab-ci.yml").read_text())
+        self.assertEqual(
+            pipeline[".registry_ssh"]["before_script"][0],
+            'export PATH="/run/current-system/sw/bin:$PATH"',
+        )
         expected = [
             ("deploy_registry_node_01", "registry_import", "homelab-01"),
             ("deploy_registry_node_02", "deploy_registry_node_01", "homelab-02"),
