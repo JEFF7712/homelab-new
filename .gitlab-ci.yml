@@ -4,6 +4,7 @@ stages:
   - lint
   - test
   - security
+  - sync
   - registry
   - opnsense
   - deploy
@@ -456,3 +457,29 @@ deploy_host:
     - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
     - nixos-rebuild --flake ./flake#"$DEPLOY_HOST" --use-remote-sudo switch
       --target-host rupan@"$DEPLOY_ADDR" --build-host rupan@"$DEPLOY_ADDR"
+
+sync_to_github:
+  stage: sync
+  image: nixos/nix:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - >-
+      nix develop ./flake -c bash -e -c '
+        git remote add github "https://oauth2:$GITHUB_TOKEN@github.com/JEFF7712/homelab-new.git"
+        git fetch --unshallow || git fetch --all
+
+        printf "**NOTE - This repository is a mirror.** Active development happens on [GitLab](https://gitlab.com/JEFF7712/homelab-new).\n\n%s" "$(cat README.md)" > README.md
+
+        git config user.email "runner@gitlab.com"
+        git config user.name "GitLab Runner"
+        git commit -am "Automated: Add GitHub Mirror Warning" || echo "No changes to commit"
+
+        for attempt in 1 2 3; do
+          if git -c http.version=HTTP/1.1 push github HEAD:main --force; then
+            exit 0
+          fi
+          sleep $((attempt * 15))
+        done
+        exit 1
+      '
