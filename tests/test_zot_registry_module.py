@@ -48,11 +48,12 @@ class ZotRegistryModuleTests(unittest.TestCase):
             packageVersion = cfg.services.homelab-zot-registry.package.version;
             packageOutPath = toString cfg.services.homelab-zot-registry.package;
             packageDrv = cfg.services.homelab-zot-registry.package.drvPath;
+            storageSetup = builtins.elemAt cfg.systemd.services.zot.serviceConfig.ExecStartPre 0;
             prepareConfig = toString (
-              builtins.head cfg.systemd.services.zot.serviceConfig.ExecStartPre
+              builtins.elemAt cfg.systemd.services.zot.serviceConfig.ExecStartPre 1
             );
             prepareConfigDrv = (
-              builtins.head cfg.systemd.services.zot.serviceConfig.ExecStartPre
+              builtins.elemAt cfg.systemd.services.zot.serviceConfig.ExecStartPre 1
             ).drvPath;
             service = {{
               inherit (cfg.systemd.services.zot)
@@ -122,6 +123,7 @@ class ZotRegistryModuleTests(unittest.TestCase):
         )
         self.assertEqual(service["serviceConfig"]["Restart"], "on-failure")
         self.assertEqual(service["serviceConfig"]["ReadWritePaths"], ["/tank/registry"])
+        self.assertTrue(self.evaluated["storageSetup"].startswith("+/nix/store/"))
 
     def test_secrets_are_loaded_as_runtime_credentials(self) -> None:
         service_config = self.evaluated["service"]["serviceConfig"]

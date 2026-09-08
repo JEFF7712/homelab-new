@@ -101,6 +101,11 @@ let
     ${pkgs.coreutils}/bin/mv "$RUNTIME_DIRECTORY/config.json.tmp" "$RUNTIME_DIRECTORY/config.json"
   '';
 
+  ensureStoragePermissions = pkgs.writeShellScript "ensure-zot-storage-permissions" ''
+    set -eu
+    ${pkgs.coreutils}/bin/install -d -m 0750 -o zot -g zot ${lib.escapeShellArg cfg.storagePath}
+  '';
+
   writeMetrics = pkgs.writeShellScript "write-zot-platform-metrics" ''
     set -eu
     output="$STATE_DIRECTORY/zot-platform.prom"
@@ -281,6 +286,7 @@ in
           "access-control.json:${cfg.accessControlFile}"
         ];
         ExecStartPre = [
+          "+${ensureStoragePermissions}"
           prepareConfig
           "${cfg.package}/bin/zot verify /run/zot/config.json"
         ];
