@@ -71,7 +71,7 @@ class FluxBootstrapContractTests(unittest.TestCase):
         for value in (
             "chart: ntfy",
             "version: ",
-            "ntfy.homelab",
+            "ntfy.rupan.dev",
         ):
             with self.subTest(value=value):
                 self.assertIn(value, release)
