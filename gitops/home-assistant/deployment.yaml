@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         app: home-assistant
+      annotations:
+        checksum/config: 9345bc4b55cd3382e16d64b927bc553dd5453054da0f38b6572cf53fc7a8fe4d
     spec:
       securityContext:
         seccompProfile:
@@ -25,7 +27,7 @@ spec:
             - /bin/sh
             - -ec
             - |
-              test -e /config/configuration.yaml || cp /bootstrap/configuration.yaml /config/configuration.yaml
+              cp /bootstrap/configuration.yaml /config/configuration.yaml
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
