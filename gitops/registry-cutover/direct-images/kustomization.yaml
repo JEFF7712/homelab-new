@@ -1,0 +1,96 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+images:
+  - name: alpine/k8s
+    newName: registry.rupan.dev/upstream/docker.io/alpine/k8s
+    digest: sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47
+  - name: busybox
+    newName: registry.rupan.dev/upstream/docker.io/library/busybox
+    digest: sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+  - name: cloudflare/cloudflared
+    newName: registry.rupan.dev/upstream/docker.io/cloudflare/cloudflared
+    digest: sha256:51c9cefcb4569df44e1ad403ab1d3d8065aa8e84339bcfc6aee75502e1140339
+  - name: docker.io/library/busybox
+    newName: registry.rupan.dev/upstream/docker.io/library/busybox
+    digest: sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+  - name: docker.io/library/couchdb
+    newName: registry.rupan.dev/upstream/docker.io/library/couchdb
+    digest: sha256:199ff89f9a930df6032a216570ae0169fcc36c449bb02b40fafeb6efecdb606f
+  - name: docker.io/library/postgres
+    newName: registry.rupan.dev/upstream/docker.io/library/postgres
+    digest: sha256:727876d274666da0b92a445390ba093c84b8e9f8343e1c53cd4e9a7ab2d85310
+  - name: docker.io/restic/restic
+    newName: registry.rupan.dev/upstream/docker.io/restic/restic
+    digest: sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510
+  - name: docker.io/valkey/valkey
+    newName: registry.rupan.dev/upstream/docker.io/valkey/valkey
+    digest: sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411
+  - name: ghcr.io/fluxcd/helm-controller
+    newName: registry.rupan.dev/upstream/ghcr.io/fluxcd/helm-controller
+    digest: sha256:b113d67328a58ecaa04ce69aa41fb285a1ebd10f021e2371065598a1325042fd
+  - name: ghcr.io/fluxcd/kustomize-controller
+    newName: registry.rupan.dev/upstream/ghcr.io/fluxcd/kustomize-controller
+    digest: sha256:ae1a90c0c76d518618c5e2a64b82b6476c8213aa7a2b17ec8b94828f0230a6b8
+  - name: ghcr.io/fluxcd/notification-controller
+    newName: registry.rupan.dev/upstream/ghcr.io/fluxcd/notification-controller
+    digest: sha256:d52626555d96dd5666a942ef8aad09650e1bdbf58ca67ddb835d9de27e9002be
+  - name: ghcr.io/fluxcd/source-controller
+    newName: registry.rupan.dev/upstream/ghcr.io/fluxcd/source-controller
+    digest: sha256:773a90fa26e014d4f23d5c6a48ca5875c4686bdc6aac2ea73951b9cd9fda48dd
+  - name: ghcr.io/immich-app/immich-machine-learning
+    newName: registry.rupan.dev/upstream/ghcr.io/immich-app/immich-machine-learning
+    digest: sha256:5a0839dc5303cd7215bcd2180a26aed3af41675aefb3e75e5157e9f10ad16e6e
+  - name: ghcr.io/immich-app/immich-server
+    newName: registry.rupan.dev/upstream/ghcr.io/immich-app/immich-server
+    digest: sha256:b434cb9287eea1471c9974845914d4dd328c9c2d652e446ed4930f99944f0ceb
+  - name: ghcr.io/immich-app/postgres
+    newName: registry.rupan.dev/upstream/ghcr.io/immich-app/postgres
+    digest: sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+  - name: ghcr.io/jeff7712/apolline
+    newName: registry.rupan.dev/apps/apolline
+    digest: sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a
+  - name: ghcr.io/jeff7712/darkbit
+    newName: registry.rupan.dev/apps/darkbit
+    digest: sha256:6c52241abf2223df23394470d2c8851d9add4e706856247f3304b13edc5b7bff
+  - name: ghcr.io/jeff7712/distrojeff-site
+    newName: registry.rupan.dev/apps/distrojeff-site
+    digest: sha256:a3e6461a7fc969a68d561ffef660aab7684bd52a9f6d2eabdac34deb3db523d7
+  - name: ghcr.io/jeff7712/majorfinder
+    newName: registry.rupan.dev/apps/majorfinder
+    digest: sha256:73a66eaf824b53d1f6a69d04514b07223f547f51d1e3cc7e784e1a2a8a59ed85
+  - name: ghcr.io/jeff7712/nix-agent-site
+    newName: registry.rupan.dev/apps/nix-agent-site
+    digest: sha256:901a466b3e9ed474dba31a7000f1604a0170c306c0e35b72231de6f9cee235b2
+  - name: ghcr.io/jeff7712/photography
+    newName: registry.rupan.dev/apps/photography
+    digest: sha256:731128663e8bb12861fcf2b801bd0a671478607c44198bf5166812dfc88d57e6
+  - name: ghcr.io/jeff7712/pulse-site
+    newName: registry.rupan.dev/apps/pulse-site
+    digest: sha256:b8564dd25c02ba6ba52ba16b17839d94ed8a042540d0ade75ef6608aecc75db4
+  - name: ghcr.io/jeff7712/quartz
+    newName: registry.rupan.dev/apps/quartz
+    digest: sha256:0023aa4fff0cbe5df1ec652425cdc3b7177fba4641165f3ec8d2d8f8b025f797
+  - name: ghcr.io/jeff7712/rupanism
+    newName: registry.rupan.dev/apps/rupanism
+    digest: sha256:fdd2bc2a68439f1f993f2e554a60b973422a441caac251a78c32397e2981ecd5
+  - name: ghcr.io/jeff7712/solubility-gnn
+    newName: registry.rupan.dev/apps/solubility-gnn
+    digest: sha256:d08831ca8407fc8ca2b0f3bbac78cfa8f00ea1cfcf53d24dd8a09113ac4720b9
+  - name: ghcr.io/jeff7712/spatia-site
+    newName: registry.rupan.dev/apps/spatia-site
+    digest: sha256:754085d236f6eecef224ff15c94d3b24ba17ce4580bba29733e28cd8220ecdf4
+  - name: jeff7712/cr-demo
+    newName: registry.rupan.dev/apps/cr-demo
+    digest: sha256:65aa32d6593b0d1e8284cd0339a2eafc092b779b99e2df98118c72a1e19e3387
+  - name: jeff7712/homelab-renovate-agent
+    newName: registry.rupan.dev/apps/homelab-renovate-agent
+    digest: sha256:128f085244a15c4fe45fe176be6bad3a112ba13f3fce3173825a9cb3bc4fea58
+  - name: jeff7712/homelab-renovate-dashboard
+    newName: registry.rupan.dev/apps/homelab-renovate-dashboard
+    digest: sha256:dc947a8226bcdb112cc2bf9e119c67fcd3f63168b7234eb1e060618613d490e3
+  - name: jeff7712/ism
+    newName: registry.rupan.dev/apps/ism
+    digest: sha256:41b1dc3eccd6d484877f744777b759c1339c550f560d237c7f6554d1fbef0488
+  - name: python
+    newName: registry.rupan.dev/upstream/docker.io/library/python
+    digest: sha256:c6ead215bfd31f1e433d968853b7a769989117115b728874824e6c0a27cb96fc

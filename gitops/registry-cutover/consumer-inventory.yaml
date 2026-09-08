@@ -1,0 +1,414 @@
+# yamllint disable rule:line-length
+apiVersion: registry.rupan.dev/v1alpha1
+kind: ConsumerInventory
+metadata:
+  name: homelab-01
+spec:
+  activation:
+    state: prepared
+    includedByFlux: false
+    prerequisite: Verify every destination digest before changing an owning Flux Kustomization to its cutover path.
+    canaryPath: ./gitops/registry-cutover/components/websites-canary
+    componentRoot: ./gitops/registry-cutover/components
+  bootstrapExceptions:
+    - id: cilium
+      owner: flake/modules/k3s-server.nix
+      reason: CNI bootstrap is outside GitOps ownership and must move only after node registry access and content
+        are proven.
+    - id: k3s-runtime-images
+      owner: flake/modules/k3s-server.nix
+      reason: Sandbox and packaged runtime images are outside GitOps ownership.
+  directManifests:
+    - file: gitops/automation/cluster-sentinel.yaml
+      document: 0
+      field: spec.jobTemplate.spec.template.spec.containers.0.image
+      source: alpine/k8s:1.36.2
+      destination: registry.rupan.dev/upstream/docker.io/alpine/k8s@sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47
+      state: prepared
+    - file: gitops/automation/dockerhub-retention.yaml
+      document: 0
+      field: spec.jobTemplate.spec.template.spec.containers.0.image
+      source: alpine/k8s:1.36.2
+      destination: registry.rupan.dev/upstream/docker.io/alpine/k8s@sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47
+      state: prepared
+    - file: gitops/automation/renovate-agent.yaml
+      document: 0
+      field: spec.jobTemplate.spec.template.spec.containers.0.image
+      source: jeff7712/homelab-renovate-agent:0.0.1415
+      destination: registry.rupan.dev/apps/homelab-renovate-agent@sha256:128f085244a15c4fe45fe176be6bad3a112ba13f3fce3173825a9cb3bc4fea58
+      state: prepared
+    - file: gitops/automation/renovate-agent.yaml
+      document: 1
+      field: spec.template.spec.containers.0.image
+      source: python:3.14-alpine
+      destination: registry.rupan.dev/upstream/docker.io/library/python@sha256:c6ead215bfd31f1e433d968853b7a769989117115b728874824e6c0a27cb96fc
+      state: prepared
+    - file: gitops/automation/renovate-dashboard.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: jeff7712/homelab-renovate-dashboard:0.0.1415
+      destination: registry.rupan.dev/apps/homelab-renovate-dashboard@sha256:dc947a8226bcdb112cc2bf9e119c67fcd3f63168b7234eb1e060618613d490e3
+      state: prepared
+    - file: gitops/automation/website-monitors.yaml
+      document: 0
+      field: spec.jobTemplate.spec.template.spec.containers.0.image
+      source: alpine/k8s:1.36.2
+      destination: registry.rupan.dev/upstream/docker.io/alpine/k8s@sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47
+      state: prepared
+    - file: gitops/automation/website-monitors.yaml
+      document: 1
+      field: spec.jobTemplate.spec.template.spec.containers.0.image
+      source: alpine/k8s:1.36.2
+      destination: registry.rupan.dev/upstream/docker.io/alpine/k8s@sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47
+      state: prepared
+    - file: gitops/backups/db-dump.yaml
+      document: 0
+      field: spec.jobTemplate.spec.template.spec.containers.0.image
+      source: docker.io/library/postgres:14-alpine
+      destination: registry.rupan.dev/upstream/docker.io/library/postgres@sha256:727876d274666da0b92a445390ba093c84b8e9f8343e1c53cd4e9a7ab2d85310
+      state: prepared
+    - file: gitops/backups/dumps-to-r2.yaml
+      document: 0
+      field: spec.jobTemplate.spec.template.spec.containers.0.image
+      source: docker.io/restic/restic:0.19.1
+      destination: registry.rupan.dev/upstream/docker.io/restic/restic@sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510
+      state: prepared
+    - file: gitops/backups/library-local.yaml
+      document: 0
+      field: spec.jobTemplate.spec.template.spec.containers.0.image
+      source: docker.io/restic/restic:0.19.1
+      destination: registry.rupan.dev/upstream/docker.io/restic/restic@sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510
+      state: prepared
+    - file: gitops/cloudflare/tunnel.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: cloudflare/cloudflared@sha256:51c9cefcb4569df44e1ad403ab1d3d8065aa8e84339bcfc6aee75502e1140339
+      destination: registry.rupan.dev/upstream/docker.io/cloudflare/cloudflared@sha256:51c9cefcb4569df44e1ad403ab1d3d8065aa8e84339bcfc6aee75502e1140339
+      state: prepared
+    - file: gitops/clusters/homelab-01/flux-system/gotk-components.yaml
+      document: 18
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/fluxcd/source-controller:v1.9.1
+      destination: registry.rupan.dev/upstream/ghcr.io/fluxcd/source-controller@sha256:773a90fa26e014d4f23d5c6a48ca5875c4686bdc6aac2ea73951b9cd9fda48dd
+      state: prepared
+    - file: gitops/clusters/homelab-01/flux-system/gotk-components.yaml
+      document: 21
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/fluxcd/kustomize-controller:v1.9.1
+      destination: registry.rupan.dev/upstream/ghcr.io/fluxcd/kustomize-controller@sha256:ae1a90c0c76d518618c5e2a64b82b6476c8213aa7a2b17ec8b94828f0230a6b8
+      state: prepared
+    - file: gitops/clusters/homelab-01/flux-system/gotk-components.yaml
+      document: 24
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/fluxcd/helm-controller:v1.6.1
+      destination: registry.rupan.dev/upstream/ghcr.io/fluxcd/helm-controller@sha256:b113d67328a58ecaa04ce69aa41fb285a1ebd10f021e2371065598a1325042fd
+      state: prepared
+    - file: gitops/clusters/homelab-01/flux-system/gotk-components.yaml
+      document: 31
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/fluxcd/notification-controller:v1.9.1
+      destination: registry.rupan.dev/upstream/ghcr.io/fluxcd/notification-controller@sha256:d52626555d96dd5666a942ef8aad09650e1bdbf58ca67ddb835d9de27e9002be
+      state: prepared
+    - file: gitops/immich/machine-learning.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/immich-app/immich-machine-learning:v3.1.0
+      destination: registry.rupan.dev/upstream/ghcr.io/immich-app/immich-machine-learning@sha256:5a0839dc5303cd7215bcd2180a26aed3af41675aefb3e75e5157e9f10ad16e6e
+      state: prepared
+    - file: gitops/immich/postgres.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+      destination: registry.rupan.dev/upstream/ghcr.io/immich-app/postgres@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+      state: prepared
+    - file: gitops/immich/server.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/immich-app/immich-server:v3.1.0
+      destination: registry.rupan.dev/upstream/ghcr.io/immich-app/immich-server@sha256:b434cb9287eea1471c9974845914d4dd328c9c2d652e446ed4930f99944f0ceb
+      state: prepared
+    - file: gitops/immich/valkey.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: docker.io/valkey/valkey:9@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411
+      destination: registry.rupan.dev/upstream/docker.io/valkey/valkey@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411
+      state: prepared
+    - file: gitops/obsidian/couchdb.yaml
+      document: 0
+      field: spec.template.spec.initContainers.0.image
+      source: docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+      destination: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+      state: prepared
+    - file: gitops/obsidian/couchdb.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: docker.io/library/couchdb@sha256:199ff89f9a930df6032a216570ae0169fcc36c449bb02b40fafeb6efecdb606f
+      destination: registry.rupan.dev/upstream/docker.io/library/couchdb@sha256:199ff89f9a930df6032a216570ae0169fcc36c449bb02b40fafeb6efecdb606f
+      state: prepared
+    - file: gitops/obsidian/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/quartz@sha256:0023aa4fff0cbe5df1ec652425cdc3b7177fba4641165f3ec8d2d8f8b025f797
+      destination: registry.rupan.dev/apps/quartz@sha256:0023aa4fff0cbe5df1ec652425cdc3b7177fba4641165f3ec8d2d8f8b025f797
+      state: prepared
+    - file: gitops/websites/apolline/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/apolline:0.0.13
+      destination: registry.rupan.dev/apps/apolline@sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a
+      state: prepared
+    - file: gitops/websites/cr-demo/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: jeff7712/cr-demo@sha256:65aa32d6593b0d1e8284cd0339a2eafc092b779b99e2df98118c72a1e19e3387
+      destination: registry.rupan.dev/apps/cr-demo@sha256:65aa32d6593b0d1e8284cd0339a2eafc092b779b99e2df98118c72a1e19e3387
+      state: prepared
+    - file: gitops/websites/darkbit/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/darkbit:0.0.25
+      destination: registry.rupan.dev/apps/darkbit@sha256:6c52241abf2223df23394470d2c8851d9add4e706856247f3304b13edc5b7bff
+      state: prepared
+    - file: gitops/websites/distrojeff/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/distrojeff-site:0.0.22
+      destination: registry.rupan.dev/apps/distrojeff-site@sha256:a3e6461a7fc969a68d561ffef660aab7684bd52a9f6d2eabdac34deb3db523d7
+      state: prepared
+    - file: gitops/websites/ism/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: jeff7712/ism@sha256:41b1dc3eccd6d484877f744777b759c1339c550f560d237c7f6554d1fbef0488
+      destination: registry.rupan.dev/apps/ism@sha256:41b1dc3eccd6d484877f744777b759c1339c550f560d237c7f6554d1fbef0488
+      state: prepared
+    - file: gitops/websites/majorfinder/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/majorfinder@sha256:73a66eaf824b53d1f6a69d04514b07223f547f51d1e3cc7e784e1a2a8a59ed85
+      destination: registry.rupan.dev/apps/majorfinder@sha256:73a66eaf824b53d1f6a69d04514b07223f547f51d1e3cc7e784e1a2a8a59ed85
+      state: prepared
+    - file: gitops/websites/nixagent/deployment.yaml
+      document: 0
+      field: spec.template.spec.initContainers.0.image
+      source: busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+      destination: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+      state: prepared
+    - file: gitops/websites/nixagent/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/nix-agent-site:0.0.19
+      destination: registry.rupan.dev/apps/nix-agent-site@sha256:901a466b3e9ed474dba31a7000f1604a0170c306c0e35b72231de6f9cee235b2
+      state: prepared
+    - file: gitops/websites/photography/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/photography@sha256:731128663e8bb12861fcf2b801bd0a671478607c44198bf5166812dfc88d57e6
+      destination: registry.rupan.dev/apps/photography@sha256:731128663e8bb12861fcf2b801bd0a671478607c44198bf5166812dfc88d57e6
+      state: prepared
+    - file: gitops/websites/pulse/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/pulse-site:0.0.86
+      destination: registry.rupan.dev/apps/pulse-site@sha256:b8564dd25c02ba6ba52ba16b17839d94ed8a042540d0ade75ef6608aecc75db4
+      state: prepared
+    - file: gitops/websites/rupanism/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/rupanism:0.0.46
+      destination: registry.rupan.dev/apps/rupanism@sha256:fdd2bc2a68439f1f993f2e554a60b973422a441caac251a78c32397e2981ecd5
+      state: prepared
+    - file: gitops/websites/soluble-rupan/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/solubility-gnn:0.0.46
+      destination: registry.rupan.dev/apps/solubility-gnn@sha256:d08831ca8407fc8ca2b0f3bbac78cfa8f00ea1cfcf53d24dd8a09113ac4720b9
+      state: prepared
+    - file: gitops/websites/spatia/deployment.yaml
+      document: 0
+      field: spec.template.spec.initContainers.0.image
+      source: busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+      destination: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+      state: prepared
+    - file: gitops/websites/spatia/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/jeff7712/spatia-site:0.0.27
+      destination: registry.rupan.dev/apps/spatia-site@sha256:754085d236f6eecef224ff15c94d3b24ba17ce4580bba29733e28cd8220ecdf4
+      state: prepared
+  helmGenerated:
+    - release: renovate-github
+      chartVersion: 45.64.2
+      sources:
+        - ghcr.io/renovatebot/renovate:42.70.2
+      destinations:
+        - registry.rupan.dev/upstream/ghcr.io/renovatebot/renovate@sha256:97006d85961032ad4a991d70c1a8b8255038f4cd17c8bae732a263f735261130
+      overridePaths:
+        - image.registry
+        - image.repository
+        - image.tag
+      state: prepared
+      strategy: flux-kustomize-post-renderer
+    - release: renovate-gitlab
+      chartVersion: 45.64.2
+      sources:
+        - ghcr.io/renovatebot/renovate:42.70.2
+      destinations:
+        - registry.rupan.dev/upstream/ghcr.io/renovatebot/renovate@sha256:97006d85961032ad4a991d70c1a8b8255038f4cd17c8bae732a263f735261130
+      overridePaths:
+        - image.registry
+        - image.repository
+        - image.tag
+      state: prepared
+      strategy: flux-kustomize-post-renderer
+    - release: cert-manager
+      chartVersion: 1.21.1
+      sources:
+        - quay.io/jetstack/cert-manager-controller:v1.21.1
+        - quay.io/jetstack/cert-manager-webhook:v1.21.1
+        - quay.io/jetstack/cert-manager-cainjector:v1.21.1
+        - quay.io/jetstack/cert-manager-startupapicheck:v1.21.1
+        - quay.io/jetstack/cert-manager-acmesolver:v1.21.1
+      destinations:
+        - registry.rupan.dev/upstream/quay.io/jetstack/cert-manager-controller@sha256:416a2d76870d996460e62bd7f521bf14fa017be9e3e904aab92163a331fcb61a
+        - registry.rupan.dev/upstream/quay.io/jetstack/cert-manager-webhook@sha256:d8b3961b51c8c7320633f8208dc46bf88aa13804d0f7cbe48a096b2c523cee42
+        - registry.rupan.dev/upstream/quay.io/jetstack/cert-manager-cainjector@sha256:ccf6b919ec0500745a47a910118f834f9636d0aac1ff221245cd2557ed8c7c98
+        - registry.rupan.dev/upstream/quay.io/jetstack/cert-manager-startupapicheck@sha256:d8ab6416e6e7303a86fa0a8daa82c94a8001f21c9d78eb2e7db20534e5d07ae8
+        - registry.rupan.dev/upstream/quay.io/jetstack/cert-manager-acmesolver@sha256:dbc7cc1354f603918e7c5af7f55a0a620537394452c93a565bde75c6f48e8837
+      overridePaths:
+        - image.repository
+        - image.tag
+        - webhook.image.repository
+        - webhook.image.tag
+        - cainjector.image.repository
+        - cainjector.image.tag
+        - startupapicheck.image.repository
+        - startupapicheck.image.tag
+        - acmesolver.image.repository
+        - acmesolver.image.tag
+      state: prepared
+      strategy: flux-kustomize-post-renderer
+    - release: alloy
+      chartVersion: 1.8.2
+      sources:
+        - docker.io/grafana/alloy:v1.16.1
+      destinations:
+        - registry.rupan.dev/upstream/docker.io/grafana/alloy@sha256:51aeb9d829239345070619dad3edd6873186f913c84f45b365b74574fcb38ec0
+      overridePaths:
+        - image.registry
+        - image.repository
+        - image.tag
+        - image.digest
+      state: prepared
+      strategy: flux-kustomize-post-renderer
+    - release: alloy
+      chartVersion: 1.8.2
+      sources:
+        - quay.io/prometheus-operator/prometheus-config-reloader:v0.91.0@sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1
+      destinations:
+        - registry.rupan.dev/upstream/quay.io/prometheus-operator/prometheus-config-reloader@sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1
+      overridePaths:
+        - configReloader.image.registry
+        - configReloader.image.repository
+        - configReloader.image.tag
+        - configReloader.image.digest
+      state: prepared
+      strategy: flux-kustomize-post-renderer
+    - release: kube-prometheus-stack
+      chartVersion: 86.1.0
+      sources:
+        - quay.io/prometheus/node-exporter:v1.11.1-distroless
+        - quay.io/kiwigrid/k8s-sidecar:2.7.3
+        - docker.io/grafana/grafana:13.0.1-security-01
+        - registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.19.0
+        - quay.io/prometheus-operator/prometheus-operator:v0.91.0
+        - quay.io/prometheus-operator/prometheus-config-reloader:v0.91.0
+        - quay.io/prometheus/alertmanager:v0.32.1
+        - quay.io/prometheus/prometheus:v3.12.0-distroless
+        - ghcr.io/jkroepke/kube-webhook-certgen:1.8.3
+      destinations:
+        - registry.rupan.dev/upstream/quay.io/prometheus/node-exporter@sha256:6112664fd761bb964d8a2d3d0119d6c8402618a89edbb3a43c8f7b4090fb53c9
+        - registry.rupan.dev/upstream/quay.io/kiwigrid/k8s-sidecar@sha256:694950d736c8b532eba4006527ccbdac98fefc9f30b3346ba2de50b6cad91c94
+        - registry.rupan.dev/upstream/docker.io/grafana/grafana@sha256:2d1f9ae67c1778d33e291d4c3c759cd8b650e67491f02533499eb950e075eeb5
+        - registry.rupan.dev/upstream/registry.k8s.io/kube-state-metrics/kube-state-metrics@sha256:6b2f0b6f2f86ac5b1aa883a033a8dd55bb96c16d191ec973393bdaadaddac914
+        - registry.rupan.dev/upstream/quay.io/prometheus-operator/prometheus-operator@sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d
+        - registry.rupan.dev/upstream/quay.io/prometheus-operator/prometheus-config-reloader@sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1
+        - registry.rupan.dev/upstream/quay.io/prometheus/alertmanager@sha256:51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286
+        - registry.rupan.dev/upstream/quay.io/prometheus/prometheus@sha256:f39df5334dee301b885f77e0ff1159f5d8a43bf9db518f885544594799a1e3c2
+        - registry.rupan.dev/upstream/ghcr.io/jkroepke/kube-webhook-certgen@sha256:8ce13c365c8e9ced0aad5ef350a53c50b7ca5817f99d856b9eec895db1056728
+      overridePaths:
+        - prometheus-node-exporter.image
+        - grafana.image
+        - grafana.sidecar.image
+        - kube-state-metrics.image
+        - prometheusOperator.image
+        - prometheusOperator.prometheusConfigReloader.image
+        - alertmanager.alertmanagerSpec.image
+        - prometheus.prometheusSpec.image
+        - prometheusOperator.admissionWebhooks.patch.image
+      state: prepared
+      strategy: flux-kustomize-post-renderer
+    - release: loki
+      chartVersion: 7.0.0
+      sources:
+        - docker.io/grafana/loki-canary:3.6.7
+        - docker.io/nginxinc/nginx-unprivileged:1.29-alpine
+        - memcached:1.6.39-alpine
+        - prom/memcached-exporter:v0.15.4
+        - docker.io/grafana/loki:3.6.7
+        - docker.io/kiwigrid/k8s-sidecar:2.5.0
+        - docker.io/grafana/loki-helm-test:latest
+      destinations:
+        - registry.rupan.dev/upstream/docker.io/grafana/loki-canary@sha256:0dac7d5cb383adb8d3723676a70ed0c65b582e636846f4ce48703556dd509ad1
+        - registry.rupan.dev/upstream/docker.io/nginxinc/nginx-unprivileged@sha256:0c79d56aee561a1d81c63f00eee5fb5fe29279560cdc55e91425133104c7fbe6
+        - registry.rupan.dev/upstream/docker.io/library/memcached@sha256:c8503d4491edd3110cc07d0465089d3a41cf1daf8645e71149e39a51835e92cd
+        - registry.rupan.dev/upstream/docker.io/prom/memcached-exporter@sha256:b6763ecb3c47f2408e0398518851b7f8c5fc46232b2649f8c78a321130c54266
+        - registry.rupan.dev/upstream/docker.io/grafana/loki@sha256:3c8fd3570dd9219951a60d3f919c7f31923d10baee578b77bc26c4a0b32d092d
+        - registry.rupan.dev/upstream/docker.io/kiwigrid/k8s-sidecar@sha256:a6b3f707f883108376514489a94d6629109a327b2978e1d826cd104c4ca436df
+        - registry.rupan.dev/upstream/docker.io/grafana/loki-helm-test@sha256:2ed6447bbdbcd23019c3fdb02bce6db3fbef296d5a8f77a68d3dbc386bfa43fb
+      overridePaths:
+        - lokiCanary.image
+        - gateway.image
+        - memcached.image
+        - memcachedExporter.image
+        - loki.image
+        - sidecar.image
+        - test.image
+      state: prepared
+      strategy: flux-kustomize-post-renderer
+    - release: ntfy
+      chartVersion: 1.2.2
+      sources:
+        - docker.io/binwiederhier/ntfy:v2.28.0
+      destinations:
+        - registry.rupan.dev/upstream/docker.io/binwiederhier/ntfy@sha256:6ef4b819f722fccdc036af611c4774cfdc2de821ab74fdd48bbf4c9d6f8973da
+      overridePaths:
+        - image.repository
+        - image.tag
+      state: prepared
+      strategy: flux-kustomize-post-renderer
+    - release: external-secrets
+      chartVersion: 2.10.0
+      sources:
+        - ghcr.io/external-secrets/external-secrets:v2.10.0
+      destinations:
+        - registry.rupan.dev/upstream/ghcr.io/external-secrets/external-secrets@sha256:814117b0fd6d121b03e8ba3b6db1cecbe7449a354fc0fc9c4faf73a37aa221b1
+      overridePaths:
+        - image.repository
+        - image.tag
+        - webhook.image.repository
+        - webhook.image.tag
+        - certController.image.repository
+        - certController.image.tag
+      state: prepared
+      strategy: flux-kustomize-post-renderer
+    - release: nfs-subdir-external-provisioner
+      chartVersion: 4.0.18
+      sources:
+        - registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2
+      destinations:
+        - registry.rupan.dev/upstream/registry.k8s.io/sig-storage/nfs-subdir-external-provisioner@sha256:63d5e04551ec8b5aae83b6f35938ca5ddc50a88d85492d9731810c31591fa4c9
+      overridePaths:
+        - image.repository
+        - image.tag
+      state: prepared
+      strategy: flux-kustomize-post-renderer

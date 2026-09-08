@@ -12,12 +12,12 @@ check:
 
 fmt:
     ruff format scripts opnsense_reconciler tests
-    nixfmt $(git ls-files '*.nix')
+    nixfmt $(git ls-files -co --exclude-standard '*.nix')
     tofu -chdir=tofu/opnsense fmt
 
 fmt-check:
     ruff format --check scripts opnsense_reconciler tests
-    nixfmt --check $(git ls-files '*.nix')
+    nixfmt --check $(git ls-files -co --exclude-standard '*.nix')
     tofu -chdir=tofu/opnsense fmt -check
 
 check-python:
@@ -28,6 +28,30 @@ check-nix target="all":
 
 check-gitops:
     bash scripts/checks/gitops.sh
+
+check-registry:
+    bash scripts/checks/registry.sh
+
+registry-inventory:
+    python -m scripts.registry inventory --output registry/images.inventory.json
+
+registry-resolve:
+    python -m scripts.registry resolve --inventory registry/images.inventory.json --output registry/images.lock.json
+
+registry-plan:
+    python -m scripts.registry plan --lock registry/images.lock.json
+
+registry-check:
+    python -m scripts.registry check --lock registry/images.lock.json
+
+registry-access-control output="artifacts/registry/access-control.json":
+    python -m scripts.registry access-control --lock registry/images.lock.json --output {{output}}
+
+registry-copy report="artifacts/registry/import-report.json":
+    python -m scripts.registry copy --lock registry/images.lock.json --report {{report}}
+
+registry-verify report="artifacts/registry/verify-report.json":
+    python -m scripts.registry verify --lock registry/images.lock.json --report {{report}}
 
 check-tofu:
     bash scripts/checks/tofu.sh

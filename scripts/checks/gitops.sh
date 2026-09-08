@@ -14,7 +14,14 @@ while IFS= read -r -d '' file; do
   esac
   output=$(kubectl kustomize "$(dirname "$file")" | kubeconform -strict -summary -ignore-missing-schemas -skip CustomResourceDefinition -schema-location default -schema-location "$schema_root/{{.ResourceKind}}{{.KindSuffix}}.json" 2>&1)
   printf '%s\n' "$output"
-  if grep -Eq 'Skipped: [1-9]' <<<"$output" && [[ "$file" != gitops/clusters/homelab-01/flux-system/kustomization.yaml && "$file" != gitops/ingress/crds/kustomization.yaml ]]; then
+  allow_skipped=false
+  case "$file" in
+    gitops/clusters/homelab-01/flux-system/kustomization.yaml | \
+      gitops/ingress/crds/kustomization.yaml | \
+      gitops/registry-cutover/components/flux-system/kustomization.yaml | \
+      gitops/registry-cutover/components/observability/kustomization.yaml) allow_skipped=true ;;
+  esac
+  if grep -Eq 'Skipped: [1-9]' <<<"$output" && [[ $allow_skipped == false ]]; then
     echo 'missing Kubernetes schemas; refresh and commit the required CRD schemas' >&2
     exit 69
   fi

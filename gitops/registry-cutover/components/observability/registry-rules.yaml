@@ -1,0 +1,81 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: registry
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: registry.rules
+      rules:
+        - alert: RegistryExporterDown
+          expr: up{job="nas-01-node"} == 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: nas-01 registry metrics are unavailable
+            description: Prometheus has been unable to scrape nas-01:9100 for 10 minutes.
+        - alert: RegistryFilesystemPressure
+          expr: |
+            (
+              node_filesystem_avail_bytes{
+                job="nas-01-node",
+                mountpoint="/tank/registry"
+              }
+              /
+              node_filesystem_size_bytes{
+                job="nas-01-node",
+                mountpoint="/tank/registry"
+              }
+            ) < 0.15
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Registry storage has less than 15 percent free
+            description: The /tank/registry filesystem on nas-01 is under sustained capacity pressure.
+        - alert: ZotUnitFailed
+          expr: |
+            node_systemd_unit_state{
+              job="nas-01-node",
+              name="zot.service",
+              state="active"
+            } != 1
+            or
+            absent(
+              node_systemd_unit_state{
+                job="nas-01-node",
+                name="zot.service",
+                state="active"
+              }
+            )
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: zot is not active on nas-01
+            description: The zot systemd unit is failed, inactive, or absent from node exporter metrics.
+        - alert: RegistryTlsCertificateExpiring
+          expr: |
+            homelab_zot_tls_certificate_expiry_timestamp_seconds - time() < 1209600
+            or
+            absent(homelab_zot_tls_certificate_expiry_timestamp_seconds)
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: Registry TLS certificate expires within 14 days
+            description: The registry certificate is near expiry or its expiry metric is missing.
+        - alert: RegistryBackupStale
+          expr: |
+            time() - homelab_zot_backup_last_success_timestamp_seconds > 129600
+            or
+            absent(homelab_zot_backup_last_success_timestamp_seconds)
+          for: 1h
+          labels:
+            severity: critical
+          annotations:
+            summary: Registry backup has not succeeded within 36 hours
+            description: The registry backup success metric is stale or missing.

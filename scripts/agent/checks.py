@@ -41,6 +41,7 @@ COMMANDS = {
     "tofu": ("bash", "scripts/checks/tofu.sh"),
     "agent-workflows": ("bash", "scripts/checks/agent-workflows.sh"),
     "docs": ("python", "scripts/checks/docs.py"),
+    "registry": ("bash", "scripts/checks/registry.sh"),
     "nix-all-hosts": ("bash", "scripts/checks/nix.sh", "all"),
     "full": ("bash", "scripts/checks/all.sh"),
 }
@@ -63,11 +64,15 @@ def _route(path: str) -> list[tuple[str, str]]:
     if path.startswith("opnsense_reconciler/") and path.endswith(".py"):
         return [("python", f"{path} changes Python reconciliation")]
     if path.startswith("gitops/"):
+        if path.startswith("gitops/registry-cutover/"):
+            return [("registry", f"{path} changes the prepared registry cutover")]
         return [("gitops", f"{path} changes Kubernetes desired state")]
     if path.startswith("tofu/opnsense/"):
         return [("tofu", f"{path} changes OpenTofu configuration")]
     if path.startswith(("scripts/agent/", "hooks/", "tests/test_agent_")):
         return [("agent-workflows", f"{path} changes agent workflow behavior")]
+    if path.startswith(("scripts/registry/", "registry/", "tests/test_registry_")):
+        return [("registry", f"{path} changes the registry supply contract")]
     if path.endswith(".md") or path.startswith("docs/"):
         return [("docs", f"{path} changes documentation")]
     return [("full", f"{path} has no narrower maintained mapping")]

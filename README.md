@@ -2,6 +2,10 @@
 
 NixOS homelab desired state.
 
+This repository is the source of truth for the new homelab's host, network,
+Kubernetes, and external-system configuration. Runtime state and deployment
+evidence are kept separate from desired state.
+
 ## Ownership
 
 - `flake/` owns NixOS hosts, disks, host networking, k3s installation, and host secrets.
@@ -9,6 +13,14 @@ NixOS homelab desired state.
 - `opnsense-reconciler/` owns OPNsense interface and FRR settings absent from the OpenTofu provider.
 - `gitops/` owns all Kubernetes objects through Flux.
 - `secrets/` contains only SOPS-encrypted material.
+
+The local container registry is owned by `flake/` on `nas-01` and consumed by
+k3s through `gitops/registry-cutover/`. Registry content is represented by the
+immutable mapping in `registry/images.lock.json`. Image import, verification,
+and policy checks are explicit CI or operator actions. See
+[`docs/runbooks/local-registry.md`](docs/runbooks/local-registry.md) for the
+deployment sequence, credential boundaries, backup and restore procedure,
+and rollback rules.
 
 ## Deployment
 
@@ -31,3 +43,27 @@ with untagged jobs disabled. Its authentication-token file is
 `/persist/gitlab-runner/ci-authentication-token`; do not give it deployment,
 OPNsense, or registry credentials. Feature branch and merge-request variants
 remain untagged for the shared or separately isolated builder lane.
+
+## Local workflow
+
+Use the repository's pinned development environment and inspect the current
+context before changing files:
+
+```sh
+nix develop ./flake
+just agent-context
+just check-changed
+```
+
+Useful registry commands are exposed through `just`:
+
+```sh
+just registry-inventory
+just registry-resolve
+just registry-plan
+just registry-check
+```
+
+`registry-copy` and `registry-verify` are remote operations and require the
+deployment authorization and protected credentials described in the runbook.
+Use `just check` for the complete offline validation gate before handoff.

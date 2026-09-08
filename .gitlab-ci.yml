@@ -4,6 +4,7 @@ stages:
   - lint
   - test
   - security
+  - registry
   - opnsense
   - deploy
 
@@ -92,6 +93,245 @@ secret_scan_feature:
   extends:
     - .shared_feature
     - .secret_scan
+
+.registry_lock:
+  stage: registry
+  script:
+    - nix develop ./flake -c just check-registry
+    - nix develop ./flake -c just registry-plan > registry-copy-plan.json
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - registry-copy-plan.json
+
+registry_lock:
+  extends:
+    - .nas_ci
+    - .registry_lock
+
+registry_lock_feature:
+  extends:
+    - .shared_feature
+    - .registry_lock
+
+registry_resolve:
+  stage: registry
+  tags:
+    - nas-ci
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - mkdir -p artifacts/registry
+    - >-
+      nix develop ./flake -c python -m scripts.registry inventory
+      --output artifacts/registry/images.inventory.json
+    - >-
+      nix develop ./flake -c python -m scripts.registry resolve
+      --inventory artifacts/registry/images.inventory.json
+      --output artifacts/registry/images.lock.candidate.json
+    - >-
+      nix develop ./flake -c python -m scripts.registry plan
+      --lock artifacts/registry/images.lock.candidate.json
+      > artifacts/registry/copy-plan.candidate.json
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - artifacts/registry/
+
+registry_update_import:
+  stage: registry
+  tags:
+    - nas-privileged
+  environment:
+    name: production
+  resource_group: registry-content
+  needs:
+    - job: registry_resolve
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - export REGISTRY_DEST_AUTH_FILE="$REGISTRY_IMPORTER_AUTH_FILE"
+    - export REGISTRY_SOURCE_AUTH_FILE
+    - >-
+      nix develop ./flake -c python -m scripts.registry copy
+      --lock artifacts/registry/images.lock.candidate.json
+      --kind upstream
+      --report artifacts/registry/update-import-report.json
+    - >-
+      nix develop ./flake -c python -m scripts.registry verify
+      --lock artifacts/registry/images.lock.candidate.json
+      --kind upstream
+      --report artifacts/registry/update-verify-report.json
+  artifacts:
+    expire_in: 30 days
+    paths:
+      - artifacts/registry/
+
+.registry_ssh:
+  tags:
+    - nas-privileged
+  environment:
+    name: production
+  before_script:
+    - mkdir -p ~/.ssh
+    - cp "$SSH_DEPLOY_KEY" ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - cp "$HOSTS_KNOWN" ~/.ssh/known_hosts
+    - chmod 600 ~/.ssh/known_hosts
+    - export SSH_OPTS="-i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes"
+    - export KH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+    - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
+
+deploy_registry_platform:
+  extends: .registry_ssh
+  stage: registry
+  resource_group: registry-platform
+  needs:
+    - repository_tests
+    - registry_lock
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.20
+      'sudo zfs list tank/registry >/dev/null 2>&1 || sudo zfs create -o mountpoint=legacy tank/registry;
+      sudo install -d -m 0750 -o root -g root /tank/registry /persist/zot /persist/zot/status'
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.20
+      'sudo install -m 0600 -o root -g root /dev/stdin /persist/zot/htpasswd'
+      < "$REGISTRY_HTPASSWD_FILE"
+    - >-
+      nix develop ./flake -c python -m scripts.registry access-control
+      --lock registry/images.lock.json --output /tmp/zot-access-control.json
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.20
+      'sudo install -m 0600 -o root -g root /dev/stdin /persist/zot/access-control.json'
+      < /tmp/zot-access-control.json
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.20
+      'sudo install -m 0600 -o root -g root /dev/stdin /persist/zot/cloudflare-dns-api-token'
+      < "$REGISTRY_CLOUDFLARE_TOKEN_FILE"
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.20
+      'sudo install -m 0600 -o root -g root /dev/stdin /persist/zot/restic-password'
+      < "$REGISTRY_RESTIC_PASSWORD_FILE"
+    - >-
+      nixos-rebuild --flake ./flake#nas-01 --use-remote-sudo switch
+      --target-host rupan@10.0.30.20 --build-host rupan@10.0.30.20
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.20
+      'sudo chown root:zot /persist/zot/restic-password;
+      sudo chmod 0640 /persist/zot/restic-password'
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.20
+      'mountpoint -q /tank/registry && sudo systemctl is-active zot nginx'
+
+deploy_registry_dns:
+  extends: .registry_ssh
+  stage: registry
+  resource_group: registry-dns
+  needs:
+    - deploy_registry_platform
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - >-
+      nixos-rebuild --flake ./flake#adguard-netbird-01 --use-remote-sudo switch
+      --target-host rupan@10.0.30.10 --build-host rupan@10.0.30.10
+    - >-
+      test "$(getent ahostsv4 registry.rupan.dev | awk 'NR == 1 { print $1 }')"
+      = 10.0.30.20
+    - >-
+      test "$(nix develop ./flake -c curl --silent --show-error --output /dev/null
+      --write-out '%{http_code}' https://registry.rupan.dev/v2/)" = 401
+
+registry_import:
+  extends: .registry_ssh
+  stage: registry
+  resource_group: registry-content
+  needs:
+    - deploy_registry_dns
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - mkdir -p artifacts/registry
+    - export REGISTRY_DEST_AUTH_FILE="$REGISTRY_MIGRATION_AUTH_FILE"
+    - export REGISTRY_SOURCE_AUTH_FILE
+    - nix develop ./flake -c just registry-copy artifacts/registry/import-report.json
+    - nix develop ./flake -c just registry-verify artifacts/registry/verify-report.json
+    - >-
+      date +%s | ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.20
+      'sudo install -m 0644 -o zot -g zot /dev/stdin /persist/zot/status/import-last-success.tmp;
+      sudo sync -f /persist/zot/status/import-last-success.tmp;
+      sudo mv /persist/zot/status/import-last-success.tmp /persist/zot/status/import-last-success;
+      sudo sync -f /persist/zot/status'
+  artifacts:
+    expire_in: 30 days
+    paths:
+      - artifacts/registry/
+
+.deploy_registry_node:
+  extends: .registry_ssh
+  stage: deploy
+  resource_group: registry-node-rollout
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - >-
+      test "$(nix eval --json
+      path:.?dir=flake#nixosConfigurations.${DEPLOY_HOST}-registry.config.homelab.k3s.registry.enable)"
+      = "true"
+    - >-
+      nix develop ./flake -c python -m scripts.registry node-config
+      --lock registry/images.lock.json --username node
+      --password-file "$REGISTRY_NODE_PASSWORD_FILE"
+      --output /tmp/k3s-registries.yaml
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@"$DEPLOY_ADDR"
+      'sudo install -m 0600 -o root -g root /dev/stdin /persist/secrets/k3s-registries.yaml'
+      < /tmp/k3s-registries.yaml
+    - >-
+      nixos-rebuild --flake ./flake#"$DEPLOY_HOST-registry" --use-remote-sudo switch
+      --target-host rupan@"$DEPLOY_ADDR" --build-host rupan@"$DEPLOY_ADDR"
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@"$DEPLOY_ADDR"
+      'sudo systemctl is-active k3s && sudo test -s /etc/rancher/k3s/registries.yaml'
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.11
+      'sudo k3s kubectl get --raw="/readyz?verbose" | grep -F "[+]etcd ok";
+      sudo k3s kubectl wait --for=condition=Ready node --all --timeout=120s'
+
+deploy_registry_node_01:
+  extends: .deploy_registry_node
+  needs:
+    - registry_import
+  variables:
+    DEPLOY_HOST: homelab-01
+    DEPLOY_ADDR: 10.0.30.11
+
+deploy_registry_node_02:
+  extends: .deploy_registry_node
+  needs:
+    - deploy_registry_node_01
+  variables:
+    DEPLOY_HOST: homelab-02
+    DEPLOY_ADDR: 10.0.30.12
+
+deploy_registry_node_03:
+  extends: .deploy_registry_node
+  needs:
+    - deploy_registry_node_02
+  variables:
+    DEPLOY_HOST: homelab-03
+    DEPLOY_ADDR: 10.0.30.13
 
 opnsense_inventory:
   stage: opnsense
