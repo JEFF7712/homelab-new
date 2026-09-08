@@ -152,6 +152,9 @@
             gnused
             gnutar
             gzip
+            inetutils
+            iproute2
+            iputils
             jq
             nix
           ]
