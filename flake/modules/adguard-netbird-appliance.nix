@@ -22,6 +22,7 @@
         ip saddr 10.0.10.0/24 tcp dport { 22, 3000 } accept
         ip saddr 10.0.10.0/24 tcp dport 53 accept
         ip saddr 10.0.10.0/24 udp dport 53 accept
+        ip saddr 10.0.30.20 tcp dport 22 accept
         ip saddr 10.0.30.0/24 tcp dport 53 accept
         ip saddr 10.0.30.0/24 udp dport 53 accept
         iifname "wt0" tcp dport { 22, 53, 3000 } accept

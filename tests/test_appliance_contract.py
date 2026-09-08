@@ -50,6 +50,7 @@ class ApplianceContractTests(unittest.TestCase):
         self.assertIn('Address = "10.0.60.2/24"', role)
         self.assertIn("nftables.enable = true", role)
         self.assertIn('iifname "wt0" tcp dport { 22, 53, 3000 } accept', role)
+        self.assertIn("ip saddr 10.0.30.20 tcp dport 22 accept", role)
         self.assertIn("ip saddr 10.0.10.0/24 tcp dport 53 accept", role)
         self.assertIn("ip saddr 10.0.10.0/24 udp dport 53 accept", role)
         self.assertIn('iifname "wt0" udp dport 53 accept', role)
