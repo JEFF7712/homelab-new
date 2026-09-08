@@ -28,6 +28,7 @@
 
 ## Dell Wyse 5070 — $82.71
 
+- Role: `adguard-netbird-01`, NixOS AdGuard and NetBird appliance
 - Unit: $32.71
 - CPU: Intel Celeron J4105
 - RAM: 8 GB
@@ -52,6 +53,7 @@
 
 ## Dell Wyse 5070 Extended — $157.18
 
+- Role: OPNsense router
 - Chassis: Dell Wyse 5070 Extended, J5005, 8 GB RAM, 32 GB SSD, PCIe slot — $114.99
 - NIC: Intel I350-T2, dual 1 GbE, low-profile — $42.19
 - NIC: onboard 1 GbE
