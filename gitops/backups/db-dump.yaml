@@ -20,7 +20,7 @@ spec:
               type: RuntimeDefault
           containers:
             - name: pg-dump
-              image: docker.io/library/postgres:14-alpine
+              image: docker.io/library/postgres:16-alpine
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
