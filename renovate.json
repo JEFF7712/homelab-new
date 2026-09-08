@@ -1,0 +1,106 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "docker:enableMajor",
+    ":separateMultipleMajorReleases",
+    ":prHourlyLimitNone",
+    ":prConcurrentLimitNone"
+  ],
+  "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
+  "major": {
+    "enabled": true
+  },
+  "labels": [
+    "renovate",
+    "dependencies",
+    "automated"
+  ],
+  "assignees": [
+    "jeff7712"
+  ],
+  "baseBranchPatterns": [
+    "main"
+  ],
+  "useBaseBranchConfig": "merge",
+  "ignorePaths": [
+    "registry/**",
+    "gitops/registry-cutover/**",
+    "schemas/**",
+    "artifacts/**",
+    "secrets/**"
+  ],
+  "printConfig": false,
+  "branchTopic": "{{{depNameSanitized}}}-{{{newVersion}}}{{#if isLockfileUpdate}}-lockfile{{/if}}",
+  "commitMessagePrefix": "renovate:",
+  "commitMessageAction": "Bump",
+  "commitMessageExtra": "from {{{currentVersion}}} to {{{newVersion}}}",
+  "flux": {
+    "fileMatch": [
+      "^gitops/.+\\.ya?ml$"
+    ]
+  },
+  "kubernetes": {
+    "fileMatch": [
+      "^gitops/.+\\.ya?ml$"
+    ]
+  },
+  "terraform": {
+    "fileMatch": [
+      "^tofu/.+\\.tf$"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Group GitLab CI and Dockerfile image updates",
+      "matchManagers": [
+        "dockerfile",
+        "gitlabci"
+      ],
+      "groupName": "CI and Docker image updates",
+      "groupSlug": "ci-docker-images"
+    },
+    {
+      "description": "Group OpenTofu provider updates",
+      "matchManagers": [
+        "terraform"
+      ],
+      "groupName": "OpenTofu dependency updates",
+      "groupSlug": "opentofu-dependencies"
+    },
+    {
+      "description": "Group Flux and Kubernetes manifest updates",
+      "matchManagers": [
+        "flux",
+        "kubernetes"
+      ],
+      "groupName": "GitOps Kubernetes updates",
+      "groupSlug": "gitops-k8s-updates"
+    },
+    {
+      "description": "Group Nix Flake inputs updates",
+      "matchManagers": [
+        "nix"
+      ],
+      "groupName": "Nix flake updates",
+      "groupSlug": "nix-flake-updates"
+    },
+    {
+      "description": "Automatically merge minor and patch updates",
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "Never automerge major updates",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
+    }
+  ]
+}
