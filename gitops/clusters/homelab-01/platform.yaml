@@ -17,3 +17,7 @@ spec:
       kind: Deployment
       name: external-secrets
       namespace: external-secrets
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: reloader
+      namespace: flux-system

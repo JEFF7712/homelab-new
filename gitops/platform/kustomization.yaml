@@ -4,3 +4,5 @@ resources:
   - namespace.yaml
   - external-secrets/repository.yaml
   - external-secrets/release.yaml
+  - reloader/repository.yaml
+  - reloader/release.yaml
