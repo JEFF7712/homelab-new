@@ -1,0 +1,1019 @@
+{
+  "schema_version": 1,
+  "kind": "registry-observed-images",
+  "observed_at": "2026-09-07T05:57:56Z",
+  "evidence": "sanitized read-only k3s Pod status and node containerd content inventory",
+  "coverage": [
+    "helm-generated",
+    "k3s-bootstrap",
+    "live-workloads"
+  ],
+  "images": [
+    {
+      "reference": "docker.io/alpine/k8s:1.36.2@sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47",
+      "consumers": [
+        "rendered/automation/kubernetes-jobs"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/binwiederhier/ntfy:v2.28.0@sha256:6ef4b819f722fccdc036af611c4774cfdc2de821ab74fdd48bbf4c9d6f8973da",
+      "consumers": [
+        "observability/ntfy-ntfy-5cc6bb76b7-kphmw/ntfy"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/cloudflare/cloudflared@sha256:51c9cefcb4569df44e1ad403ab1d3d8065aa8e84339bcfc6aee75502e1140339",
+      "consumers": [
+        "cloudflare/cloudflared-5fd59f884d-6ds6b/cloudflared",
+        "cloudflare/cloudflared-5fd59f884d-rvlff/cloudflared"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/grafana/alloy:v1.16.1@sha256:51aeb9d829239345070619dad3edd6873186f913c84f45b365b74574fcb38ec0",
+      "consumers": [
+        "observability/alloy-5rh6k/alloy",
+        "observability/alloy-g645h/alloy",
+        "observability/alloy-vzrsp/alloy"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/grafana/grafana:13.0.1-security-01@sha256:2d1f9ae67c1778d33e291d4c3c759cd8b650e67491f02533499eb950e075eeb5",
+      "consumers": [
+        "observability/kube-prometheus-stack-grafana-85d88c488c-wp58r/grafana"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/grafana/loki-canary:3.6.7@sha256:0dac7d5cb383adb8d3723676a70ed0c65b582e636846f4ce48703556dd509ad1",
+      "consumers": [
+        "observability/loki-canary-cxzn2/loki-canary",
+        "observability/loki-canary-hzwrm/loki-canary",
+        "observability/loki-canary-lxq6c/loki-canary"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/grafana/loki-helm-test:latest@sha256:2ed6447bbdbcd23019c3fdb02bce6db3fbef296d5a8f77a68d3dbc386bfa43fb",
+      "consumers": [
+        "rendered/loki/test-hook"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/grafana/loki:3.6.7@sha256:3c8fd3570dd9219951a60d3f919c7f31923d10baee578b77bc26c4a0b32d092d",
+      "consumers": [
+        "observability/loki-0/loki"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/jeff7712/homelab-renovate-agent:0.0.1415@sha256:128f085244a15c4fe45fe176be6bad3a112ba13f3fce3173825a9cb3bc4fea58",
+      "consumers": [
+        "rendered/automation/renovate-agent"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.manifest.v1+json",
+        "platforms": []
+      }
+    },
+    {
+      "reference": "docker.io/jeff7712/homelab-renovate-dashboard:0.0.1415@sha256:dc947a8226bcdb112cc2bf9e119c67fcd3f63168b7234eb1e060618613d490e3",
+      "consumers": [
+        "rendered/automation/renovate-dashboard"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.manifest.v1+json",
+        "platforms": []
+      }
+    },
+    {
+      "reference": "docker.io/jeff7712/cr-demo@sha256:65aa32d6593b0d1e8284cd0339a2eafc092b779b99e2df98118c72a1e19e3387",
+      "consumers": [
+        "cr-demo/website-deploy-5fdd8fd64f-kn8rv/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.v2+json",
+        "platforms": []
+      }
+    },
+    {
+      "reference": "docker.io/jeff7712/ism@sha256:41b1dc3eccd6d484877f744777b759c1339c550f560d237c7f6554d1fbef0488",
+      "consumers": [
+        "ism/website-deploy-57b4f774c-4pqms/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.v2+json",
+        "platforms": []
+      }
+    },
+    {
+      "reference": "docker.io/kiwigrid/k8s-sidecar:2.5.0@sha256:a6b3f707f883108376514489a94d6629109a327b2978e1d826cd104c4ca436df",
+      "consumers": [
+        "observability/loki-0/loki-sc-rules"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616",
+      "consumers": [
+        "nixagent/website-deploy-796cd7c89d-dqdnf/prepare-nginx-tmp",
+        "spatia/website-deploy-5458fdffd-7ttmd/prepare-nginx-tmp"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v5",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/library/couchdb@sha256:199ff89f9a930df6032a216570ae0169fcc36c449bb02b40fafeb6efecdb606f",
+      "consumers": [
+        "rendered/obsidian/couchdb"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.manifest.v1+json",
+        "platforms": []
+      }
+    },
+    {
+      "reference": "docker.io/library/memcached:1.6.39-alpine@sha256:c8503d4491edd3110cc07d0465089d3a41cf1daf8645e71149e39a51835e92cd",
+      "consumers": [
+        "observability/loki-chunks-cache-0/memcached",
+        "observability/loki-results-cache-0/memcached"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "consumers": [
+        "default/bgp-canary-85c4bcc749-lb4d7/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/library/postgres:14-alpine@sha256:727876d274666da0b92a445390ba093c84b8e9f8343e1c53cd4e9a7ab2d85310",
+      "consumers": [
+        "backups/immich-db-dump-29811300-wrm9q/pg-dump"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/library/python:3.14-alpine@sha256:c6ead215bfd31f1e433d968853b7a769989117115b728874824e6c0a27cb96fc",
+      "consumers": [
+        "rendered/automation/renovate-agent-init"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/nginxinc/nginx-unprivileged:1.29-alpine@sha256:0c79d56aee561a1d81c63f00eee5fb5fe29279560cdc55e91425133104c7fbe6",
+      "consumers": [
+        "observability/loki-gateway-54d4c5b8fb-kqcjq/nginx"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/nixos/nix:latest@sha256:7a007c766426c1877758ddc5cb87a965ac131fc78c582ce0083d922d51ae945c",
+      "consumers": [
+        "ci/default-image"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/prom/memcached-exporter:v0.15.4@sha256:b6763ecb3c47f2408e0398518851b7f8c5fc46232b2649f8c78a321130c54266",
+      "consumers": [
+        "observability/loki-chunks-cache-0/exporter",
+        "observability/loki-results-cache-0/exporter"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/rancher/klipper-helm:v0.13.3-build20260727@sha256:5425a2b4613d2458dbdff99218e8d487ebb59c20e7a941f061c0777070f0aac1",
+      "consumers": [
+        "kube-system/helm-install-cilium-cnhlj/helm"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/riscv64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/rancher/mirrored-coredns-coredns:1.14.6@sha256:900f9c109f7a33545d3c811516e8376df9019147b750f5ce3e254468769176ea",
+      "consumers": [
+        "kube-system/coredns-c5fdd76cf-q9xg7/coredns"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/loong64",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/rancher/mirrored-metrics-server:v0.9.0@sha256:d9862115e7c7881280d3d75ca26bda8ffc0fc213315979575bf23ce9826205c0",
+      "consumers": [
+        "kube-system/metrics-server-7f4b6d9bd7-c7j5n/metrics-server"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/rancher/mirrored-pause:3.10.2@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+      "consumers": [
+        "k3s/sandbox-image"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x",
+          "windows/amd64"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/restic/restic:0.19.1@sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510",
+      "consumers": [
+        "backups/dumps-to-r2-29811360-v2g8k/restic",
+        "backups/test-r2b-2dqhn/restic",
+        "immich/library-to-local-repo-29811240-rqdmj/restic",
+        "immich/library-to-local-repo-29812680-7rk7m/restic",
+        "immich/test-lib5-wrstd/restic"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "docker.io/valkey/valkey@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411",
+      "consumers": [
+        "immich/immich-valkey-58bc4b8d86-6hlxt/valkey"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/external-secrets/external-secrets:v2.10.0@sha256:814117b0fd6d121b03e8ba3b6db1cecbe7449a354fc0fc9c4faf73a37aa221b1",
+      "consumers": [
+        "external-secrets/external-secrets-5dcc447d56-9wnsq/external-secrets",
+        "external-secrets/external-secrets-cert-controller-7bb979fc44-85gwg/cert-controller",
+        "external-secrets/external-secrets-webhook-55585c5576-9svqm/webhook"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/fluxcd/helm-controller:v1.6.1@sha256:b113d67328a58ecaa04ce69aa41fb285a1ebd10f021e2371065598a1325042fd",
+      "consumers": [
+        "flux-system/helm-controller-5494f46d8f-26j56/manager"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/fluxcd/kustomize-controller:v1.9.1@sha256:ae1a90c0c76d518618c5e2a64b82b6476c8213aa7a2b17ec8b94828f0230a6b8",
+      "consumers": [
+        "flux-system/kustomize-controller-6f47d6dbd7-rzdbg/manager"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/fluxcd/notification-controller:v1.9.1@sha256:d52626555d96dd5666a942ef8aad09650e1bdbf58ca67ddb835d9de27e9002be",
+      "consumers": [
+        "flux-system/notification-controller-548444584f-mhjtb/manager"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/fluxcd/source-controller:v1.9.1@sha256:773a90fa26e014d4f23d5c6a48ca5875c4686bdc6aac2ea73951b9cd9fda48dd",
+      "consumers": [
+        "flux-system/source-controller-7b97955655-hcnfw/manager"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/immich-app/immich-machine-learning:v3.1.0@sha256:5a0839dc5303cd7215bcd2180a26aed3af41675aefb3e75e5157e9f10ad16e6e",
+      "consumers": [
+        "immich/immich-machine-learning-56c59d58f7-zg2np/immich-machine-learning"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/immich-app/immich-server:v3.1.0@sha256:b434cb9287eea1471c9974845914d4dd328c9c2d652e446ed4930f99944f0ceb",
+      "consumers": [
+        "immich/immich-server-5659cbb99c-9g57n/immich-server"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23",
+      "consumers": [
+        "immich/immich-postgres-86588ff89-ptdwb/postgres"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/jkroepke/kube-webhook-certgen:1.8.3@sha256:8ce13c365c8e9ced0aad5ef350a53c50b7ca5817f99d856b9eec895db1056728",
+      "consumers": [
+        "rendered/kube-prometheus-stack/admission-hook"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/apolline:0.0.13@sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a",
+      "consumers": [
+        "apolline/website-deploy-5b9d449c7f-l5d85/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/darkbit:0.0.25@sha256:6c52241abf2223df23394470d2c8851d9add4e706856247f3304b13edc5b7bff",
+      "consumers": [
+        "darkbit/website-deploy-5c87cf8d7d-lgrn8/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/distrojeff-site:0.0.22@sha256:a3e6461a7fc969a68d561ffef660aab7684bd52a9f6d2eabdac34deb3db523d7",
+      "consumers": [
+        "distrojeff/website-deploy-79b9b9896c-cjx5f/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/majorfinder@sha256:73a66eaf824b53d1f6a69d04514b07223f547f51d1e3cc7e784e1a2a8a59ed85",
+      "consumers": [
+        "majorfinder/website-deploy-f99cbbc9c-bjpn9/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.v2+json",
+        "platforms": []
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/nix-agent-site:0.0.19@sha256:901a466b3e9ed474dba31a7000f1604a0170c306c0e35b72231de6f9cee235b2",
+      "consumers": [
+        "nixagent/website-deploy-796cd7c89d-dqdnf/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/photography@sha256:731128663e8bb12861fcf2b801bd0a671478607c44198bf5166812dfc88d57e6",
+      "consumers": [
+        "photography/website-deploy-777cb5d6df-2c2gt/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.v2+json",
+        "platforms": []
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/pulse-site:0.0.86@sha256:b8564dd25c02ba6ba52ba16b17839d94ed8a042540d0ade75ef6608aecc75db4",
+      "consumers": [
+        "pulse/website-deploy-7bc958f8c5-xpb59/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/quartz:0.0.278@sha256:0023aa4fff0cbe5df1ec652425cdc3b7177fba4641165f3ec8d2d8f8b025f797",
+      "consumers": [
+        "obsidian/quartz-notes-64b8478c64-69cfh/quartz",
+        "obsidian/quartz-notes-64b8478c64-fzmfs/quartz"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/rupanism:0.0.46@sha256:fdd2bc2a68439f1f993f2e554a60b973422a441caac251a78c32397e2981ecd5",
+      "consumers": [
+        "rupanism/website-deploy-868b45d7fb-kdg9m/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/solubility-gnn:0.0.46@sha256:d08831ca8407fc8ca2b0f3bbac78cfa8f00ea1cfcf53d24dd8a09113ac4720b9",
+      "consumers": [
+        "soluble-rupan/website-deploy-bfdcd7cb4-8mmfd/web",
+        "soluble-rupan/website-deploy-bfdcd7cb4-kbbhc/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/jeff7712/spatia-site:0.0.27@sha256:754085d236f6eecef224ff15c94d3b24ba17ce4580bba29733e28cd8220ecdf4",
+      "consumers": [
+        "spatia/website-deploy-5458fdffd-7ttmd/web"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/renovatebot/renovate:42.70.2@sha256:97006d85961032ad4a991d70c1a8b8255038f4cd17c8bae732a263f735261130",
+      "consumers": [
+        "automation/renovate-gitlab-29812680-2p7bs/renovate"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/cilium/cilium-envoy@sha256:75b8094c7127736a2ffd2dce3945e0931cb6df21b0372ff661940eca26730b91",
+      "consumers": [
+        "kube-system/cilium-envoy-b7xdj/cilium-envoy",
+        "kube-system/cilium-envoy-fwd4s/cilium-envoy",
+        "kube-system/cilium-envoy-ggfnf/cilium-envoy"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/cilium/cilium@sha256:ae9ea21f7427fe24bc6ea7247eb552157a1b0a431744045d3f641545ca71d11b",
+      "consumers": [
+        "kube-system/cilium-9l549/apply-sysctl-overwrites",
+        "kube-system/cilium-9l549/cilium-agent",
+        "kube-system/cilium-9l549/clean-cilium-state",
+        "kube-system/cilium-9l549/config",
+        "kube-system/cilium-9l549/install-cni-binaries",
+        "kube-system/cilium-9l549/mount-bpf-fs",
+        "kube-system/cilium-9l549/mount-cgroup",
+        "kube-system/cilium-fs9fl/apply-sysctl-overwrites",
+        "kube-system/cilium-fs9fl/cilium-agent",
+        "kube-system/cilium-fs9fl/clean-cilium-state",
+        "kube-system/cilium-fs9fl/config",
+        "kube-system/cilium-fs9fl/install-cni-binaries",
+        "kube-system/cilium-fs9fl/mount-bpf-fs",
+        "kube-system/cilium-fs9fl/mount-cgroup",
+        "kube-system/cilium-nzjv2/apply-sysctl-overwrites",
+        "kube-system/cilium-nzjv2/cilium-agent",
+        "kube-system/cilium-nzjv2/clean-cilium-state",
+        "kube-system/cilium-nzjv2/config",
+        "kube-system/cilium-nzjv2/install-cni-binaries",
+        "kube-system/cilium-nzjv2/mount-bpf-fs",
+        "kube-system/cilium-nzjv2/mount-cgroup"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/cilium/operator-generic@sha256:6c3885fc7b629099fdbe2a5c87869c86feb825fa18fae299eac0f61918d16ecf",
+      "consumers": [
+        "kube-system/cilium-operator-5bb996d486-4jqqn/cilium-operator",
+        "kube-system/cilium-operator-5bb996d486-jjgsl/cilium-operator"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/jetstack/cert-manager-acmesolver:v1.21.1@sha256:dbc7cc1354f603918e7c5af7f55a0a620537394452c93a565bde75c6f48e8837",
+      "consumers": [
+        "rendered/cert-manager/acmesolver"
+      ]
+    },
+    {
+      "reference": "quay.io/jetstack/cert-manager-cainjector:v1.21.1@sha256:ccf6b919ec0500745a47a910118f834f9636d0aac1ff221245cd2557ed8c7c98",
+      "consumers": [
+        "cert-manager/cert-manager-cainjector-65bd78d6b6-dflsn/cert-manager-cainjector"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/jetstack/cert-manager-controller:v1.21.1@sha256:416a2d76870d996460e62bd7f521bf14fa017be9e3e904aab92163a331fcb61a",
+      "consumers": [
+        "cert-manager/cert-manager-7f9d478f4f-bmzhx/cert-manager-controller"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/jetstack/cert-manager-startupapicheck:v1.21.1@sha256:d8ab6416e6e7303a86fa0a8daa82c94a8001f21c9d78eb2e7db20534e5d07ae8",
+      "consumers": [
+        "rendered/cert-manager/startupapicheck"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/jetstack/cert-manager-webhook:v1.21.1@sha256:d8b3961b51c8c7320633f8208dc46bf88aa13804d0f7cbe48a096b2c523cee42",
+      "consumers": [
+        "cert-manager/cert-manager-webhook-7f4879c75f-2mrd4/cert-manager-webhook"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/kiwigrid/k8s-sidecar:2.7.3@sha256:694950d736c8b532eba4006527ccbdac98fefc9f30b3346ba2de50b6cad91c94",
+      "consumers": [
+        "observability/kube-prometheus-stack-grafana-85d88c488c-wp58r/grafana-sc-dashboard",
+        "observability/kube-prometheus-stack-grafana-85d88c488c-wp58r/grafana-sc-datasources"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/prometheus-operator/prometheus-config-reloader:v0.91.0@sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1",
+      "consumers": [
+        "observability/alertmanager-kube-prometheus-stack-alertmanager-0/config-reloader",
+        "observability/alertmanager-kube-prometheus-stack-alertmanager-0/init-config-reloader",
+        "observability/alloy-5rh6k/config-reloader",
+        "observability/prometheus-kube-prometheus-stack-prometheus-0/config-reloader",
+        "observability/prometheus-kube-prometheus-stack-prometheus-0/init-config-reloader"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/prometheus-operator/prometheus-config-reloader@sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1",
+      "consumers": [
+        "observability/alloy-g645h/config-reloader",
+        "observability/alloy-vzrsp/config-reloader"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/prometheus-operator/prometheus-operator:v0.91.0@sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d",
+      "consumers": [
+        "observability/kube-prometheus-stack-operator-6cd9d8fb8d-jz7fr/kube-prometheus-stack"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/prometheus/alertmanager:v0.32.1@sha256:51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286",
+      "consumers": [
+        "observability/alertmanager-kube-prometheus-stack-alertmanager-0/alertmanager"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/prometheus/node-exporter:v1.11.1-distroless@sha256:6112664fd761bb964d8a2d3d0119d6c8402618a89edbb3a43c8f7b4090fb53c9",
+      "consumers": [
+        "observability/kube-prometheus-stack-prometheus-node-exporter-mmpzt/node-exporter",
+        "observability/kube-prometheus-stack-prometheus-node-exporter-mpsck/node-exporter",
+        "observability/kube-prometheus-stack-prometheus-node-exporter-tk4sk/node-exporter"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le"
+        ]
+      }
+    },
+    {
+      "reference": "quay.io/prometheus/prometheus:v3.12.0-distroless@sha256:f39df5334dee301b885f77e0ff1159f5d8a43bf9db518f885544594799a1e3c2",
+      "consumers": [
+        "observability/prometheus-kube-prometheus-stack-prometheus-0/prometheus"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.19.0@sha256:6b2f0b6f2f86ac5b1aa883a033a8dd55bb96c16d191ec973393bdaadaddac914",
+      "consumers": [
+        "observability/kube-prometheus-stack-kube-state-metrics-58f5d9c5d4-9wxvt/kube-state-metrics"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    },
+    {
+      "reference": "registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2@sha256:63d5e04551ec8b5aae83b6f35938ca5ddc50a88d85492d9731810c31591fa4c9",
+      "consumers": [
+        "storage/nfs-subdir-external-provisioner-54bd59cbd-l4qvp/nfs-subdir-external-provisioner"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      }
+    }
+  ]
+}

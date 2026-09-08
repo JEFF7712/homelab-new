@@ -55,6 +55,7 @@
       "tank/cluster".useTemplate = [ "operational" ];
       "tank/media".useTemplate = [ "weekly" ];
       "tank/attic".useTemplate = [ "weekly" ];
+      "tank/registry".useTemplate = [ "operational" ];
     };
   };
 
@@ -188,10 +189,56 @@
     };
   };
 
+  systemd.services.registry-backup = {
+    description = "Encrypted backup of the local container registry";
+    after = [
+      "tank-registry.mount"
+      "mnt-backup\\x2d2tb.mount"
+    ];
+    requires = [
+      "tank-registry.mount"
+      "mnt-backup\\x2d2tb.mount"
+    ];
+    unitConfig.ConditionPathExists = "/persist/zot/restic-password";
+    serviceConfig = {
+      Type = "oneshot";
+      User = "root";
+      Group = "root";
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ReadWritePaths = [ "/mnt/backup-2tb/registry-restic" ];
+    };
+    path = [ pkgs.restic ];
+    script = ''
+      export RESTIC_REPOSITORY=/mnt/backup-2tb/registry-restic
+      export RESTIC_PASSWORD_FILE=/persist/zot/restic-password
+      if [ ! -f "$RESTIC_REPOSITORY/config" ]; then
+        restic init
+      fi
+      restic snapshots >/dev/null
+      restic backup --exclude=/persist/zot/restic-password /tank/registry /persist/zot /var/lib/acme
+      restic check --read-data-subset=1/20
+      date +%s > /persist/zot/status/backup-last-success.tmp
+      sync -f /persist/zot/status/backup-last-success.tmp
+      mv /persist/zot/status/backup-last-success.tmp /persist/zot/status/backup-last-success
+      sync -f /persist/zot/status
+    '';
+  };
+  systemd.timers.registry-backup = {
+    description = "Daily encrypted registry backup";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+      RandomizedDelaySec = "30m";
+    };
+  };
+
   systemd.tmpfiles.rules = [
     "d /persist/attic 0700 root root -"
     "d /persist/gitlab-runner 0700 root root -"
     "d /persist/keys 0700 root root -"
+    "d /mnt/backup-2tb/registry-restic 0700 zot zot -"
     "d /mnt/backup-2tb/photos 0755 root root -"
     "d /mnt/backup-2tb/documents 0755 root root -"
   ];
@@ -200,5 +247,8 @@
     "/var/lib/nfs"
   ];
 
-  environment.systemPackages = with pkgs; [ rsync ];
+  environment.systemPackages = with pkgs; [
+    restic
+    rsync
+  ];
 }

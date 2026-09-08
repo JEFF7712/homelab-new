@@ -1,0 +1,1943 @@
+{
+  "generated_at": "2026-09-07T06:16:56+00:00",
+  "images": [
+    {
+      "consumers": [
+        "gitops/websites/apolline/deployment.yaml:23",
+        "observed:apolline/website-deploy-5b9d449c7f-l5d85/web"
+      ],
+      "destination_repository": "apps/apolline",
+      "id": "first-party-jeff7712-apolline-f6344821e8d9",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/apolline",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a",
+        "reference": "ghcr.io/jeff7712/apolline:0.0.13@sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/apolline",
+        "tag": "0.0.13"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/cr-demo/deployment.yaml:22",
+        "observed:cr-demo/website-deploy-5fdd8fd64f-kn8rv/web"
+      ],
+      "destination_repository": "apps/cr-demo",
+      "id": "first-party-jeff7712-cr-demo-1211582ac457",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.v2+json",
+        "platforms": []
+      },
+      "producer": {
+        "location": "external-image-repository:docker.io/jeff7712/cr-demo",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:65aa32d6593b0d1e8284cd0339a2eafc092b779b99e2df98118c72a1e19e3387",
+        "reference": "docker.io/jeff7712/cr-demo@sha256:65aa32d6593b0d1e8284cd0339a2eafc092b779b99e2df98118c72a1e19e3387",
+        "registry": "docker.io",
+        "repository": "jeff7712/cr-demo",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/darkbit/deployment.yaml:23",
+        "observed:darkbit/website-deploy-5c87cf8d7d-lgrn8/web"
+      ],
+      "destination_repository": "apps/darkbit",
+      "id": "first-party-jeff7712-darkbit-9b3ffba78d0f",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/darkbit",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:6c52241abf2223df23394470d2c8851d9add4e706856247f3304b13edc5b7bff",
+        "reference": "ghcr.io/jeff7712/darkbit:0.0.25@sha256:6c52241abf2223df23394470d2c8851d9add4e706856247f3304b13edc5b7bff",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/darkbit",
+        "tag": "0.0.25"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/distrojeff/deployment.yaml:23",
+        "observed:distrojeff/website-deploy-79b9b9896c-cjx5f/web"
+      ],
+      "destination_repository": "apps/distrojeff-site",
+      "id": "first-party-jeff7712-distrojeff-site-ab9710929827",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/distrojeff-site",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:a3e6461a7fc969a68d561ffef660aab7684bd52a9f6d2eabdac34deb3db523d7",
+        "reference": "ghcr.io/jeff7712/distrojeff-site:0.0.22@sha256:a3e6461a7fc969a68d561ffef660aab7684bd52a9f6d2eabdac34deb3db523d7",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/distrojeff-site",
+        "tag": "0.0.22"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/automation/renovate-agent.yaml:23",
+        "observed:rendered/automation/renovate-agent"
+      ],
+      "destination_repository": "apps/homelab-renovate-agent",
+      "id": "first-party-jeff7712-homelab-renovate-agent-dc16f8a8073a",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.manifest.v1+json",
+        "platforms": []
+      },
+      "producer": {
+        "location": "external-image-repository:docker.io/jeff7712/homelab-renovate-agent",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:128f085244a15c4fe45fe176be6bad3a112ba13f3fce3173825a9cb3bc4fea58",
+        "reference": "docker.io/jeff7712/homelab-renovate-agent:0.0.1415@sha256:128f085244a15c4fe45fe176be6bad3a112ba13f3fce3173825a9cb3bc4fea58",
+        "registry": "docker.io",
+        "repository": "jeff7712/homelab-renovate-agent",
+        "tag": "0.0.1415"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/automation/renovate-dashboard.yaml:26",
+        "observed:rendered/automation/renovate-dashboard"
+      ],
+      "destination_repository": "apps/homelab-renovate-dashboard",
+      "id": "first-party-jeff7712-homelab-renovate-dashboard-27f255d088c0",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.manifest.v1+json",
+        "platforms": []
+      },
+      "producer": {
+        "location": "external-image-repository:docker.io/jeff7712/homelab-renovate-dashboard",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:dc947a8226bcdb112cc2bf9e119c67fcd3f63168b7234eb1e060618613d490e3",
+        "reference": "docker.io/jeff7712/homelab-renovate-dashboard:0.0.1415@sha256:dc947a8226bcdb112cc2bf9e119c67fcd3f63168b7234eb1e060618613d490e3",
+        "registry": "docker.io",
+        "repository": "jeff7712/homelab-renovate-dashboard",
+        "tag": "0.0.1415"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/ism/deployment.yaml:22",
+        "observed:ism/website-deploy-57b4f774c-4pqms/web"
+      ],
+      "destination_repository": "apps/ism",
+      "id": "first-party-jeff7712-ism-c0694e47410b",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.v2+json",
+        "platforms": []
+      },
+      "producer": {
+        "location": "external-image-repository:docker.io/jeff7712/ism",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:41b1dc3eccd6d484877f744777b759c1339c550f560d237c7f6554d1fbef0488",
+        "reference": "docker.io/jeff7712/ism@sha256:41b1dc3eccd6d484877f744777b759c1339c550f560d237c7f6554d1fbef0488",
+        "registry": "docker.io",
+        "repository": "jeff7712/ism",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/majorfinder/deployment.yaml:24",
+        "observed:majorfinder/website-deploy-f99cbbc9c-bjpn9/web"
+      ],
+      "destination_repository": "apps/majorfinder",
+      "id": "first-party-jeff7712-majorfinder-5e85d8d2824c",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.v2+json",
+        "platforms": []
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/majorfinder",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:73a66eaf824b53d1f6a69d04514b07223f547f51d1e3cc7e784e1a2a8a59ed85",
+        "reference": "ghcr.io/jeff7712/majorfinder@sha256:73a66eaf824b53d1f6a69d04514b07223f547f51d1e3cc7e784e1a2a8a59ed85",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/majorfinder",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/nixagent/deployment.yaml:38",
+        "observed:nixagent/website-deploy-796cd7c89d-dqdnf/web"
+      ],
+      "destination_repository": "apps/nix-agent-site",
+      "id": "first-party-jeff7712-nix-agent-site-79adbb322813",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/nix-agent-site",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:901a466b3e9ed474dba31a7000f1604a0170c306c0e35b72231de6f9cee235b2",
+        "reference": "ghcr.io/jeff7712/nix-agent-site:0.0.19@sha256:901a466b3e9ed474dba31a7000f1604a0170c306c0e35b72231de6f9cee235b2",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/nix-agent-site",
+        "tag": "0.0.19"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/photography/deployment.yaml:24",
+        "observed:photography/website-deploy-777cb5d6df-2c2gt/web"
+      ],
+      "destination_repository": "apps/photography",
+      "id": "first-party-jeff7712-photography-7f744af23df3",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.v2+json",
+        "platforms": []
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/photography",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:731128663e8bb12861fcf2b801bd0a671478607c44198bf5166812dfc88d57e6",
+        "reference": "ghcr.io/jeff7712/photography@sha256:731128663e8bb12861fcf2b801bd0a671478607c44198bf5166812dfc88d57e6",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/photography",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/pulse/deployment.yaml:22",
+        "observed:pulse/website-deploy-7bc958f8c5-xpb59/web"
+      ],
+      "destination_repository": "apps/pulse-site",
+      "id": "first-party-jeff7712-pulse-site-e72cbcb116f7",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/pulse-site",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:b8564dd25c02ba6ba52ba16b17839d94ed8a042540d0ade75ef6608aecc75db4",
+        "reference": "ghcr.io/jeff7712/pulse-site:0.0.86@sha256:b8564dd25c02ba6ba52ba16b17839d94ed8a042540d0ade75ef6608aecc75db4",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/pulse-site",
+        "tag": "0.0.86"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/obsidian/deployment.yaml:25",
+        "observed:obsidian/quartz-notes-64b8478c64-69cfh/quartz",
+        "observed:obsidian/quartz-notes-64b8478c64-fzmfs/quartz"
+      ],
+      "destination_repository": "apps/quartz",
+      "id": "first-party-jeff7712-quartz-21f9999c8e03",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/quartz",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:0023aa4fff0cbe5df1ec652425cdc3b7177fba4641165f3ec8d2d8f8b025f797",
+        "reference": "ghcr.io/jeff7712/quartz:0.0.278@sha256:0023aa4fff0cbe5df1ec652425cdc3b7177fba4641165f3ec8d2d8f8b025f797",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/quartz",
+        "tag": "0.0.278"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/rupanism/deployment.yaml:22",
+        "observed:rupanism/website-deploy-868b45d7fb-kdg9m/web"
+      ],
+      "destination_repository": "apps/rupanism",
+      "id": "first-party-jeff7712-rupanism-ee57f683dc8e",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/rupanism",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:fdd2bc2a68439f1f993f2e554a60b973422a441caac251a78c32397e2981ecd5",
+        "reference": "ghcr.io/jeff7712/rupanism:0.0.46@sha256:fdd2bc2a68439f1f993f2e554a60b973422a441caac251a78c32397e2981ecd5",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/rupanism",
+        "tag": "0.0.46"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/soluble-rupan/deployment.yaml:22",
+        "observed:soluble-rupan/website-deploy-bfdcd7cb4-8mmfd/web",
+        "observed:soluble-rupan/website-deploy-bfdcd7cb4-kbbhc/web"
+      ],
+      "destination_repository": "apps/solubility-gnn",
+      "id": "first-party-jeff7712-solubility-gnn-6b9c8ea16068",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/solubility-gnn",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:d08831ca8407fc8ca2b0f3bbac78cfa8f00ea1cfcf53d24dd8a09113ac4720b9",
+        "reference": "ghcr.io/jeff7712/solubility-gnn:0.0.46@sha256:d08831ca8407fc8ca2b0f3bbac78cfa8f00ea1cfcf53d24dd8a09113ac4720b9",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/solubility-gnn",
+        "tag": "0.0.46"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/spatia/deployment.yaml:37",
+        "observed:spatia/website-deploy-5458fdffd-7ttmd/web"
+      ],
+      "destination_repository": "apps/spatia-site",
+      "id": "first-party-jeff7712-spatia-site-c1c5ac3f6ca0",
+      "kind": "first-party",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/spatia-site",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:754085d236f6eecef224ff15c94d3b24ba17ce4580bba29733e28cd8220ecdf4",
+        "reference": "ghcr.io/jeff7712/spatia-site:0.0.27@sha256:754085d236f6eecef224ff15c94d3b24ba17ce4580bba29733e28cd8220ecdf4",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/spatia-site",
+        "tag": "0.0.27"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/automation/cluster-sentinel.yaml:23",
+        "gitops/automation/dockerhub-retention.yaml:22",
+        "gitops/automation/website-monitors.yaml:23",
+        "gitops/automation/website-monitors.yaml:77",
+        "observed:rendered/automation/kubernetes-jobs"
+      ],
+      "destination_repository": "upstream/docker.io/alpine/k8s",
+      "id": "upstream-alpine-k8s-7258a465a9f7",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47",
+        "reference": "docker.io/alpine/k8s:1.36.2@sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47",
+        "registry": "docker.io",
+        "repository": "alpine/k8s",
+        "tag": "1.36.2"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/ntfy-ntfy-5cc6bb76b7-kphmw/ntfy"
+      ],
+      "destination_repository": "upstream/docker.io/binwiederhier/ntfy",
+      "id": "upstream-binwiederhier-ntfy-28d2489b7455",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:6ef4b819f722fccdc036af611c4774cfdc2de821ab74fdd48bbf4c9d6f8973da",
+        "reference": "docker.io/binwiederhier/ntfy:v2.28.0@sha256:6ef4b819f722fccdc036af611c4774cfdc2de821ab74fdd48bbf4c9d6f8973da",
+        "registry": "docker.io",
+        "repository": "binwiederhier/ntfy",
+        "tag": "v2.28.0"
+      }
+    },
+    {
+      "consumers": [
+        "observed:kube-system/cilium-9l549/apply-sysctl-overwrites",
+        "observed:kube-system/cilium-9l549/cilium-agent",
+        "observed:kube-system/cilium-9l549/clean-cilium-state",
+        "observed:kube-system/cilium-9l549/config",
+        "observed:kube-system/cilium-9l549/install-cni-binaries",
+        "observed:kube-system/cilium-9l549/mount-bpf-fs",
+        "observed:kube-system/cilium-9l549/mount-cgroup",
+        "observed:kube-system/cilium-fs9fl/apply-sysctl-overwrites",
+        "observed:kube-system/cilium-fs9fl/cilium-agent",
+        "observed:kube-system/cilium-fs9fl/clean-cilium-state",
+        "observed:kube-system/cilium-fs9fl/config",
+        "observed:kube-system/cilium-fs9fl/install-cni-binaries",
+        "observed:kube-system/cilium-fs9fl/mount-bpf-fs",
+        "observed:kube-system/cilium-fs9fl/mount-cgroup",
+        "observed:kube-system/cilium-nzjv2/apply-sysctl-overwrites",
+        "observed:kube-system/cilium-nzjv2/cilium-agent",
+        "observed:kube-system/cilium-nzjv2/clean-cilium-state",
+        "observed:kube-system/cilium-nzjv2/config",
+        "observed:kube-system/cilium-nzjv2/install-cni-binaries",
+        "observed:kube-system/cilium-nzjv2/mount-bpf-fs",
+        "observed:kube-system/cilium-nzjv2/mount-cgroup"
+      ],
+      "destination_repository": "upstream/quay.io/cilium/cilium",
+      "id": "upstream-cilium-cilium-3ae210372be4",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ae9ea21f7427fe24bc6ea7247eb552157a1b0a431744045d3f641545ca71d11b",
+        "reference": "quay.io/cilium/cilium@sha256:ae9ea21f7427fe24bc6ea7247eb552157a1b0a431744045d3f641545ca71d11b",
+        "registry": "quay.io",
+        "repository": "cilium/cilium",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "observed:kube-system/cilium-envoy-b7xdj/cilium-envoy",
+        "observed:kube-system/cilium-envoy-fwd4s/cilium-envoy",
+        "observed:kube-system/cilium-envoy-ggfnf/cilium-envoy"
+      ],
+      "destination_repository": "upstream/quay.io/cilium/cilium-envoy",
+      "id": "upstream-cilium-cilium-envoy-7f6f47a441b4",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:75b8094c7127736a2ffd2dce3945e0931cb6df21b0372ff661940eca26730b91",
+        "reference": "quay.io/cilium/cilium-envoy@sha256:75b8094c7127736a2ffd2dce3945e0931cb6df21b0372ff661940eca26730b91",
+        "registry": "quay.io",
+        "repository": "cilium/cilium-envoy",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "observed:kube-system/cilium-operator-5bb996d486-4jqqn/cilium-operator",
+        "observed:kube-system/cilium-operator-5bb996d486-jjgsl/cilium-operator"
+      ],
+      "destination_repository": "upstream/quay.io/cilium/operator-generic",
+      "id": "upstream-cilium-operator-generic-755d8408b664",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:6c3885fc7b629099fdbe2a5c87869c86feb825fa18fae299eac0f61918d16ecf",
+        "reference": "quay.io/cilium/operator-generic@sha256:6c3885fc7b629099fdbe2a5c87869c86feb825fa18fae299eac0f61918d16ecf",
+        "registry": "quay.io",
+        "repository": "cilium/operator-generic",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/cloudflare/tunnel.yaml:24",
+        "observed:cloudflare/cloudflared-5fd59f884d-6ds6b/cloudflared",
+        "observed:cloudflare/cloudflared-5fd59f884d-rvlff/cloudflared"
+      ],
+      "destination_repository": "upstream/docker.io/cloudflare/cloudflared",
+      "id": "upstream-cloudflare-cloudflared-ac52465ae132",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:51c9cefcb4569df44e1ad403ab1d3d8065aa8e84339bcfc6aee75502e1140339",
+        "reference": "docker.io/cloudflare/cloudflared@sha256:51c9cefcb4569df44e1ad403ab1d3d8065aa8e84339bcfc6aee75502e1140339",
+        "registry": "docker.io",
+        "repository": "cloudflare/cloudflared",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "observed:external-secrets/external-secrets-5dcc447d56-9wnsq/external-secrets",
+        "observed:external-secrets/external-secrets-cert-controller-7bb979fc44-85gwg/cert-controller",
+        "observed:external-secrets/external-secrets-webhook-55585c5576-9svqm/webhook"
+      ],
+      "destination_repository": "upstream/ghcr.io/external-secrets/external-secrets",
+      "id": "upstream-external-secrets-external-secrets-2d82efe9b724",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:814117b0fd6d121b03e8ba3b6db1cecbe7449a354fc0fc9c4faf73a37aa221b1",
+        "reference": "ghcr.io/external-secrets/external-secrets:v2.10.0@sha256:814117b0fd6d121b03e8ba3b6db1cecbe7449a354fc0fc9c4faf73a37aa221b1",
+        "registry": "ghcr.io",
+        "repository": "external-secrets/external-secrets",
+        "tag": "v2.10.0"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:5125",
+        "observed:flux-system/helm-controller-5494f46d8f-26j56/manager"
+      ],
+      "destination_repository": "upstream/ghcr.io/fluxcd/helm-controller",
+      "id": "upstream-fluxcd-helm-controller-4ca15d7558c3",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:b113d67328a58ecaa04ce69aa41fb285a1ebd10f021e2371065598a1325042fd",
+        "reference": "ghcr.io/fluxcd/helm-controller:v1.6.1@sha256:b113d67328a58ecaa04ce69aa41fb285a1ebd10f021e2371065598a1325042fd",
+        "registry": "ghcr.io",
+        "repository": "fluxcd/helm-controller",
+        "tag": "v1.6.1"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:3530",
+        "observed:flux-system/kustomize-controller-6f47d6dbd7-rzdbg/manager"
+      ],
+      "destination_repository": "upstream/ghcr.io/fluxcd/kustomize-controller",
+      "id": "upstream-fluxcd-kustomize-controller-71a62df90a80",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ae1a90c0c76d518618c5e2a64b82b6476c8213aa7a2b17ec8b94828f0230a6b8",
+        "reference": "ghcr.io/fluxcd/kustomize-controller:v1.9.1@sha256:ae1a90c0c76d518618c5e2a64b82b6476c8213aa7a2b17ec8b94828f0230a6b8",
+        "registry": "ghcr.io",
+        "repository": "fluxcd/kustomize-controller",
+        "tag": "v1.9.1"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:6027",
+        "observed:flux-system/notification-controller-548444584f-mhjtb/manager"
+      ],
+      "destination_repository": "upstream/ghcr.io/fluxcd/notification-controller",
+      "id": "upstream-fluxcd-notification-controller-c4431016603c",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:d52626555d96dd5666a942ef8aad09650e1bdbf58ca67ddb835d9de27e9002be",
+        "reference": "ghcr.io/fluxcd/notification-controller:v1.9.1@sha256:d52626555d96dd5666a942ef8aad09650e1bdbf58ca67ddb835d9de27e9002be",
+        "registry": "ghcr.io",
+        "repository": "fluxcd/notification-controller",
+        "tag": "v1.9.1"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:2605",
+        "observed:flux-system/source-controller-7b97955655-hcnfw/manager"
+      ],
+      "destination_repository": "upstream/ghcr.io/fluxcd/source-controller",
+      "id": "upstream-fluxcd-source-controller-8b9e53dd6155",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:773a90fa26e014d4f23d5c6a48ca5875c4686bdc6aac2ea73951b9cd9fda48dd",
+        "reference": "ghcr.io/fluxcd/source-controller:v1.9.1@sha256:773a90fa26e014d4f23d5c6a48ca5875c4686bdc6aac2ea73951b9cd9fda48dd",
+        "registry": "ghcr.io",
+        "repository": "fluxcd/source-controller",
+        "tag": "v1.9.1"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/alloy-5rh6k/alloy",
+        "observed:observability/alloy-g645h/alloy",
+        "observed:observability/alloy-vzrsp/alloy"
+      ],
+      "destination_repository": "upstream/docker.io/grafana/alloy",
+      "id": "upstream-grafana-alloy-c65c6d011028",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:51aeb9d829239345070619dad3edd6873186f913c84f45b365b74574fcb38ec0",
+        "reference": "docker.io/grafana/alloy:v1.16.1@sha256:51aeb9d829239345070619dad3edd6873186f913c84f45b365b74574fcb38ec0",
+        "registry": "docker.io",
+        "repository": "grafana/alloy",
+        "tag": "v1.16.1"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/kube-prometheus-stack-grafana-85d88c488c-wp58r/grafana"
+      ],
+      "destination_repository": "upstream/docker.io/grafana/grafana",
+      "id": "upstream-grafana-grafana-08b4c51e67eb",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:2d1f9ae67c1778d33e291d4c3c759cd8b650e67491f02533499eb950e075eeb5",
+        "reference": "docker.io/grafana/grafana:13.0.1-security-01@sha256:2d1f9ae67c1778d33e291d4c3c759cd8b650e67491f02533499eb950e075eeb5",
+        "registry": "docker.io",
+        "repository": "grafana/grafana",
+        "tag": "13.0.1-security-01"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/loki-0/loki"
+      ],
+      "destination_repository": "upstream/docker.io/grafana/loki",
+      "id": "upstream-grafana-loki-c46564c6a0b8",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:3c8fd3570dd9219951a60d3f919c7f31923d10baee578b77bc26c4a0b32d092d",
+        "reference": "docker.io/grafana/loki:3.6.7@sha256:3c8fd3570dd9219951a60d3f919c7f31923d10baee578b77bc26c4a0b32d092d",
+        "registry": "docker.io",
+        "repository": "grafana/loki",
+        "tag": "3.6.7"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/loki-canary-cxzn2/loki-canary",
+        "observed:observability/loki-canary-hzwrm/loki-canary",
+        "observed:observability/loki-canary-lxq6c/loki-canary"
+      ],
+      "destination_repository": "upstream/docker.io/grafana/loki-canary",
+      "id": "upstream-grafana-loki-canary-52059978049a",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:0dac7d5cb383adb8d3723676a70ed0c65b582e636846f4ce48703556dd509ad1",
+        "reference": "docker.io/grafana/loki-canary:3.6.7@sha256:0dac7d5cb383adb8d3723676a70ed0c65b582e636846f4ce48703556dd509ad1",
+        "registry": "docker.io",
+        "repository": "grafana/loki-canary",
+        "tag": "3.6.7"
+      }
+    },
+    {
+      "consumers": [
+        "observed:rendered/loki/test-hook"
+      ],
+      "destination_repository": "upstream/docker.io/grafana/loki-helm-test",
+      "id": "upstream-grafana-loki-helm-test-27ae76cce7d3",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:2ed6447bbdbcd23019c3fdb02bce6db3fbef296d5a8f77a68d3dbc386bfa43fb",
+        "reference": "docker.io/grafana/loki-helm-test:latest@sha256:2ed6447bbdbcd23019c3fdb02bce6db3fbef296d5a8f77a68d3dbc386bfa43fb",
+        "registry": "docker.io",
+        "repository": "grafana/loki-helm-test",
+        "tag": "latest"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/immich/machine-learning.yaml:23",
+        "observed:immich/immich-machine-learning-56c59d58f7-zg2np/immich-machine-learning"
+      ],
+      "destination_repository": "upstream/ghcr.io/immich-app/immich-machine-learning",
+      "id": "upstream-immich-app-immich-machine-learning-2771781c46fd",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:5a0839dc5303cd7215bcd2180a26aed3af41675aefb3e75e5157e9f10ad16e6e",
+        "reference": "ghcr.io/immich-app/immich-machine-learning:v3.1.0@sha256:5a0839dc5303cd7215bcd2180a26aed3af41675aefb3e75e5157e9f10ad16e6e",
+        "registry": "ghcr.io",
+        "repository": "immich-app/immich-machine-learning",
+        "tag": "v3.1.0"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/immich/server.yaml:23",
+        "observed:immich/immich-server-5659cbb99c-9g57n/immich-server"
+      ],
+      "destination_repository": "upstream/ghcr.io/immich-app/immich-server",
+      "id": "upstream-immich-app-immich-server-5cf47bb6c46a",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:b434cb9287eea1471c9974845914d4dd328c9c2d652e446ed4930f99944f0ceb",
+        "reference": "ghcr.io/immich-app/immich-server:v3.1.0@sha256:b434cb9287eea1471c9974845914d4dd328c9c2d652e446ed4930f99944f0ceb",
+        "registry": "ghcr.io",
+        "repository": "immich-app/immich-server",
+        "tag": "v3.1.0"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/immich/postgres.yaml:25",
+        "observed:immich/immich-postgres-86588ff89-ptdwb/postgres"
+      ],
+      "destination_repository": "upstream/ghcr.io/immich-app/postgres",
+      "id": "upstream-immich-app-postgres-0b5ea520f9ac",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23",
+        "reference": "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23",
+        "registry": "ghcr.io",
+        "repository": "immich-app/postgres",
+        "tag": "14-vectorchord0.4.3-pgvectors0.2.0"
+      }
+    },
+    {
+      "consumers": [
+        "observed:rendered/cert-manager/acmesolver"
+      ],
+      "destination_repository": "upstream/quay.io/jetstack/cert-manager-acmesolver",
+      "id": "upstream-jetstack-cert-manager-acmesolver-748c816b4c69",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:dbc7cc1354f603918e7c5af7f55a0a620537394452c93a565bde75c6f48e8837",
+        "reference": "quay.io/jetstack/cert-manager-acmesolver:v1.21.1@sha256:dbc7cc1354f603918e7c5af7f55a0a620537394452c93a565bde75c6f48e8837",
+        "registry": "quay.io",
+        "repository": "jetstack/cert-manager-acmesolver",
+        "tag": "v1.21.1"
+      }
+    },
+    {
+      "consumers": [
+        "observed:cert-manager/cert-manager-cainjector-65bd78d6b6-dflsn/cert-manager-cainjector"
+      ],
+      "destination_repository": "upstream/quay.io/jetstack/cert-manager-cainjector",
+      "id": "upstream-jetstack-cert-manager-cainjector-c5a221621ef3",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ccf6b919ec0500745a47a910118f834f9636d0aac1ff221245cd2557ed8c7c98",
+        "reference": "quay.io/jetstack/cert-manager-cainjector:v1.21.1@sha256:ccf6b919ec0500745a47a910118f834f9636d0aac1ff221245cd2557ed8c7c98",
+        "registry": "quay.io",
+        "repository": "jetstack/cert-manager-cainjector",
+        "tag": "v1.21.1"
+      }
+    },
+    {
+      "consumers": [
+        "observed:cert-manager/cert-manager-7f9d478f4f-bmzhx/cert-manager-controller"
+      ],
+      "destination_repository": "upstream/quay.io/jetstack/cert-manager-controller",
+      "id": "upstream-jetstack-cert-manager-controller-9a697be40f7a",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:416a2d76870d996460e62bd7f521bf14fa017be9e3e904aab92163a331fcb61a",
+        "reference": "quay.io/jetstack/cert-manager-controller:v1.21.1@sha256:416a2d76870d996460e62bd7f521bf14fa017be9e3e904aab92163a331fcb61a",
+        "registry": "quay.io",
+        "repository": "jetstack/cert-manager-controller",
+        "tag": "v1.21.1"
+      }
+    },
+    {
+      "consumers": [
+        "observed:rendered/cert-manager/startupapicheck"
+      ],
+      "destination_repository": "upstream/quay.io/jetstack/cert-manager-startupapicheck",
+      "id": "upstream-jetstack-cert-manager-startupapicheck-5785126a82da",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:d8ab6416e6e7303a86fa0a8daa82c94a8001f21c9d78eb2e7db20534e5d07ae8",
+        "reference": "quay.io/jetstack/cert-manager-startupapicheck:v1.21.1@sha256:d8ab6416e6e7303a86fa0a8daa82c94a8001f21c9d78eb2e7db20534e5d07ae8",
+        "registry": "quay.io",
+        "repository": "jetstack/cert-manager-startupapicheck",
+        "tag": "v1.21.1"
+      }
+    },
+    {
+      "consumers": [
+        "observed:cert-manager/cert-manager-webhook-7f4879c75f-2mrd4/cert-manager-webhook"
+      ],
+      "destination_repository": "upstream/quay.io/jetstack/cert-manager-webhook",
+      "id": "upstream-jetstack-cert-manager-webhook-dfa724463689",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:d8b3961b51c8c7320633f8208dc46bf88aa13804d0f7cbe48a096b2c523cee42",
+        "reference": "quay.io/jetstack/cert-manager-webhook:v1.21.1@sha256:d8b3961b51c8c7320633f8208dc46bf88aa13804d0f7cbe48a096b2c523cee42",
+        "registry": "quay.io",
+        "repository": "jetstack/cert-manager-webhook",
+        "tag": "v1.21.1"
+      }
+    },
+    {
+      "consumers": [
+        "observed:rendered/kube-prometheus-stack/admission-hook"
+      ],
+      "destination_repository": "upstream/ghcr.io/jkroepke/kube-webhook-certgen",
+      "id": "upstream-jkroepke-kube-webhook-certgen-624cbb057999",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:8ce13c365c8e9ced0aad5ef350a53c50b7ca5817f99d856b9eec895db1056728",
+        "reference": "ghcr.io/jkroepke/kube-webhook-certgen:1.8.3@sha256:8ce13c365c8e9ced0aad5ef350a53c50b7ca5817f99d856b9eec895db1056728",
+        "registry": "ghcr.io",
+        "repository": "jkroepke/kube-webhook-certgen",
+        "tag": "1.8.3"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/loki-0/loki-sc-rules"
+      ],
+      "destination_repository": "upstream/docker.io/kiwigrid/k8s-sidecar",
+      "id": "upstream-kiwigrid-k8s-sidecar-5febb60fb1ed",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:a6b3f707f883108376514489a94d6629109a327b2978e1d826cd104c4ca436df",
+        "reference": "docker.io/kiwigrid/k8s-sidecar:2.5.0@sha256:a6b3f707f883108376514489a94d6629109a327b2978e1d826cd104c4ca436df",
+        "registry": "docker.io",
+        "repository": "kiwigrid/k8s-sidecar",
+        "tag": "2.5.0"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/kube-prometheus-stack-grafana-85d88c488c-wp58r/grafana-sc-dashboard",
+        "observed:observability/kube-prometheus-stack-grafana-85d88c488c-wp58r/grafana-sc-datasources"
+      ],
+      "destination_repository": "upstream/quay.io/kiwigrid/k8s-sidecar",
+      "id": "upstream-kiwigrid-k8s-sidecar-74e0367b26a8",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:694950d736c8b532eba4006527ccbdac98fefc9f30b3346ba2de50b6cad91c94",
+        "reference": "quay.io/kiwigrid/k8s-sidecar:2.7.3@sha256:694950d736c8b532eba4006527ccbdac98fefc9f30b3346ba2de50b6cad91c94",
+        "registry": "quay.io",
+        "repository": "kiwigrid/k8s-sidecar",
+        "tag": "2.7.3"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/kube-prometheus-stack-kube-state-metrics-58f5d9c5d4-9wxvt/kube-state-metrics"
+      ],
+      "destination_repository": "upstream/registry.k8s.io/kube-state-metrics/kube-state-metrics",
+      "id": "upstream-kube-state-metrics-kube-state-metrics-3a7be5b8a4ec",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:6b2f0b6f2f86ac5b1aa883a033a8dd55bb96c16d191ec973393bdaadaddac914",
+        "reference": "registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.19.0@sha256:6b2f0b6f2f86ac5b1aa883a033a8dd55bb96c16d191ec973393bdaadaddac914",
+        "registry": "registry.k8s.io",
+        "repository": "kube-state-metrics/kube-state-metrics",
+        "tag": "v2.19.0"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/obsidian/couchdb.yaml:25",
+        "gitops/websites/nixagent/deployment.yaml:22",
+        "gitops/websites/spatia/deployment.yaml:22",
+        "observed:nixagent/website-deploy-796cd7c89d-dqdnf/prepare-nginx-tmp",
+        "observed:spatia/website-deploy-5458fdffd-7ttmd/prepare-nginx-tmp"
+      ],
+      "destination_repository": "upstream/docker.io/library/busybox",
+      "id": "upstream-library-busybox-83a80c03ccc8",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v5",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616",
+        "reference": "docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616",
+        "registry": "docker.io",
+        "repository": "library/busybox",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/obsidian/couchdb.yaml:40",
+        "observed:rendered/obsidian/couchdb"
+      ],
+      "destination_repository": "upstream/docker.io/library/couchdb",
+      "id": "upstream-library-couchdb-8b9b5bf1d8ba",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.manifest.v1+json",
+        "platforms": []
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:199ff89f9a930df6032a216570ae0169fcc36c449bb02b40fafeb6efecdb606f",
+        "reference": "docker.io/library/couchdb@sha256:199ff89f9a930df6032a216570ae0169fcc36c449bb02b40fafeb6efecdb606f",
+        "registry": "docker.io",
+        "repository": "library/couchdb",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/loki-chunks-cache-0/memcached",
+        "observed:observability/loki-results-cache-0/memcached"
+      ],
+      "destination_repository": "upstream/docker.io/library/memcached",
+      "id": "upstream-library-memcached-01c40de587c7",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:c8503d4491edd3110cc07d0465089d3a41cf1daf8645e71149e39a51835e92cd",
+        "reference": "docker.io/library/memcached:1.6.39-alpine@sha256:c8503d4491edd3110cc07d0465089d3a41cf1daf8645e71149e39a51835e92cd",
+        "registry": "docker.io",
+        "repository": "library/memcached",
+        "tag": "1.6.39-alpine"
+      }
+    },
+    {
+      "consumers": [
+        "observed:default/bgp-canary-85c4bcc749-lb4d7/web"
+      ],
+      "destination_repository": "upstream/docker.io/library/nginx",
+      "id": "upstream-library-nginx-5c12658f6aa3",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "reference": "docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "registry": "docker.io",
+        "repository": "library/nginx",
+        "tag": "1.27-alpine"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/backups/db-dump.yaml:23",
+        "observed:backups/immich-db-dump-29811300-wrm9q/pg-dump"
+      ],
+      "destination_repository": "upstream/docker.io/library/postgres",
+      "id": "upstream-library-postgres-2c55702139ea",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:727876d274666da0b92a445390ba093c84b8e9f8343e1c53cd4e9a7ab2d85310",
+        "reference": "docker.io/library/postgres:14-alpine@sha256:727876d274666da0b92a445390ba093c84b8e9f8343e1c53cd4e9a7ab2d85310",
+        "registry": "docker.io",
+        "repository": "library/postgres",
+        "tag": "14-alpine"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/automation/renovate-agent.yaml:125",
+        "observed:rendered/automation/renovate-agent-init"
+      ],
+      "destination_repository": "upstream/docker.io/library/python",
+      "id": "upstream-library-python-b49243ab05a6",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:c6ead215bfd31f1e433d968853b7a769989117115b728874824e6c0a27cb96fc",
+        "reference": "docker.io/library/python:3.14-alpine@sha256:c6ead215bfd31f1e433d968853b7a769989117115b728874824e6c0a27cb96fc",
+        "registry": "docker.io",
+        "repository": "library/python",
+        "tag": "3.14-alpine"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/loki-gateway-54d4c5b8fb-kqcjq/nginx"
+      ],
+      "destination_repository": "upstream/docker.io/nginxinc/nginx-unprivileged",
+      "id": "upstream-nginxinc-nginx-unprivileged-41d347874fd5",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v6",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:0c79d56aee561a1d81c63f00eee5fb5fe29279560cdc55e91425133104c7fbe6",
+        "reference": "docker.io/nginxinc/nginx-unprivileged:1.29-alpine@sha256:0c79d56aee561a1d81c63f00eee5fb5fe29279560cdc55e91425133104c7fbe6",
+        "registry": "docker.io",
+        "repository": "nginxinc/nginx-unprivileged",
+        "tag": "1.29-alpine"
+      }
+    },
+    {
+      "consumers": [
+        ".gitlab-ci.yml:1",
+        "observed:ci/default-image"
+      ],
+      "destination_repository": "upstream/docker.io/nixos/nix",
+      "id": "upstream-nixos-nix-8a0dbd33be8c",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:7a007c766426c1877758ddc5cb87a965ac131fc78c582ce0083d922d51ae945c",
+        "reference": "docker.io/nixos/nix:latest@sha256:7a007c766426c1877758ddc5cb87a965ac131fc78c582ce0083d922d51ae945c",
+        "registry": "docker.io",
+        "repository": "nixos/nix",
+        "tag": "latest"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/loki-chunks-cache-0/exporter",
+        "observed:observability/loki-results-cache-0/exporter"
+      ],
+      "destination_repository": "upstream/docker.io/prom/memcached-exporter",
+      "id": "upstream-prom-memcached-exporter-271b7f9b89a7",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:b6763ecb3c47f2408e0398518851b7f8c5fc46232b2649f8c78a321130c54266",
+        "reference": "docker.io/prom/memcached-exporter:v0.15.4@sha256:b6763ecb3c47f2408e0398518851b7f8c5fc46232b2649f8c78a321130c54266",
+        "registry": "docker.io",
+        "repository": "prom/memcached-exporter",
+        "tag": "v0.15.4"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/alertmanager-kube-prometheus-stack-alertmanager-0/alertmanager"
+      ],
+      "destination_repository": "upstream/quay.io/prometheus/alertmanager",
+      "id": "upstream-prometheus-alertmanager-596bfa5b050f",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286",
+        "reference": "quay.io/prometheus/alertmanager:v0.32.1@sha256:51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286",
+        "registry": "quay.io",
+        "repository": "prometheus/alertmanager",
+        "tag": "v0.32.1"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/kube-prometheus-stack-prometheus-node-exporter-mmpzt/node-exporter",
+        "observed:observability/kube-prometheus-stack-prometheus-node-exporter-mpsck/node-exporter",
+        "observed:observability/kube-prometheus-stack-prometheus-node-exporter-tk4sk/node-exporter"
+      ],
+      "destination_repository": "upstream/quay.io/prometheus/node-exporter",
+      "id": "upstream-prometheus-node-exporter-65253f3f342f",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:6112664fd761bb964d8a2d3d0119d6c8402618a89edbb3a43c8f7b4090fb53c9",
+        "reference": "quay.io/prometheus/node-exporter:v1.11.1-distroless@sha256:6112664fd761bb964d8a2d3d0119d6c8402618a89edbb3a43c8f7b4090fb53c9",
+        "registry": "quay.io",
+        "repository": "prometheus/node-exporter",
+        "tag": "v1.11.1-distroless"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/alertmanager-kube-prometheus-stack-alertmanager-0/config-reloader",
+        "observed:observability/alertmanager-kube-prometheus-stack-alertmanager-0/init-config-reloader",
+        "observed:observability/alloy-5rh6k/config-reloader",
+        "observed:observability/alloy-g645h/config-reloader",
+        "observed:observability/alloy-vzrsp/config-reloader",
+        "observed:observability/prometheus-kube-prometheus-stack-prometheus-0/config-reloader",
+        "observed:observability/prometheus-kube-prometheus-stack-prometheus-0/init-config-reloader"
+      ],
+      "destination_repository": "upstream/quay.io/prometheus-operator/prometheus-config-reloader",
+      "id": "upstream-prometheus-operator-prometheus-config-reloader-25eaa5c00a50",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1",
+        "reference": "quay.io/prometheus-operator/prometheus-config-reloader:v0.91.0@sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1",
+        "registry": "quay.io",
+        "repository": "prometheus-operator/prometheus-config-reloader",
+        "tag": "v0.91.0"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/kube-prometheus-stack-operator-6cd9d8fb8d-jz7fr/kube-prometheus-stack"
+      ],
+      "destination_repository": "upstream/quay.io/prometheus-operator/prometheus-operator",
+      "id": "upstream-prometheus-operator-prometheus-operator-7cad961a3360",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d",
+        "reference": "quay.io/prometheus-operator/prometheus-operator:v0.91.0@sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d",
+        "registry": "quay.io",
+        "repository": "prometheus-operator/prometheus-operator",
+        "tag": "v0.91.0"
+      }
+    },
+    {
+      "consumers": [
+        "observed:observability/prometheus-kube-prometheus-stack-prometheus-0/prometheus"
+      ],
+      "destination_repository": "upstream/quay.io/prometheus/prometheus",
+      "id": "upstream-prometheus-prometheus-9da37ff72c35",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:f39df5334dee301b885f77e0ff1159f5d8a43bf9db518f885544594799a1e3c2",
+        "reference": "quay.io/prometheus/prometheus:v3.12.0-distroless@sha256:f39df5334dee301b885f77e0ff1159f5d8a43bf9db518f885544594799a1e3c2",
+        "registry": "quay.io",
+        "repository": "prometheus/prometheus",
+        "tag": "v3.12.0-distroless"
+      }
+    },
+    {
+      "consumers": [
+        "observed:kube-system/helm-install-cilium-cnhlj/helm"
+      ],
+      "destination_repository": "upstream/docker.io/rancher/klipper-helm",
+      "id": "upstream-rancher-klipper-helm-7d5f5c565cf0",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/riscv64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:5425a2b4613d2458dbdff99218e8d487ebb59c20e7a941f061c0777070f0aac1",
+        "reference": "docker.io/rancher/klipper-helm:v0.13.3-build20260727@sha256:5425a2b4613d2458dbdff99218e8d487ebb59c20e7a941f061c0777070f0aac1",
+        "registry": "docker.io",
+        "repository": "rancher/klipper-helm",
+        "tag": "v0.13.3-build20260727"
+      }
+    },
+    {
+      "consumers": [
+        "observed:kube-system/coredns-c5fdd76cf-q9xg7/coredns"
+      ],
+      "destination_repository": "upstream/docker.io/rancher/mirrored-coredns-coredns",
+      "id": "upstream-rancher-mirrored-coredns-coredns-5c79ae28ecf0",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/loong64",
+          "linux/ppc64le",
+          "linux/riscv64",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:900f9c109f7a33545d3c811516e8376df9019147b750f5ce3e254468769176ea",
+        "reference": "docker.io/rancher/mirrored-coredns-coredns:1.14.6@sha256:900f9c109f7a33545d3c811516e8376df9019147b750f5ce3e254468769176ea",
+        "registry": "docker.io",
+        "repository": "rancher/mirrored-coredns-coredns",
+        "tag": "1.14.6"
+      }
+    },
+    {
+      "consumers": [
+        "observed:kube-system/metrics-server-7f4b6d9bd7-c7j5n/metrics-server"
+      ],
+      "destination_repository": "upstream/docker.io/rancher/mirrored-metrics-server",
+      "id": "upstream-rancher-mirrored-metrics-server-e45b7d815618",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64/v8",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:d9862115e7c7881280d3d75ca26bda8ffc0fc213315979575bf23ce9826205c0",
+        "reference": "docker.io/rancher/mirrored-metrics-server:v0.9.0@sha256:d9862115e7c7881280d3d75ca26bda8ffc0fc213315979575bf23ce9826205c0",
+        "registry": "docker.io",
+        "repository": "rancher/mirrored-metrics-server",
+        "tag": "v0.9.0"
+      }
+    },
+    {
+      "consumers": [
+        "observed:k3s/sandbox-image"
+      ],
+      "destination_repository": "upstream/docker.io/rancher/mirrored-pause",
+      "id": "upstream-rancher-mirrored-pause-51bdb3ce0e54",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x",
+          "windows/amd64"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+        "reference": "docker.io/rancher/mirrored-pause:3.10.2@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+        "registry": "docker.io",
+        "repository": "rancher/mirrored-pause",
+        "tag": "3.10.2"
+      }
+    },
+    {
+      "consumers": [
+        "observed:automation/renovate-gitlab-29812680-2p7bs/renovate"
+      ],
+      "destination_repository": "upstream/ghcr.io/renovatebot/renovate",
+      "id": "upstream-renovatebot-renovate-cd72b10bc589",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:97006d85961032ad4a991d70c1a8b8255038f4cd17c8bae732a263f735261130",
+        "reference": "ghcr.io/renovatebot/renovate:42.70.2@sha256:97006d85961032ad4a991d70c1a8b8255038f4cd17c8bae732a263f735261130",
+        "registry": "ghcr.io",
+        "repository": "renovatebot/renovate",
+        "tag": "42.70.2"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/backups/dumps-to-r2.yaml:23",
+        "gitops/backups/library-local.yaml:23",
+        "observed:backups/dumps-to-r2-29811360-v2g8k/restic",
+        "observed:backups/test-r2b-2dqhn/restic",
+        "observed:immich/library-to-local-repo-29811240-rqdmj/restic",
+        "observed:immich/library-to-local-repo-29812680-7rk7m/restic",
+        "observed:immich/test-lib5-wrstd/restic"
+      ],
+      "destination_repository": "upstream/docker.io/restic/restic",
+      "id": "upstream-restic-restic-045570a1ab81",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/386",
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510",
+        "reference": "docker.io/restic/restic:0.19.1@sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510",
+        "registry": "docker.io",
+        "repository": "restic/restic",
+        "tag": "0.19.1"
+      }
+    },
+    {
+      "consumers": [
+        "observed:storage/nfs-subdir-external-provisioner-54bd59cbd-l4qvp/nfs-subdir-external-provisioner"
+      ],
+      "destination_repository": "upstream/registry.k8s.io/sig-storage/nfs-subdir-external-provisioner",
+      "id": "upstream-sig-storage-nfs-subdir-external-provisioner-d53f2e9778a6",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:63d5e04551ec8b5aae83b6f35938ca5ddc50a88d85492d9731810c31591fa4c9",
+        "reference": "registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2@sha256:63d5e04551ec8b5aae83b6f35938ca5ddc50a88d85492d9731810c31591fa4c9",
+        "registry": "registry.k8s.io",
+        "repository": "sig-storage/nfs-subdir-external-provisioner",
+        "tag": "v4.0.2"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/immich/valkey.yaml:23",
+        "observed:immich/immich-valkey-58bc4b8d86-6hlxt/valkey"
+      ],
+      "destination_repository": "upstream/docker.io/valkey/valkey",
+      "id": "upstream-valkey-valkey-20baeb88570b",
+      "kind": "upstream",
+      "observed_manifest": {
+        "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
+          "linux/arm64",
+          "linux/ppc64le"
+        ]
+      },
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411",
+        "reference": "docker.io/valkey/valkey:9@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411",
+        "registry": "docker.io",
+        "repository": "valkey/valkey",
+        "tag": "9"
+      }
+    }
+  ],
+  "kind": "registry-inventory",
+  "schema_version": 1,
+  "scope": {
+    "exhaustive": false,
+    "root": ".",
+    "sources": [
+      "gitops",
+      "flake",
+      ".gitlab-ci.yml",
+      "registry/observed-images.json"
+    ]
+  },
+  "source_revision": "6d26784d9b4a898ab3b922b4db26d5370cd44fed",
+  "unresolved_inputs": [
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/apolline/deployment.yaml:23,observed:apolline/website-deploy-5b9d449c7f-l5d85/web",
+      "id": "producer:first-party-jeff7712-apolline-f6344821e8d9",
+      "input": "ghcr.io/jeff7712/apolline:0.0.13@sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/cr-demo/deployment.yaml:22,observed:cr-demo/website-deploy-5fdd8fd64f-kn8rv/web",
+      "id": "producer:first-party-jeff7712-cr-demo-1211582ac457",
+      "input": "docker.io/jeff7712/cr-demo@sha256:65aa32d6593b0d1e8284cd0339a2eafc092b779b99e2df98118c72a1e19e3387",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/darkbit/deployment.yaml:23,observed:darkbit/website-deploy-5c87cf8d7d-lgrn8/web",
+      "id": "producer:first-party-jeff7712-darkbit-9b3ffba78d0f",
+      "input": "ghcr.io/jeff7712/darkbit:0.0.25@sha256:6c52241abf2223df23394470d2c8851d9add4e706856247f3304b13edc5b7bff",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/distrojeff/deployment.yaml:23,observed:distrojeff/website-deploy-79b9b9896c-cjx5f/web",
+      "id": "producer:first-party-jeff7712-distrojeff-site-ab9710929827",
+      "input": "ghcr.io/jeff7712/distrojeff-site:0.0.22@sha256:a3e6461a7fc969a68d561ffef660aab7684bd52a9f6d2eabdac34deb3db523d7",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/automation/renovate-agent.yaml:23,observed:rendered/automation/renovate-agent",
+      "id": "producer:first-party-jeff7712-homelab-renovate-agent-dc16f8a8073a",
+      "input": "docker.io/jeff7712/homelab-renovate-agent:0.0.1415@sha256:128f085244a15c4fe45fe176be6bad3a112ba13f3fce3173825a9cb3bc4fea58",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/automation/renovate-dashboard.yaml:26,observed:rendered/automation/renovate-dashboard",
+      "id": "producer:first-party-jeff7712-homelab-renovate-dashboard-27f255d088c0",
+      "input": "docker.io/jeff7712/homelab-renovate-dashboard:0.0.1415@sha256:dc947a8226bcdb112cc2bf9e119c67fcd3f63168b7234eb1e060618613d490e3",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/ism/deployment.yaml:22,observed:ism/website-deploy-57b4f774c-4pqms/web",
+      "id": "producer:first-party-jeff7712-ism-c0694e47410b",
+      "input": "docker.io/jeff7712/ism@sha256:41b1dc3eccd6d484877f744777b759c1339c550f560d237c7f6554d1fbef0488",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/majorfinder/deployment.yaml:24,observed:majorfinder/website-deploy-f99cbbc9c-bjpn9/web",
+      "id": "producer:first-party-jeff7712-majorfinder-5e85d8d2824c",
+      "input": "ghcr.io/jeff7712/majorfinder@sha256:73a66eaf824b53d1f6a69d04514b07223f547f51d1e3cc7e784e1a2a8a59ed85",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/nixagent/deployment.yaml:38,observed:nixagent/website-deploy-796cd7c89d-dqdnf/web",
+      "id": "producer:first-party-jeff7712-nix-agent-site-79adbb322813",
+      "input": "ghcr.io/jeff7712/nix-agent-site:0.0.19@sha256:901a466b3e9ed474dba31a7000f1604a0170c306c0e35b72231de6f9cee235b2",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/photography/deployment.yaml:24,observed:photography/website-deploy-777cb5d6df-2c2gt/web",
+      "id": "producer:first-party-jeff7712-photography-7f744af23df3",
+      "input": "ghcr.io/jeff7712/photography@sha256:731128663e8bb12861fcf2b801bd0a671478607c44198bf5166812dfc88d57e6",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/pulse/deployment.yaml:22,observed:pulse/website-deploy-7bc958f8c5-xpb59/web",
+      "id": "producer:first-party-jeff7712-pulse-site-e72cbcb116f7",
+      "input": "ghcr.io/jeff7712/pulse-site:0.0.86@sha256:b8564dd25c02ba6ba52ba16b17839d94ed8a042540d0ade75ef6608aecc75db4",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/obsidian/deployment.yaml:25,observed:obsidian/quartz-notes-64b8478c64-69cfh/quartz,observed:obsidian/quartz-notes-64b8478c64-fzmfs/quartz",
+      "id": "producer:first-party-jeff7712-quartz-21f9999c8e03",
+      "input": "ghcr.io/jeff7712/quartz:0.0.278@sha256:0023aa4fff0cbe5df1ec652425cdc3b7177fba4641165f3ec8d2d8f8b025f797",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/rupanism/deployment.yaml:22,observed:rupanism/website-deploy-868b45d7fb-kdg9m/web",
+      "id": "producer:first-party-jeff7712-rupanism-ee57f683dc8e",
+      "input": "ghcr.io/jeff7712/rupanism:0.0.46@sha256:fdd2bc2a68439f1f993f2e554a60b973422a441caac251a78c32397e2981ecd5",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/soluble-rupan/deployment.yaml:22,observed:soluble-rupan/website-deploy-bfdcd7cb4-8mmfd/web,observed:soluble-rupan/website-deploy-bfdcd7cb4-kbbhc/web",
+      "id": "producer:first-party-jeff7712-solubility-gnn-6b9c8ea16068",
+      "input": "ghcr.io/jeff7712/solubility-gnn:0.0.46@sha256:d08831ca8407fc8ca2b0f3bbac78cfa8f00ea1cfcf53d24dd8a09113ac4720b9",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/spatia/deployment.yaml:37,observed:spatia/website-deploy-5458fdffd-7ttmd/web",
+      "id": "producer:first-party-jeff7712-spatia-site-c1c5ac3f6ca0",
+      "input": "ghcr.io/jeff7712/spatia-site:0.0.27@sha256:754085d236f6eecef224ff15c94d3b24ba17ce4580bba29733e28cd8220ecdf4",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    }
+  ]
+}

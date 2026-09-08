@@ -13,6 +13,7 @@
 
   outputs =
     {
+      self,
       nixpkgs,
       flake-utils,
       disko,
@@ -60,6 +61,33 @@
           ./hosts/homelab-03
         ];
       };
+      nixosConfigurations.homelab-01-registry = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          impermanence.nixosModules.impermanence
+          ./hosts/homelab-01
+          ./modules/k3s-registry-client.nix
+        ];
+      };
+      nixosConfigurations.homelab-02-registry = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          impermanence.nixosModules.impermanence
+          ./hosts/homelab-02
+          ./modules/k3s-registry-client.nix
+        ];
+      };
+      nixosConfigurations.homelab-03-registry = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          impermanence.nixosModules.impermanence
+          ./hosts/homelab-03
+          ./modules/k3s-registry-client.nix
+        ];
+      };
     }
     // flake-utils.lib.eachDefaultSystem (
       system:
@@ -73,20 +101,24 @@
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             age
+            apacheHttpd
+            cosign
+            curl
             git
             gitleaks
             glab
-            git
             just
             kubeconform
             kubectl
             kubernetes-helm
             nixfmt
             opentofu
+            oras
             pyright
-            python313
+            python
             ruff
             shellcheck
+            skopeo
             sops
             yamllint
           ];
@@ -101,6 +133,7 @@
                 pkgs.git
                 pkgs.jq
                 pkgs.just
+                pkgs.kubectl
                 python
               ];
             }
@@ -109,6 +142,8 @@
               python -m unittest discover -s tests
               touch $out
             '';
+
+        checks.zot-registry = self.nixosConfigurations.nas-01.config.services.homelab-zot-registry.package;
       }
     );
 }

@@ -1,0 +1,1249 @@
+from __future__ import annotations
+
+import dataclasses
+import datetime as dt
+import fnmatch
+import hashlib
+import json
+import os
+import pathlib
+import re
+import shutil
+import subprocess
+import tempfile
+import time
+from collections.abc import Mapping, Sequence
+from typing import Any
+
+import yaml
+
+SCHEMA_VERSION = 1
+DEFAULT_REGISTRY = "registry.rupan.dev"
+_DIGEST_RE = re.compile(r"sha256:[0-9a-f]{64}\Z")
+_REPOSITORY_RE = re.compile(
+    r"[a-z0-9]+(?:[._]|__|[-]*[a-z0-9]+)*(?:/[a-z0-9]+(?:[._]|__|[-]*[a-z0-9]+)*)*\Z"
+)
+_TAG_RE = re.compile(r"[\w][\w.-]{0,127}\Z", re.ASCII)
+_IMAGE_FIELD_RE = re.compile(
+    r"^\s*(?:-\s*)?image:\s*[\"']?([^\s\"'#{}]+)", re.MULTILINE
+)
+_KIND_RE = re.compile(r"^kind:\s*HelmRelease\s*$", re.MULTILINE)
+_CHART_RE = re.compile(r"^\s+chart:\s*[\"']?([^\s\"'#{}]+)", re.MULTILINE)
+
+
+class RegistryError(RuntimeError):
+    pass
+
+
+@dataclasses.dataclass(frozen=True)
+class ImageReference:
+    registry: str
+    repository: str
+    tag: str | None = None
+    digest: str | None = None
+
+    @classmethod
+    def parse(cls, value: str) -> ImageReference:
+        raw = value.strip()
+        if not raw or any(char.isspace() for char in raw):
+            raise RegistryError(f"invalid image reference: {value!r}")
+        if "://" in raw:
+            raise RegistryError("image references must not contain a URL scheme")
+
+        name, separator, digest = raw.partition("@")
+        if separator and (not _DIGEST_RE.fullmatch(digest) or "@" in digest):
+            raise RegistryError(f"invalid sha256 digest in image reference: {raw}")
+
+        slash = name.rfind("/")
+        colon = name.rfind(":")
+        tag: str | None = None
+        if colon > slash:
+            tag = name[colon + 1 :]
+            name = name[:colon]
+            if not _TAG_RE.fullmatch(tag):
+                raise RegistryError(f"invalid image tag in reference: {raw}")
+
+        if name != name.lower():
+            raise RegistryError(f"repository names must be lowercase: {raw}")
+
+        parts = name.split("/")
+        if not all(parts):
+            raise RegistryError(f"invalid repository in image reference: {raw}")
+        first = parts[0].lower()
+        if "." in first or ":" in first or first == "localhost":
+            registry = first
+            repository = "/".join(parts[1:])
+        else:
+            registry = "docker.io"
+            repository = "/".join(parts)
+        if registry == "docker.io" and "/" not in repository:
+            repository = f"library/{repository}"
+        if not repository or not _REPOSITORY_RE.fullmatch(repository):
+            raise RegistryError(f"invalid repository in image reference: {raw}")
+        _validate_registry(registry)
+        return cls(registry, repository, tag, digest or None)
+
+    @property
+    def canonical(self) -> str:
+        suffix = f":{self.tag}" if self.tag else ""
+        if self.digest:
+            suffix += f"@{self.digest}"
+        return f"{self.registry}/{self.repository}{suffix}"
+
+    @property
+    def immutable(self) -> str:
+        if not self.digest:
+            raise RegistryError(f"reference is not digest-pinned: {self.canonical}")
+        return f"{self.registry}/{self.repository}@{self.digest}"
+
+
+def _validate_registry(registry: str) -> None:
+    if registry != registry.lower() or "/" in registry or not registry:
+        raise RegistryError(f"invalid registry hostname: {registry}")
+    host, separator, port = registry.rpartition(":")
+    hostname = host if separator else registry
+    if separator and (not port.isdigit() or not 1 <= int(port) <= 65535):
+        raise RegistryError(f"invalid registry port: {registry}")
+    if not re.fullmatch(r"(?:localhost|[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?)", hostname):
+        raise RegistryError(f"invalid registry hostname: {registry}")
+
+
+def image_kind(reference: ImageReference) -> str:
+    if reference.registry in {
+        "docker.io",
+        "ghcr.io",
+    } and reference.repository.startswith("jeff7712/"):
+        return "first-party"
+    return "upstream"
+
+
+def destination_repository(reference: ImageReference, kind: str | None = None) -> str:
+    selected_kind = kind or image_kind(reference)
+    if selected_kind == "first-party":
+        if not reference.repository.startswith("jeff7712/"):
+            raise RegistryError(
+                f"first-party repository lacks the expected owner: {reference.repository}"
+            )
+        destination = f"apps/{reference.repository.removeprefix('jeff7712/')}"
+    elif selected_kind == "upstream":
+        if ":" in reference.registry:
+            host, port = reference.registry.rsplit(":", 1)
+            destination = f"upstream/{host}/port-{port}/{reference.repository}"
+        else:
+            destination = f"upstream/{reference.registry}/{reference.repository}"
+    else:
+        raise RegistryError(f"unknown image kind: {selected_kind}")
+    if not _REPOSITORY_RE.fullmatch(destination):
+        raise RegistryError(f"derived invalid destination repository: {destination}")
+    return destination
+
+
+def _stable_id(reference: ImageReference, kind: str) -> str:
+    identity = reference.canonical.encode()
+    slug = re.sub(r"[^a-z0-9]+", "-", reference.repository).strip("-")[:48]
+    return f"{kind}-{slug}-{hashlib.sha256(identity).hexdigest()[:12]}"
+
+
+def _source_revision(root: pathlib.Path) -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=5,
+        check=False,
+    )
+    return result.stdout.strip() if result.returncode == 0 else "unavailable"
+
+
+def _timestamp() -> str:
+    return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
+
+
+def discover_inventory(root: pathlib.Path) -> dict[str, Any]:
+    root = root.resolve()
+    candidates = [root / "gitops", root / "flake"]
+    top_level = [root / ".gitlab-ci.yml"]
+    files: list[pathlib.Path] = []
+    for candidate in candidates:
+        if candidate.exists():
+            files.extend(
+                path
+                for path in candidate.rglob("*")
+                if path.is_file() and path.suffix in {".yaml", ".yml", ".nix", ".json"}
+            )
+    files.extend(path for path in top_level if path.is_file())
+
+    found: dict[str, dict[str, Any]] = {}
+    gaps: list[dict[str, Any]] = []
+    for path in sorted(files):
+        text = path.read_text(encoding="utf-8")
+        relative = path.relative_to(root).as_posix()
+        for match in _IMAGE_FIELD_RE.finditer(text):
+            raw = match.group(1).rstrip(",")
+            try:
+                reference = ImageReference.parse(raw)
+            except RegistryError:
+                continue
+            line = text.count("\n", 0, match.start()) + 1
+            consumer = f"{relative}:{line}"
+            key = reference.canonical
+            entry = found.setdefault(
+                key,
+                _inventory_entry(reference),
+            )
+            entry["consumers"].append(consumer)
+        if _KIND_RE.search(text):
+            chart_match = _CHART_RE.search(text)
+            gaps.append(
+                {
+                    "id": f"helm-generated:{relative}",
+                    "class": "helm-generated",
+                    "consumer": relative,
+                    "input": chart_match.group(1) if chart_match else "unknown-chart",
+                    "reason": "chart-generated workload images require a pinned render or live reconciliation",
+                }
+            )
+
+    observed_coverage: set[str] = set()
+    observed_path = root / "registry/observed-images.json"
+    if observed_path.exists():
+        observed = read_json(observed_path)
+        if (
+            observed.get("schema_version") != SCHEMA_VERSION
+            or observed.get("kind") != "registry-observed-images"
+        ):
+            raise RegistryError("unsupported or invalid observed image schema")
+        coverage = observed.get("coverage", [])
+        if not isinstance(coverage, list) or not all(
+            isinstance(item, str) for item in coverage
+        ):
+            raise RegistryError("observed-images coverage must be an array of strings")
+        observed_coverage.update(coverage)
+        for index, item in enumerate(observed.get("images", [])):
+            if not isinstance(item, dict) or not isinstance(item.get("reference"), str):
+                raise RegistryError(f"observed-images images[{index}] is invalid")
+            reference = ImageReference.parse(item["reference"])
+            consumers = item.get("consumers")
+            if (
+                not isinstance(consumers, list)
+                or not consumers
+                or not all(
+                    isinstance(consumer, str) and consumer for consumer in consumers
+                )
+            ):
+                raise RegistryError(
+                    f"observed-images images[{index}].consumers is invalid"
+                )
+            matching_key = next(
+                (
+                    key
+                    for key, candidate in found.items()
+                    if candidate["source"]["registry"] == reference.registry
+                    and candidate["source"]["repository"] == reference.repository
+                    and (
+                        candidate["source"]["tag"] == reference.tag
+                        or (
+                            reference.digest is not None
+                            and candidate["source"]["digest"] == reference.digest
+                        )
+                    )
+                ),
+                None,
+            )
+            if matching_key is not None:
+                entry = found.pop(matching_key)
+                candidate_tag = entry["source"]["tag"]
+                merged_reference = ImageReference(
+                    reference.registry,
+                    reference.repository,
+                    reference.tag if reference.tag is not None else candidate_tag,
+                    reference.digest,
+                )
+                entry["source"] = {
+                    "registry": merged_reference.registry,
+                    "repository": merged_reference.repository,
+                    "tag": merged_reference.tag,
+                    "digest": merged_reference.digest,
+                    "reference": merged_reference.canonical,
+                }
+                entry["id"] = _stable_id(merged_reference, entry["kind"])
+                found[merged_reference.canonical] = entry
+            else:
+                entry = found.setdefault(
+                    reference.canonical, _inventory_entry(reference)
+                )
+            manifest = item.get("manifest")
+            if manifest is not None:
+                if (
+                    not isinstance(manifest, dict)
+                    or not isinstance(manifest.get("media_type"), str)
+                    or not isinstance(manifest.get("platforms"), list)
+                    or not all(
+                        isinstance(platform, str) for platform in manifest["platforms"]
+                    )
+                ):
+                    raise RegistryError(
+                        f"observed-images images[{index}].manifest is invalid"
+                    )
+                entry["observed_manifest"] = manifest
+            entry["consumers"].extend(f"observed:{consumer}" for consumer in consumers)
+
+    gaps = [gap for gap in gaps if gap["class"] not in observed_coverage]
+
+    if (
+        root / "flake/modules/k3s-server.nix"
+    ).exists() and "k3s-bootstrap" not in observed_coverage:
+        gaps.append(
+            {
+                "id": "k3s-bootstrap:flake/modules/k3s-server.nix",
+                "class": "k3s-bootstrap",
+                "consumer": "flake/modules/k3s-server.nix",
+                "input": "k3s runtime defaults",
+                "reason": "sandbox and packaged bootstrap image references are not rendered in source",
+            }
+        )
+    if "live-workloads" not in observed_coverage:
+        gaps.append(
+            {
+                "id": "live-workloads:cluster",
+                "class": "live-workloads",
+                "consumer": "cluster",
+                "input": "Pods, init containers, ephemeral containers, Jobs, and CronJobs",
+                "reason": "offline discovery does not contact the cluster; reconcile a fresh sanitized live snapshot",
+            }
+        )
+    for entry in found.values():
+        if entry["kind"] == "first-party":
+            gaps.append(
+                {
+                    "id": f"producer:{entry['id']}",
+                    "class": "producer-pipeline",
+                    "consumer": ",".join(entry["consumers"]),
+                    "input": entry["source"]["reference"],
+                    "reason": "producer pipeline location and local-registry publication are not proven by this repository",
+                    "blocking": False,
+                }
+            )
+
+    entries = sorted(found.values(), key=lambda item: item["id"])
+    for entry in entries:
+        entry["consumers"] = sorted(set(entry["consumers"]))
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "kind": "registry-inventory",
+        "generated_at": _timestamp(),
+        "source_revision": _source_revision(root),
+        "scope": {
+            "root": ".",
+            "sources": [
+                "gitops",
+                "flake",
+                ".gitlab-ci.yml",
+                "registry/observed-images.json",
+            ],
+            "exhaustive": False,
+        },
+        "images": entries,
+        "unresolved_inputs": sorted(gaps, key=lambda item: item["id"]),
+    }
+
+
+def _inventory_entry(reference: ImageReference) -> dict[str, Any]:
+    kind = image_kind(reference)
+    return {
+        "id": _stable_id(reference, kind),
+        "kind": kind,
+        "source": {
+            "registry": reference.registry,
+            "repository": reference.repository,
+            "tag": reference.tag,
+            "digest": reference.digest,
+            "reference": reference.canonical,
+        },
+        "destination_repository": destination_repository(reference, kind),
+        "consumers": [],
+        "producer": (
+            {
+                "owner": "jeff7712",
+                "location": f"external-image-repository:{reference.registry}/{reference.repository}",
+                "pipeline_status": "unverified",
+            }
+            if kind == "first-party"
+            else None
+        ),
+        "retention_class": "deployed",
+    }
+
+
+def atomic_write_json(path: pathlib.Path, value: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(value, indent=2, sort_keys=True) + "\n"
+    descriptor, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+        _fsync_directory(path.parent)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def atomic_write_private(path: pathlib.Path, payload: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        os.fchmod(descriptor, 0o600)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+        os.chmod(path, 0o600)
+        _fsync_directory(path.parent)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def _fsync_directory(path: pathlib.Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def read_json(path: pathlib.Path) -> dict[str, Any]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RegistryError(f"cannot read valid JSON from {path}: {error}") from error
+    if not isinstance(value, dict):
+        raise RegistryError(f"expected a JSON object in {path}")
+    return value
+
+
+def load_inventory(path: pathlib.Path) -> dict[str, Any]:
+    value = read_json(path)
+    if (
+        value.get("schema_version") != SCHEMA_VERSION
+        or value.get("kind") != "registry-inventory"
+    ):
+        raise RegistryError("unsupported or invalid registry inventory schema")
+    images = value.get("images")
+    if not isinstance(images, list):
+        raise RegistryError("inventory images must be an array")
+    return value
+
+
+def load_lock(path: pathlib.Path, *, allow_incomplete: bool = False) -> dict[str, Any]:
+    value = read_json(path)
+    errors = validate_lock(value, allow_incomplete=allow_incomplete)
+    if errors:
+        raise RegistryError("invalid image lock: " + "; ".join(errors))
+    return value
+
+
+def validate_lock(
+    value: Mapping[str, Any], *, allow_incomplete: bool = False
+) -> list[str]:
+    errors: list[str] = []
+    if value.get("schema_version") != SCHEMA_VERSION:
+        errors.append("unknown schema_version")
+    if value.get("kind") != "registry-image-lock":
+        errors.append("kind must be registry-image-lock")
+    destination_registry = value.get("destination_registry")
+    try:
+        _validate_registry(str(destination_registry))
+    except RegistryError as error:
+        errors.append(str(error))
+    records = value.get("images")
+    if not isinstance(records, list):
+        return errors + ["images must be an array"]
+    seen_ids: set[str] = set()
+    tag_owners: dict[tuple[str, str], tuple[str, str]] = {}
+    repository_sources: dict[str, tuple[str, str]] = {}
+    for index, record in enumerate(records):
+        prefix = f"images[{index}]"
+        if not isinstance(record, dict):
+            errors.append(f"{prefix} must be an object")
+            continue
+        identifier = record.get("id")
+        if not isinstance(identifier, str) or not re.fullmatch(
+            r"[a-z0-9][a-z0-9.-]{0,127}", identifier
+        ):
+            errors.append(f"{prefix}.id is invalid")
+        elif identifier in seen_ids:
+            errors.append(f"duplicate id {identifier}")
+        else:
+            seen_ids.add(identifier)
+        kind = record.get("kind")
+        if kind not in {"first-party", "upstream"}:
+            errors.append(f"{prefix}.kind is invalid")
+        source = record.get("source")
+        source_identity: tuple[str, str] | None = None
+        if not isinstance(source, dict):
+            errors.append(f"{prefix}.source must be an object")
+        else:
+            try:
+                parsed = ImageReference.parse(str(source.get("reference", "")))
+                if parsed.registry != source.get(
+                    "registry"
+                ) or parsed.repository != source.get("repository"):
+                    errors.append(f"{prefix}.source fields disagree with reference")
+                if parsed.digest != source.get("digest"):
+                    errors.append(f"{prefix}.source digest disagrees with reference")
+                source_identity = (parsed.registry, parsed.repository)
+            except RegistryError as error:
+                errors.append(f"{prefix}.source: {error}")
+        digest = record.get("digest")
+        if not isinstance(digest, str) or not _DIGEST_RE.fullmatch(digest):
+            errors.append(f"{prefix}.digest must be a sha256 digest")
+        media_type = record.get("media_type")
+        if not isinstance(media_type, str) or "/" not in media_type:
+            errors.append(f"{prefix}.media_type is invalid")
+        platforms = record.get("platforms")
+        if not isinstance(platforms, list):
+            errors.append(f"{prefix}.platforms must be an array")
+        else:
+            for platform in platforms:
+                if not isinstance(platform, str) or not re.fullmatch(
+                    r"[a-z0-9_-]+/[a-z0-9_.-]+(?:/[a-z0-9_.-]+)?", platform
+                ):
+                    errors.append(f"{prefix}.platforms contains an invalid platform")
+        consumers = record.get("consumers")
+        if (
+            not isinstance(consumers, list)
+            or not consumers
+            or not all(isinstance(item, str) and item for item in consumers)
+        ):
+            errors.append(f"{prefix}.consumers must classify at least one consumer")
+        if kind == "first-party":
+            producer = record.get("producer")
+            if (
+                not isinstance(producer, dict)
+                or not producer.get("owner")
+                or not producer.get("location")
+            ):
+                errors.append(f"{prefix}.producer is required for first-party images")
+        if record.get("retention_class") not in {"deployed", "rollback", "candidate"}:
+            errors.append(f"{prefix}.retention_class is invalid")
+        destination = record.get("destination_repository")
+        if not isinstance(destination, str) or not _REPOSITORY_RE.fullmatch(
+            destination
+        ):
+            errors.append(f"{prefix}.destination_repository is invalid")
+        elif source_identity:
+            previous = repository_sources.setdefault(destination, source_identity)
+            if previous != source_identity:
+                errors.append(
+                    f"destination {destination} maps conflicting source identities"
+                )
+        tags = record.get("destination_tags")
+        if not isinstance(tags, list) or not tags:
+            errors.append(f"{prefix}.destination_tags must be a nonempty array")
+        elif isinstance(destination, str) and isinstance(digest, str):
+            for tag in tags:
+                if not isinstance(tag, str) or not _TAG_RE.fullmatch(tag):
+                    errors.append(f"{prefix}.destination_tags contains an invalid tag")
+                    continue
+                key = (destination, tag)
+                owner = (str(identifier), digest)
+                previous = tag_owners.setdefault(key, owner)
+                if previous[1] != digest:
+                    errors.append(
+                        f"destination tag {destination}:{tag} has conflicting digests"
+                    )
+        referrers = record.get("referrers")
+        if not isinstance(referrers, dict) or not isinstance(
+            referrers.get("required"), list
+        ):
+            errors.append(f"{prefix}.referrers.required must be an array")
+        authenticity = record.get("authenticity")
+        if not isinstance(authenticity, dict) or authenticity.get("status") not in {
+            "verified",
+            "copied-unverified",
+            "absent",
+            "unsupported",
+            "not-required",
+        }:
+            errors.append(f"{prefix}.authenticity.status is invalid")
+    unresolved = value.get("unresolved_inputs", [])
+    if not isinstance(unresolved, list):
+        errors.append("unresolved_inputs must be an array")
+    elif not allow_incomplete:
+        blocking = [
+            item
+            for item in unresolved
+            if not isinstance(item, dict) or item.get("blocking", True)
+        ]
+        if blocking:
+            errors.append(f"{len(blocking)} blocking unresolved inputs remain")
+    return errors
+
+
+def _platforms(manifest: Mapping[str, Any]) -> list[str]:
+    values: set[str] = set()
+    descriptors = manifest.get("manifests", [])
+    if not isinstance(descriptors, list):
+        return []
+    for descriptor in descriptors:
+        if not isinstance(descriptor, dict):
+            continue
+        platform = descriptor.get("platform")
+        if not isinstance(platform, dict):
+            continue
+        os_name = platform.get("os")
+        architecture = platform.get("architecture")
+        variant = platform.get("variant")
+        if isinstance(os_name, str) and isinstance(architecture, str):
+            value = f"{os_name}/{architecture}"
+            if isinstance(variant, str) and variant:
+                value += f"/{variant}"
+            values.add(value)
+    return sorted(values)
+
+
+class OciClient:
+    def __init__(self, *, timeout: int = 60, retries: int = 2) -> None:
+        if timeout < 1 or retries < 0 or retries > 5:
+            raise RegistryError("timeout and retry bounds are invalid")
+        self.timeout = timeout
+        self.retries = retries
+        self.inspect_tool = (
+            "skopeo"
+            if shutil.which("skopeo")
+            else "crane"
+            if shutil.which("crane")
+            else None
+        )
+        self.copy_tool = "skopeo" if shutil.which("skopeo") else None
+
+    def raw_manifest(self, reference: str, *, destination: bool = False) -> bytes:
+        if self.inspect_tool == "skopeo":
+            args = ["skopeo", "--registries-conf", "/dev/null", "inspect", "--raw"]
+            auth = os.environ.get(
+                "REGISTRY_DEST_AUTH_FILE"
+                if destination
+                else "REGISTRY_SOURCE_AUTH_FILE"
+            )
+            if auth:
+                args.extend(["--authfile", auth])
+            args.append(f"docker://{reference}")
+        elif self.inspect_tool == "crane":
+            args = ["crane", "manifest", reference]
+        else:
+            raise RegistryError(
+                "no supported OCI inspection tool found; install skopeo or crane"
+            )
+        return self._run(args, operation="manifest inspection")
+
+    def copy(self, source: str, destination: str) -> None:
+        if self.copy_tool != "skopeo":
+            raise RegistryError("digest-preserving copy requires skopeo")
+        args = [
+            "skopeo",
+            "--registries-conf",
+            "/dev/null",
+            "copy",
+            "--all",
+            "--preserve-digests",
+        ]
+        source_auth = os.environ.get("REGISTRY_SOURCE_AUTH_FILE")
+        destination_auth = os.environ.get("REGISTRY_DEST_AUTH_FILE")
+        if source_auth:
+            args.extend(["--src-authfile", source_auth])
+        if destination_auth:
+            args.extend(["--dest-authfile", destination_auth])
+        args.extend([f"docker://{source}", f"docker://{destination}"])
+        self._run(args, operation="digest-preserving copy", retries=0)
+
+    def _run(
+        self, args: Sequence[str], *, operation: str, retries: int | None = None
+    ) -> bytes:
+        attempts = self.retries if retries is None else retries
+        for attempt in range(attempts + 1):
+            try:
+                result = subprocess.run(
+                    list(args),
+                    capture_output=True,
+                    timeout=self.timeout,
+                    check=False,
+                )
+            except subprocess.TimeoutExpired as error:
+                if attempt == attempts:
+                    raise RegistryError(
+                        f"{operation} timed out after {self.timeout} seconds"
+                    ) from error
+            else:
+                if result.returncode == 0:
+                    return result.stdout
+                if attempt == attempts:
+                    raise RegistryError(
+                        f"{operation} failed with exit code {result.returncode}"
+                    )
+            time.sleep(min(2**attempt, 4))
+        raise AssertionError("unreachable")
+
+
+def manifest_details(client: OciClient, reference: str) -> tuple[str, str, list[str]]:
+    raw = client.raw_manifest(reference)
+    digest = "sha256:" + hashlib.sha256(raw).hexdigest()
+    try:
+        manifest = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise RegistryError(
+            f"registry returned invalid manifest JSON for {reference}"
+        ) from error
+    if not isinstance(manifest, dict):
+        raise RegistryError(
+            f"registry returned invalid manifest document for {reference}"
+        )
+    media_type = manifest.get("mediaType")
+    if not isinstance(media_type, str):
+        raise RegistryError(f"manifest lacks mediaType for {reference}")
+    return digest, media_type, _platforms(manifest)
+
+
+def resolve_inventory(
+    inventory: Mapping[str, Any],
+    client: OciClient,
+    *,
+    destination_registry: str = DEFAULT_REGISTRY,
+) -> tuple[dict[str, Any], list[dict[str, str]]]:
+    unresolved: list[dict[str, str]] = [
+        dict(item) for item in inventory.get("unresolved_inputs", [])
+    ]
+    records: list[dict[str, Any]] = []
+    for image in inventory["images"]:
+        source = image["source"]
+        reference = ImageReference.parse(source["reference"])
+        try:
+            observed_digest, media_type, platforms = manifest_details(
+                client, reference.immutable if reference.digest else reference.canonical
+            )
+            if reference.digest and observed_digest != reference.digest:
+                raise RegistryError(
+                    f"source manifest digest mismatch for {reference.canonical}: expected {reference.digest}, observed {observed_digest}"
+                )
+            resolution = {"status": "source-registry-verified"}
+        except RegistryError as error:
+            observed = image.get("observed_manifest")
+            if reference.digest and isinstance(observed, dict):
+                observed_digest = reference.digest
+                media_type = observed["media_type"]
+                platforms = observed["platforms"]
+                resolution = {
+                    "status": "runtime-cache-verified",
+                    "reason": str(error),
+                }
+            else:
+                unresolved.append(
+                    {
+                        "id": f"resolve:{image['id']}",
+                        "class": "source-resolution",
+                        "consumer": ",".join(image["consumers"]),
+                        "input": reference.canonical,
+                        "reason": str(error),
+                    }
+                )
+                continue
+        digest = reference.digest or observed_digest
+        immutable = ImageReference(
+            reference.registry, reference.repository, reference.tag, digest
+        )
+        tags = []
+        if reference.tag:
+            tags.append(reference.tag)
+        tags.append(
+            f"retention-{image['retention_class']}-{digest.removeprefix('sha256:')[:16]}"
+        )
+        record = dict(image)
+        record.pop("observed_manifest", None)
+        records.append(
+            {
+                **record,
+                "source": {
+                    **source,
+                    "digest": digest,
+                    "reference": immutable.canonical,
+                },
+                "digest": digest,
+                "media_type": media_type,
+                "platforms": platforms,
+                "resolution": resolution,
+                "destination_tags": sorted(set(tags)),
+                "referrers": {"required": [], "source_status": "not-enumerated"},
+                "authenticity": {
+                    "status": "unsupported",
+                    "reason": "no source verification policy is declared for this inventory record",
+                },
+            }
+        )
+    lock = {
+        "schema_version": SCHEMA_VERSION,
+        "kind": "registry-image-lock",
+        "generated_at": _timestamp(),
+        "source_revision": inventory.get("source_revision", "unavailable"),
+        "destination_registry": destination_registry,
+        "images": sorted(records, key=lambda item: item["id"]),
+        "mirror_exceptions": [],
+        "unresolved_inputs": sorted(unresolved, key=lambda item: item["id"]),
+    }
+    validation_errors = validate_lock(lock, allow_incomplete=True)
+    if validation_errors:
+        raise RegistryError(
+            "resolved lock candidate is invalid: " + "; ".join(validation_errors)
+        )
+    return lock, unresolved
+
+
+def copy_plan(lock: Mapping[str, Any]) -> dict[str, Any]:
+    steps: list[dict[str, Any]] = []
+    registry = lock["destination_registry"]
+    for record in sorted(lock["images"], key=lambda item: item["id"]):
+        source = record["source"]
+        destination = f"{registry}/{record['destination_repository']}"
+        steps.append(
+            {
+                "id": record["id"],
+                "source": f"{source['registry']}/{source['repository']}@{record['digest']}",
+                "destination": f"{destination}@{record['digest']}",
+                "destination_tags": record["destination_tags"],
+                "expected_digest": record["digest"],
+                "media_type": record["media_type"],
+                "platforms": record["platforms"],
+                "required_referrers": record["referrers"]["required"],
+            }
+        )
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "kind": "registry-copy-plan",
+        "generated_at": _timestamp(),
+        "source_revision": lock.get("source_revision", "unavailable"),
+        "destination_registry": registry,
+        "steps": steps,
+    }
+
+
+def _inspect_digest(
+    client: OciClient, reference: str, *, destination: bool
+) -> tuple[str, str, list[str]]:
+    raw = client.raw_manifest(reference, destination=destination)
+    digest = "sha256:" + hashlib.sha256(raw).hexdigest()
+    try:
+        manifest = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise RegistryError(
+            f"registry returned invalid manifest JSON for {reference}"
+        ) from error
+    media_type = manifest.get("mediaType")
+    if not isinstance(media_type, str):
+        raise RegistryError(f"manifest lacks mediaType for {reference}")
+    return digest, media_type, _platforms(manifest)
+
+
+def verify_record(
+    client: OciClient, lock: Mapping[str, Any], record: Mapping[str, Any]
+) -> dict[str, Any]:
+    destination = f"{lock['destination_registry']}/{record['destination_repository']}@{record['digest']}"
+    observed, media_type, platforms = _inspect_digest(
+        client, destination, destination=True
+    )
+    errors: list[str] = []
+    if observed != record["digest"]:
+        errors.append(
+            f"digest mismatch: expected {record['digest']}, observed {observed}"
+        )
+    if media_type != record["media_type"]:
+        errors.append(
+            f"media type mismatch: expected {record['media_type']}, observed {media_type}"
+        )
+    if platforms != record["platforms"]:
+        errors.append(
+            f"platform mismatch: expected {record['platforms']}, observed {platforms}"
+        )
+    referrer_outcomes: list[dict[str, Any]] = []
+    for descriptor in record["referrers"]["required"]:
+        digest = descriptor.get("digest") if isinstance(descriptor, dict) else None
+        if not isinstance(digest, str) or not _DIGEST_RE.fullmatch(digest):
+            errors.append("required referrer has an invalid digest")
+            continue
+        ref = f"{lock['destination_registry']}/{record['destination_repository']}@{digest}"
+        try:
+            observed_referrer, _, _ = _inspect_digest(client, ref, destination=True)
+            matched = observed_referrer == digest
+        except RegistryError:
+            observed_referrer = None
+            matched = False
+        referrer_outcomes.append(
+            {
+                "expected_digest": digest,
+                "observed_digest": observed_referrer,
+                "matched": matched,
+            }
+        )
+        if not matched:
+            errors.append(f"required referrer missing or mismatched: {digest}")
+    return {
+        "id": record["id"],
+        "status": "verified" if not errors else "failed",
+        "destination": destination,
+        "expected_digest": record["digest"],
+        "observed_digest": observed,
+        "platforms": {"expected": record["platforms"], "observed": platforms},
+        "referrers": referrer_outcomes,
+        "errors": errors,
+    }
+
+
+def verify_lock(
+    client: OciClient, lock: Mapping[str, Any], *, kind: str | None = None
+) -> dict[str, Any]:
+    outcomes: list[dict[str, Any]] = []
+    for record in sorted(lock["images"], key=lambda item: item["id"]):
+        if kind is not None and record["kind"] != kind:
+            continue
+        try:
+            outcome = verify_record(client, lock, record)
+        except RegistryError as error:
+            outcome = {
+                "id": record["id"],
+                "status": "failed",
+                "destination": f"{lock['destination_registry']}/{record['destination_repository']}@{record['digest']}",
+                "expected_digest": record["digest"],
+                "observed_digest": None,
+                "platforms": {"expected": record["platforms"], "observed": []},
+                "referrers": [],
+                "errors": [str(error)],
+            }
+        outcomes.append(outcome)
+    return operation_report("verify", lock, outcomes)
+
+
+def copy_lock(
+    client: OciClient, lock: Mapping[str, Any], *, kind: str | None = None
+) -> dict[str, Any]:
+    outcomes: list[dict[str, Any]] = []
+    for record in sorted(lock["images"], key=lambda item: item["id"]):
+        if kind is not None and record["kind"] != kind:
+            continue
+        destination_base = (
+            f"{lock['destination_registry']}/{record['destination_repository']}"
+        )
+        source = f"{record['source']['registry']}/{record['source']['repository']}@{record['digest']}"
+        status = "copied"
+        errors: list[str] = []
+        try:
+            for tag in record["destination_tags"]:
+                tagged_destination = f"{destination_base}:{tag}"
+                try:
+                    observed, _, _ = _inspect_digest(
+                        client, tagged_destination, destination=True
+                    )
+                except RegistryError:
+                    client.copy(source, tagged_destination)
+                else:
+                    if observed != record["digest"]:
+                        raise RegistryError(
+                            f"refusing to overwrite conflicting destination tag {record['destination_repository']}:{tag}"
+                        )
+                    status = "reused"
+            for descriptor in record["referrers"]["required"]:
+                digest = descriptor["digest"]
+                referrer_tag = f"referrer-{digest.removeprefix('sha256:')[:16]}"
+                client.copy(
+                    f"{record['source']['registry']}/{record['source']['repository']}@{digest}",
+                    f"{destination_base}:{referrer_tag}",
+                )
+            verification = verify_record(client, lock, record)
+            if verification["status"] != "verified":
+                errors.extend(verification["errors"])
+        except (RegistryError, KeyError) as error:
+            errors.append(str(error))
+        outcomes.append(
+            {
+                "id": record["id"],
+                "status": "failed" if errors else status,
+                "source": source,
+                "destination": f"{destination_base}@{record['digest']}",
+                "expected_digest": record["digest"],
+                "observed_digest": record["digest"] if not errors else None,
+                "platforms": {
+                    "expected": record["platforms"],
+                    "observed": record["platforms"] if not errors else [],
+                },
+                "referrers": [],
+                "errors": errors,
+            }
+        )
+    return operation_report("copy", lock, outcomes)
+
+
+def operation_report(
+    command: str, lock: Mapping[str, Any], outcomes: list[dict[str, Any]]
+) -> dict[str, Any]:
+    failures = sum(item["status"] == "failed" for item in outcomes)
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "kind": "registry-operation-report",
+        "command": command,
+        "generated_at": _timestamp(),
+        "source_revision": lock.get("source_revision", "unavailable"),
+        "status": "ok" if failures == 0 else "failed",
+        "summary": {"total": len(outcomes), "failed": failures},
+        "images": outcomes,
+    }
+
+
+def check_consumers(root: pathlib.Path, lock: Mapping[str, Any]) -> dict[str, Any]:
+    prepared_inventory = root / "gitops/registry-cutover/consumer-inventory.yaml"
+    if prepared_inventory.exists():
+        try:
+            document = yaml.safe_load(prepared_inventory.read_text(encoding="utf-8"))
+            spec = document["spec"]
+            destinations = [
+                entry["destination"] for entry in spec["directManifests"]
+            ] + [
+                destination
+                for entry in spec["helmGenerated"]
+                for destination in entry["destinations"]
+            ]
+        except (OSError, KeyError, TypeError, yaml.YAMLError) as error:
+            raise RegistryError("cannot read prepared consumer inventory") from error
+        allowed = {
+            f"{lock['destination_registry']}/{record['destination_repository']}@{record['digest']}"
+            for record in lock["images"]
+        }
+        errors = [
+            {
+                "consumer": "gitops/registry-cutover/consumer-inventory.yaml",
+                "reference": destination,
+                "error": "prepared destination is absent from the image lock",
+            }
+            for destination in destinations
+            if destination not in allowed
+        ]
+        for section in ("directManifests", "helmGenerated"):
+            for entry in spec[section]:
+                if entry.get("state") != "prepared":
+                    errors.append(
+                        {
+                            "consumer": "gitops/registry-cutover/consumer-inventory.yaml",
+                            "reference": str(
+                                entry.get("source", entry.get("release", "unknown"))
+                            ),
+                            "error": "consumer mapping is not prepared for cutover",
+                        }
+                    )
+
+        component_root = root / "gitops/registry-cutover/components"
+        rendered_images: list[str] = []
+        try:
+
+            def collect_images(value: Any) -> None:
+                if isinstance(value, dict):
+                    for key, child in value.items():
+                        if key == "image" and isinstance(child, str):
+                            rendered_images.append(child)
+                        collect_images(child)
+                elif isinstance(value, list):
+                    for child in value:
+                        collect_images(child)
+
+            for overlay in sorted(component_root.iterdir()):
+                if (
+                    overlay.name.endswith("-canary")
+                    or not (overlay / "kustomization.yaml").is_file()
+                ):
+                    continue
+                rendered = subprocess.run(
+                    ["kubectl", "kustomize", str(overlay)],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                ).stdout
+                for document in yaml.safe_load_all(rendered):
+                    collect_images(document)
+            for reference in rendered_images:
+                if reference not in allowed:
+                    errors.append(
+                        {
+                            "consumer": "gitops/registry-cutover/components",
+                            "reference": reference,
+                            "error": "rendered image is not an exact locked local digest",
+                        }
+                    )
+        except (
+            FileNotFoundError,
+            subprocess.CalledProcessError,
+            subprocess.TimeoutExpired,
+            yaml.YAMLError,
+        ) as error:
+            errors.append(
+                {
+                    "consumer": "gitops/registry-cutover/components",
+                    "reference": "rendered overlay",
+                    "error": f"cannot render prepared consumer overlay: {error}",
+                }
+            )
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "kind": "registry-policy-report",
+            "generated_at": _timestamp(),
+            "source_revision": lock.get("source_revision", "unavailable"),
+            "status": "ok" if not errors else "failed",
+            "checked_consumers": len(destinations) + len(rendered_images),
+            "errors": errors,
+            "discovery_gaps": lock.get("unresolved_inputs", []),
+        }
+
+    inventory = discover_inventory(root)
+    allowed = {
+        f"{lock['destination_registry']}/{record['destination_repository']}@{record['digest']}"
+        for record in lock["images"]
+    }
+    exceptions = lock.get("mirror_exceptions", [])
+    errors: list[dict[str, str]] = []
+    for image in inventory["images"]:
+        reference = image["source"]["reference"]
+        if reference in allowed:
+            continue
+        for consumer in image["consumers"]:
+            if _matches_exception(reference, consumer, exceptions):
+                continue
+            errors.append(
+                {
+                    "consumer": consumer,
+                    "reference": reference,
+                    "error": "consumer is not an exact locked local digest and has no tested mirror exception",
+                }
+            )
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "kind": "registry-policy-report",
+        "generated_at": _timestamp(),
+        "source_revision": inventory["source_revision"],
+        "status": "ok" if not errors else "failed",
+        "checked_consumers": sum(
+            len(item["consumers"]) for item in inventory["images"]
+        ),
+        "errors": sorted(
+            errors, key=lambda item: (item["consumer"], item["reference"])
+        ),
+        "discovery_gaps": inventory["unresolved_inputs"],
+    }
+
+
+def _matches_exception(reference: str, consumer: str, exceptions: Any) -> bool:
+    if not isinstance(exceptions, list):
+        return False
+    for exception in exceptions:
+        if not isinstance(exception, dict):
+            continue
+        if (
+            exception.get("source_reference") == reference
+            and isinstance(exception.get("consumer"), str)
+            and fnmatch.fnmatchcase(consumer, exception["consumer"])
+            and exception.get("tested") is True
+            and isinstance(exception.get("evidence"), str)
+            and exception["evidence"]
+            and isinstance(exception.get("reason"), str)
+            and exception["reason"]
+        ):
+            return True
+    return False
+
+
+def render_node_config(lock: Mapping[str, Any], username: str, password: str) -> str:
+    if not re.fullmatch(r"[A-Za-z0-9._@+-]{1,128}", username):
+        raise RegistryError("registry username contains unsupported characters")
+    if not password or "\x00" in password or "\n" in password or "\r" in password:
+        raise RegistryError("registry password file must contain one nonempty line")
+    destination_registry = str(lock["destination_registry"])
+    mappings: dict[str, dict[str, str]] = {}
+    for record in lock["images"]:
+        source = record["source"]
+        registry = source["registry"]
+        repository = source["repository"]
+        destination = record["destination_repository"]
+        previous = mappings.setdefault(registry, {}).setdefault(repository, destination)
+        if previous != destination:
+            raise RegistryError(
+                f"source repository {registry}/{repository} has conflicting rewrite destinations"
+            )
+
+    lines = ["mirrors:"]
+    for registry in sorted(mappings):
+        lines.extend(
+            [
+                f"  {json.dumps(registry)}:",
+                "    endpoint:",
+                f"      - {json.dumps('https://' + destination_registry)}",
+                "    rewrite:",
+            ]
+        )
+        for repository, destination in sorted(mappings[registry].items()):
+            pattern = "^" + re.escape(repository) + "$"
+            lines.append(f"      {json.dumps(pattern)}: {json.dumps(destination)}")
+    lines.extend(
+        [
+            "configs:",
+            f"  {json.dumps(destination_registry)}:",
+            "    auth:",
+            f"      username: {json.dumps(username)}",
+            f"      password: {json.dumps(password)}",
+            "    tls:",
+            "      insecure_skip_verify: false",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def render_access_control(lock: Mapping[str, Any]) -> dict[str, Any]:
+    read = ["read"]
+    write = ["read", "create", "update"]
+    administer = ["read", "create", "update", "delete"]
+    repositories: dict[str, Any] = {
+        "**": {"defaultPolicy": []},
+        "apps/**": {
+            "policies": [
+                {"users": ["node"], "actions": read},
+                {"users": ["migration-importer"], "actions": write},
+            ],
+            "defaultPolicy": [],
+        },
+        "upstream/**": {
+            "policies": [
+                {"users": ["node"], "actions": read},
+                {"users": ["importer"], "actions": write},
+                {"users": ["migration-importer"], "actions": write},
+            ],
+            "defaultPolicy": [],
+        },
+    }
+    for record in sorted(
+        lock["images"], key=lambda item: item["destination_repository"]
+    ):
+        if record["kind"] != "first-party":
+            continue
+        repository = record["destination_repository"]
+        project = repository.removeprefix("apps/")
+        repositories[repository] = {
+            "policies": [
+                {"users": ["node"], "actions": read},
+                {"users": [f"publisher-{project}"], "actions": write},
+                {"users": ["migration-importer"], "actions": write},
+            ],
+            "defaultPolicy": [],
+        }
+    return {
+        "repositories": repositories,
+        "adminPolicy": {"users": ["maintenance"], "actions": administer},
+    }

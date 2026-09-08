@@ -124,6 +124,12 @@
         enabled = true;
         filtering_enabled = true;
         filters_update_interval = 24;
+        rewrites = [
+          {
+            domain = "registry.rupan.dev";
+            answer = "10.0.30.20";
+          }
+        ];
       };
       filters = [
         {
