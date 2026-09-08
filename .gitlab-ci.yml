@@ -29,6 +29,8 @@ variables:
     - if: '$CI_COMMIT_TAG'
 
 .shared_feature:
+  tags:
+    - nas-ci
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
@@ -509,6 +511,8 @@ deploy_adguard_netbird:
 
 sync_to_github:
   stage: sync
+  tags:
+    - nas-ci
   image: nixos/nix:latest
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'

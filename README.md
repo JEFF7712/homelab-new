@@ -37,12 +37,12 @@ one job, and configured not to accept untagged jobs. Scope `SSH_DEPLOY_KEY`,
 environment in GitLab.
 
 `nas-ci` is a separate, one-job NAS runner for formatting, repository tests,
-YAML/schema checks, secret scanning, and registry-lock validation on `main`
-and release tags. Register it with the `nas-ci` tag, protected, locked, and
-with untagged jobs disabled. Its authentication-token file is
-`/persist/gitlab-runner/ci-authentication-token`; do not give it deployment,
-OPNsense, or registry credentials. Feature branch and merge-request variants
-remain untagged for the shared or separately isolated builder lane.
+YAML/schema checks, secret scanning, registry-lock validation, and GitHub sync
+across `main`, release tags, and feature branches / merge requests. Register it
+with the `nas-ci` tag, locked, with untagged jobs disabled, and unprotected
+access level so it can run both protected and feature pipeline jobs. Its
+authentication-token file is `/persist/gitlab-runner/ci-authentication-token`;
+do not give it deployment, OPNsense, or registry credentials.
 
 ## Local workflow
 
