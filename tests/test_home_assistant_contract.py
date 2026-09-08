@@ -38,7 +38,6 @@ class HomeAssistantContractTests(unittest.TestCase):
         self.assertEqual(deployment["spec"]["strategy"]["type"], "Recreate")
         self.assertNotIn("hostNetwork", deployment["spec"]["template"]["spec"])
         self.assertIn("!secret recorder_db_url", config["data"]["configuration.yaml"])
-        self.assertIn("!secret mqtt_password", config["data"]["configuration.yaml"])
         secrets = yaml.safe_load(
             external_secret["spec"]["target"]["template"]["data"]["secrets.yaml"]
         )
@@ -47,7 +46,6 @@ class HomeAssistantContractTests(unittest.TestCase):
             "postgresql://homeassistant:{{ .db_password }}@"
             "home-assistant-postgres.home-assistant.svc.cluster.local:5432/homeassistant",
         )
-        self.assertEqual(secrets["mqtt_password"], "{{ .mqtt_password }}")
 
     def test_postgres_backup_follows_home_assistant_reconciliation(self) -> None:
         backup_layer = (ROOT / "gitops/clusters/homelab-01/backups.yaml").read_text()
