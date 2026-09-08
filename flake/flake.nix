@@ -65,6 +65,7 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
+        python = pkgs.python313.withPackages (pythonPackages: [ pythonPackages.pyyaml ]);
       in
       {
         formatter = pkgs.nixfmt;
@@ -98,8 +99,9 @@
                 pkgs.bash
                 pkgs.coreutils
                 pkgs.git
+                pkgs.jq
                 pkgs.just
-                pkgs.python313
+                python
               ];
             }
             ''
