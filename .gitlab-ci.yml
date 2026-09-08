@@ -512,7 +512,8 @@ sync_to_github:
         git remote add github "https://oauth2:$GITHUB_TOKEN@github.com/JEFF7712/homelab-new.git"
         git fetch --unshallow || git fetch --all
 
-        mirror_warning="**NOTE - This repository is a mirror.** Active development happens on [GitLab](https://gitlab.com/JEFF7712/homelab-new)."
+        mirror_warning="**NOTE - This repository is a mirror.** Active development happens "
+        mirror_warning+="on [GitLab](https://gitlab.com/JEFF7712/homelab-new)."
         printf "%s\n\n%s" "$mirror_warning" "$(cat README.md)" > README.md
 
         git config user.email "runner@gitlab.com"

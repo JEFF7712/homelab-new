@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-07T06:16:56+00:00",
+  "generated_at": "2026-09-08T16:08:17+00:00",
   "images": [
     {
       "consumers": [
@@ -864,6 +864,23 @@
     },
     {
       "consumers": [
+        "gitops/home-assistant/deployment.yaml:45"
+      ],
+      "destination_repository": "upstream/ghcr.io/home-assistant/home-assistant",
+      "id": "upstream-home-assistant-home-assistant-070c4953bb87",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17",
+        "reference": "ghcr.io/home-assistant/home-assistant@sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17",
+        "registry": "ghcr.io",
+        "repository": "home-assistant/home-assistant",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
         "gitops/immich/machine-learning.yaml:23",
         "observed:immich/immich-machine-learning-56c59d58f7-zg2np/immich-machine-learning"
       ],
@@ -1173,7 +1190,8 @@
     },
     {
       "consumers": [
-        "gitops/obsidian/couchdb.yaml:25",
+        "gitops/home-assistant/deployment.yaml:23",
+        "gitops/obsidian/couchdb.yaml:27",
         "gitops/websites/nixagent/deployment.yaml:22",
         "gitops/websites/spatia/deployment.yaml:22",
         "observed:nixagent/website-deploy-796cd7c89d-dqdnf/prepare-nginx-tmp",
@@ -1209,7 +1227,7 @@
     },
     {
       "consumers": [
-        "gitops/obsidian/couchdb.yaml:40",
+        "gitops/obsidian/couchdb.yaml:42",
         "observed:rendered/obsidian/couchdb"
       ],
       "destination_repository": "upstream/docker.io/library/couchdb",
@@ -1326,6 +1344,24 @@
     },
     {
       "consumers": [
+        "gitops/backups/home-assistant-db-dump.yaml:23",
+        "gitops/home-assistant/postgres.yaml:25"
+      ],
+      "destination_repository": "upstream/docker.io/library/postgres",
+      "id": "upstream-library-postgres-335fe9d7d741",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+        "reference": "docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+        "registry": "docker.io",
+        "repository": "library/postgres",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
         "gitops/automation/renovate-agent.yaml:125",
         "observed:rendered/automation/renovate-agent-init"
       ],
@@ -1390,6 +1426,7 @@
     {
       "consumers": [
         ".gitlab-ci.yml:1",
+        ".gitlab-ci.yml:506",
         "observed:ci/default-image"
       ],
       "destination_repository": "upstream/docker.io/nixos/nix",
@@ -1817,7 +1854,7 @@
       "registry/observed-images.json"
     ]
   },
-  "source_revision": "6d26784d9b4a898ab3b922b4db26d5370cd44fed",
+  "source_revision": "154e734f192a069d92c802df7a741e5b944591f5",
   "unresolved_inputs": [
     {
       "blocking": false,
