@@ -59,6 +59,33 @@
     };
   };
 
+  users.users.atticd = {
+    isSystemUser = true;
+    group = "atticd";
+  };
+  users.groups.atticd = { };
+
+  systemd.services.atticd = {
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    serviceConfig = {
+      DynamicUser = lib.mkForce false;
+      User = "atticd";
+      Group = "atticd";
+      ExecStartPre = [
+        "+${pkgs.writeShellScript "ensure-attic-storage-permissions" ''
+          set -eu
+          ${pkgs.coreutils}/bin/install -d -m 0750 -o atticd -g atticd /tank/attic
+          ${pkgs.coreutils}/bin/install -d -m 0700 -o atticd -g atticd /persist/attic
+          if [ -f /persist/attic/server.db ]; then
+            ${pkgs.coreutils}/bin/chown atticd:atticd /persist/attic/server.db
+            ${pkgs.coreutils}/bin/chmod 0600 /persist/attic/server.db
+          fi
+        ''}"
+      ];
+    };
+  };
+
   services.atticd = {
     enable = true;
     environmentFile = "/persist/attic/env";
@@ -67,6 +94,9 @@
       storage = {
         type = "local";
         path = "/tank/attic";
+      };
+      database = {
+        url = "sqlite:///persist/attic/server.db?mode=rwc";
       };
     };
   };
