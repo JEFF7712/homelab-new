@@ -197,6 +197,12 @@ class ZotRegistryModuleTests(unittest.TestCase):
         self.assertIn("homelab_zot_%s_last_success_timestamp_seconds", module)
         self.assertIn("for status in backup import", module)
 
+    def test_backup_sandbox_can_write_its_success_marker(self) -> None:
+        nas_data = (ROOT / "flake/modules/nas-data.nix").read_text()
+
+        self.assertIn('"/mnt/backup-2tb/registry-restic"', nas_data)
+        self.assertIn('"/persist/zot/status"', nas_data)
+
     def test_runtime_config_enforces_private_acl_and_digest_compatibility(self) -> None:
         module = MODULE.read_text()
 

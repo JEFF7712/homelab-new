@@ -237,7 +237,10 @@
       Group = "root";
       PrivateTmp = true;
       ProtectSystem = "strict";
-      ReadWritePaths = [ "/mnt/backup-2tb/registry-restic" ];
+      ReadWritePaths = [
+        "/mnt/backup-2tb/registry-restic"
+        "/persist/zot/status"
+      ];
     };
     path = [ pkgs.restic ];
     script = ''
