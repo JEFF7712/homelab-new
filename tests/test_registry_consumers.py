@@ -345,6 +345,11 @@ class RegistryConsumerInventoryTests(unittest.TestCase):
             pipeline[".deploy_registry_node"]["resource_group"],
             "registry-node-rollout",
         )
+        importer = pipeline["registry_import"]
+        self.assertEqual(importer["needs"], ["registry_lock"])
+        importer_script = "\n".join(importer["script"])
+        self.assertIn("getent ahostsv4 registry.rupan.dev", importer_script)
+        self.assertIn("https://registry.rupan.dev/v2/", importer_script)
 
     @unittest.skipUnless(shutil.which("nix"), "nix is required for evaluated variants")
     def test_registry_variants_enable_local_only_runtime(self) -> None:

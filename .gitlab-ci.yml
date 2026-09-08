@@ -258,11 +258,17 @@ registry_import:
   stage: registry
   resource_group: registry-content
   needs:
-    - deploy_registry_dns
+    - registry_lock
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
   script:
+    - >-
+      test "$(getent ahostsv4 registry.rupan.dev | awk 'NR == 1 { print $1 }')"
+      = 10.0.30.20
+    - >-
+      test "$(nix develop ./flake -c curl --silent --show-error --output /dev/null
+      --write-out '%{http_code}' https://registry.rupan.dev/v2/)" = 401
     - mkdir -p artifacts/registry
     - export REGISTRY_DEST_AUTH_FILE="$REGISTRY_MIGRATION_AUTH_FILE"
     - export REGISTRY_SOURCE_AUTH_FILE
