@@ -651,6 +651,7 @@ class OciClient:
             "/dev/null",
             "copy",
             "--all",
+            "--insecure-policy",
             "--preserve-digests",
         ]
         source_auth = os.environ.get("REGISTRY_SOURCE_AUTH_FILE")

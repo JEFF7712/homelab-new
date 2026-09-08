@@ -9,12 +9,14 @@ import stat
 import tempfile
 import unittest
 from typing import Any
+from unittest.mock import patch
 
 import yaml
 
 from scripts.registry.cli import main
 from scripts.registry.core import (
     ImageReference,
+    OciClient,
     RegistryError,
     check_consumers,
     copy_lock,
@@ -56,6 +58,21 @@ def manifest(platforms: list[tuple[str, str]] | None = None) -> bytes:
 
 def digest(raw: bytes) -> str:
     return "sha256:" + hashlib.sha256(raw).hexdigest()
+
+
+class OciClientTests(unittest.TestCase):
+    def test_copy_uses_explicit_signature_policy_and_preserves_digests(self) -> None:
+        client = OciClient()
+        client.copy_tool = "skopeo"
+
+        with patch.object(client, "_run", return_value=b"") as run:
+            client.copy("docker.io/library/demo@sha256:" + "1" * 64, "local/demo:1")
+
+        command = run.call_args.args[0]
+        self.assertIn("--insecure-policy", command)
+        self.assertIn("--preserve-digests", command)
+        self.assertNotIn("--src-tls-verify=false", command)
+        self.assertNotIn("--dest-tls-verify=false", command)
 
 
 def lock_record(
