@@ -18,7 +18,7 @@ images:
     digest: sha256:199ff89f9a930df6032a216570ae0169fcc36c449bb02b40fafeb6efecdb606f
   - name: docker.io/library/postgres
     newName: registry.rupan.dev/upstream/docker.io/library/postgres
-    digest: sha256:727876d274666da0b92a445390ba093c84b8e9f8343e1c53cd4e9a7ab2d85310
+    digest: sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
   - name: docker.io/restic/restic
     newName: registry.rupan.dev/upstream/docker.io/restic/restic
     digest: sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510
@@ -45,7 +45,7 @@ images:
     digest: sha256:b434cb9287eea1471c9974845914d4dd328c9c2d652e446ed4930f99944f0ceb
   - name: ghcr.io/immich-app/postgres
     newName: registry.rupan.dev/upstream/ghcr.io/immich-app/postgres
-    digest: sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    digest: sha256:1a078b237c1d9b420b0ee59147386b4aa60d3a07a8e6a402fc84a57e41b043a4
   - name: ghcr.io/jeff7712/apolline
     newName: registry.rupan.dev/apps/apolline
     digest: sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a
