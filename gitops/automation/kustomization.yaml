@@ -19,3 +19,4 @@ resources:
   - renovate-dashboard.yaml
   - renovate-gitlab.yaml
   - renovate-github.yaml
+  - github-runner

@@ -1,6 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 images:
+  - name: docker.io/library/docker
+    newName: registry.rupan.dev/upstream/docker.io/library/docker
+    digest: sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+  - name: ghcr.io/actions/actions-runner
+    newName: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner
+    digest: sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
   - name: alpine/k8s
     newName: registry.rupan.dev/upstream/docker.io/alpine/k8s
     digest: sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47

@@ -2976,6 +2976,102 @@
         "repository": "valkey/valkey",
         "tag": "9.1.2"
       }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/automation/github-runner/deployment.yaml:1102",
+        "gitops/automation/github-runner/deployment.yaml:185",
+        "gitops/automation/github-runner/deployment.yaml:316",
+        "gitops/automation/github-runner/deployment.yaml:447",
+        "gitops/automation/github-runner/deployment.yaml:54",
+        "gitops/automation/github-runner/deployment.yaml:578",
+        "gitops/automation/github-runner/deployment.yaml:709",
+        "gitops/automation/github-runner/deployment.yaml:840",
+        "gitops/automation/github-runner/deployment.yaml:971"
+      ],
+      "destination_repository": "upstream/ghcr.io/actions/actions-runner",
+      "destination_tags": [
+        "2.337.0",
+        "retention-deployed-e5496277be5d09bc"
+      ],
+      "digest": "sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
+      "id": "upstream-actions-actions-runner-1fd06dba0828",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
+        "reference": "ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
+        "registry": "ghcr.io",
+        "repository": "actions/actions-runner",
+        "tag": "2.337.0"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/automation/github-runner/deployment.yaml:1073",
+        "gitops/automation/github-runner/deployment.yaml:156",
+        "gitops/automation/github-runner/deployment.yaml:25",
+        "gitops/automation/github-runner/deployment.yaml:287",
+        "gitops/automation/github-runner/deployment.yaml:418",
+        "gitops/automation/github-runner/deployment.yaml:549",
+        "gitops/automation/github-runner/deployment.yaml:680",
+        "gitops/automation/github-runner/deployment.yaml:811",
+        "gitops/automation/github-runner/deployment.yaml:942"
+      ],
+      "destination_repository": "upstream/docker.io/library/docker",
+      "destination_tags": [
+        "27.5.1-dind",
+        "retention-deployed-aa3df78ecf320f5f"
+      ],
+      "digest": "sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
+      "id": "upstream-library-docker-5edcd7943944",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm/v6",
+        "linux/arm/v7",
+        "linux/arm64/v8",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
+        "reference": "docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
+        "registry": "docker.io",
+        "repository": "library/docker",
+        "tag": "27.5.1-dind"
+      }
     }
   ],
   "kind": "registry-image-lock",
