@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./gitops/cert-manager
+  path: ./gitops/registry-cutover/components/cert-manager
   prune: true
   sourceRef:
     kind: GitRepository
