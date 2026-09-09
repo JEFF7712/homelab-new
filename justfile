@@ -35,6 +35,9 @@ cache-populate:
       ./flake#nixosConfigurations.homelab-03.config.system.build.toplevel \
       | attic push local:homelab --stdin
 
+deploy-fleet *args:
+    python -m scripts.deploy_fleet {{args}}
+
 check-gitops:
     bash scripts/checks/gitops.sh
 
