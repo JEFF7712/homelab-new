@@ -102,6 +102,7 @@
           packages = with pkgs; [
             age
             apacheHttpd
+            attic-client
             cosign
             curl
             git

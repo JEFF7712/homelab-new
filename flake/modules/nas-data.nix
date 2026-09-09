@@ -77,6 +77,7 @@
         "+${pkgs.writeShellScript "ensure-attic-storage-permissions" ''
           set -eu
           ${pkgs.coreutils}/bin/install -d -m 0750 -o atticd -g atticd /tank/attic
+          ${pkgs.coreutils}/bin/chown -R atticd:atticd /tank/attic
           ${pkgs.coreutils}/bin/install -d -m 0700 -o atticd -g atticd /persist/attic
           if [ -f /persist/attic/server.db ]; then
             ${pkgs.coreutils}/bin/chown atticd:atticd /persist/attic/server.db
@@ -144,6 +145,7 @@
         PATH = lib.makeBinPath (
           with pkgs;
           [
+            attic-client
             bash
             coreutils
             findutils
@@ -175,6 +177,7 @@
         PATH = lib.makeBinPath (
           with pkgs;
           [
+            attic-client
             bash
             coreutils
             findutils

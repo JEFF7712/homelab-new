@@ -26,6 +26,15 @@ check-python:
 check-nix target="all":
     bash scripts/checks/nix.sh {{target}}
 
+cache-populate:
+    nix build --no-link --print-out-paths \
+      ./flake#nixosConfigurations.nas-01.config.system.build.toplevel \
+      ./flake#nixosConfigurations.adguard-netbird-01.config.system.build.toplevel \
+      ./flake#nixosConfigurations.homelab-01.config.system.build.toplevel \
+      ./flake#nixosConfigurations.homelab-02.config.system.build.toplevel \
+      ./flake#nixosConfigurations.homelab-03.config.system.build.toplevel \
+      | attic push local:homelab --stdin
+
 check-gitops:
     bash scripts/checks/gitops.sh
 

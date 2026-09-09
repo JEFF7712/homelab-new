@@ -82,6 +82,33 @@ yaml_schema_feature:
     - .shared_feature
     - .yaml_schema
 
+.nix_cache:
+  stage: test
+  script:
+    - |
+      if [ -z "${ATTIC_TOKEN:-}" ]; then
+        echo "ATTIC_TOKEN is not set; skipping binary cache upload."
+        exit 0
+      fi
+      export HOME="${TMPDIR:-/tmp}/attic-ci-home-$$"
+      mkdir -p "$HOME"
+      trap 'rm -rf "$HOME"' EXIT
+      nix develop ./flake -c attic login local http://10.0.30.20:8080/ "$ATTIC_TOKEN"
+      nix build --no-link --print-out-paths \
+        ./flake#nixosConfigurations.nas-01.config.system.build.toplevel \
+        ./flake#nixosConfigurations.adguard-netbird-01.config.system.build.toplevel \
+        ./flake#nixosConfigurations.homelab-01.config.system.build.toplevel \
+        ./flake#nixosConfigurations.homelab-02.config.system.build.toplevel \
+        ./flake#nixosConfigurations.homelab-03.config.system.build.toplevel \
+        | nix develop ./flake -c attic push local:homelab --stdin
+
+nix_cache:
+  extends:
+    - .nas_ci
+    - .nix_cache
+  needs:
+    - repository_tests
+
 .secret_scan:
   stage: security
   script:
