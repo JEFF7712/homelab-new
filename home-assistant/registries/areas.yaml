@@ -1,0 +1,12 @@
+- name: Bedroom
+  icon: mdi:bed
+  aliases: []
+  area_id: bedroom
+- name: Kitchen
+  icon: mdi:stove
+  aliases: []
+  area_id: kitchen
+- name: Living Room
+  icon: mdi:sofa
+  aliases: []
+  area_id: living_room

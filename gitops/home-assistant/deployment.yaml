@@ -15,7 +15,7 @@ spec:
       labels:
         app: home-assistant
       annotations:
-        checksum/config: 9345bc4b55cd3382e16d64b927bc553dd5453054da0f38b6572cf53fc7a8fe4d
+        checksum/config: 2321efc6f3bc69defb9cd21884774778f6e372a3096e47ceea415587555870f7
     spec:
       securityContext:
         seccompProfile:

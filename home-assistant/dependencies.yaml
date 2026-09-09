@@ -1,0 +1,8 @@
+schema_version: "1.0"
+custom_integrations: []
+custom_frontend_cards: []
+blueprints: []
+dependencies_policy:
+  auto_download: false
+  allow_external_urls: false
+  pinned_digests_only: true

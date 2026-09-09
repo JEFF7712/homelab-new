@@ -40,6 +40,7 @@ COMMANDS = {
     "gitops": ("bash", "scripts/checks/gitops.sh"),
     "tofu": ("bash", "scripts/checks/tofu.sh"),
     "agent-workflows": ("bash", "scripts/checks/agent-workflows.sh"),
+    "home-assistant": ("bash", "scripts/checks/home-assistant.sh"),
     "docs": ("python", "scripts/checks/docs.py"),
     "registry": ("bash", "scripts/checks/registry.sh"),
     "nix-all-hosts": ("bash", "scripts/checks/nix.sh", "all"),
@@ -69,6 +70,15 @@ def _route(path: str) -> list[tuple[str, str]]:
         return [("gitops", f"{path} changes Kubernetes desired state")]
     if path.startswith("tofu/opnsense/"):
         return [("tofu", f"{path} changes OpenTofu configuration")]
+    if path.startswith(
+        ("scripts/home_assistant/", "home-assistant/", "tests/test_home_assistant_")
+    ):
+        return [
+            (
+                "home-assistant",
+                f"{path} changes Home Assistant configuration management",
+            )
+        ]
     if path.startswith(("scripts/agent/", "hooks/", "tests/test_agent_")):
         return [("agent-workflows", f"{path} changes agent workflow behavior")]
     if path.startswith(("scripts/registry/", "registry/", "tests/test_registry_")):

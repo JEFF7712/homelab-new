@@ -91,3 +91,33 @@ task-export id *args:
 
 status target *args:
     python -m scripts.agent status {{target}} {{args}}
+
+check-ha:
+    bash scripts/checks/home-assistant.sh
+
+ha-inventory *args:
+    python -m scripts.home_assistant inventory {{args}}
+
+ha-capture *args:
+    python -m scripts.home_assistant capture {{args}}
+
+ha-diff *args:
+    python -m scripts.home_assistant diff {{args}}
+
+ha-adopt *args:
+    python -m scripts.home_assistant adopt {{args}}
+
+ha-validate *args:
+    python -m scripts.home_assistant validate {{args}}
+
+ha-plan *args:
+    python -m scripts.home_assistant plan {{args}}
+
+ha-apply *args:
+    python -m scripts.home_assistant apply {{args}}
+
+ha-verify *args:
+    python -m scripts.home_assistant verify {{args}}
+
+ha-revert *args:
+    python -m scripts.home_assistant revert {{args}}

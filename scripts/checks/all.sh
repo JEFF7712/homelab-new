@@ -7,6 +7,7 @@ bash scripts/checks/registry.sh
 bash scripts/checks/nix.sh all
 bash scripts/checks/gitops.sh
 bash scripts/checks/tofu.sh
+bash scripts/checks/home-assistant.sh
 python scripts/checks/docs.py
 python scripts/checks/whitespace.py
 gitleaks detect --source . --redact

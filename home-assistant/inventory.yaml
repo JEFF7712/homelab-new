@@ -1,0 +1,68 @@
+capabilities:
+  status: online
+  writable_apis:
+    - automations
+    - scripts
+    - scenes
+    - dashboards
+    - areas
+    - devices
+    - entities
+ha_version: 2026.9.1
+instance: homelab-01
+schema_version: '1.0'
+summary:
+  entities: 18
+  areas: 3
+  automations: 0
+  dashboards: 1
+  devices: 4
+  integrations: 8
+  scenes: 0
+  scripts: 0
+surfaces:
+  - description: Home Assistant UI automations
+    category: ui-editable
+    count: 0
+    details: {}
+    surface: automations
+  - description: Home Assistant UI scripts
+    category: ui-editable
+    count: 0
+    details: {}
+    surface: scripts
+  - description: Home Assistant UI scenes
+    category: ui-editable
+    count: 0
+    details: {}
+    surface: scenes
+  - description: Lovelace storage dashboards
+    category: ui-editable
+    count: 1
+    details: {}
+    surface: dashboards
+  - description: Area registry entries
+    category: ui-editable
+    count: 3
+    details: {}
+    surface: areas
+  - description: Device registry entries
+    category: ui-editable
+    count: 4
+    details: {}
+    surface: devices
+  - description: Entity registry entries
+    category: ui-editable
+    count: 18
+    details: {}
+    surface: entities
+  - description: Config entry integrations
+    category: observe-only
+    count: 8
+    details: {}
+    surface: integrations
+timestamp: '2026-09-09T17:52:53.752314+00:00'
+unsupported:
+  - oauth_credentials
+  - zha_pairing
+  - raw_storage

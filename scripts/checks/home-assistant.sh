@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+
+for tool in ruff pyright python yamllint; do
+  command -v "$tool" >/dev/null || {
+    echo "missing required tool: $tool; run nix develop ./flake" >&2
+    exit 127
+  }
+done
+
+ruff format --check scripts/home_assistant tests/test_home_assistant_*.py
+ruff check --select E,F,I,UP --ignore E501 scripts/home_assistant tests/test_home_assistant_*.py
+pyright scripts/home_assistant
+python -m unittest discover -s tests -p 'test_home_assistant_*.py' -v
+python -m scripts.home_assistant validate
+yamllint home-assistant
