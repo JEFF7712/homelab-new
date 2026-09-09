@@ -23,7 +23,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: dashboard
-        image: jeff7712/homelab-renovate-dashboard:0.0.1415
+        image: jeff7712/homelab-renovate-dashboard:0.0.1495
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
