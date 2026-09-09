@@ -4,6 +4,7 @@ metadata:
   name: immich-library
   namespace: immich
 spec:
+  volumeName: pvc-14cb8494-d2f1-46f0-9a3d-fe5a27c05eac
   accessModes:
     - ReadWriteMany
   storageClassName: nfs-cluster
@@ -17,6 +18,7 @@ metadata:
   name: immich-model-cache
   namespace: immich
 spec:
+  volumeName: pvc-57d63894-b192-4291-95e4-4027f3ca1010
   accessModes:
     - ReadWriteMany
   storageClassName: nfs-cluster

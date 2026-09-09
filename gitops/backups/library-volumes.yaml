@@ -4,6 +4,7 @@ metadata:
   name: immich-local-repo
   namespace: immich
 spec:
+  volumeName: pvc-317cc47c-9741-4633-a1b5-e68a39d84685
   accessModes:
     - ReadWriteMany
   storageClassName: nfs-cluster

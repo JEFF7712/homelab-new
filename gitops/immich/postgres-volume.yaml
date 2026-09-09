@@ -27,6 +27,7 @@ metadata:
   name: immich-postgres-data
   namespace: immich
 spec:
+  volumeName: immich-postgres-nvme
   accessModes:
     - ReadWriteOnce
   storageClassName: nvme-homelab-01

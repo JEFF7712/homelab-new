@@ -4,6 +4,7 @@ metadata:
   name: db-dumps
   namespace: backups
 spec:
+  volumeName: pvc-dcd285d5-b584-4916-a11f-64959618ca8c
   accessModes:
     - ReadWriteMany
   storageClassName: nfs-cluster

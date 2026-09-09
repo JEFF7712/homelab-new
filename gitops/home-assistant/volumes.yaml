@@ -4,6 +4,7 @@ metadata:
   name: home-assistant-config
   namespace: home-assistant
 spec:
+  volumeName: pvc-bc354a6f-5a1f-4a0e-85fd-13bbb74f666f
   accessModes:
     - ReadWriteMany
   storageClassName: nfs-cluster
@@ -40,6 +41,7 @@ metadata:
   name: home-assistant-postgres-data
   namespace: home-assistant
 spec:
+  volumeName: home-assistant-postgres-nvme
   accessModes:
     - ReadWriteOnce
   storageClassName: nvme-homelab-01

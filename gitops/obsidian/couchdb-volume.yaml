@@ -7,6 +7,7 @@ metadata:
     app.kubernetes.io/name: couchdb
     app.kubernetes.io/part-of: obsidian
 spec:
+  volumeName: pvc-ddbae8df-c945-4ec2-a680-0f5127be3c0f
   accessModes:
     - ReadWriteOnce
   resources:

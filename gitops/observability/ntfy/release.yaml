@@ -37,6 +37,7 @@ spec:
       migration.rupan.dev/ntfy-auth-format: v2
     persistence:
       enabled: true
+      existingClaim: ntfy-ntfy-data
       size: 2Gi
       storageClass: nfs-cluster
     gateway:
