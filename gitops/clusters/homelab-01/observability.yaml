@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./gitops/observability
+  path: ./gitops/registry-cutover/components/observability
   prune: true
   sourceRef:
     kind: GitRepository
