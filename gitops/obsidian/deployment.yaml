@@ -22,7 +22,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: quartz
-          image: ghcr.io/jeff7712/quartz@sha256:f5d4e26461d21096c3e8c132f17031bea51dae6da8f63cc839c8d31abda5c7da
+          image: ghcr.io/jeff7712/quartz@sha256:032a4530b88e33b112af51961dacb1fb56216caee3d2268d6f3d2a10edc82ba5
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
