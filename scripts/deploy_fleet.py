@@ -589,10 +589,15 @@ class FleetDeployer:
 
         logger.info("Verifying DNS responsiveness on %s:53...", ip)
         cmd = ["dig", f"@{ip}", "homelab.internal", "+short", "+timeout=2"]
-        res = run_command(cmd, runner=self.runner, timeout=5.0, check=False)
-        if res.returncode == 0:
-            logger.info("DNS verification passed via dig for %s", ip)
-            return
+        try:
+            res = run_command(cmd, runner=self.runner, timeout=5.0, check=False)
+            if res.returncode == 0:
+                logger.info("DNS verification passed via dig for %s", ip)
+                return
+        except FleetDeploymentError as err:
+            logger.warning(
+                "DNS verification via dig failed, falling back to socket check: %s", err
+            )
 
         if not self.socket_checker(ip, 53, 3.0):
             raise FleetDeploymentError(

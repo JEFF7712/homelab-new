@@ -410,6 +410,10 @@ in
         ];
         extra-substituters = [ "http://10.0.30.20:8080/homelab" ];
         extra-trusted-public-keys = [ "homelab:J+OVQOCG2sNT2KoVbWGPikoWcIbBanHnY2NOcMF3vwk=" ];
+        trusted-users = [
+          "root"
+          "@wheel"
+        ];
       };
     };
 

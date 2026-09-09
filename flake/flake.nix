@@ -105,6 +105,7 @@
             attic-client
             cosign
             curl
+            dnsutils
             git
             gitleaks
             glab
