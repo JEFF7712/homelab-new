@@ -92,24 +92,33 @@ completed the idempotent full import, and `deploy_registry_node_01` job
 `16400938640` applied the final Cilium ownership setting using a target-side
 build.
 
-## Remaining producer ownership
+## Producer publishing
 
-The image copies under `apps/**` are available for rollback and current
-deployments, but producer publication remains a repository-by-repository
-handoff. The following source checkouts were identified:
+Nine identified GitHub producers now build on repository-scoped homelab runners
+and authenticate with their exact `publisher-<project>` identity. Their first
+post-migration runs succeeded:
 
-| Application | Producer checkout |
-| --- | --- |
-| apolline | `/home/rupan/businesses/apolline/apolline-site` |
-| darkbit | `/home/rupan/businesses/darkbit/darkbit-site` |
-| distrojeff | `/home/rupan/businesses/distrojeff/distrojeff-site` |
-| nix-agent-site | `/home/rupan/projects/nix-agent` |
-| pulse-site | `/home/rupan/projects/pulse` |
-| rupanism | `/home/rupan/projects/sites/rupanism` |
-| solubility-gnn | `/home/rupan/projects/old/soluble` |
-| spatia | `/home/rupan/projects/spatia` |
-| quartz | `/home/rupan/obsidian` |
-| renovate images | `/home/rupan/homelab` |
+| Application | Producer commit | Successful run |
+| --- | --- | --- |
+| apolline | `52b4cb3` | `34394049932` |
+| darkbit | `a9df393` | `34394128099` |
+| distrojeff | `5411f87` | `34394157586` |
+| nix-agent-site | `0dc6d65` | `34394191216` |
+| pulse-site | `04ac384` | `34394230497` |
+| rupanism | `5707feb` | `34387949066` |
+| solubility-gnn | `5c30ab6` | `34395068342` |
+| spatia | `83c733d` | `34394333185` |
+| quartz | `c542788` | `34394360679` |
+
+Apolline run `34394049932` published
+`registry.rupan.dev/apps/apolline:0.0.14`; an authenticated cluster-node pull
+returned digest `sha256:ab19a03f...8575`. This is the required direct
+first-party publication proof. The build workflows still retain their external
+publication during the transition; removing those outputs is deferred until all
+producer and rollback consumers are accounted for.
+
+The legacy `/home/rupan/homelab` pipeline still owns the renovate application
+images and has unrelated local changes, so it was not modified here.
 
 No producer checkout was found for `cr-demo`, `ism`, `majorfinder`, or
 `photography`. Those four are explicit owner-discovery blockers for future
@@ -122,11 +131,11 @@ runner and DinD images, those newly introduced Pods are an explicit live
 inventory exception. They were not modified here to avoid overwriting the
 parallel owner.
 
-The registry platform, upstream update workflow, restore path, and all existing
-repository-owned consumers are operational. The overall plan must not be called
-fully complete until at least one producer publishes directly with its scoped
-publisher credential and the concurrent GitHub runner adoption is committed and
-verified. The four unavailable producer owners remain bounded future-publishing
+The registry platform, upstream update workflow, restore path, direct
+first-party publishing, and all existing repository-owned consumers are
+operational. The concurrent GitHub runner adoption must still be committed and
+converted to locked local runner images. The four unavailable producer owners
+and the dirty legacy renovate checkout remain bounded future-publishing
 handoffs.
 
 ## Deferred work
