@@ -23,6 +23,7 @@ Runner = Callable[..., subprocess.CompletedProcess[str]]
 Sleeper = Callable[[float], None]
 SocketChecker = Callable[[str, int, float], bool]
 HttpChecker = Callable[[str, float], bool]
+Notifier = Callable[[str, str, str, list[str] | None], bool]
 
 
 class FleetDeploymentError(Exception):
@@ -185,6 +186,49 @@ def default_http_checker(url: str, timeout: float = 5.0) -> bool:
         return False
 
 
+def default_ntfy_notifier(
+    title: str,
+    message: str,
+    priority: str = "default",
+    tags: list[str] | None = None,
+    *,
+    server_url: str | None = None,
+    topic: str | None = None,
+    token: str | None = None,
+) -> bool:
+    url_base = (server_url or os.getenv("NTFY_URL") or "https://ntfy.rupan.dev").rstrip(
+        "/"
+    )
+    ntfy_topic = topic or os.getenv("NTFY_TOPIC") or "homelab-alerts"
+    ntfy_token = token or os.getenv("NTFY_TOKEN")
+
+    if not ntfy_topic:
+        return False
+
+    full_url = f"{url_base}/{ntfy_topic.lstrip('/')}"
+    headers: dict[str, str] = {
+        "Title": title,
+        "Priority": priority,
+    }
+    if tags:
+        headers["Tags"] = ",".join(tags)
+    if ntfy_token:
+        headers["Authorization"] = f"Bearer {ntfy_token}"
+
+    try:
+        req = urllib.request.Request(
+            full_url,
+            data=message.encode("utf-8"),
+            headers=headers,
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=5.0) as resp:
+            return bool(200 <= resp.status < 300)
+    except (urllib.error.URLError, TimeoutError, OSError) as err:
+        logger.warning("Failed to send ntfy notification to %s: %s", full_url, err)
+        return False
+
+
 def verify_ssh(
     ip: str,
     user: str,
@@ -330,6 +374,11 @@ class FleetDeployer:
         sleeper: Sleeper = time.sleep,
         socket_checker: SocketChecker = default_socket_checker,
         http_checker: HttpChecker = default_http_checker,
+        enable_notifications: bool = True,
+        ntfy_topic: str | None = None,
+        ntfy_url: str | None = None,
+        ntfy_token: str | None = None,
+        notifier: Notifier | None = None,
     ) -> None:
         self.targets = targets
         self.dry_run = dry_run
@@ -345,6 +394,32 @@ class FleetDeployer:
         self.sleeper = sleeper
         self.socket_checker = socket_checker
         self.http_checker = http_checker
+        self.enable_notifications = enable_notifications
+        self.ntfy_topic = ntfy_topic
+        self.ntfy_url = ntfy_url
+        self.ntfy_token = ntfy_token
+        self.notifier = notifier
+
+    def notify(
+        self,
+        title: str,
+        message: str,
+        priority: str = "default",
+        tags: list[str] | None = None,
+    ) -> bool:
+        if not self.enable_notifications:
+            return False
+        if self.notifier is not None:
+            return self.notifier(title, message, priority, tags)
+        return default_ntfy_notifier(
+            title,
+            message,
+            priority,
+            tags,
+            server_url=self.ntfy_url,
+            topic=self.ntfy_topic,
+            token=self.ntfy_token,
+        )
 
     def run_preflight(self) -> None:
         logger.info("=== Running Pre-flight Gate ===")
@@ -618,32 +693,50 @@ class FleetDeployer:
         started = time.monotonic()
         results: list[dict[str, Any]] = []
 
-        if not self.skip_preflight:
-            self.run_preflight()
+        try:
+            if not self.skip_preflight:
+                self.run_preflight()
 
-        for host in self.targets:
-            host_started = time.monotonic()
-            self.deploy_host(host)
-            results.append(
-                {
-                    "host": host.name,
-                    "ip": host.ip,
-                    "type": host.host_type,
-                    "status": "success",
-                    "duration_seconds": round(time.monotonic() - host_started, 2),
-                }
+            for host in self.targets:
+                host_started = time.monotonic()
+                self.deploy_host(host)
+                results.append(
+                    {
+                        "host": host.name,
+                        "ip": host.ip,
+                        "type": host.host_type,
+                        "status": "success",
+                        "duration_seconds": round(time.monotonic() - host_started, 2),
+                    }
+                )
+
+            total_duration = round(time.monotonic() - started, 2)
+            logger.info(
+                "=== Fleet deployment completed successfully in %.2fs ===",
+                total_duration,
             )
-
-        total_duration = round(time.monotonic() - started, 2)
-        logger.info(
-            "=== Fleet deployment completed successfully in %.2fs ===", total_duration
-        )
-        return {
-            "status": "success",
-            "dry_run": self.dry_run,
-            "total_duration_seconds": total_duration,
-            "hosts": results,
-        }
+            if not self.dry_run:
+                hosts_str = ", ".join(h.name for h in self.targets)
+                self.notify(
+                    title="Fleet Deployment Succeeded",
+                    message=f"Successfully deployed {len(self.targets)} host(s) ({hosts_str}) in {total_duration:.1f}s",
+                    priority="default",
+                    tags=["white_check_mark", "rocket"],
+                )
+            return {
+                "status": "success",
+                "dry_run": self.dry_run,
+                "total_duration_seconds": total_duration,
+                "hosts": results,
+            }
+        except Exception as err:
+            self.notify(
+                title="[ALERT] Fleet Deployment Halted",
+                message=f"Circuit breaker halted deployment: {err}",
+                priority="urgent",
+                tags=["rotating_light", "warning"],
+            )
+            raise
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -710,6 +803,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to the deployment lockfile (default: /tmp/deploy-fleet.lock).",
     )
     parser.add_argument(
+        "--ntfy-topic",
+        default=os.getenv("NTFY_TOPIC"),
+        help="ntfy topic to send notifications to (default: $NTFY_TOPIC or homelab-alerts).",
+    )
+    parser.add_argument(
+        "--ntfy-url",
+        default=os.getenv("NTFY_URL"),
+        help="ntfy server URL (default: $NTFY_URL or https://ntfy.rupan.dev).",
+    )
+    parser.add_argument(
+        "--ntfy-token",
+        default=os.getenv("NTFY_TOKEN"),
+        help="Bearer token for ntfy authentication (default: $NTFY_TOKEN).",
+    )
+    parser.add_argument(
+        "--no-notify",
+        action="store_true",
+        help="Disable ntfy push notifications.",
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Output structured JSON results upon completion.",
@@ -723,6 +836,7 @@ def main(
     sleeper: Sleeper = time.sleep,
     socket_checker: SocketChecker = default_socket_checker,
     http_checker: HttpChecker = default_http_checker,
+    notifier: Notifier | None = None,
 ) -> int:
     logging.basicConfig(
         level=logging.INFO,
@@ -763,6 +877,11 @@ def main(
                 sleeper=sleeper,
                 socket_checker=socket_checker,
                 http_checker=http_checker,
+                enable_notifications=not args.no_notify,
+                ntfy_topic=args.ntfy_topic,
+                ntfy_url=args.ntfy_url,
+                ntfy_token=args.ntfy_token,
+                notifier=notifier,
             )
             result = deployer.execute()
             if args.json:

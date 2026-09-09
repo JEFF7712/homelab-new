@@ -398,6 +398,103 @@ class DeployFleetTest(unittest.TestCase):
             )
             self.assertEqual(ret, 0)
 
+    def test_notification_on_success(self) -> None:
+        notifications: list[dict[str, object]] = []
+
+        def mock_notifier(
+            title: str, message: str, priority: str, tags: list[str] | None
+        ) -> bool:
+            notifications.append(
+                {"title": title, "message": message, "priority": priority, "tags": tags}
+            )
+            return True
+
+        def mock_runner(
+            argv: list[str], **kwargs: object
+        ) -> subprocess.CompletedProcess[str]:
+            del kwargs
+            if "node" in argv and "get" in argv:
+                return subprocess.CompletedProcess(argv, 0, "True", "")
+            return subprocess.CompletedProcess(argv, 0, "", "")
+
+        deployer = FleetDeployer(
+            targets=[FLEET_HOSTS["homelab-02"]],
+            dry_run=False,
+            skip_preflight=True,
+            skip_cooldown=True,
+            runner=mock_runner,
+            notifier=mock_notifier,
+        )
+        deployer.execute()
+
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0]["title"], "Fleet Deployment Succeeded")
+        self.assertEqual(notifications[0]["priority"], "default")
+
+    def test_notification_on_failure(self) -> None:
+        notifications: list[dict[str, object]] = []
+
+        def mock_notifier(
+            title: str, message: str, priority: str, tags: list[str] | None
+        ) -> bool:
+            notifications.append(
+                {"title": title, "message": message, "priority": priority, "tags": tags}
+            )
+            return True
+
+        def mock_runner(
+            argv: list[str], **kwargs: object
+        ) -> subprocess.CompletedProcess[str]:
+            del kwargs
+            if "nixos-rebuild" in argv:
+                return subprocess.CompletedProcess(argv, 1, "", "rebuild switch error")
+            return subprocess.CompletedProcess(argv, 0, "", "")
+
+        deployer = FleetDeployer(
+            targets=[FLEET_HOSTS["homelab-02"]],
+            dry_run=False,
+            skip_preflight=True,
+            skip_cooldown=True,
+            runner=mock_runner,
+            notifier=mock_notifier,
+        )
+
+        with self.assertRaises(FleetDeploymentError):
+            deployer.execute()
+
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0]["title"], "[ALERT] Fleet Deployment Halted")
+        self.assertEqual(notifications[0]["priority"], "urgent")
+
+    def test_notification_disabled_with_no_notify(self) -> None:
+        notifications: list[dict[str, object]] = []
+
+        def mock_notifier(
+            title: str, message: str, priority: str, tags: list[str] | None
+        ) -> bool:
+            notifications.append({"title": title, "message": message})
+            return True
+
+        def mock_runner(
+            argv: list[str], **kwargs: object
+        ) -> subprocess.CompletedProcess[str]:
+            del kwargs
+            if "node" in argv and "get" in argv:
+                return subprocess.CompletedProcess(argv, 0, "True", "")
+            return subprocess.CompletedProcess(argv, 0, "", "")
+
+        deployer = FleetDeployer(
+            targets=[FLEET_HOSTS["homelab-02"]],
+            dry_run=False,
+            skip_preflight=True,
+            skip_cooldown=True,
+            enable_notifications=False,
+            runner=mock_runner,
+            notifier=mock_notifier,
+        )
+        deployer.execute()
+        self.assertEqual(len(notifications), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

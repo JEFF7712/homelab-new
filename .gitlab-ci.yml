@@ -520,7 +520,7 @@ sync_to_github:
   script:
     - >-
       nix develop ./flake -c bash -e -c '
-        git remote add github "https://oauth2:$GITHUB_TOKEN@github.com/JEFF7712/homelab-new.git"
+        git remote set-url github "https://oauth2:$GITHUB_TOKEN@github.com/JEFF7712/homelab-new.git" 2>/dev/null || git remote add github "https://oauth2:$GITHUB_TOKEN@github.com/JEFF7712/homelab-new.git"
         git fetch --unshallow || git fetch --all
 
         mirror_warning="**NOTE - This repository is a mirror.** Active development happens "
