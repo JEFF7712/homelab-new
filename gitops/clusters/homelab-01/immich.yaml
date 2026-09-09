@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./gitops/immich
+  path: ./gitops/registry-cutover/components/immich
   prune: true
   sourceRef:
     kind: GitRepository
