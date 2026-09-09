@@ -85,6 +85,46 @@ class DeployFleetTest(unittest.TestCase):
 
         self.assertFalse(verify_ssh("10.0.30.12", "rupan", runner=runner))
 
+    def test_verify_ssh_with_opts(self) -> None:
+        recorded_argv: list[str] = []
+
+        def runner(
+            argv: list[str], **kwargs: object
+        ) -> subprocess.CompletedProcess[str]:
+            del kwargs
+            recorded_argv.extend(argv)
+            return subprocess.CompletedProcess(argv, 0, "", "")
+
+        self.assertTrue(
+            verify_ssh(
+                "10.0.30.12",
+                "rupan",
+                runner=runner,
+                ssh_opts=["-i", "/custom/key", "-o", "StrictHostKeyChecking=no"],
+            )
+        )
+        self.assertIn("-i", recorded_argv)
+        self.assertIn("/custom/key", recorded_argv)
+        self.assertIn("StrictHostKeyChecking=no", recorded_argv)
+
+    def test_verify_ssh_from_env(self) -> None:
+        recorded_argv: list[str] = []
+
+        def runner(
+            argv: list[str], **kwargs: object
+        ) -> subprocess.CompletedProcess[str]:
+            del kwargs
+            recorded_argv.extend(argv)
+            return subprocess.CompletedProcess(argv, 0, "", "")
+
+        with patch.dict(
+            "os.environ", {"NIX_SSHOPTS": "-i /env/key -o IdentitiesOnly=yes"}
+        ):
+            self.assertTrue(verify_ssh("10.0.30.12", "rupan", runner=runner))
+            self.assertIn("-i", recorded_argv)
+            self.assertIn("/env/key", recorded_argv)
+            self.assertIn("IdentitiesOnly=yes", recorded_argv)
+
     def test_verify_k3s_nodes_ready_all_ready(self) -> None:
         nodes_payload = {
             "items": [

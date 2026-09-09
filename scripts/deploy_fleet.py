@@ -5,6 +5,7 @@ import fcntl
 import json
 import logging
 import os
+import shlex
 import socket
 import subprocess
 import sys
@@ -234,6 +235,7 @@ def verify_ssh(
     user: str,
     runner: Runner = subprocess.run,
     timeout: float = 5.0,
+    ssh_opts: Sequence[str] | None = None,
 ) -> bool:
     cmd = [
         "ssh",
@@ -241,10 +243,23 @@ def verify_ssh(
         "BatchMode=yes",
         "-o",
         f"ConnectTimeout={int(max(1, timeout))}",
-        f"{user}@{ip}",
-        "true",
     ]
+    if ssh_opts is not None:
+        cmd.extend(ssh_opts)
+    else:
+        env_opts = os.getenv("NIX_SSHOPTS") or os.getenv("SSH_OPTS")
+        if env_opts:
+            cmd.extend(shlex.split(env_opts))
+    cmd.extend([f"{user}@{ip}", "true"])
     res = run_command(cmd, runner=runner, timeout=timeout + 2.0, check=False)
+    if res.returncode != 0:
+        logger.warning(
+            "SSH check to %s@%s failed (exit %d): %s",
+            user,
+            ip,
+            res.returncode,
+            (res.stdout + "\n" + res.stderr).strip(),
+        )
     return res.returncode == 0
 
 
@@ -379,6 +394,7 @@ class FleetDeployer:
         ntfy_url: str | None = None,
         ntfy_token: str | None = None,
         notifier: Notifier | None = None,
+        ssh_opts: Sequence[str] | None = None,
     ) -> None:
         self.targets = targets
         self.dry_run = dry_run
@@ -399,6 +415,7 @@ class FleetDeployer:
         self.ntfy_url = ntfy_url
         self.ntfy_token = ntfy_token
         self.notifier = notifier
+        self.ssh_opts = list(ssh_opts) if ssh_opts is not None else None
 
     def notify(
         self,
@@ -426,7 +443,13 @@ class FleetDeployer:
         # 1. SSH check on all targeted hosts
         for host in self.targets:
             logger.info("Checking SSH reachability to %s (%s)...", host.name, host.ip)
-            if not verify_ssh(host.ip, self.ssh_user, runner=self.runner, timeout=5.0):
+            if not verify_ssh(
+                host.ip,
+                self.ssh_user,
+                runner=self.runner,
+                timeout=5.0,
+                ssh_opts=self.ssh_opts,
+            ):
                 raise FleetDeploymentError(
                     f"Preflight failed: SSH unreachable to {host.name} ({host.ip})"
                 )
@@ -823,6 +846,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Disable ntfy push notifications.",
     )
     parser.add_argument(
+        "--ssh-opts",
+        default=None,
+        help="Extra SSH options or flags (default: $NIX_SSHOPTS or $SSH_OPTS).",
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Output structured JSON results upon completion.",
@@ -851,6 +879,9 @@ def main(
     except FleetDeploymentError as err:
         logger.error("Configuration error: %s", err)
         return 2
+
+    ssh_opts_raw = args.ssh_opts or os.getenv("NIX_SSHOPTS") or os.getenv("SSH_OPTS")
+    ssh_opts = shlex.split(ssh_opts_raw) if ssh_opts_raw else None
 
     lock = FleetLock(
         Path(args.lock_file),
@@ -882,6 +913,7 @@ def main(
                 ntfy_url=args.ntfy_url,
                 ntfy_token=args.ntfy_token,
                 notifier=notifier,
+                ssh_opts=ssh_opts,
             )
             result = deployer.execute()
             if args.json:
