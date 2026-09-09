@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./gitops/storage
+  path: ./gitops/registry-cutover/components/storage
   prune: true
   sourceRef:
     kind: GitRepository
