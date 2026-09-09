@@ -217,6 +217,7 @@ in
             {
               bgpControlPlane.enabled = true;
               gatewayAPI.enabled = true;
+              gatewayAPI.gatewayClass.create = false;
               ingressController.enabled = true;
               ipam.operator.clusterPoolIPv4PodCIDRList = [ "10.42.0.0/16" ];
               ipv4NativeRoutingCIDR = "10.42.0.0/16";
