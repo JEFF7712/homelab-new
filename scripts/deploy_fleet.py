@@ -199,7 +199,7 @@ def default_ntfy_notifier(
     url_base = (server_url or os.getenv("NTFY_URL") or "https://ntfy.rupan.dev").rstrip(
         "/"
     )
-    ntfy_topic = topic or os.getenv("NTFY_TOPIC") or "homelab-alerts"
+    ntfy_topic = topic or os.getenv("NTFY_TOPIC")
     ntfy_token = token or os.getenv("NTFY_TOKEN")
 
     if not ntfy_topic:

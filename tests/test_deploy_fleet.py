@@ -4,6 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from unittest.mock import MagicMock, patch
+
 from scripts.deploy_fleet import (
     FLEET_HOSTS,
     FleetDeployer,
@@ -11,6 +13,7 @@ from scripts.deploy_fleet import (
     FleetLock,
     LockContentionError,
     build_parser,
+    default_ntfy_notifier,
     main,
     parse_targets,
     verify_bgp_peer,
@@ -494,6 +497,42 @@ class DeployFleetTest(unittest.TestCase):
         )
         deployer.execute()
         self.assertEqual(len(notifications), 0)
+
+    def test_default_ntfy_notifier_no_topic(self) -> None:
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertFalse(default_ntfy_notifier("title", "msg"))
+
+    def test_default_ntfy_notifier_success(self) -> None:
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.__enter__.return_value = mock_response
+
+        with patch(
+            "urllib.request.urlopen", return_value=mock_response
+        ) as mock_urlopen:
+            result = default_ntfy_notifier(
+                "Test Title",
+                "Test Message",
+                priority="high",
+                tags=["rocket", "tada"],
+                topic="my-topic",
+                token="my-token",
+            )
+            self.assertTrue(result)
+            mock_urlopen.assert_called_once()
+            req = mock_urlopen.call_args[0][0]
+            self.assertEqual(req.full_url, "https://ntfy.rupan.dev/my-topic")
+            self.assertEqual(req.headers["Title"], "Test Title")
+            self.assertEqual(req.headers["Priority"], "high")
+            self.assertEqual(req.headers["Tags"], "rocket,tada")
+            self.assertEqual(req.headers["Authorization"], "Bearer my-token")
+
+    def test_default_ntfy_notifier_error(self) -> None:
+        with patch("urllib.request.urlopen", side_effect=OSError("network down")):
+            result = default_ntfy_notifier(
+                "Test Title", "Test Message", topic="my-topic"
+            )
+            self.assertFalse(result)
 
 
 if __name__ == "__main__":
