@@ -1,7 +1,7 @@
 # Local registry implementation and acceptance record
 
 Date: 2026-09-09
-Accepted revision: `74b4579eb970bfc428031351c0546b976a7d4ea4`
+Accepted runtime revision: `c23d5d036503b2c30d9513c85bb44ed256de67c1`
 
 ## Result
 
@@ -10,7 +10,9 @@ The conventional OCI registry is deployed and serving the new homelab. Zot
 privately as `registry.rupan.dev`. The three k3s nodes have authenticated mirror
 configuration with the default upstream endpoint disabled. Repository-owned
 Flux consumers render to digest-pinned zot references, and all 17 Flux
-Kustomizations applied the accepted revision successfully.
+Kustomizations applied the accepted revision successfully. Nine
+repository-scoped GitHub runner Deployments also run their runner and DinD
+containers from digest-pinned zot references.
 
 Attic remains the separate Nix binary cache. Forgejo, Harbor, S3-compatible
 storage, and nix-snapshotter were not introduced.
@@ -21,15 +23,16 @@ storage, and nix-snapshotter were not introduced.
 | --- | --- | --- |
 | Registry service | `zot`, `nginx`, and `tank-registry.mount` active on `nas-01`; `tank/registry` is a 16.1 GiB ZFS dataset with 8.89 TiB available | Accepted |
 | TLS and private DNS | All nodes resolve `registry.rupan.dev` to `10.0.30.20`; trusted HTTPS works; anonymous `/v2/` returns 401 on the private path | Accepted |
-| Locked import | Initial 65-image import and verification passed; update job `16400518165` copied and independently verified 61 of 61 upstream candidate records at revision `2b2a465` | Accepted |
+| Locked import | Initial 65-image import and verification passed; full import job `16403655960` and update job `16404248689` independently copied and verified the current lock, with the update report passing 63 of 63 upstream records at revision `c23d5d0` | Accepted |
 | Identity | Import and verify reports matched source and destination manifest or index digests, platform sets, and declared referrers | Accepted |
 | Update workflow | Valkey 9.1.2 was discovered as digest `sha256:c123e...e1d`, imported under an immutable release tag, verified, then rolled out from zot while retaining the previous digest | Accepted |
 | Node runtime | Registry variants are active on all three nodes with upstream fallback disabled; a node pull of the new Valkey index succeeded through `registry.rupan.dev` | Accepted |
-| Flux cutover | 17 of 17 Kustomizations Ready at `74b4579`; Home Assistant, Immich, Reloader, direct applications, controllers, storage, observability, and backup workloads use their prepared local overlays | Accepted |
+| Flux cutover | 17 of 17 Kustomizations Ready at `c23d5d0`; Home Assistant, Immich, Reloader, direct applications, controllers, storage, observability, backup workloads, and GitHub runners use their prepared local overlays | Accepted |
+| Runner adoption | Nine of nine GitHub runner Deployments are Ready with zero container restarts; their 18 runner and DinD container references use the two imported zot digests | Accepted |
 | Stateful data | Home Assistant and Immich PostgreSQL PVCs remained Bound to `home-assistant-postgres-nvme` and `immich-postgres-nvme`; Immich remains on its intentional PostgreSQL 16 deployment | Accepted |
 | Applications | `apollinestore.com`, `notes.rupan.dev`, `photos.rupan.dev`, and Home Assistant at `10.0.40.13:8123` returned HTTP 200 | Accepted |
 | Observability | Prometheus returned `Prometheus Server is Ready`; Loki returned `ready`; registry alerts and node-exporter collectors are deployed | Accepted |
-| Cluster health | All three nodes Ready; Cilium BGP established; the Cilium 1.20.1 installer completed after disabling chart ownership of the Flux-owned GatewayClass | Accepted |
+| Cluster health | All three nodes Ready with registry variants active and upstream fallback disabled; Cilium BGP established; the Cilium 1.20.1 installer completed after disabling chart ownership of the Flux-owned GatewayClass | Accepted |
 | Backup and recovery | `registry-backup.service` last result is success; the independent XFS backup disk is mounted; a full restic backup, isolated restore, and restored digest pull were completed | Accepted |
 | Offline recovery | A disposable cold pull succeeded with source-registry access blocked while zot served the retained digest | Accepted |
 
@@ -73,7 +76,7 @@ not presented as a zero-downtime migration.
 
 ## Validation
 
-Final validation at revision `74b4579` passed:
+Full offline validation at revision `74b4579` passed:
 
 - `just check-changed`
 - `just fmt-check`
@@ -86,11 +89,13 @@ Final validation at revision `74b4579` passed:
 - all NixOS configurations and flake checks
 - Nix-agent dry-build of `homelab-01`
 
-The protected GitLab quality pipeline also passed `repository_tests`,
-`yaml_schema`, `nas_proof`, and `registry_lock`. Registry job `16400938636`
-completed the idempotent full import, and `deploy_registry_node_01` job
-`16400938640` applied the final Cilium ownership setting using a target-side
-build.
+The protected GitLab quality pipeline at revision `c23d5d0` also passed
+`repository_tests`, `yaml_schema`, `nas_proof`, and `registry_lock`. Registry
+jobs `16403655960` and `16404248689` completed the idempotent full and update
+imports. Jobs `16403655964`, `16403655965`, and `16403655966` then restored the
+registry variants on all three nodes using target-side builds. Live checks
+confirmed no non-local image references among Running workloads other than the
+explicitly excluded K3s system mirrors.
 
 ## Producer publishing
 
@@ -124,19 +129,16 @@ No producer checkout was found for `cr-demo`, `ism`, `majorfinder`, or
 `photography`. Those four are explicit owner-discovery blockers for future
 publishing, not missing runtime content.
 
-New GitHub runner Deployments were created concurrently on 2026-09-09 and are
-being adopted by separate repository work under
-`gitops/automation/github-runner`. Until that work commits digest-pinned local
-runner and DinD images, those newly introduced Pods are an explicit live
-inventory exception. They were not modified here to avoid overwriting the
-parallel owner.
+The GitHub runner manifests were adopted under
+`gitops/automation/github-runner`. The actions-runner and DinD images were added
+to the inventory and lock, imported and digest-verified, and rolled out through
+the automation registry overlay. All nine runner Pods are Running with both
+containers Ready and no restarts.
 
 The registry platform, upstream update workflow, restore path, direct
-first-party publishing, and all existing repository-owned consumers are
-operational. The concurrent GitHub runner adoption must still be committed and
-converted to locked local runner images. The four unavailable producer owners
-and the dirty legacy renovate checkout remain bounded future-publishing
-handoffs.
+first-party publishing, runner adoption, and all repository-owned consumers are
+operational. The four unavailable producer owners and the dirty legacy renovate
+checkout remain bounded future-publishing handoffs.
 
 ## Deferred work
 
