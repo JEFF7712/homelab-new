@@ -64,8 +64,8 @@ spec:
     - file: gitops/backups/db-dump.yaml
       document: 0
       field: spec.jobTemplate.spec.template.spec.containers.0.image
-      source: docker.io/library/postgres:14-alpine
-      destination: registry.rupan.dev/upstream/docker.io/library/postgres@sha256:727876d274666da0b92a445390ba093c84b8e9f8343e1c53cd4e9a7ab2d85310
+      source: docker.io/library/postgres:16-alpine
+      destination: registry.rupan.dev/upstream/docker.io/library/postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
       state: prepared
     - file: gitops/backups/dumps-to-r2.yaml
       document: 0
@@ -118,8 +118,8 @@ spec:
     - file: gitops/immich/postgres.yaml
       document: 0
       field: spec.template.spec.containers.0.image
-      source: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
-      destination: registry.rupan.dev/upstream/ghcr.io/immich-app/postgres@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+      source: ghcr.io/immich-app/postgres:16-vectorchord0.4.3-pgvectors0.2.0
+      destination: registry.rupan.dev/upstream/ghcr.io/immich-app/postgres@sha256:1a078b237c1d9b420b0ee59147386b4aa60d3a07a8e6a402fc84a57e41b043a4
       state: prepared
     - file: gitops/immich/server.yaml
       document: 0

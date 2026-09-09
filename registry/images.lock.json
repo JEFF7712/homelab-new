@@ -1429,6 +1429,45 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/immich/postgres.yaml:25"
+      ],
+      "destination_repository": "upstream/ghcr.io/immich-app/postgres",
+      "destination_tags": [
+        "16-vectorchord0.4.3-pgvectors0.2.0",
+        "retention-deployed-1a078b237c1d9b42"
+      ],
+      "digest": "sha256:1a078b237c1d9b420b0ee59147386b4aa60d3a07a8e6a402fc84a57e41b043a4",
+      "id": "upstream-immich-app-postgres-0f7eacac6277",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:1a078b237c1d9b420b0ee59147386b4aa60d3a07a8e6a402fc84a57e41b043a4",
+        "reference": "ghcr.io/immich-app/postgres:16-vectorchord0.4.3-pgvectors0.2.0@sha256:1a078b237c1d9b420b0ee59147386b4aa60d3a07a8e6a402fc84a57e41b043a4",
+        "registry": "ghcr.io",
+        "repository": "immich-app/postgres",
+        "tag": "16-vectorchord0.4.3-pgvectors0.2.0"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "observed:rendered/cert-manager/acmesolver"
       ],
       "destination_repository": "upstream/quay.io/jetstack/cert-manager-acmesolver",
@@ -2015,6 +2054,51 @@
         "registry": "docker.io",
         "repository": "library/postgres",
         "tag": "14-alpine"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/backups/db-dump.yaml:23"
+      ],
+      "destination_repository": "upstream/docker.io/library/postgres",
+      "destination_tags": [
+        "16-alpine",
+        "retention-deployed-cf78e76683b9ca8c"
+      ],
+      "digest": "sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685",
+      "id": "upstream-library-postgres-c6b76386d83b",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/386",
+        "linux/amd64",
+        "linux/arm/v6",
+        "linux/arm/v7",
+        "linux/arm64/v8",
+        "linux/ppc64le",
+        "linux/riscv64",
+        "linux/s390x",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685",
+        "reference": "docker.io/library/postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685",
+        "registry": "docker.io",
+        "repository": "library/postgres",
+        "tag": "16-alpine"
       }
     },
     {
