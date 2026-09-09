@@ -6,8 +6,8 @@ PostgreSQL databases for Home Assistant and Immich operate under **Policy B** (N
 
 - **Primary Node:** `homelab-01` (`10.0.30.11`)
 - **Storage Type:** Node-pinned local NVMe via `hostPath` PersistentVolumes:
-  - Immich: `/var/lib/storage/postgres/immich` (`immich-postgres` pod in namespace `immich`)
-  - Home Assistant: `/var/lib/storage/postgres/home-assistant` (`home-assistant-postgres` pod in namespace `home-assistant`)
+  - Immich: `/persist/postgres/immich` (`immich-postgres` pod in namespace `immich`)
+  - Home Assistant: `/persist/postgres/home-assistant` (`home-assistant-postgres` pod in namespace `home-assistant`)
 - **Local Backup (Tier 1):** Daily automated `pg_dump --format=custom` exports to the `db-dumps` NFS PersistentVolume hosted on `nas-01` (`/tank/cluster/backups-db-dumps-.../`):
   - `immich-db-dump`: Daily at 02:00 UTC (`/dumps/immich-$YYYYMMDD.dump.gz`, 7-day retention)
   - `home-assistant-db-dump`: Daily at 02:30 UTC (`/dumps/home-assistant-$YYYYMMDD.dump.gz`, 7-day retention)
@@ -22,7 +22,7 @@ If database tables are corrupted or inadvertently modified while `homelab-01` re
 
 1. **Stop Application Workloads:**
    ```sh
-   kubectl scale deploy -n immich immich-server immich-microservices --replicas=0
+   kubectl scale deploy -n immich immich-server --replicas=0
    kubectl scale deploy -n home-assistant home-assistant --replicas=0
    ```
 
@@ -48,7 +48,8 @@ If database tables are corrupted or inadvertently modified while `homelab-01` re
 
 5. **Restart Application Workloads:**
    ```sh
-   kubectl scale deploy -n immich immich-server immich-microservices --replicas=1
+   kubectl scale deploy -n immich immich-server --replicas=1
+   kubectl scale deploy -n home-assistant home-assistant --replicas=1
    ```
 
 ---
@@ -65,11 +66,12 @@ If the NVMe drive on `homelab-01` fails or the physical machine requires replace
      ```
 
 2. **Recreate Local Storage Mounts & Ownership:**
-   PostgreSQL containers run as UID `70` (alpine postgres) or `999` (debian postgres):
+   PostgreSQL containers run as UID `70` (alpine postgres for Home Assistant) or `999` (debian postgres for Immich):
    ```sh
-   ssh homelab-01 "sudo mkdir -p /var/lib/storage/postgres/{immich,home-assistant} && \
-     sudo chown -R 70:70 /var/lib/storage/postgres/immich /var/lib/storage/postgres/home-assistant && \
-     sudo chmod 700 /var/lib/storage/postgres/immich /var/lib/storage/postgres/home-assistant"
+   ssh homelab-01 "sudo mkdir -p /persist/postgres/{immich,home-assistant} && \
+     sudo chown -R 999:999 /persist/postgres/immich && \
+     sudo chown -R 70:70 /persist/postgres/home-assistant && \
+     sudo chmod 700 /persist/postgres/{immich,home-assistant}"
    ```
 
 3. **Verify Node Joins K3s Cluster:**
