@@ -48,7 +48,7 @@ dhcpv4_subnets = {
   }
   infrastructure = {
     description = "infrastructure"
-    dns_servers = ["10.0.30.10"]
+    dns_servers = ["10.0.30.10", "10.0.30.1"]
     pools       = ["10.0.30.100-10.0.30.199"]
     routers     = ["10.0.30.1"]
     subnet      = "10.0.30.0/24"

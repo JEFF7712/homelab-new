@@ -16,7 +16,8 @@ while IFS= read -r -d '' file; do
   printf '%s\n' "$output"
   allow_skipped=false
   case "$file" in
-    gitops/clusters/homelab-01/flux-system/kustomization.yaml | \
+    gitops/clusters/homelab-01/kustomization.yaml | \
+      gitops/clusters/homelab-01/flux-system/kustomization.yaml | \
       gitops/ingress/crds/kustomization.yaml | \
       gitops/registry-cutover/components/flux-system/kustomization.yaml | \
       gitops/registry-cutover/components/observability/kustomization.yaml) allow_skipped=true ;;
