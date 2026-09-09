@@ -20,7 +20,7 @@ spec:
               type: RuntimeDefault
           containers:
             - name: pg-dump
-              image: docker.io/library/postgres@sha256:7341002d2b8c7c5bdd7542a671a95b36196c0b5b888daf454ae4fc33ba5346d7  # yamllint disable-line rule:line-length
+              image: docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be  # yamllint disable-line rule:line-length
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:

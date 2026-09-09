@@ -124,6 +124,7 @@ objects with kubectl.
 | Remaining stateless sites | `./gitops/websites` | `./gitops/registry-cutover/components/websites` |
 | Automation | `./gitops/automation` | `./gitops/registry-cutover/components/automation` |
 | Backups | `./gitops/backups` | `./gitops/registry-cutover/components/backups` |
+| Home Assistant | `./gitops/home-assistant` | `./gitops/registry-cutover/components/home-assistant` |
 | Cloudflare | `./gitops/cloudflare` | `./gitops/registry-cutover/components/cloudflare` |
 | Obsidian | `./gitops/obsidian` | `./gitops/registry-cutover/components/obsidian` |
 | Immich | `./gitops/immich` | `./gitops/registry-cutover/components/immich` |

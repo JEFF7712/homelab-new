@@ -67,6 +67,12 @@ spec:
       source: docker.io/library/postgres:16-alpine
       destination: registry.rupan.dev/upstream/docker.io/library/postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
       state: prepared
+    - file: gitops/backups/home-assistant-db-dump.yaml
+      document: 0
+      field: spec.jobTemplate.spec.template.spec.containers.0.image
+      source: docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be
+      destination: registry.rupan.dev/upstream/docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be
+      state: prepared
     - file: gitops/backups/dumps-to-r2.yaml
       document: 0
       field: spec.jobTemplate.spec.template.spec.containers.0.image
@@ -108,6 +114,24 @@ spec:
       field: spec.template.spec.containers.0.image
       source: ghcr.io/fluxcd/notification-controller:v1.9.1
       destination: registry.rupan.dev/upstream/ghcr.io/fluxcd/notification-controller@sha256:d52626555d96dd5666a942ef8aad09650e1bdbf58ca67ddb835d9de27e9002be
+      state: prepared
+    - file: gitops/home-assistant/deployment.yaml
+      document: 0
+      field: spec.template.spec.initContainers.0.image
+      source: busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+      destination: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+      state: prepared
+    - file: gitops/home-assistant/deployment.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: ghcr.io/home-assistant/home-assistant@sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17
+      destination: registry.rupan.dev/upstream/ghcr.io/home-assistant/home-assistant@sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17
+      state: prepared
+    - file: gitops/home-assistant/postgres.yaml
+      document: 0
+      field: spec.template.spec.containers.0.image
+      source: docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be
+      destination: registry.rupan.dev/upstream/docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be
       state: prepared
     - file: gitops/immich/machine-learning.yaml
       document: 0
@@ -236,6 +260,17 @@ spec:
       destination: registry.rupan.dev/apps/spatia-site@sha256:754085d236f6eecef224ff15c94d3b24ba17ce4580bba29733e28cd8220ecdf4
       state: prepared
   helmGenerated:
+    - release: reloader
+      chartVersion: 2.2.17
+      sources:
+        - ghcr.io/stakater/reloader:v1.4.22
+      destinations:
+        - registry.rupan.dev/upstream/ghcr.io/stakater/reloader@sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c
+      overridePaths:
+        - image.repository
+        - image.tag
+      state: prepared
+      strategy: flux-kustomize-post-renderer
     - release: renovate-github
       chartVersion: 45.64.2
       sources:

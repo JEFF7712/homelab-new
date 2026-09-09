@@ -1,6 +1,6 @@
 {
   "destination_registry": "registry.rupan.dev",
-  "generated_at": "2026-09-07T06:17:15+00:00",
+  "generated_at": "2026-09-09T14:35:00+00:00",
   "images": [
     {
       "authenticity": {
@@ -1309,6 +1309,41 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/home-assistant/deployment.yaml:47",
+        "observed:home-assistant/home-assistant-654d5bcc89-r62dr/home-assistant"
+      ],
+      "destination_repository": "upstream/ghcr.io/home-assistant/home-assistant",
+      "destination_tags": [
+        "retention-deployed-31076d37e3b7dc96"
+      ],
+      "digest": "sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17",
+      "id": "upstream-home-assistant-home-assistant-070c4953bb87",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.manifest.v1+json",
+      "platforms": [],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17",
+        "reference": "ghcr.io/home-assistant/home-assistant@sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17",
+        "registry": "ghcr.io",
+        "repository": "home-assistant/home-assistant",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "gitops/immich/machine-learning.yaml:23",
         "observed:immich/immich-machine-learning-56c59d58f7-zg2np/immich-machine-learning"
       ],
@@ -2107,6 +2142,42 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/backups/home-assistant-db-dump.yaml:23",
+        "gitops/home-assistant/postgres.yaml:25",
+        "observed:home-assistant/home-assistant-postgres-85ccd74787-47sh9/postgres"
+      ],
+      "destination_repository": "upstream/docker.io/library/postgres",
+      "destination_tags": [
+        "retention-deployed-747d5ed1fdeeb124"
+      ],
+      "digest": "sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+      "id": "upstream-library-postgres-335fe9d7d741",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.manifest.v1+json",
+      "platforms": [],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+        "reference": "docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+        "registry": "docker.io",
+        "repository": "library/postgres",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "gitops/automation/renovate-agent.yaml:125",
         "observed:rendered/automation/renovate-agent-init"
       ],
@@ -2704,6 +2775,46 @@
         "status": "unsupported"
       },
       "consumers": [
+        "observed:flux-system/reloader-fd8c56848-hkwz7/reloader"
+      ],
+      "destination_repository": "upstream/ghcr.io/stakater/reloader",
+      "destination_tags": [
+        "v1.4.22",
+        "retention-deployed-def2480040adc164"
+      ],
+      "digest": "sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c",
+      "id": "upstream-stakater-reloader-b0109bf8dfb1",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm/v7",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c",
+        "reference": "ghcr.io/stakater/reloader:v1.4.22@sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c",
+        "registry": "ghcr.io",
+        "repository": "stakater/reloader",
+        "tag": "v1.4.22"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "gitops/backups/dumps-to-r2.yaml:23",
         "gitops/backups/library-local.yaml:23",
         "observed:backups/dumps-to-r2-29811360-v2g8k/restic",
@@ -2833,7 +2944,7 @@
   "kind": "registry-image-lock",
   "mirror_exceptions": [],
   "schema_version": 1,
-  "source_revision": "6d26784d9b4a898ab3b922b4db26d5370cd44fed",
+  "source_revision": "ae03214e56d83db1a68fc41bc120be9f1c62f7e3",
   "unresolved_inputs": [
     {
       "blocking": false,

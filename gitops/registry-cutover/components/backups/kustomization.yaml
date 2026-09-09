@@ -4,3 +4,15 @@ resources:
   - ../../../backups
 components:
   - ../../direct-images
+patches:
+  - target:
+      group: batch
+      version: v1
+      kind: CronJob
+      name: home-assistant-db-dump
+      namespace: backups
+    patch: |-
+      - op: replace
+        path: /spec/jobTemplate/spec/template/spec/containers/0/image
+        value: >-
+          registry.rupan.dev/upstream/docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be

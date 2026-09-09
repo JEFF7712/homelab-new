@@ -160,6 +160,21 @@ patches:
       group: helm.toolkit.fluxcd.io
       version: v2
       kind: HelmRelease
+      name: reloader
+      namespace: flux-system
+    patch: |-
+      - op: add
+        path: /spec/postRenderers
+        value:
+        - kustomize:
+            images:
+            - name: ghcr.io/stakater/reloader
+              newName: registry.rupan.dev/upstream/ghcr.io/stakater/reloader
+              digest: sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c
+  - target:
+      group: helm.toolkit.fluxcd.io
+      version: v2
+      kind: HelmRelease
       name: nfs-subdir-external-provisioner
       namespace: storage
     patch: |-

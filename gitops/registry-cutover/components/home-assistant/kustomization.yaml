@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../home-assistant
+images:
+  - name: busybox
+    newName: registry.rupan.dev/upstream/docker.io/library/busybox
+    digest: sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
+  - name: docker.io/library/postgres
+    newName: registry.rupan.dev/upstream/docker.io/library/postgres
+    digest: sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be
+  - name: ghcr.io/home-assistant/home-assistant
+    newName: registry.rupan.dev/upstream/ghcr.io/home-assistant/home-assistant
+    digest: sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17

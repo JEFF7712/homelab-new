@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "kind": "registry-observed-images",
-  "observed_at": "2026-09-07T05:57:56Z",
+  "observed_at": "2026-09-09T14:27:00Z",
   "evidence": "sanitized read-only k3s Pod status and node containerd content inventory",
   "coverage": [
     "helm-generated",
@@ -276,6 +276,16 @@
       }
     },
     {
+      "reference": "docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+      "consumers": [
+        "home-assistant/home-assistant-postgres-85ccd74787-47sh9/postgres"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.manifest.v1+json",
+        "platforms": []
+      }
+    },
+    {
       "reference": "docker.io/library/python:3.14-alpine@sha256:c6ead215bfd31f1e433d968853b7a769989117115b728874824e6c0a27cb96fc",
       "consumers": [
         "rendered/automation/renovate-agent-init"
@@ -523,6 +533,16 @@
       }
     },
     {
+      "reference": "ghcr.io/home-assistant/home-assistant@sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17",
+      "consumers": [
+        "home-assistant/home-assistant-654d5bcc89-r62dr/home-assistant"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.manifest.v1+json",
+        "platforms": []
+      }
+    },
+    {
       "reference": "ghcr.io/immich-app/immich-machine-learning:v3.1.0@sha256:5a0839dc5303cd7215bcd2180a26aed3af41675aefb3e75e5157e9f10ad16e6e",
       "consumers": [
         "immich/immich-machine-learning-56c59d58f7-zg2np/immich-machine-learning"
@@ -727,6 +747,21 @@
         "media_type": "application/vnd.oci.image.index.v1+json",
         "platforms": [
           "linux/amd64",
+          "linux/arm64",
+          "unknown/unknown"
+        ]
+      }
+    },
+    {
+      "reference": "ghcr.io/stakater/reloader:v1.4.22@sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c",
+      "consumers": [
+        "flux-system/reloader-fd8c56848-hkwz7/reloader"
+      ],
+      "manifest": {
+        "media_type": "application/vnd.oci.image.index.v1+json",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm/v7",
           "linux/arm64",
           "unknown/unknown"
         ]
