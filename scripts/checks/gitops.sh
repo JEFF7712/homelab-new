@@ -19,8 +19,7 @@ while IFS= read -r -d '' file; do
     gitops/clusters/homelab-01/kustomization.yaml | \
       gitops/clusters/homelab-01/flux-system/kustomization.yaml | \
       gitops/ingress/crds/kustomization.yaml | \
-      gitops/registry-cutover/components/flux-system/kustomization.yaml | \
-      gitops/registry-cutover/components/observability/kustomization.yaml) allow_skipped=true ;;
+      gitops/registry-cutover/components/flux-system/kustomization.yaml) allow_skipped=true ;;
   esac
   if grep -Eq 'Skipped: [1-9]' <<<"$output" && [[ $allow_skipped == false ]]; then
     echo 'missing Kubernetes schemas; refresh and commit the required CRD schemas' >&2
