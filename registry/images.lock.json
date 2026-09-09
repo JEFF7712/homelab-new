@@ -2904,16 +2904,14 @@
         "status": "unsupported"
       },
       "consumers": [
-        "gitops/immich/valkey.yaml:23",
         "observed:immich/immich-valkey-58bc4b8d86-6hlxt/valkey"
       ],
       "destination_repository": "upstream/docker.io/valkey/valkey",
       "destination_tags": [
-        "9",
         "retention-deployed-8e8d64b405ce18f4"
       ],
       "digest": "sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411",
-      "id": "upstream-valkey-valkey-20baeb88570b",
+      "id": "upstream-valkey-valkey-6a24280de01e",
       "kind": "upstream",
       "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
       "platforms": [
@@ -2928,16 +2926,55 @@
         "source_status": "not-enumerated"
       },
       "resolution": {
-        "reason": "manifest inspection failed with exit code 1",
-        "status": "runtime-cache-verified"
+        "status": "source-registry-verified"
       },
       "retention_class": "deployed",
       "source": {
         "digest": "sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411",
-        "reference": "docker.io/valkey/valkey:9@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411",
+        "reference": "docker.io/valkey/valkey@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411",
         "registry": "docker.io",
         "repository": "valkey/valkey",
-        "tag": "9"
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/immich/valkey.yaml:23"
+      ],
+      "destination_repository": "upstream/docker.io/valkey/valkey",
+      "destination_tags": [
+        "9.1.2",
+        "retention-deployed-c123e3715db63d06"
+      ],
+      "digest": "sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d",
+      "id": "upstream-valkey-valkey-e2f774717d7f",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm/v7",
+        "linux/arm64",
+        "linux/ppc64le"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d",
+        "reference": "docker.io/valkey/valkey:9.1.2@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d",
+        "registry": "docker.io",
+        "repository": "valkey/valkey",
+        "tag": "9.1.2"
       }
     }
   ],

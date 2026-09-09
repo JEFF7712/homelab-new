@@ -24,7 +24,7 @@ images:
     digest: sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510
   - name: docker.io/valkey/valkey
     newName: registry.rupan.dev/upstream/docker.io/valkey/valkey
-    digest: sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411
+    digest: sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d
   - name: ghcr.io/fluxcd/helm-controller
     newName: registry.rupan.dev/upstream/ghcr.io/fluxcd/helm-controller
     digest: sha256:b113d67328a58ecaa04ce69aa41fb285a1ebd10f021e2371065598a1325042fd

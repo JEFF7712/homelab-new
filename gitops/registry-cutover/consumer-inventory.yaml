@@ -154,8 +154,8 @@ spec:
     - file: gitops/immich/valkey.yaml
       document: 0
       field: spec.template.spec.containers.0.image
-      source: docker.io/valkey/valkey:9@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411
-      destination: registry.rupan.dev/upstream/docker.io/valkey/valkey@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411
+      source: docker.io/valkey/valkey:9.1.2@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d
+      destination: registry.rupan.dev/upstream/docker.io/valkey/valkey@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d
       state: prepared
     - file: gitops/obsidian/couchdb.yaml
       document: 0
