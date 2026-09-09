@@ -465,76 +465,50 @@ nas_proof:
     - ping -c 2 -W 2 8.8.8.8
     - ping -c 2 -W 2 10.0.30.11
 
-deploy_host:
+.deploy_fleet_base:
   stage: deploy
   tags:
     - nas-privileged
   environment:
     name: production
   needs:
-    - repository_tests
+    - nix_cache
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
-  variables:
-    DEPLOY_HOST: homelab-02
-    DEPLOY_ADDR: 10.0.30.12
   before_script:
-    - mkdir -p ~/.ssh
+    - mkdir -p ~/.ssh ~/.kube
     - cp "$SSH_DEPLOY_KEY" ~/.ssh/id_ed25519
     - chmod 600 ~/.ssh/id_ed25519
     - cp "$HOSTS_KNOWN" ~/.ssh/known_hosts
     - chmod 600 ~/.ssh/known_hosts
-  script:
-    - export PATH="/run/current-system/sw/bin:$PATH"
     - export SSH_OPTS="-i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes"
     - export KH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts"
-    - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
-    - nixos-rebuild --flake ./flake#"$DEPLOY_HOST" --use-remote-sudo switch
-      --target-host rupan@"$DEPLOY_ADDR" --build-host rupan@"$DEPLOY_ADDR"
+    - >-
+      ssh $SSH_OPTS $KH_OPTS rupan@10.0.30.11
+      'sudo cat /etc/rancher/k3s/k3s.yaml' |
+      sed 's/127.0.0.1/10.0.30.11/' > ~/.kube/config
+    - chmod 600 ~/.kube/config
 
-deploy_adguard_netbird:
-  stage: deploy
-  tags:
-    - nas-privileged
-  environment:
-    name: production
-  needs:
-    - repository_tests
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: manual
-  variables:
-    DEPLOY_HOST: adguard-netbird-01
-    DEPLOY_ADDR: 10.0.30.10
-  before_script:
-    - mkdir -p ~/.ssh
-    - cp "$SSH_DEPLOY_KEY" ~/.ssh/id_ed25519
-    - chmod 600 ~/.ssh/id_ed25519
-    - cp "$HOSTS_KNOWN" ~/.ssh/known_hosts
-    - chmod 600 ~/.ssh/known_hosts
+deploy_fleet_dry_run:
+  extends: .deploy_fleet_base
   script:
     - export PATH="/run/current-system/sw/bin:$PATH"
     - export SSH_OPTS="-i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes"
     - export KH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts"
     - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
-    - >-
-      ssh $SSH_OPTS $KH_OPTS rupan@"$DEPLOY_ADDR"
-      'install -d -m 0700 /persist/secrets'
-    - >-
-      printf '%s' "$HOME_ASSISTANT_MQTT_PASSWORD" |
-      ssh $SSH_OPTS $KH_OPTS rupan@"$DEPLOY_ADDR"
-      'umask 077; cat > /persist/secrets/mosquitto-home-assistant-password.tmp &&
-      mv /persist/secrets/mosquitto-home-assistant-password.tmp
-      /persist/secrets/mosquitto-home-assistant-password'
-    - >-
-      printf '%s' "$ZIGBEE2MQTT_MQTT_PASSWORD" |
-      ssh $SSH_OPTS $KH_OPTS rupan@"$DEPLOY_ADDR"
-      'umask 077; cat > /persist/secrets/mosquitto-zigbee2mqtt-password.tmp &&
-      mv /persist/secrets/mosquitto-zigbee2mqtt-password.tmp
-      /persist/secrets/mosquitto-zigbee2mqtt-password'
-    - nixos-rebuild --flake ./flake#"$DEPLOY_HOST" --use-remote-sudo switch
-      --target-host rupan@"$DEPLOY_ADDR" --build-host rupan@"$DEPLOY_ADDR"
+    - export KUBECONFIG="$HOME/.kube/config"
+    - nix develop ./flake -c just deploy-fleet --dry-run ${DEPLOY_TARGETS:+--target $DEPLOY_TARGETS}
+
+deploy_fleet:
+  extends: .deploy_fleet_base
+  script:
+    - export PATH="/run/current-system/sw/bin:$PATH"
+    - export SSH_OPTS="-i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes"
+    - export KH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+    - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
+    - export KUBECONFIG="$HOME/.kube/config"
+    - nix develop ./flake -c just deploy-fleet ${DEPLOY_TARGETS:+--target $DEPLOY_TARGETS}
 
 sync_to_github:
   stage: sync
