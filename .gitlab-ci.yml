@@ -376,6 +376,8 @@ opnsense_inventory:
     - nas-privileged
   environment:
     name: production
+  needs:
+    - repository_tests
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
