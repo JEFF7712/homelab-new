@@ -15,6 +15,7 @@ from .adapters.core import sync_core_to_gitops
 from .canonical import (
     canonical_hash,
     canonical_json,
+    compute_baseline_hash,
     detect_secrets,
     sanitize_error,
     to_json_compatible,
@@ -301,6 +302,7 @@ def cmd_capture(args: argparse.Namespace, repo_root: Path) -> int:
 
     captured_docs: dict[str, Any] = {}
     secret_findings: list[str] = []
+    adapter_errors: dict[str, str] = {}
 
     for kind, adapter in ADAPTERS.items():
         try:
@@ -312,7 +314,9 @@ def cmd_capture(args: argparse.Namespace, repo_root: Path) -> int:
                     secret_findings.extend(findings)
                 captured_docs[rk_str] = d.to_dict()
         except Exception as exc:
-            captured_docs[f"{kind}/error"] = {"error": sanitize_error(exc)}
+            err_msg = sanitize_error(exc)
+            adapter_errors[kind] = err_msg
+            captured_docs[f"{kind}/error"] = {"error": err_msg}
 
     if secret_findings:
         output_result(
@@ -337,6 +341,23 @@ def cmd_capture(args: argparse.Namespace, repo_root: Path) -> int:
         os.chmod(out_file, 0o600)
     except Exception:
         pass
+
+    if adapter_errors:
+        output_result(
+            {
+                "status": "incomplete",
+                "capture_id": capture_id,
+                "path": str(out_file.relative_to(repo_root)),
+                "count": len(captured_docs),
+                "errors": adapter_errors,
+            },
+            args.json,
+            lambda d: print(
+                f"Capture incomplete: {len(d['errors'])} adapter(s) failed ({', '.join(d['errors'].keys())}). "
+                f"Saved partial capture to {d['path']}"
+            ),
+        )
+        return ExitCode.UNAVAILABLE.value
 
     output_result(
         {
@@ -383,8 +404,15 @@ def export_live_docs(
 # Command: diff
 # ----------------------------------------------------------------------
 def cmd_diff(args: argparse.Namespace, repo_root: Path) -> int:
-    planner = Planner(repo_root, args.instance)
-    baseline_rec = planner.load_baseline()
+    client = get_client(args, repo_root)
+    planner = Planner(repo_root, args.instance, client=client)
+    try:
+        baseline_rec = planner.load_baseline()
+    except Exception as exc:
+        output_result(
+            {"status": "unavailable", "error": sanitize_error(exc)}, args.json
+        )
+        return ExitCode.UNAVAILABLE.value
 
     raw_baseline: dict[str, ResourceDocument] = {}
     if baseline_rec:
@@ -396,7 +424,6 @@ def cmd_diff(args: argparse.Namespace, repo_root: Path) -> int:
     baseline_docs = canonicalize_docs(raw_baseline)
     git_docs = canonicalize_docs(load_source_tree(repo_root))
 
-    client = get_client(args, repo_root)
     live_docs, errors = export_live_docs(client)
 
     diff_report = compare_three_way(
@@ -463,8 +490,15 @@ def cmd_adopt(args: argparse.Namespace, repo_root: Path) -> int:
         return ExitCode.CONFLICT_OR_INVALID.value
 
     # Load baseline, git source, and live state
-    planner = Planner(repo_root, args.instance)
-    baseline_rec = planner.load_baseline()
+    planner = Planner(repo_root, args.instance, client=client)
+    try:
+        baseline_rec = planner.load_baseline()
+    except Exception as exc:
+        output_result(
+            {"status": "unavailable", "error": sanitize_error(exc)}, args.json
+        )
+        return ExitCode.UNAVAILABLE.value
+
     raw_baseline: dict[str, ResourceDocument] = {}
     if baseline_rec:
         for rk, rdata in baseline_rec.resources.items():
@@ -497,29 +531,40 @@ def cmd_adopt(args: argparse.Namespace, repo_root: Path) -> int:
             }
             output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
             return ExitCode.CONFLICT_OR_INVALID.value
-        items_to_adopt = [
+        candidate_items = [
             item
             for item in diff_report.items
             if str(item.resource_key) in selected or item.key in selected
         ]
-    else:
+
+        # Explicitly reject git_change when explicitly selected
+        git_changes = [
+            item for item in candidate_items if item.status == DiffStatus.GIT_CHANGE
+        ]
+        if git_changes:
+            gc_keys = [str(item.resource_key) for item in git_changes]
+            err_res = {
+                "status": "error",
+                "message": f"Adoption blocked: {', '.join(gc_keys)} has status 'git_change' "
+                "(unapplied committed Git change, not a UI experiment). "
+                "Adoption only imports live UI experiments into Git. "
+                "To deploy Git changes, run plan and apply. To discard Git changes, use git checkout or git revert.",
+                "git_changes": gc_keys,
+            }
+            output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
+            return ExitCode.CONFLICT_OR_INVALID.value
+
         items_to_adopt = [
-            item for item in diff_report.items if item.status != DiffStatus.CLEAN
+            item for item in candidate_items if item.status == DiffStatus.EXPERIMENT
+        ]
+    else:
+        candidate_items = diff_report.items
+        items_to_adopt = [
+            item for item in diff_report.items if item.status == DiffStatus.EXPERIMENT
         ]
 
-    if not items_to_adopt:
-        res = {
-            "status": "adopted",
-            "instance": args.instance,
-            "adopted_count": 0,
-            "files": [],
-            "deleted": [],
-        }
-        output_result(res, args.json, lambda d: print("No changes detected to adopt."))
-        return ExitCode.CLEAN.value
-
     # Reject unresolved conflicts
-    conflicts = [item for item in items_to_adopt if item.status == DiffStatus.CONFLICT]
+    conflicts = [item for item in candidate_items if item.status == DiffStatus.CONFLICT]
     if conflicts:
         conflict_keys = [str(item.resource_key) for item in conflicts]
         err_res = {
@@ -533,7 +578,7 @@ def cmd_adopt(args: argparse.Namespace, repo_root: Path) -> int:
         return ExitCode.CONFLICT_OR_INVALID.value
 
     # Reject unknown live states caused by errors
-    unknowns = [item for item in items_to_adopt if item.status == DiffStatus.UNKNOWN]
+    unknowns = [item for item in candidate_items if item.status == DiffStatus.UNKNOWN]
     if unknowns:
         unknown_keys = [str(item.resource_key) for item in unknowns]
         err_res = {
@@ -543,6 +588,17 @@ def cmd_adopt(args: argparse.Namespace, repo_root: Path) -> int:
         }
         output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
         return ExitCode.CONFLICT_OR_INVALID.value
+
+    if not items_to_adopt:
+        res = {
+            "status": "adopted",
+            "instance": args.instance,
+            "adopted_count": 0,
+            "files": [],
+            "deleted": [],
+        }
+        output_result(res, args.json, lambda d: print("No changes detected to adopt."))
+        return ExitCode.CLEAN.value
 
     # Check for uncommitted Git changes on target files
     dirty_files: list[str] = []
@@ -740,8 +796,15 @@ def cmd_validate(args: argparse.Namespace, repo_root: Path) -> int:
 # Command: plan
 # ----------------------------------------------------------------------
 def cmd_plan(args: argparse.Namespace, repo_root: Path) -> int:
-    planner = Planner(repo_root, args.instance)
-    baseline_rec = planner.load_baseline()
+    client = get_client(args, repo_root)
+    planner = Planner(repo_root, args.instance, client=client)
+    try:
+        baseline_rec = planner.load_baseline()
+    except Exception as exc:
+        output_result(
+            {"status": "unavailable", "error": sanitize_error(exc)}, args.json
+        )
+        return ExitCode.UNAVAILABLE.value
 
     raw_baseline: dict[str, ResourceDocument] = {}
     baseline_hash = "uninitialized"
@@ -755,7 +818,6 @@ def cmd_plan(args: argparse.Namespace, repo_root: Path) -> int:
 
     baseline_docs = canonicalize_docs(raw_baseline)
     git_docs = canonicalize_docs(load_source_tree(repo_root))
-    client = get_client(args, repo_root)
     try:
         health = client.check_health()
         ha_version = health.get("version", "unknown")
@@ -776,6 +838,26 @@ def cmd_plan(args: argparse.Namespace, repo_root: Path) -> int:
     )
 
     selected = set(args.select) if args.select else None
+
+    # Secret check on planned Git source
+    secret_findings: list[str] = []
+    for rk_str, doc in git_docs.items():
+        if selected is None or rk_str in selected or doc.key in selected:
+            findings = detect_secrets(doc.desired, path=rk_str)
+            if findings:
+                secret_findings.extend(findings)
+
+    if secret_findings:
+        output_result(
+            {
+                "status": "error",
+                "message": f"Planning blocked: sensitive credentials detected in Git source: {'; '.join(secret_findings)}",
+                "secret_findings": secret_findings,
+            },
+            args.json,
+        )
+        return ExitCode.CONFLICT_OR_INVALID.value
+
     git_rev = get_git_revision(repo_root)
 
     source_payload = canonical_json(
@@ -963,27 +1045,69 @@ def cmd_verify(args: argparse.Namespace, repo_root: Path) -> int:
             mismatches.append(f"{rk_str} (error: {sanitize_error(exc)})")
 
     is_verified = len(mismatches) == 0
-    if is_verified:
+
+    checkpoint_requested = getattr(args, "checkpoint", False) or getattr(
+        args, "bootstrap", False
+    )
+
+    if is_verified and checkpoint_requested:
+        # Check if local Git working tree has uncommitted modifications
+        try:
+            res = subprocess.run(
+                ["git", "status", "--porcelain", "--", "home-assistant"],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if res.returncode == 0 and res.stdout.strip():
+                output_result(
+                    {
+                        "status": "error",
+                        "message": "Cannot checkpoint baseline: local Git working tree has uncommitted changes in home-assistant/. Commit changes before checkpointing.",
+                    },
+                    args.json,
+                )
+                return ExitCode.CONFLICT_OR_INVALID.value
+        except Exception:
+            pass
+
         planner = Planner(repo_root, args.instance, client=client)
         git_rev = get_git_revision(repo_root)
         now_str = datetime.now(timezone.utc).isoformat()
-        baseline = planner.load_baseline() or BaselineRecord(
-            schema_version="1.0",
-            instance=args.instance,
-            source_commit=git_rev,
-            content_hash="",
-            timestamp=now_str,
-            resources={},
-        )
-        baseline.source_commit = git_rev
-        baseline.timestamp = now_str
-        for rk_str, doc in git_docs.items():
-            baseline.resources[rk_str] = {
-                "canonical_hash": canonical_hash(doc.desired),
-                "desired": doc.desired,
-                "verified_at": now_str,
-            }
-        planner.save_baseline(baseline)
+        owner = f"verify-{os.getpid()}"
+        try:
+            planner.acquire_lock(owner=owner, plan_id="checkpoint")
+            try:
+                baseline = planner.load_baseline() or BaselineRecord(
+                    schema_version="1.0",
+                    instance=args.instance,
+                    source_commit=git_rev,
+                    content_hash="",
+                    timestamp=now_str,
+                    resources={},
+                )
+                baseline.source_commit = git_rev
+                baseline.timestamp = now_str
+                for rk_str, doc in git_docs.items():
+                    baseline.resources[rk_str] = {
+                        "canonical_hash": canonical_hash(doc.desired),
+                        "desired": doc.desired,
+                        "verified_at": now_str,
+                    }
+                baseline.content_hash = compute_baseline_hash(baseline.resources)
+                planner.save_baseline(baseline)
+            finally:
+                planner.release_lock(plan_id="checkpoint", owner=owner)
+        except Exception as exc:
+            output_result(
+                {
+                    "status": "error",
+                    "message": f"Failed to persist checkpoint baseline: {sanitize_error(exc)}",
+                },
+                args.json,
+            )
+            return ExitCode.CONFLICT_OR_INVALID.value
 
     res = {
         "status": "verified" if is_verified else "drift_detected",
@@ -991,12 +1115,15 @@ def cmd_verify(args: argparse.Namespace, repo_root: Path) -> int:
         "ha_version": health.get("version"),
         "mismatches": mismatches,
     }
+    if checkpoint_requested and is_verified:
+        res["checkpointed"] = True
 
     def _fmt(d: dict[str, Any]) -> None:
         if d["status"] == "verified":
-            print(
-                f"Verified: All live resources match Git desired configuration cleanly (HA v{d['ha_version']})."
-            )
+            msg = f"Verified: All live resources match Git desired configuration cleanly (HA v{d['ha_version']})."
+            if d.get("checkpointed"):
+                msg += " Checkpointed baseline successfully."
+            print(msg)
         else:
             print("Verification found divergences:")
             for m in d["mismatches"]:
@@ -1101,42 +1228,53 @@ def cmd_revert(args: argparse.Namespace, repo_root: Path) -> int:
 # CLI parser
 # ----------------------------------------------------------------------
 def build_parser() -> argparse.ArgumentParser:
+    common_parser = argparse.ArgumentParser(add_help=False)
+    common_parser.add_argument(
+        "--json", action="store_true", help="Output machine-readable JSON"
+    )
+    common_parser.add_argument(
+        "--instance", default="homelab-01", help="Home Assistant instance name"
+    )
+    common_parser.add_argument(
+        "--url", default=None, help="Base URL of Home Assistant instance"
+    )
+    common_parser.add_argument(
+        "--token", default=None, help="Home Assistant long-lived access token"
+    )
+    common_parser.add_argument(
+        "--token-file", default=None, help="Path to file containing access token"
+    )
+    common_parser.add_argument(
+        "--mock", action="store_true", help="Use offline credential-free mock client"
+    )
+
     parser = argparse.ArgumentParser(
         prog="python -m scripts.home_assistant",
         description="Home Assistant configuration ownership and UI adoption CLI",
-    )
-    parser.add_argument(
-        "--json", action="store_true", help="Output machine-readable JSON"
-    )
-    parser.add_argument(
-        "--instance", default="homelab-01", help="Home Assistant instance name"
-    )
-    parser.add_argument(
-        "--url", default=None, help="Base URL of Home Assistant instance"
-    )
-    parser.add_argument(
-        "--token", default=None, help="Home Assistant long-lived access token"
-    )
-    parser.add_argument(
-        "--token-file", default=None, help="Path to file containing access token"
-    )
-    parser.add_argument(
-        "--mock", action="store_true", help="Use offline credential-free mock client"
+        parents=[common_parser],
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # inventory
     subparsers.add_parser(
-        "inventory", help="Inspect live capabilities and configuration surfaces"
+        "inventory",
+        parents=[common_parser],
+        help="Inspect live capabilities and configuration surfaces",
     )
 
     # capture
-    subparsers.add_parser("capture", help="Create sanitized local live state snapshot")
+    subparsers.add_parser(
+        "capture",
+        parents=[common_parser],
+        help="Create sanitized local live state snapshot",
+    )
 
     # diff
     diff_p = subparsers.add_parser(
-        "diff", help="Perform 3-way diff between Baseline, Git, and Live"
+        "diff",
+        parents=[common_parser],
+        help="Perform 3-way diff between Baseline, Git, and Live",
     )
     diff_p.add_argument(
         "--select",
@@ -1146,7 +1284,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     # adopt
     adopt_p = subparsers.add_parser(
-        "adopt", help="Adopt selected live UI definitions into Git source files"
+        "adopt",
+        parents=[common_parser],
+        help="Adopt selected live UI definitions into Git source files",
     )
     adopt_p.add_argument(
         "--select",
@@ -1169,7 +1309,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     # validate
     validate_p = subparsers.add_parser(
-        "validate", help="Perform offline schema, reference, and secret checks"
+        "validate",
+        parents=[common_parser],
+        help="Perform offline schema, reference, and secret checks",
     )
     validate_p.add_argument(
         "--sync-gitops",
@@ -1179,13 +1321,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     # plan
     plan_p = subparsers.add_parser(
-        "plan", help="Produce immutable deployment plan for Git changes"
+        "plan",
+        parents=[common_parser],
+        help="Produce immutable deployment plan for Git changes",
     )
     plan_p.add_argument("--select", action="append", help="Select resource key to plan")
 
     # apply
     apply_p = subparsers.add_parser(
-        "apply", help="Execute apply plan with verification and locking"
+        "apply",
+        parents=[common_parser],
+        help="Execute apply plan with verification and locking",
     )
     apply_p.add_argument(
         "--plan-file", default=None, help="Path to plan file to execute"
@@ -1193,13 +1339,32 @@ def build_parser() -> argparse.ArgumentParser:
     apply_p.add_argument(
         "--select", action="append", help="Select resource key to apply"
     )
+    apply_p.add_argument(
+        "-y", "--yes", action="store_true", help="Auto-confirm apply without prompting"
+    )
 
     # verify
-    subparsers.add_parser("verify", help="Verify live state against Git and Baseline")
+    verify_p = subparsers.add_parser(
+        "verify",
+        parents=[common_parser],
+        help="Verify live state against Git and Baseline",
+    )
+    verify_p.add_argument(
+        "--checkpoint",
+        action="store_true",
+        help="Advance shared cluster baseline checkpoint after successful verification (requires clean Git working tree)",
+    )
+    verify_p.add_argument(
+        "--bootstrap",
+        action="store_true",
+        help="Initialize shared cluster baseline checkpoint from clean Git working tree",
+    )
 
     # revert
     revert_p = subparsers.add_parser(
-        "revert", help="Revert selected live resources back to Git state"
+        "revert",
+        parents=[common_parser],
+        help="Revert selected live resources back to Git state",
     )
     revert_p.add_argument(
         "--select", action="append", required=True, help="Select resource key to revert"

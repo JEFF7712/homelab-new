@@ -7,12 +7,14 @@ import socket
 import ssl
 import struct
 import subprocess
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Any
 
 from .canonical import SecretTag
+from .models import LockError
 
 
 class HomeAssistantClientError(Exception):
@@ -357,8 +359,9 @@ class HomeAssistantClient:
                     try:
                         cfg = self.get_automation(auto_id)
                         results.append(cfg)
-                    except Exception:
+                    except HomeAssistantNotFoundError:
                         pass
+
             return results
         except Exception as api_err:
             raise RuntimeError(
@@ -659,16 +662,33 @@ class HomeAssistantClient:
                 capture_output=True,
                 text=True,
                 check=False,
-                timeout=5,
+                timeout=10,
             )
-            if res.returncode == 0:
+        except Exception as exc:
+            raise RuntimeError(
+                f"Failed to execute kubectl to get cluster baseline for {instance}: {exc}"
+            ) from exc
+
+        if res.returncode == 0:
+            try:
                 cm = json.loads(res.stdout)
                 baseline_str = cm.get("data", {}).get("baseline.json")
                 if baseline_str:
                     return json.loads(baseline_str)
-        except Exception:
-            pass
-        return None
+                return None
+            except Exception as exc:
+                raise RuntimeError(
+                    f"Corrupt cluster baseline ConfigMap for {instance}: {exc}"
+                ) from exc
+
+        stderr = res.stderr or ""
+        if "NotFound" in stderr or "not found" in stderr:
+            return None
+
+        raise RuntimeError(
+            f"Kubectl error fetching cluster baseline for {instance} (code {res.returncode}): "
+            f"{stderr.strip() or res.stdout.strip()}"
+        )
 
     def save_cluster_baseline(
         self, instance: str, baseline_data: dict[str, Any]
@@ -678,8 +698,175 @@ class HomeAssistantClient:
         cm = {
             "apiVersion": "v1",
             "kind": "ConfigMap",
-            "metadata": {"name": cm_name, "namespace": "home-assistant"},
+            "metadata": {
+                "name": cm_name,
+                "namespace": "home-assistant",
+                "annotations": {
+                    "home-assistant.homelab/content-hash": baseline_data.get(
+                        "content_hash", ""
+                    ),
+                    "home-assistant.homelab/source-commit": baseline_data.get(
+                        "source_commit", ""
+                    ),
+                    "home-assistant.homelab/updated-at": str(time.time()),
+                },
+            },
             "data": {"baseline.json": payload},
+        }
+        try:
+            res = subprocess.run(
+                ["kubectl", "apply", "-f", "-"],
+                input=json.dumps(cm),
+                text=True,
+                capture_output=True,
+                check=False,
+                timeout=15,
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                f"Failed to execute kubectl to save cluster baseline: {exc}"
+            ) from exc
+
+        if res.returncode != 0:
+            raise RuntimeError(
+                f"Kubectl failed to save cluster baseline for {instance} (code {res.returncode}): "
+                f"{res.stderr.strip() or res.stdout.strip()}"
+            )
+
+        # Readback verification
+        readback = self.get_cluster_baseline(instance)
+        if not readback:
+            raise RuntimeError(
+                f"Verification readback failed: ConfigMap {cm_name} not found after write"
+            )
+        if readback.get("content_hash") != baseline_data.get("content_hash"):
+            raise RuntimeError(
+                f"Verification readback content_hash mismatch: expected {baseline_data.get('content_hash')}, "
+                f"got {readback.get('content_hash')}"
+            )
+
+    def acquire_cluster_lock(
+        self, instance: str, owner: str, plan_id: str, timeout_seconds: int = 300
+    ) -> None:
+        cm_name = f"home-assistant-lock-{instance}"
+        now = time.time()
+        expires_at = now + timeout_seconds
+        lock_data = {
+            "owner": owner,
+            "plan_id": plan_id,
+            "acquired_at": now,
+            "expires_at": expires_at,
+        }
+        payload = json.dumps(lock_data, indent=2)
+
+        try:
+            res = subprocess.run(
+                [
+                    "kubectl",
+                    "-n",
+                    "home-assistant",
+                    "create",
+                    "configmap",
+                    cm_name,
+                    f"--from-literal=lock.json={payload}",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=10,
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                f"Kubectl command error while acquiring cluster lock: {exc}"
+            ) from exc
+
+        if res.returncode == 0:
+            return
+
+        stderr = res.stderr or ""
+        if "AlreadyExists" in stderr or "already exists" in stderr:
+            try:
+                get_res = subprocess.run(
+                    [
+                        "kubectl",
+                        "-n",
+                        "home-assistant",
+                        "get",
+                        "configmap",
+                        cm_name,
+                        "-o",
+                        "json",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=10,
+                )
+            except Exception as exc:
+                raise LockError(
+                    f"Cluster lock exists but failed to inspect: {exc}"
+                ) from exc
+
+            if get_res.returncode == 0:
+                try:
+                    cm = json.loads(get_res.stdout)
+                    raw_lock = cm.get("data", {}).get("lock.json")
+                    if raw_lock:
+                        data = json.loads(raw_lock)
+                        held_expires = data.get("expires_at", 0)
+                        held_owner = data.get("owner", "unknown")
+                        held_plan = data.get("plan_id", "unknown")
+                        if now < held_expires:
+                            raise LockError(
+                                f"Cluster apply lock already held by '{held_owner}' for plan '{held_plan}' until {held_expires}"
+                            )
+                        # Lock expired: take over by deleting stale ConfigMap
+                        subprocess.run(
+                            [
+                                "kubectl",
+                                "-n",
+                                "home-assistant",
+                                "delete",
+                                "configmap",
+                                cm_name,
+                            ],
+                            capture_output=True,
+                            text=True,
+                            check=False,
+                            timeout=10,
+                        )
+                        return self.acquire_cluster_lock(
+                            instance, owner, plan_id, timeout_seconds
+                        )
+                except LockError:
+                    raise
+                except Exception:
+                    raise LockError(
+                        f"Cluster lock ConfigMap {cm_name} exists and cannot be safely verified"
+                    )
+
+        raise LockError(
+            f"Failed to acquire cluster lock: {stderr.strip() or res.stdout.strip()}"
+        )
+
+    def renew_cluster_lock(
+        self, instance: str, owner: str, plan_id: str, timeout_seconds: int = 300
+    ) -> None:
+        cm_name = f"home-assistant-lock-{instance}"
+        now = time.time()
+        expires_at = now + timeout_seconds
+        lock_data = {
+            "owner": owner,
+            "plan_id": plan_id,
+            "acquired_at": now,
+            "expires_at": expires_at,
+        }
+        payload = json.dumps(lock_data, indent=2)
+        cm = {
+            "apiVersion": "v1",
+            "kind": "ConfigMap",
+            "metadata": {"name": cm_name, "namespace": "home-assistant"},
+            "data": {"lock.json": payload},
         }
         try:
             subprocess.run(
@@ -690,6 +877,48 @@ class HomeAssistantClient:
                 check=False,
                 timeout=10,
             )
+        except Exception:
+            pass
+
+    def release_cluster_lock(self, instance: str, owner: str, plan_id: str) -> None:
+        cm_name = f"home-assistant-lock-{instance}"
+        try:
+            get_res = subprocess.run(
+                [
+                    "kubectl",
+                    "-n",
+                    "home-assistant",
+                    "get",
+                    "configmap",
+                    cm_name,
+                    "-o",
+                    "json",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=10,
+            )
+            if get_res.returncode == 0:
+                cm = json.loads(get_res.stdout)
+                raw_lock = cm.get("data", {}).get("lock.json")
+                if raw_lock:
+                    data = json.loads(raw_lock)
+                    if data.get("plan_id") == plan_id and data.get("owner") == owner:
+                        subprocess.run(
+                            [
+                                "kubectl",
+                                "-n",
+                                "home-assistant",
+                                "delete",
+                                "configmap",
+                                cm_name,
+                            ],
+                            capture_output=True,
+                            text=True,
+                            check=False,
+                            timeout=10,
+                        )
         except Exception:
             pass
 
@@ -720,6 +949,7 @@ class MockHomeAssistantClient(HomeAssistantClient):
             }
         ]
         self.cluster_baselines: dict[str, dict[str, Any]] = {}
+        self.cluster_locks: dict[str, dict[str, Any]] = {}
         self.areas: list[dict[str, Any]] = [
             {
                 "area_id": "living_room",
@@ -901,4 +1131,42 @@ class MockHomeAssistantClient(HomeAssistantClient):
     def save_cluster_baseline(
         self, instance: str, baseline_data: dict[str, Any]
     ) -> None:
-        self.cluster_baselines[instance] = baseline_data
+        self.cluster_baselines[instance] = dict(baseline_data)
+
+    def acquire_cluster_lock(
+        self, instance: str, owner: str, plan_id: str, timeout_seconds: int = 300
+    ) -> None:
+        now = time.time()
+        existing = self.cluster_locks.get(instance)
+        if existing:
+            if now < existing.get("expires_at", 0):
+                raise LockError(
+                    f"Cluster apply lock already held by '{existing.get('owner')}' "
+                    f"for plan '{existing.get('plan_id')}' until {existing.get('expires_at')}"
+                )
+        self.cluster_locks[instance] = {
+            "owner": owner,
+            "plan_id": plan_id,
+            "acquired_at": now,
+            "expires_at": now + timeout_seconds,
+        }
+
+    def renew_cluster_lock(
+        self, instance: str, owner: str, plan_id: str, timeout_seconds: int = 300
+    ) -> None:
+        existing = self.cluster_locks.get(instance)
+        if (
+            existing
+            and existing.get("owner") == owner
+            and existing.get("plan_id") == plan_id
+        ):
+            existing["expires_at"] = time.time() + timeout_seconds
+
+    def release_cluster_lock(self, instance: str, owner: str, plan_id: str) -> None:
+        existing = self.cluster_locks.get(instance)
+        if (
+            existing
+            and existing.get("owner") == owner
+            and existing.get("plan_id") == plan_id
+        ):
+            del self.cluster_locks[instance]

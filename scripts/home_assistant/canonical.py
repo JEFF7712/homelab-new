@@ -252,18 +252,54 @@ def canonical_hash(data: Any) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def compute_baseline_hash(resources: dict[str, Any]) -> str:
+    """Compute deterministic SHA-256 hash of baseline resources."""
+    cleaned: dict[str, Any] = {}
+    for k in sorted(resources.keys()):
+        rdata = resources[k]
+        if isinstance(rdata, dict):
+            desired = rdata.get("desired", rdata)
+        else:
+            desired = rdata
+        cleaned[k] = strip_volatile(desired)
+    payload = canonical_json(cleaned).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 SECRET_PATTERNS = [
     re.compile(r"ey[A-Za-z0-9_-]{10,}\.[A-Za-z0-9._-]{10,}"),  # JWT / Bearer token
     re.compile(r"sk-[A-Za-z0-9]{20,}"),  # API keys
     re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),  # Private keys
     re.compile(r"://[^:/@\s]+:[^/@\s]+@"),  # URL with user:password
     re.compile(
-        r"(?i)(password|secret|api_key|access_token|private_key)\s*[:=]\s*['\"]([^'\"]{8,})['\"]"
+        r"(?i)(password|secret|api_key|apikey|client_secret|credential|access_token|private_key)\s*[:=]\s*['\"]([^'\"]{8,})['\"]"
     ),
 ]
 
 AUTH_HEADER_PATTERN = re.compile(
     r"(Bearer\s+|token\s+|token=)[A-Za-z0-9._-]{10,}", re.IGNORECASE
+)
+
+URL_SECRET_PATTERN = re.compile(
+    r"([?&](?:api_key|apikey|key|token|access_token|secret|password|client_secret)=)([^&\s]+)",
+    re.IGNORECASE,
+)
+
+SENSITIVE_KEY_TERMS: tuple[str, ...] = (
+    "password",
+    "secret",
+    "token",
+    "auth_key",
+    "bearer",
+    "authorization",
+    "api_key",
+    "apikey",
+    "client_secret",
+    "credential",
+    "credentials",
+    "access_token",
+    "private_key",
+    "passphrase",
 )
 
 
@@ -282,21 +318,15 @@ def detect_secrets(obj: Any, path: str = "") -> list[str]:
                     f"Potential credential found at {path or 'root'}: pattern match"
                 )
                 break
+        if URL_SECRET_PATTERN.search(obj):
+            findings.append(
+                f"Potential credential found at {path or 'root'}: sensitive parameter in URL"
+            )
     elif isinstance(obj, dict):
         for k, v in obj.items():
             sub_path = f"{path}.{k}" if path else str(k)
             k_lower = str(k).lower()
-            if any(
-                term in k_lower
-                for term in (
-                    "password",
-                    "secret",
-                    "token",
-                    "auth_key",
-                    "bearer",
-                    "authorization",
-                )
-            ):
+            if any(term in k_lower for term in SENSITIVE_KEY_TERMS):
                 if isinstance(v, str) and not isinstance(v, SecretTag) and len(v) > 0:
                     findings.append(
                         f"Sensitive key '{sub_path}' contains unreferenced plaintext string"
@@ -315,6 +345,7 @@ def redact(text: str) -> str:
     for pattern in SECRET_PATTERNS:
         text = pattern.sub("[REDACTED]", text)
     text = AUTH_HEADER_PATTERN.sub(r"\1[REDACTED]", text)
+    text = URL_SECRET_PATTERN.sub(r"\1[REDACTED]", text)
     return text
 
 

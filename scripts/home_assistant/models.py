@@ -37,6 +37,14 @@ class ExitCode(int, Enum):
     UNAVAILABLE = 3
 
 
+class LockError(Exception):
+    """Raised when an apply lock cannot be acquired or is held by another process."""
+
+
+class StalePlanError(Exception):
+    """Raised when an apply plan has expired or targets stale baseline/live state."""
+
+
 @dataclass(frozen=True)
 class ResourceKey:
     kind: str

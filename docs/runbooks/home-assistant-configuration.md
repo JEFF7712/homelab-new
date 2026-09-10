@@ -97,8 +97,8 @@ Tool invocations are exposed through `just ha-*` or `python -m scripts.home_assi
 | `just ha-adopt` | `(--select <key> \| --all) [--allow-delete] [--force] [--json]` | Atomically update local Git files from live state |
 | `just ha-validate` | `[--sync-gitops] [--json]` | Offline schema, entity reference, GitOps sync, and secret check |
 | `just ha-plan` | `[--select <key>] [--json]` | Generate immutable deployment plan bound to target, version, and source hash |
-| `just ha-apply` | `[--select <key>] [--plan-file <f>]` | Apply plan with atomic lock, renewal, read-before-write, and verification |
-| `just ha-verify` | `[--json]` | Verify live HA matches accepted Git source and update cluster baseline |
+| `just ha-apply` | `[--select <key>] [--plan-file <f>] [-y] [--json]` | Apply plan with atomic lock, renewal, read-before-write, and verification |
+| `just ha-verify` | `[--checkpoint] [--bootstrap] [--json]` | Verify live HA matches accepted Git source; advances cluster baseline when `--checkpoint`/`--bootstrap` is passed and working tree is clean |
 | `just ha-revert` | `--select <key> [--json]` | Restore live resource to Git accepted configuration |
 
 ### Exit Codes
@@ -114,7 +114,7 @@ Tool invocations are exposed through `just ha-*` or `python -m scripts.home_assi
 
 - **No Plaintext Secrets in Desired State**: All sensitive tokens and credentials use the `!secret <secret_name>` tag in YAML, resolved at runtime via Kubernetes ExternalSecrets and SOPS.
 - **Access Tokens**: Home Assistant Long-Lived Access Tokens (LLAT) must never be committed to Git. The CLI resolves tokens from `HASS_TOKEN`, `HASS_TOKEN_FILE`, or `.agent-state/home-assistant/token`.
-- **Pre-Write Secret Scanning**: `just ha-validate` checks candidate configurations against regex patterns for API keys, private keys, JWTs, and database URLs. Both `capture` and `adopt` execute preflight secret validation before any filesystem persistence.
+- **Pre-Write Secret Scanning**: `just ha-validate` checks candidate configurations against regex patterns for API keys, private keys, JWTs, query parameter credentials, and database URLs. Both `capture` and `adopt` execute preflight secret validation before any filesystem persistence.
 
 ---
 
@@ -123,14 +123,14 @@ Tool invocations are exposed through `just ha-*` or `python -m scripts.home_assi
 > [!WARNING]
 > Home Assistant's REST API and UI WebSocket do not provide server-side transactional compare-and-swap or frontend-level edit locking. During planned mutation application, **UI editing on the target resources must be paused**.
 
-1. **Atomic Lease Lock**:
-   Every apply operation acquires a lease lock using atomic file creation (`O_CREAT | O_EXCL`) with restrictive permissions (`0600`). The lock lease is automatically renewed during plan execution and released with owner verification upon completion. Stale crashed locks (> 15 minutes) are reclaimed safely.
+1. **Atomic Local and Cluster Lease Lock**:
+   Every apply operation acquires a lease lock using atomic temporary file creation and hard-linking (`os.link`) with restrictive permissions (`0600`), preventing zero-byte lock race windows. Cross-checkout locking is coordinated via the cluster lock ConfigMap `home-assistant-lock-<instance>`. The lock lease is automatically renewed atomically (`os.replace`) during plan execution and released with owner verification upon completion. Stale crashed locks (> 15 minutes) are reclaimed safely.
 2. **Read-Before-Write Verification**:
    Immediately before applying each mutation, the planner reads the live resource and validates that its current content hash matches the expected pre-apply hash (`expected_live_hash`). If the UI was edited concurrently, the write is aborted as stale.
 3. **Journaling**:
    Every operation records progress (`started`, `applied`, `verified`, `failed`) in `.agent-state/home-assistant/<instance>/journal/<plan_id>.jsonl`.
 4. **Shared Authoritative Baseline**:
-   In addition to local `.agent-state`, verified baselines are persisted to the Kubernetes cluster ConfigMap `home-assistant-baseline-<instance>` so CI pipelines and multiple checkouts share the authoritative deployment checkpoint.
+   In addition to local `.agent-state`, verified baselines are persisted to the Kubernetes cluster ConfigMap `home-assistant-baseline-<instance>` so CI pipelines and multiple checkouts share the authoritative deployment checkpoint with readback hash verification.
 
 ---
 

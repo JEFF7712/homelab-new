@@ -4,13 +4,18 @@ import tempfile
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from scripts.home_assistant.__main__ import (
+    build_parser,
     cmd_adopt,
+    cmd_apply,
     cmd_capture,
+    cmd_diff,
+    cmd_plan,
     cmd_verify,
 )
+from scripts.home_assistant.adapters import get_adapter
 from scripts.home_assistant.adapters.core import (
     CoreConfigurationAdapter,
     sync_core_to_gitops,
@@ -22,6 +27,8 @@ from scripts.home_assistant.canonical import (
     IncludeTag,
     SecretTag,
     canonical_hash,
+    compute_baseline_hash,
+    detect_secrets,
     sanitize_error,
     strip_volatile,
     to_json_compatible,
@@ -55,6 +62,9 @@ class DummyArgs:
         self.force = False
         self.sync_gitops = False
         self.plan_file = None
+        self.checkpoint = False
+        self.bootstrap = False
+        self.yes = False
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -370,8 +380,9 @@ class TestHomeAssistantReviewFindings(unittest.TestCase):
         write_resource_atomic(self.root, doc)
         self.mock_client.automations["night_light"] = doc.desired
 
-        verify_args = DummyArgs()
+        verify_args = DummyArgs(checkpoint=True)
         code = cmd_verify(verify_args, self.root)  # type: ignore[arg-type]
+
         self.assertEqual(code, ExitCode.CLEAN.value)
 
         # Baseline should be saved in cluster_baselines on client
@@ -451,7 +462,7 @@ class TestHomeAssistantReviewFindings(unittest.TestCase):
         )
         write_resource_atomic(self.root, doc)
 
-        planner = Planner(self.root, "test-instance")
+        planner = Planner(self.root, "test-instance", client=self.mock_client)
         base_rec = BaselineRecord(
             instance="test-instance",
             source_commit="c1",
@@ -515,7 +526,7 @@ class TestHomeAssistantReviewFindings(unittest.TestCase):
         )
         write_resource_atomic(self.root, auto_doc)
 
-        planner = Planner(self.root, "test-instance")
+        planner = Planner(self.root, "test-instance", client=self.mock_client)
         planner.save_baseline(
             BaselineRecord(
                 instance="test-instance",
@@ -639,6 +650,389 @@ class TestHomeAssistantReviewFindings(unittest.TestCase):
         self.assertEqual(
             act_dict["after"]["recorder"]["db_url"], {"!secret": "my_secret"}
         )
+
+    # ------------------------------------------------------------------
+    # F1: CLI argument ordering and CI invocation
+    # ------------------------------------------------------------------
+    def test_f1_cli_argument_ordering_and_ci_invocation(self) -> None:
+        parser = build_parser()
+        # Verify exact CI command invocations can be parsed cleanly without error
+        args_plan = parser.parse_args(["plan", "--instance", "homelab-01", "--json"])
+        self.assertEqual(args_plan.command, "plan")
+        self.assertEqual(args_plan.instance, "homelab-01")
+        self.assertTrue(args_plan.json)
+
+        args_plan_prefix = parser.parse_args(
+            ["--instance", "homelab-01", "plan", "--json"]
+        )
+        self.assertEqual(args_plan_prefix.command, "plan")
+        self.assertEqual(args_plan_prefix.instance, "homelab-01")
+
+        args_apply = parser.parse_args(
+            [
+                "apply",
+                "--instance",
+                "homelab-01",
+                "--plan-file",
+                "plan.json",
+                "--yes",
+            ]
+        )
+        self.assertEqual(args_apply.command, "apply")
+        self.assertEqual(args_apply.plan_file, "plan.json")
+        self.assertTrue(args_apply.yes)
+
+        args_verify = parser.parse_args(
+            ["verify", "--instance", "homelab-01", "--checkpoint"]
+        )
+        self.assertEqual(args_verify.command, "verify")
+        self.assertTrue(args_verify.checkpoint)
+
+        # Test full deployment sequence using mock client
+        doc = ResourceDocument(
+            kind="automation",
+            key="ci_test",
+            desired={
+                "id": "ci_test",
+                "alias": "CI Test",
+                "triggers": [],
+                "actions": [],
+            },
+        )
+        write_resource_atomic(self.root, doc)
+
+        with patch(
+            "scripts.home_assistant.__main__.get_client",
+            return_value=self.mock_client,
+        ):
+            # 1. Plan
+            plan_args = DummyArgs(instance="test-instance", json=True)
+            plan_code = cmd_plan(plan_args, self.root)
+            self.assertEqual(plan_code, ExitCode.CLEAN.value)
+
+            plans_dir = (
+                self.root
+                / ".agent-state"
+                / "home-assistant"
+                / "test-instance"
+                / "plans"
+            )
+            plan_files = list(plans_dir.glob("*.json"))
+            self.assertEqual(len(plan_files), 1)
+            plan_file_path = str(plan_files[0])
+
+            # 2. Apply with plan-file
+            apply_args = DummyArgs(
+                instance="test-instance", plan_file=plan_file_path, yes=True
+            )
+            apply_code = cmd_apply(apply_args, self.root)
+            self.assertEqual(apply_code, ExitCode.CLEAN.value)
+            self.assertIn("ci_test", self.mock_client.automations)
+
+            # 3. Verify
+            verify_args = DummyArgs(instance="test-instance")
+            verify_code = cmd_verify(verify_args, self.root)
+            self.assertEqual(verify_code, ExitCode.CLEAN.value)
+
+    # ------------------------------------------------------------------
+    # F2: Shared cluster baseline reading across checkouts
+    # ------------------------------------------------------------------
+    def test_f2_shared_cluster_baseline_diff_and_adopt(self) -> None:
+        checkout2_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(checkout2_dir.cleanup)
+        checkout2 = Path(checkout2_dir.name)
+        (checkout2 / "home-assistant" / "automations").mkdir(parents=True)
+
+        doc_base = ResourceDocument(
+            kind="automation",
+            key="shared_auto",
+            desired={
+                "id": "shared_auto",
+                "alias": "Baseline Alias",
+                "triggers": [],
+                "actions": [],
+            },
+        )
+        # Write to both checkouts
+        write_resource_atomic(self.root, doc_base)
+        write_resource_atomic(checkout2, doc_base)
+
+        # Set live and cluster baseline to Baseline Alias
+        self.mock_client.automations["shared_auto"] = doc_base.desired
+        rec = BaselineRecord(
+            schema_version="1.0",
+            instance="test-instance",
+            source_commit="commit-1",
+            content_hash=compute_baseline_hash(
+                {"automation/shared_auto": {"desired": doc_base.desired}}
+            ),
+            timestamp=datetime.now(timezone.utc).isoformat(),
+            resources={
+                "automation/shared_auto": {
+                    "canonical_hash": canonical_hash(doc_base.desired),
+                    "desired": doc_base.desired,
+                    "verified_at": datetime.now(timezone.utc).isoformat(),
+                }
+            },
+        )
+        self.mock_client.save_cluster_baseline("test-instance", rec.to_dict())
+
+        # Live changes in UI to experiment
+        self.mock_client.automations["shared_auto"]["alias"] = "UI Experiment Alias"
+
+        # Checkout 2 has NO local cache. Diff in checkout 2 must read cluster baseline!
+        with patch(
+            "scripts.home_assistant.__main__.get_client",
+            return_value=self.mock_client,
+        ):
+            diff_code = cmd_diff(
+                DummyArgs(select=["automation/shared_auto"]), checkout2
+            )
+            # Drift detected (EXPERIMENT), not CONFLICT (2)
+            self.assertEqual(diff_code, ExitCode.DRIFT_OR_PENDING.value)
+
+            # Adopt in checkout 2
+            adopt_code = cmd_adopt(
+                DummyArgs(select=["automation/shared_auto"]), checkout2
+            )
+            self.assertEqual(adopt_code, ExitCode.CLEAN.value)
+
+            # Verify file in checkout 2 was updated with UI Experiment Alias
+            dest = checkout2 / "home-assistant" / "automations" / "shared_auto.yaml"
+            self.assertTrue(dest.is_file())
+            self.assertIn("UI Experiment Alias", dest.read_text(encoding="utf-8"))
+
+    # ------------------------------------------------------------------
+    # F3: Adoption target scope (blocks committed git_change, all skips it)
+    # ------------------------------------------------------------------
+    def test_f3_adopt_scope_blocks_git_change(self) -> None:
+        doc_git = ResourceDocument(
+            kind="automation",
+            key="work_light",
+            desired={
+                "id": "work_light",
+                "alias": "Committed Git Change",
+                "triggers": [],
+                "actions": [],
+            },
+        )
+        write_resource_atomic(self.root, doc_git)
+
+        live_desired = {
+            "id": "work_light",
+            "alias": "Old Baseline Alias",
+            "triggers": [],
+            "actions": [],
+        }
+        self.mock_client.automations["work_light"] = live_desired
+
+        # Baseline equals live
+        rec = BaselineRecord(
+            schema_version="1.0",
+            instance="test-instance",
+            source_commit="commit-1",
+            content_hash=compute_baseline_hash(
+                {"automation/work_light": {"desired": live_desired}}
+            ),
+            timestamp=datetime.now(timezone.utc).isoformat(),
+            resources={
+                "automation/work_light": {
+                    "canonical_hash": canonical_hash(live_desired),
+                    "desired": live_desired,
+                    "verified_at": datetime.now(timezone.utc).isoformat(),
+                }
+            },
+        )
+        self.mock_client.save_cluster_baseline("test-instance", rec.to_dict())
+
+        with patch(
+            "scripts.home_assistant.__main__.get_client",
+            return_value=self.mock_client,
+        ):
+            # 1. Selected adoption of git_change must be explicitly rejected
+            code_select = cmd_adopt(
+                DummyArgs(select=["automation/work_light"]), self.root
+            )
+            self.assertEqual(code_select, ExitCode.CONFLICT_OR_INVALID.value)
+
+            dest = self.root / "home-assistant" / "automations" / "work_light.yaml"
+            self.assertIn("Committed Git Change", dest.read_text(encoding="utf-8"))
+
+            # 2. Mixed --all adoption: add a real UI experiment
+            self.mock_client.automations["ui_experiment"] = {
+                "id": "ui_experiment",
+                "alias": "UI Experiment Auto",
+                "triggers": [],
+                "actions": [],
+            }
+            code_all = cmd_adopt(DummyArgs(all=True), self.root)
+            self.assertEqual(code_all, ExitCode.CLEAN.value)
+
+            # UI experiment adopted
+            ui_dest = (
+                self.root / "home-assistant" / "automations" / "ui_experiment.yaml"
+            )
+            self.assertTrue(ui_dest.is_file())
+            self.assertIn("UI Experiment Auto", ui_dest.read_text(encoding="utf-8"))
+
+            # Git change STILL preserved
+            self.assertIn("Committed Git Change", dest.read_text(encoding="utf-8"))
+
+    # ------------------------------------------------------------------
+    # F4: Concurrent lock race and multi-checkout locking
+    # ------------------------------------------------------------------
+    def test_f4_locking_concurrency_and_cross_checkout(self) -> None:
+        planner1 = Planner(self.root, "test-instance", client=self.mock_client)
+        planner1.acquire_lock(owner="agent-1", plan_id="p1")
+
+        # Second acquire in same checkout must raise LockError
+        planner2_same = Planner(self.root, "test-instance", client=self.mock_client)
+        with self.assertRaises(LockError):
+            planner2_same.acquire_lock(owner="agent-2", plan_id="p2")
+
+        # Second acquire in separate checkout must also raise LockError via cluster lock
+        checkout2_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(checkout2_dir.cleanup)
+        checkout2 = Path(checkout2_dir.name)
+        planner_other = Planner(checkout2, "test-instance", client=self.mock_client)
+        with self.assertRaises(LockError):
+            planner_other.acquire_lock(owner="ci-job-other", plan_id="p3")
+
+        # Renewal works atomically
+        planner1.renew_lock(plan_id="p1", owner="agent-1")
+
+        # Release lock
+        planner1.release_lock(plan_id="p1", owner="agent-1")
+
+        # Other checkout can now acquire lock
+        planner_other.acquire_lock(owner="ci-job-other", plan_id="p3")
+        planner_other.release_lock(plan_id="p3", owner="ci-job-other")
+
+    # ------------------------------------------------------------------
+    # F5: Authoritative cluster checkpoint error propagation
+    # ------------------------------------------------------------------
+    def test_f5_cluster_checkpoint_error_propagation(self) -> None:
+        doc = ResourceDocument(
+            kind="automation",
+            key="f5_auto",
+            desired={
+                "id": "f5_auto",
+                "alias": "F5 Auto",
+                "triggers": [],
+                "actions": [],
+            },
+        )
+        write_resource_atomic(self.root, doc)
+        self.mock_client.automations["f5_auto"] = doc.desired
+
+        # Fail cluster writes
+        self.mock_client.save_cluster_baseline = MagicMock(
+            side_effect=RuntimeError("Cluster write rejected by policy")
+        )
+
+        with patch(
+            "scripts.home_assistant.__main__.get_client",
+            return_value=self.mock_client,
+        ):
+            # Verify with checkpoint must report error and exit non-zero
+            code = cmd_verify(DummyArgs(checkpoint=True), self.root)
+            self.assertEqual(code, ExitCode.CONFLICT_OR_INVALID.value)
+
+    # ------------------------------------------------------------------
+    # F6: Per-resource collection timeout and capture status
+    # ------------------------------------------------------------------
+    def test_f6_per_resource_collection_errors_and_capture_status(self) -> None:
+        # 1. get_automation timeout raises instead of silently becoming empty list
+        self.mock_client.entities = [
+            {"entity_id": "automation.review", "unique_id": "review"}
+        ]
+        self.mock_client.get_automation = MagicMock(
+            side_effect=TimeoutError("HTTP GET /api/config/automation timed out")
+        )
+        adapter = get_adapter("automation")
+        with self.assertRaises(TimeoutError):
+            adapter.export_from_live(self.mock_client)
+
+        # 2. Capture returns ExitCode.UNAVAILABLE and status incomplete when adapter fails
+        with patch(
+            "scripts.home_assistant.__main__.get_client",
+            return_value=self.mock_client,
+        ):
+            capture_code = cmd_capture(DummyArgs(), self.root)
+            self.assertEqual(capture_code, ExitCode.UNAVAILABLE.value)
+
+    # ------------------------------------------------------------------
+    # F7: Sensitive API key and URL credential detection
+    # ------------------------------------------------------------------
+    def test_f7_sensitive_api_key_detection(self) -> None:
+        payload = {
+            "id": "telegram_alert",
+            "alias": "Telegram Alert",
+            "actions": [
+                {
+                    "action": "notify.telegram",
+                    "data": {"api_key": "synthetic-example-key-1234"},
+                }
+            ],
+        }
+        findings = detect_secrets(payload, path="automation/telegram_alert")
+        self.assertTrue(len(findings) > 0)
+        self.assertTrue(any("api_key" in f for f in findings))
+
+        url_payload = (
+            "https://hooks.slack.com/services?api_key=synthetic_slack_key_1234"
+        )
+        url_findings = detect_secrets(url_payload, path="url_test")
+        self.assertTrue(len(url_findings) > 0)
+
+        # Preflight reject in adopt
+        self.mock_client.automations["telegram_alert"] = payload
+        with patch(
+            "scripts.home_assistant.__main__.get_client",
+            return_value=self.mock_client,
+        ):
+            adopt_code = cmd_adopt(
+                DummyArgs(select=["automation/telegram_alert"]), self.root
+            )
+            self.assertEqual(adopt_code, ExitCode.CONFLICT_OR_INVALID.value)
+
+    # ------------------------------------------------------------------
+    # F8: Baseline content hash computation and uncommitted verify guard
+    # ------------------------------------------------------------------
+    def test_f8_baseline_content_hash_and_uncommitted_verify_guard(self) -> None:
+        # 1. Deterministic content hash computation
+        res_v1 = {"automation/a": {"desired": {"id": "a", "alias": "A1"}}}
+        res_v2 = {"automation/a": {"desired": {"id": "a", "alias": "A2"}}}
+        hash_v1 = compute_baseline_hash(res_v1)
+        hash_v2 = compute_baseline_hash(res_v2)
+        self.assertTrue(len(hash_v1) == 64)
+        self.assertNotEqual(hash_v1, hash_v2)
+
+        # 2. cmd_verify with uncommitted git modifications rejects checkpointing
+        doc = ResourceDocument(
+            kind="automation",
+            key="dirty_auto",
+            desired={
+                "id": "dirty_auto",
+                "alias": "Dirty Auto",
+                "triggers": [],
+                "actions": [],
+            },
+        )
+        write_resource_atomic(self.root, doc)
+        self.mock_client.automations["dirty_auto"] = doc.desired
+
+        with patch(
+            "scripts.home_assistant.__main__.get_client",
+            return_value=self.mock_client,
+        ):
+            with patch("subprocess.run") as mock_run:
+                mock_run.return_value = MagicMock(
+                    returncode=0,
+                    stdout=" M home-assistant/automations/dirty_auto.yaml\n",
+                )
+                code = cmd_verify(DummyArgs(checkpoint=True), self.root)
+                self.assertEqual(code, ExitCode.CONFLICT_OR_INVALID.value)
 
 
 if __name__ == "__main__":

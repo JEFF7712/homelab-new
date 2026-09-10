@@ -27,31 +27,26 @@ class AutomationAdapter(BaseAdapter):
                     desired=auto,
                 )
             )
-        try:
-            for ent in client.list_entities():
-                entity_id = ent.get("entity_id", "")
-                if entity_id.startswith("automation."):
-                    auto_id = ent.get("unique_id") or entity_id.removeprefix(
-                        "automation."
-                    )
-                    if auto_id in seen:
-                        continue
-                    seen.add(auto_id)
-                    try:
-                        cfg = client.get_automation(auto_id)
-                        docs.append(
-                            ResourceDocument(
-                                kind=self.kind,
-                                key=auto_id,
-                                owner_mode=self.owner_mode,
-                                desired=cfg,
-                                metadata={"entity_id": entity_id},
-                            )
+        for ent in client.list_entities():
+            entity_id = ent.get("entity_id", "")
+            if entity_id.startswith("automation."):
+                auto_id = ent.get("unique_id") or entity_id.removeprefix("automation.")
+                if auto_id in seen:
+                    continue
+                seen.add(auto_id)
+                try:
+                    cfg = client.get_automation(auto_id)
+                    docs.append(
+                        ResourceDocument(
+                            kind=self.kind,
+                            key=auto_id,
+                            owner_mode=self.owner_mode,
+                            desired=cfg,
+                            metadata={"entity_id": entity_id},
                         )
-                    except HomeAssistantNotFoundError:
-                        continue
-        except Exception:
-            pass
+                    )
+                except HomeAssistantNotFoundError:
+                    continue
         return docs
 
     def canonicalize(self, doc: ResourceDocument) -> ResourceDocument:

@@ -547,6 +547,7 @@ deploy_fleet:
 
 .deploy_home_assistant_base:
   stage: deploy
+  resource_group: home-assistant-homelab-01
   tags:
     - nas-privileged
   environment:
@@ -588,9 +589,13 @@ deploy_home_assistant_dry_run:
 deploy_home_assistant:
   extends: .deploy_home_assistant_base
   script:
-    - nix develop ./flake -c python -m scripts.home_assistant plan --instance homelab-01
-    - nix develop ./flake -c python -m scripts.home_assistant apply --instance homelab-01
+    - nix develop ./flake -c python -m scripts.home_assistant plan --instance homelab-01 --json > plan.json
+    - cat plan.json
+    - >-
+      plan_file=$(python3 -c 'import json; print(json.load(open("plan.json"))["plan_file"])')
+    - nix develop ./flake -c python -m scripts.home_assistant apply --instance homelab-01 --plan-file "$plan_file" --yes
     - nix develop ./flake -c python -m scripts.home_assistant verify --instance homelab-01
+
 
 sync_to_github:
   stage: sync
