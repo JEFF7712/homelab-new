@@ -182,6 +182,7 @@ Known producer checkouts are:
 - `/home/rupan/projects/nix-agent`
 - `/home/rupan/projects/pulse`
 - `/home/rupan/projects/sites/rupanism`
+- `/home/rupan/projects/sites/rupan.dev` (`apps/rupan-dev`, publisher `publisher-rupan-dev`)
 - `/home/rupan/projects/old/soluble`
 - `/home/rupan/projects/spatia`
 - `/home/rupan/obsidian`

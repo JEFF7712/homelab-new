@@ -27,6 +27,14 @@ Related manifests:
 
 Cloudflare evaluates top to bottom, first match wins. Keep specifics first, catch-all last.
 
+Pending cutover (not yet in dashboard): `rupan.dev` and `www.rupan.dev`,
+both `-> http://rupan-dev-svc.rupan-dev:80`, placed above the catch-all alongside
+the other `*.rupan.dev` entries. Add them only after the `rupan-dev`
+Deployment is healthy in-cluster and the first `apps/rupan-dev` image is
+verified in zot. DNS for the apex and `www` currently points at Vercel; move
+both records to the tunnel (`CNAME -> <tunnel-id>.cfargotunnel.com`, apex via
+`CNAME` flattening) as the final cutover step, then remove the Vercel project.
+
 1. `photos.rupan.dev -> http://immich-server.immich:80`
 2. `www.pulseagent.dev -> http://pulse-svc.pulse:80`
 3. `pulseagent.dev -> http://pulse-svc.pulse:80`
