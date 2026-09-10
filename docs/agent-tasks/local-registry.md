@@ -50,8 +50,10 @@ Live checks established the intended least-privilege boundaries:
 - the upstream importer cannot publish into `apps/**`;
 - only the maintenance identity has delete or administrative access.
 
-The migration identity remains limited to the migration workflow. Rotate or
-remove it after all first-party producer cutovers have been accepted.
+The temporary `migration-importer` identity has been decommissioned and removed
+from `/persist/zot/htpasswd` on `nas-01`. Authentication attempts with this user
+now return HTTP 401 Unauthorized, and all live publishing is strictly scoped to
+authenticated repository-specific `publisher-<project>` identities.
 
 ## Recovery evidence and retained state
 
@@ -99,7 +101,7 @@ explicitly excluded K3s system mirrors.
 
 ## Producer publishing
 
-Nine identified GitHub producers now build on repository-scoped homelab runners
+Twelve identified GitHub producers now build on repository-scoped homelab runners
 and authenticate with their exact `publisher-<project>` identity. Their first
 post-migration runs succeeded:
 
@@ -108,7 +110,10 @@ post-migration runs succeeded:
 | apolline | `52b4cb3` | `34394049932` |
 | darkbit | `a9df393` | `34394128099` |
 | distrojeff | `5411f87` | `34394157586` |
+| ism | `d56f642` | `17604929388` |
+| majorfinder | `fa24b4c` | `17604535352` |
 | nix-agent-site | `0dc6d65` | `34394191216` |
+| photography | `7cb87a1` | `17604618228` |
 | pulse-site | `04ac384` | `34394230497` |
 | rupanism | `5707feb` | `34387949066` |
 | solubility-gnn | `5c30ab6` | `34395068342` |
@@ -122,23 +127,32 @@ first-party publication proof. The build workflows still retain their external
 publication during the transition; removing those outputs is deferred until all
 producer and rollback consumers are accounted for.
 
+### Overlay retirement and base manifest promotion
+
+The intermediate registry cutover overlays for `websites` and `obsidian` have been
+fully retired:
+- Base deployment manifests across all 12 websites (`gitops/websites/*`) and
+  `obsidian` (`quartz-notes` and `couchdb`) were promoted to direct `registry.rupan.dev`
+  pinned digests.
+- Flux Kustomizations `gitops/clusters/homelab-01/websites.yaml` and
+  `gitops/clusters/homelab-01/obsidian.yaml` were repointed from their temporary cutover
+  components directly to `./gitops/websites` and `./gitops/obsidian`.
+- Both Kustomizations reconciled cleanly (`Ready: True`) with zero restart loops and
+  uninterrupted service across all pods.
+
 The legacy `/home/rupan/homelab` pipeline still owns the renovate application
 images and has unrelated local changes, so it was not modified here.
-
-No producer checkout was found for `cr-demo`, `ism`, `majorfinder`, or
-`photography`. Those four are explicit owner-discovery blockers for future
-publishing, not missing runtime content.
+`cr-demo` is an intentionally excluded, unmanaged demo site without a production CI pipeline.
 
 The GitHub runner manifests were adopted under
 `gitops/automation/github-runner`. The actions-runner and DinD images were added
 to the inventory and lock, imported and digest-verified, and rolled out through
-the automation registry overlay. All nine runner Pods are Running with both
-containers Ready and no restarts.
+the runner manifests using direct `registry.rupan.dev` references. All 12 runner Pods
+are Running with both containers Ready and no restarts.
 
 The registry platform, upstream update workflow, restore path, direct
 first-party publishing, runner adoption, and all repository-owned consumers are
-operational. The four unavailable producer owners and the dirty legacy renovate
-checkout remain bounded future-publishing handoffs.
+operational. Only the dirty legacy renovate checkout remains a bounded future-publishing handoff.
 
 ## Deferred work
 
