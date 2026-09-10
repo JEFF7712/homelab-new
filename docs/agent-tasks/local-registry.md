@@ -102,6 +102,12 @@ registry variants on all three nodes using target-side builds. Live checks
 confirmed no non-local image references among Running workloads other than the
 explicitly excluded K3s system mirrors.
 
+After decommissioning the migration identity, protected pipeline `2835848272`
+passed every automatic quality gate. Node rollout job `16412010444` then
+authenticated with the read-only node identity, verified 74 of 74 locked images
+with zero failures, and successfully activated the registry variant on
+`homelab-01` without running `registry_import`.
+
 ## Producer publishing
 
 Twelve identified GitHub producers now build on repository-scoped homelab runners
