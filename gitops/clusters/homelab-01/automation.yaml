@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./gitops/registry-cutover/components/automation
+  path: ./gitops/automation
   prune: true
   sourceRef:
     kind: GitRepository

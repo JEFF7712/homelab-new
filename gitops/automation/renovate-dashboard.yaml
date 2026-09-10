@@ -23,7 +23,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: dashboard
-        image: jeff7712/homelab-renovate-dashboard:0.0.1495
+        image: registry.rupan.dev/apps/homelab-renovate-dashboard@sha256:dc947a8226bcdb112cc2bf9e119c67fcd3f63168b7234eb1e060618613d490e3  # yamllint disable-line rule:line-length
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
