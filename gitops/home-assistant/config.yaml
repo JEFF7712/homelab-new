@@ -6,6 +6,8 @@ metadata:
 data:
   configuration.yaml: |
     default_config:
+    homeassistant:
+      external_url: https://ha.rupan.dev
     automation: !include automations.yaml
     script: !include scripts.yaml
     scene: !include scenes.yaml
