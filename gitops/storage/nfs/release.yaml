@@ -13,6 +13,12 @@ spec:
         kind: HelmRepository
         name: nfs-subdir-external-provisioner
         namespace: flux-system
+  postRenderers:
+    - kustomize:
+        images:
+          - name: registry.k8s.io/sig-storage/nfs-subdir-external-provisioner
+            newName: registry.rupan.dev/upstream/registry.k8s.io/sig-storage/nfs-subdir-external-provisioner  # yamllint disable-line rule:line-length
+            digest: sha256:63d5e04551ec8b5aae83b6f35938ca5ddc50a88d85492d9731810c31591fa4c9
   values:
     nfs:
       server: 10.0.30.20

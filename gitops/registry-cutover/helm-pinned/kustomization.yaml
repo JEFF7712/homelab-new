@@ -175,21 +175,6 @@ patches:
       group: helm.toolkit.fluxcd.io
       version: v2
       kind: HelmRelease
-      name: nfs-subdir-external-provisioner
-      namespace: storage
-    patch: |-
-      - op: add
-        path: /spec/postRenderers
-        value:
-        - kustomize:
-            images:
-            - name: registry.k8s.io/sig-storage/nfs-subdir-external-provisioner
-              newName: registry.rupan.dev/upstream/registry.k8s.io/sig-storage/nfs-subdir-external-provisioner
-              digest: sha256:63d5e04551ec8b5aae83b6f35938ca5ddc50a88d85492d9731810c31591fa4c9
-  - target:
-      group: helm.toolkit.fluxcd.io
-      version: v2
-      kind: HelmRelease
       name: ntfy
       namespace: observability
     patch: |-
