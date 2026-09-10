@@ -282,6 +282,43 @@ deploy_registry_dns:
       test "$(nix develop ./flake -c curl --silent --show-error --output /dev/null
       --write-out '%{http_code}' https://registry.rupan.dev/v2/)" = 401
 
+deploy_zigbee_gateway:
+  extends: .registry_ssh
+  stage: deploy
+  resource_group: zigbee-gateway
+  needs:
+    - repository_tests
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - |-
+      nix develop ./flake -c python -c '
+      import json, os
+      key = os.environ["ZIGBEE2MQTT_NETWORK_KEY"]
+      if len(key) != 32 or any(char not in "0123456789abcdefABCDEF" for char in key):
+          raise SystemExit("ZIGBEE2MQTT_NETWORK_KEY must be 32 hexadecimal characters")
+      print("mqtt_user: zigbee2mqtt")
+      print("mqtt_password: " + json.dumps(os.environ["ZIGBEE2MQTT_MQTT_PASSWORD"]))
+      print("network_key: " + json.dumps(list(bytes.fromhex(key))))
+      ' | ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.10
+      'sudo install -m 0600 -o root -g root /dev/stdin /persist/secrets/zigbee2mqtt-secret.yaml'
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.10
+      'sudo install -m 0600 -o root -g root /dev/stdin /persist/secrets/mosquitto-home-assistant-password'
+      < "$HOME_ASSISTANT_MQTT_PASSWORD"
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.10
+      'sudo install -m 0600 -o root -g root /dev/stdin /persist/secrets/mosquitto-zigbee2mqtt-password'
+      < "$ZIGBEE2MQTT_MQTT_PASSWORD"
+    - >-
+      nixos-rebuild --flake ./flake#adguard-netbird-01 --use-remote-sudo switch
+      --target-host rupan@10.0.30.10 --build-host rupan@10.0.30.10
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.10
+      'sudo test -e /dev/serial/by-id/usb-SONOFF_SONOFF_Dongle_Lite_MG21_048030cb64a2ef11b809926661ce3355-if00-port0;
+      sudo systemctl is-active mosquitto zigbee2mqtt'
+
 registry_import:
   extends: .registry_ssh
   stage: registry
