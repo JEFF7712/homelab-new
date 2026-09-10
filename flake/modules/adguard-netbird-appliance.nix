@@ -1,4 +1,162 @@
 { lib, pkgs, ... }:
+let
+  rokuBridgePython = pkgs.python3.withPackages (ps: [
+    ps.pyyaml
+    ps.paho-mqtt
+    ps.pycryptodome
+  ]);
+  # Canonical source: roku-bulb-local/scripts/bridge.py. Keep in sync when it changes.
+  rokuBridgeDaemon = pkgs.writeTextFile {
+    name = "roku-bridge";
+    executable = true;
+    destination = "/bin/roku-bridge";
+    text = ''
+      import argparse
+      import json
+      import sys
+      import time
+      import urllib.request
+
+      import yaml
+
+      TEMP_MIN_K = 1800
+      TEMP_MAX_K = 6500
+      MIRED_MIN = round(1_000_000 / TEMP_MAX_K)
+      MIRED_MAX = round(1_000_000 / TEMP_MIN_K)
+
+
+      def clamp(v, lo, hi):
+          return max(lo, min(hi, v))
+
+
+      def ha_to_plist(cmd):
+          plist = []
+          state = (cmd.get("state") or "").upper()
+          if state == "OFF":
+              return [{"pid": "P3", "pvalue": "0"}]
+          if state == "ON":
+              plist.append({"pid": "P3", "pvalue": "1"})
+          if "color_temp" in cmd and cmd["color_temp"] is not None:
+              kelvin = round(1_000_000 / int(cmd["color_temp"]))
+              plist.append({"pid": "P1502", "pvalue": str(clamp(kelvin, TEMP_MIN_K, TEMP_MAX_K))})
+          elif cmd.get("rgb_color"):
+              r, g, b = (clamp(int(x), 0, 255) for x in cmd["rgb_color"][:3])
+              plist.append({"pid": "P1507", "pvalue": f"{r:02X}{g:02X}{b:02X}"})
+          if "brightness" in cmd and cmd["brightness"] is not None:
+              pct = clamp(round(int(cmd["brightness"]) * 100 / 255), 1, 100)
+              plist.append({"pid": "P1501", "pvalue": str(pct)})
+          return plist
+
+
+      def encrypt_characteristics(enr, mac, plist):
+          from Crypto.Cipher import AES
+          from Crypto.Util.Padding import pad
+          from base64 import b64encode
+
+          inner = json.dumps(
+              {"mac": mac, "index": "0", "ts": str(int(time.time() * 1000)), "plist": plist},
+              separators=(",", ":"),
+          )
+          key = enr.encode("utf-8")
+          return b64encode(AES.new(key, AES.MODE_CBC, key).encrypt(pad(inner.encode(), 16))).decode()
+
+
+      def send_local(ip, mac, enr, plist):
+          body = json.dumps(
+              {
+                  "request": "set_status",
+                  "isSendQueue": 0,
+                  "characteristics": encrypt_characteristics(enr, mac, plist),
+              }
+          ).encode()
+          req = urllib.request.Request(
+              f"http://{ip}:88/device_request", data=body, headers={"Content-Type": "application/json"}
+          )
+          with urllib.request.urlopen(req, timeout=5) as resp:
+              resp.read()
+
+
+      def discovery_payload(mac, name, prefix):
+          slug = mac.replace(":", "").upper()
+          return {
+              "name": name,
+              "unique_id": f"roku_{slug}",
+              "object_id": f"roku_{slug.lower()}",
+              "command_topic": f"{prefix}/light/{slug}/set",
+              "state_topic": f"{prefix}/light/{slug}/state",
+              "schema": "json",
+              "optimistic": True,
+              "brightness": True,
+              "brightness_scale": 255,
+              "color_temp": True,
+              "min_mireds": MIRED_MIN,
+              "max_mireds": MIRED_MAX,
+              "rgb": True,
+              "device": {"identifiers": [f"roku_{slug}"], "name": name, "model": "BC1000X", "manufacturer": "Roku"},
+          }
+
+
+      def run(config_path, prefix, mqtt_host, mqtt_port, user, password):
+          import paho.mqtt.client as mqtt
+
+          with open(config_path, encoding="utf-8") as f:
+              bulbs = {b["mac"].replace(":", "").upper(): b for b in yaml.safe_load(f)["bulbs"]}
+
+          client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+          if user:
+              client.username_pw_set(user, password or None)
+
+          def on_connect(c, _u, _f, rc, _p=None):
+              for slug in bulbs:
+                  c.subscribe(f"{prefix}/light/{slug}/set")
+                  disc = discovery_payload(slug, bulbs[slug]["name"], prefix)
+                  c.publish(f"homeassistant/light/roku_{slug}/config", json.dumps(disc), retain=True)
+                  print(f"discovery + subscribe: {bulbs[slug]['name']} ({slug})", flush=True)
+
+          def on_message(c, _u, msg):
+              try:
+                  slug = msg.topic.split("/")[-2].upper()
+                  bulb = bulbs[slug]
+                  cmd = json.loads(msg.payload.decode())
+                  plist = ha_to_plist(cmd)
+                  if not plist:
+                      return
+                  send_local(bulb["ip"], slug, bulb["enr"], plist)
+                  state = {"state": (cmd.get("state") or "ON").upper()}
+                  for k in ("brightness", "color_temp", "rgb_color"):
+                      if cmd.get(k) is not None:
+                          state[k] = cmd[k]
+                  c.publish(f"{prefix}/light/{slug}/state", json.dumps(state), retain=True)
+                  print(f"{slug} <- {plist}", flush=True)
+              except Exception as e:
+                  print(f"error on {msg.topic}: {type(e).__name__}: {e}", file=sys.stderr, flush=True)
+
+          client.on_connect = on_connect
+          client.on_message = on_message
+          client.connect(mqtt_host, mqtt_port, keepalive=30)
+          client.loop_forever()
+          return 0
+
+
+      def main(argv=None):
+          import os
+
+          p = argparse.ArgumentParser()
+          p.add_argument("--config", required=True)
+          p.add_argument("--prefix", default="roku")
+          p.add_argument("--mqtt-host", default=os.environ.get("MQTT_HOST", "127.0.0.1"))
+          p.add_argument("--mqtt-port", type=int, default=int(os.environ.get("MQTT_PORT", "1883")))
+          p.add_argument("--mqtt-user", default=os.environ.get("MQTT_USER", ""))
+          p.add_argument("--mqtt-pass", default=os.environ.get("MQTT_PASS", ""))
+          a = p.parse_args(argv)
+          return run(a.config, a.prefix, a.mqtt_host, a.mqtt_port, a.mqtt_user, a.mqtt_pass)
+
+
+      if __name__ == "__main__":
+          sys.exit(main())
+    '';
+  };
+in
 {
   boot = {
     initrd.systemd.enable = true;
@@ -180,14 +338,21 @@
             passwordFile = "/persist/secrets/mosquitto-home-assistant-password";
             acl = [
               "readwrite homeassistant/#"
-              "read zigbee2mqtt/#"
+              "readwrite zigbee2mqtt/#"
             ];
           };
           zigbee2mqtt = {
             passwordFile = "/persist/secrets/mosquitto-zigbee2mqtt-password";
             acl = [
-              "read homeassistant/status"
+              "readwrite homeassistant/#"
               "readwrite zigbee2mqtt/#"
+            ];
+          };
+          roku-bridge = {
+            passwordFile = "/persist/secrets/mosquitto-roku-bridge-password";
+            acl = [
+              "readwrite homeassistant/#"
+              "readwrite roku/#"
             ];
           };
         };
@@ -220,6 +385,7 @@
   systemd.services.mosquitto.unitConfig.ConditionPathExists = [
     "/persist/secrets/mosquitto-home-assistant-password"
     "/persist/secrets/mosquitto-zigbee2mqtt-password"
+    "/persist/secrets/mosquitto-roku-bridge-password"
   ];
 
   systemd.services.zigbee2mqtt-secrets = {
@@ -234,6 +400,58 @@
       ${pkgs.coreutils}/bin/install -m 0600 -o zigbee2mqtt -g zigbee2mqtt \
         /persist/secrets/zigbee2mqtt-secret.yaml /var/lib/zigbee2mqtt/secret.yaml
     '';
+  };
+
+  users.users.roku-bridge = {
+    isSystemUser = true;
+    group = "roku-bridge";
+    description = "Roku bulb MQTT bridge";
+  };
+  users.groups.roku-bridge = { };
+
+  systemd.services.roku-bridge-secrets = {
+    before = [ "roku-bridge.service" ];
+    requiredBy = [ "roku-bridge.service" ];
+    unitConfig.ConditionPathExists = [
+      "/persist/secrets/roku-bridge-bulbs.yaml"
+      "/persist/secrets/mosquitto-roku-bridge-password"
+    ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ${pkgs.coreutils}/bin/install -d -m 0700 -o roku-bridge -g roku-bridge /var/lib/roku-bridge
+      ${pkgs.coreutils}/bin/install -m 0600 -o roku-bridge -g roku-bridge \
+        /persist/secrets/roku-bridge-bulbs.yaml /var/lib/roku-bridge/bulbs.yaml
+      {
+        echo "MQTT_HOST=10.0.30.10"
+        echo "MQTT_PORT=1883"
+        echo "MQTT_USER=roku-bridge"
+        ${pkgs.coreutils}/bin/printf 'MQTT_PASS='
+        ${pkgs.coreutils}/bin/cat /persist/secrets/mosquitto-roku-bridge-password
+      } > /var/lib/roku-bridge/mqtt.env
+      ${pkgs.coreutils}/bin/chown roku-bridge:roku-bridge /var/lib/roku-bridge/mqtt.env
+      ${pkgs.coreutils}/bin/chmod 0600 /var/lib/roku-bridge/mqtt.env
+    '';
+  };
+
+  systemd.services.roku-bridge = {
+    after = [
+      "network-online.target"
+      "mosquitto.service"
+    ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      User = "roku-bridge";
+      EnvironmentFile = "/var/lib/roku-bridge/mqtt.env";
+      ExecStart = "${rokuBridgePython}/bin/python3 -u ${rokuBridgeDaemon}/bin/roku-bridge --config /var/lib/roku-bridge/bulbs.yaml";
+      Restart = "always";
+      RestartSec = "5s";
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+    };
   };
 
   systemd.services = {
