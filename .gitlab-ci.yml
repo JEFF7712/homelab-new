@@ -292,16 +292,9 @@ deploy_zigbee_gateway:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
   script:
-    - |-
-      nix develop ./flake -c python -c '
-      import json, os
-      key = os.environ["ZIGBEE2MQTT_NETWORK_KEY"]
-      if len(key) != 32 or any(char not in "0123456789abcdefABCDEF" for char in key):
-          raise SystemExit("ZIGBEE2MQTT_NETWORK_KEY must be 32 hexadecimal characters")
-      print("mqtt_user: zigbee2mqtt")
-      print("mqtt_password: " + json.dumps(os.environ["ZIGBEE2MQTT_MQTT_PASSWORD"]))
-      print("network_key: " + json.dumps(list(bytes.fromhex(key))))
-      ' | ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.10
+    - >-
+      nix develop ./flake -c python -m scripts.zigbee_gateway |
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.10
       'sudo install -m 0600 -o root -g root /dev/stdin /persist/secrets/zigbee2mqtt-secret.yaml'
     - >-
       ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.10

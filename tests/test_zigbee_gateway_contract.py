@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+from scripts.zigbee_gateway import render_secret
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -23,10 +25,21 @@ class ZigbeeGatewayContractTests(unittest.TestCase):
         pipeline = (ROOT / ".gitlab-ci.yml").read_text()
 
         self.assertIn("deploy_zigbee_gateway:", pipeline)
-        self.assertIn("ZIGBEE2MQTT_NETWORK_KEY", pipeline)
+        self.assertIn("python -m scripts.zigbee_gateway", pipeline)
         self.assertIn("zigbee2mqtt-secret.yaml", pipeline)
         self.assertIn("mosquitto-home-assistant-password", pipeline)
         self.assertIn("systemctl is-active mosquitto zigbee2mqtt", pipeline)
+
+    def test_secret_renderer_emits_a_stable_network_key(self) -> None:
+        secret = render_secret("00" * 16, "mqtt-password")
+
+        self.assertEqual(
+            secret,
+            '{"mqtt_user": "zigbee2mqtt", "mqtt_password": "mqtt-password", '
+            '"network_key": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}',
+        )
+        with self.assertRaises(ValueError):
+            render_secret("not-a-network-key", "mqtt-password")
 
 
 if __name__ == "__main__":
