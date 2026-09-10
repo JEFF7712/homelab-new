@@ -28,7 +28,7 @@ class ZigbeeGatewayContractTests(unittest.TestCase):
         self.assertIn("python -m scripts.zigbee_gateway", pipeline)
         self.assertIn("zigbee2mqtt-secret.yaml", pipeline)
         self.assertIn("mosquitto-home-assistant-password", pipeline)
-        self.assertIn('printf \'%s\' "$HOME_ASSISTANT_MQTT_PASSWORD"', pipeline)
+        self.assertIn("printf '%s' \"$HOME_ASSISTANT_MQTT_PASSWORD\"", pipeline)
         self.assertIn("systemctl is-active mosquitto zigbee2mqtt", pipeline)
 
     def test_secret_renderer_emits_a_stable_network_key(self) -> None:
