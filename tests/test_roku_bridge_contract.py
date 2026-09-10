@@ -46,7 +46,7 @@ class RokuBridgeContractTests(unittest.TestCase):
         self.assertIn("python -m scripts.roku_bridge", pipeline)
         self.assertIn("roku-bridge-bulbs.yaml", pipeline)
         self.assertIn("mosquitto-roku-bridge-password", pipeline)
-        self.assertIn('printf \'%s\' "$ROKU_BRIDGE_MQTT_PASSWORD"', pipeline)
+        self.assertIn("printf '%s' \"$ROKU_BRIDGE_MQTT_PASSWORD\"", pipeline)
         self.assertIn("systemctl is-active mosquitto zigbee2mqtt roku-bridge", pipeline)
 
     def test_secret_renderer_emits_validated_bulbs_yaml(self) -> None:
@@ -64,7 +64,9 @@ class RokuBridgeContractTests(unittest.TestCase):
             "    enr: 0123456789ABCDEF\n",
         )
         with self.assertRaises(ValueError):
-            render_bulbs('[{"name": "Bad", "mac": "XYZ", "ip": "10.0.20.117", "enr": "short"}]')
+            render_bulbs(
+                '[{"name": "Bad", "mac": "XYZ", "ip": "10.0.20.117", "enr": "short"}]'
+            )
         with self.assertRaises(ValueError):
             render_bulbs("not json")
 

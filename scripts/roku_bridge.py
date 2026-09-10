@@ -10,7 +10,9 @@ def render_bulbs(bulbs_json: str) -> str:
     try:
         bulbs = json.loads(bulbs_json)
     except json.JSONDecodeError as error:
-        raise ValueError(f"ROKU_BRIDGE_BULBS_JSON is not valid JSON: {error}") from error
+        raise ValueError(
+            f"ROKU_BRIDGE_BULBS_JSON is not valid JSON: {error}"
+        ) from error
     if not isinstance(bulbs, list) or not bulbs:
         raise ValueError("ROKU_BRIDGE_BULBS_JSON must be a non-empty list")
 
