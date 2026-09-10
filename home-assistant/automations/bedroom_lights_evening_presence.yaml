@@ -75,3 +75,4 @@ actions:
                 - light.floor_lamp_floor_lamp
                 - light.light_strip_light_strip
 mode: single
+# CI trigger touch: no-op comment so changes: includes HA jobs post-merge
