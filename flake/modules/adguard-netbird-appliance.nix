@@ -92,8 +92,23 @@ let
               "min_mireds": MIRED_MIN,
               "max_mireds": MIRED_MAX,
               "rgb": True,
+              "supported_color_modes": ["brightness", "color_temp", "rgb"],
               "device": {"identifiers": [f"roku_{slug}"], "name": name, "model": "BC1000X", "manufacturer": "Roku"},
           }
+
+
+      def commanded_state(cmd):
+          state = {"state": (cmd.get("state") or "ON").upper()}
+          if cmd.get("color_temp") is not None:
+              state["color_mode"] = "color_temp"
+          elif cmd.get("rgb_color"):
+              state["color_mode"] = "rgb"
+          elif cmd.get("brightness") is not None:
+              state["color_mode"] = "brightness"
+          for k in ("brightness", "color_temp", "rgb_color"):
+              if cmd.get(k) is not None:
+                  state[k] = cmd[k]
+          return state
 
 
       def run(config_path, prefix, mqtt_host, mqtt_port, user, password):
@@ -122,10 +137,7 @@ let
                   if not plist:
                       return
                   send_local(bulb["ip"], slug, bulb["enr"], plist)
-                  state = {"state": (cmd.get("state") or "ON").upper()}
-                  for k in ("brightness", "color_temp", "rgb_color"):
-                      if cmd.get(k) is not None:
-                          state[k] = cmd[k]
+                  state = commanded_state(cmd)
                   c.publish(f"{prefix}/light/{slug}/state", json.dumps(state), retain=True)
                   print(f"{slug} <- {plist}", flush=True)
               except Exception as e:

@@ -46,6 +46,8 @@ class RokuBridgeContractTests(unittest.TestCase):
         self.assertIn("/light/{slug}/set", appliance)
         self.assertIn("/light/{slug}/state", appliance)
         self.assertIn("device_request", appliance)
+        self.assertIn("supported_color_modes", appliance)
+        self.assertIn("commanded_state", appliance)
 
     def test_ci_provisions_bridge_secrets_before_activation(self) -> None:
         pipeline = (ROOT / ".gitlab-ci.yml").read_text()
