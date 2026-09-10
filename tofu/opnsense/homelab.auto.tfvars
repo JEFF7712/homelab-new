@@ -217,6 +217,22 @@ firewall_filters = {
       destination = { net = "10.0.30.1", port = "179" }
     }
   }
+  infrastructure-allow-roku-bulbs = {
+    description = "Allow roku-bridge to Roku bulbs local API"
+    enabled     = true
+    sequence    = 317
+    interface   = { interface = ["opt3"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet"
+      protocol    = "TCP"
+      quick       = true
+      log         = true
+      source      = { net = "10.0.30.10/32", port = "" }
+      destination = { net = "10.0.20.112/29", port = "88" }
+    }
+  }
   infrastructure-block-private = {
     description = "Block infrastructure from initiating to other private VLANs"
     enabled     = true
