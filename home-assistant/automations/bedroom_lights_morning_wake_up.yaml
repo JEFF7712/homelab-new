@@ -1,6 +1,6 @@
 id: bedroom_lights_morning_wake_up
 alias: "Bedroom Lights: Morning Wake-Up"
-description: "Turn on bedroom lights at 8:00 AM if home."
+description: "Turn on bedroom lights at 8:00 AM if home. Roku lights come on warm and gentle."
 triggers:
   - trigger: time
     at: "08:00:00"
@@ -20,4 +20,7 @@ actions:
         - light.desk_lamp_desk_lamp
         - light.floor_lamp_floor_lamp
         - light.light_strip_light_strip
+    data:
+      brightness_pct: 30
+      color_temp_kelvin: 2700
 mode: single
