@@ -518,6 +518,8 @@ class FleetDeployer:
             f"{self.flake_path}#{host.name}",
             "--target-host",
             f"{self.ssh_user}@{host.ip}",
+            "--build-host",
+            f"{self.ssh_user}@{host.ip}",
             "--elevate=sudo",
         ]
         run_command(cmd, runner=self.runner, timeout=600.0)
