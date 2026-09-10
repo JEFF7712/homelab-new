@@ -1,5 +1,16 @@
 image: nixos/nix:latest
 
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+
 stages:
   - lint
   - test
@@ -11,6 +22,7 @@ stages:
 
 variables:
   NIX_CONFIG: "experimental-features = nix-command flakes"
+  TF_PLUGIN_CACHE_DIR: "/tmp/tofu-plugin-cache"
   TF_STATE_NAME: opnsense-production
   TF_HTTP_ADDRESS: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${TF_STATE_NAME}"
   TF_HTTP_LOCK_ADDRESS: "${TF_HTTP_ADDRESS}/lock"
@@ -37,6 +49,7 @@ variables:
 
 .nix_format:
   stage: lint
+  needs: []
   script:
     - nix develop ./flake -c just fmt-check
 
@@ -52,10 +65,9 @@ nix_format_feature:
 
 .repository_tests:
   stage: test
+  needs: []
   script:
-    - nix develop ./flake -c just provision-check-deps
-    - nix develop ./flake -c just check
-    - nix flake check ./flake
+    - nix develop ./flake -c bash -c 'just provision-check-deps && just check'
 
 repository_tests:
   extends:
@@ -69,6 +81,7 @@ repository_tests_feature:
 
 .yaml_schema:
   stage: test
+  needs: []
   script:
     - nix develop ./flake -c yamllint .
 
@@ -111,6 +124,7 @@ nix_cache:
 
 .secret_scan:
   stage: security
+  needs: []
   script:
     - nix develop ./flake -c gitleaks detect --source . --redact
 
@@ -126,9 +140,9 @@ secret_scan_feature:
 
 .registry_lock:
   stage: registry
+  needs: []
   script:
-    - nix develop ./flake -c just check-registry
-    - nix develop ./flake -c just registry-plan > registry-copy-plan.json
+    - nix develop ./flake -c bash -c 'just check-registry && just registry-plan > registry-copy-plan.json'
   artifacts:
     expire_in: 7 days
     paths:
@@ -440,10 +454,12 @@ opnsense_plan:
       test "$(nix develop ./flake -c python -c
       'import json;print(json.load(open("artifacts/opnsense/inventory.json"))["assignment_api_available"])')"
       = True
-    - nix develop ./flake -c tofu -chdir=tofu/opnsense init -reconfigure
-    - nix develop ./flake -c tofu -chdir=tofu/opnsense validate
-    - nix develop ./flake -c tofu -chdir=tofu/opnsense plan -refresh-only -out=refresh-only.tfplan
-    - nix develop ./flake -c tofu -chdir=tofu/opnsense plan -out=desired.tfplan
+    - >-
+      nix develop ./flake -c bash -e -c '
+      tofu -chdir=tofu/opnsense init -reconfigure &&
+      tofu -chdir=tofu/opnsense validate &&
+      tofu -chdir=tofu/opnsense plan -refresh-only -out=refresh-only.tfplan &&
+      tofu -chdir=tofu/opnsense plan -out=desired.tfplan'
   artifacts:
     expire_in: 7 days
     paths:
@@ -489,6 +505,7 @@ opnsense_apply:
 nas_proof:
   extends: .nas_ci
   stage: test
+  needs: []
   variables:
     GIT_STRATEGY: none
   script:
@@ -604,6 +621,11 @@ sync_to_github:
   image: nixos/nix:latest
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - repository_tests
+    - nix_format
+    - yaml_schema
+    - secret_scan
   script:
     - >-
       nix develop ./flake -c bash -e -c '

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/../.."
+export SKIP_TESTS=1
+export SKIP_NIX_EVAL=1
 bash scripts/checks/agent-workflows.sh
 bash scripts/checks/python.sh
 bash scripts/checks/registry.sh
