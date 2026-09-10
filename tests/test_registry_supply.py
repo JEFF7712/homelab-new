@@ -482,9 +482,7 @@ class PolicyAndNodeConfigTest(unittest.TestCase):
             )
             report = check_consumers(root, value)
             self.assertEqual(report["status"], "failed")
-            self.assertIn(
-                "no tested mirror exception", report["errors"][0]["error"]
-            )
+            self.assertIn("no tested mirror exception", report["errors"][0]["error"])
 
     def test_node_config_uses_exact_rewrites_tls_and_private_atomic_output(
         self,

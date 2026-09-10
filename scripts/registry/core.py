@@ -15,8 +15,6 @@ import time
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-import yaml
-
 SCHEMA_VERSION = 1
 DEFAULT_REGISTRY = "registry.rupan.dev"
 _DIGEST_RE = re.compile(r"sha256:[0-9a-f]{64}\Z")
