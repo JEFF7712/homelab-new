@@ -25,7 +25,6 @@
   "useBaseBranchConfig": "merge",
   "ignorePaths": [
     "registry/**",
-    "gitops/registry-cutover/**",
     "schemas/**",
     "artifacts/**",
     "secrets/**"

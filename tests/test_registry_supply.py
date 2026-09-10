@@ -458,9 +458,7 @@ class PolicyAndNodeConfigTest(unittest.TestCase):
             report = check_consumers(root, value)
             self.assertEqual(report["status"], "ok")
 
-    def test_prepared_policy_rejects_public_images_left_in_rendered_overlay(
-        self,
-    ) -> None:
+    def test_check_consumers_uses_inventory_based_validation(self) -> None:
         raw = manifest()
         value = valid_lock(raw)
         destination = (
@@ -469,47 +467,24 @@ class PolicyAndNodeConfigTest(unittest.TestCase):
         )
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
-            overlay = root / "gitops/registry-cutover/components/demo"
-            overlay.mkdir(parents=True)
-            inventory = root / "gitops/registry-cutover/consumer-inventory.yaml"
-            inventory.write_text(
-                yaml.safe_dump(
-                    {
-                        "spec": {
-                            "directManifests": [
-                                {
-                                    "source": "docker.io/library/demo:1.0",
-                                    "destination": destination,
-                                    "state": "prepared",
-                                }
-                            ],
-                            "helmGenerated": [],
-                        }
-                    }
-                ),
+            (root / "gitops").mkdir()
+            workload = root / "gitops/app.yaml"
+            workload.write_text(
+                f"image: {destination}\n",
                 encoding="utf-8",
             )
-            (overlay / "kustomization.yaml").write_text(
-                "resources:\n  - workload.yaml\n", encoding="utf-8"
-            )
-            workload = overlay / "workload.yaml"
+            report = check_consumers(root, value)
+            self.assertEqual(report["status"], "ok")
+
             workload.write_text(
-                "apiVersion: v1\nkind: Pod\nmetadata:\n  name: demo\nspec:\n"
-                "  containers:\n    - name: demo\n      image: docker.io/library/demo:1.0\n",
+                "image: docker.io/library/demo:1.0\n",
                 encoding="utf-8",
             )
             report = check_consumers(root, value)
             self.assertEqual(report["status"], "failed")
             self.assertIn(
-                "not an exact locked local digest", report["errors"][0]["error"]
+                "no tested mirror exception", report["errors"][0]["error"]
             )
-
-            workload.write_text(
-                "apiVersion: v1\nkind: Pod\nmetadata:\n  name: demo\nspec:\n"
-                f"  containers:\n    - name: demo\n      image: {destination}\n",
-                encoding="utf-8",
-            )
-            self.assertEqual(check_consumers(root, value)["status"], "ok")
 
     def test_node_config_uses_exact_rewrites_tls_and_private_atomic_output(
         self,

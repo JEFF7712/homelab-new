@@ -15,11 +15,11 @@ evidence are kept separate from desired state.
 - `secrets/` contains only SOPS-encrypted material.
 
 The local container registry is owned by `flake/` on `nas-01` and consumed by
-k3s through `gitops/registry-cutover/`. Registry content is represented by the
-immutable mapping in `registry/images.lock.json`. Image import, verification,
-and policy checks are explicit CI or operator actions. See
-[`docs/runbooks/local-registry.md`](docs/runbooks/local-registry.md) for the
-deployment sequence, credential boundaries, backup and restore procedure,
+k3s through pinned digests in `gitops/` base manifests. Registry content is
+represented by the immutable mapping in `registry/images.lock.json`. Image
+import, verification, and policy checks are explicit CI or operator actions.
+See [`docs/runbooks/local-registry.md`](docs/runbooks/local-registry.md) for
+the deployment sequence, credential boundaries, backup and restore procedure,
 and rollback rules.
 
 ## Deployment

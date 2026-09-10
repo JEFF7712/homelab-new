@@ -1,6 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1alpha1
-kind: Component
-images:
-  - name: ghcr.io/jeff7712/apolline
-    newName: registry.rupan.dev/apps/apolline
-    digest: sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a

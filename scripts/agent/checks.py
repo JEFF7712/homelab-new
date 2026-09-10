@@ -65,8 +65,6 @@ def _route(path: str) -> list[tuple[str, str]]:
     if path.startswith("opnsense_reconciler/") and path.endswith(".py"):
         return [("python", f"{path} changes Python reconciliation")]
     if path.startswith("gitops/"):
-        if path.startswith("gitops/registry-cutover/"):
-            return [("registry", f"{path} changes the prepared registry cutover")]
         return [("gitops", f"{path} changes Kubernetes desired state")]
     if path.startswith("tofu/opnsense/"):
         return [("tofu", f"{path} changes OpenTofu configuration")]
