@@ -4,3 +4,7 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 recorder:
   db_url: !secret recorder_db_url
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 10.42.0.0/16
