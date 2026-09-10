@@ -79,7 +79,7 @@ let
       def discovery_payload(mac, name, prefix):
           slug = mac.replace(":", "").upper()
           return {
-              "name": name,
+              "name": None,
               "unique_id": f"roku_{slug}",
               "object_id": f"roku_{slug.lower()}",
               "command_topic": f"{prefix}/light/{slug}/set",
@@ -92,7 +92,7 @@ let
               "min_mireds": MIRED_MIN,
               "max_mireds": MIRED_MAX,
               "rgb": True,
-              "supported_color_modes": ["brightness", "color_temp", "rgb"],
+              "supported_color_modes": ["color_temp", "rgb"],
               "device": {"identifiers": [f"roku_{slug}"], "name": name, "model": "BC1000X", "manufacturer": "Roku"},
           }
 
@@ -103,8 +103,6 @@ let
               state["color_mode"] = "color_temp"
           elif cmd.get("rgb_color"):
               state["color_mode"] = "rgb"
-          elif cmd.get("brightness") is not None:
-              state["color_mode"] = "brightness"
           for k in ("brightness", "color_temp", "rgb_color"):
               if cmd.get(k) is not None:
                   state[k] = cmd[k]
