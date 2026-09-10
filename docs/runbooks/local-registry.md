@@ -116,12 +116,10 @@ All registry deployment and mutation jobs are manual. A repository push does not
 
 ## Flux cutover paths
 
-Each overlay below owns the same resources as one existing Flux Kustomization.
-Activate it by changing only that Kustomization's `spec.path`, committing the
-change, and waiting for health before continuing. Do not apply the rendered
-objects with kubectl.
+> [!NOTE]
+> **Cutover Complete**: All 17 Flux Kustomizations have been migrated to point directly to their canonical base paths (`./gitops/<subsystem>` and `./gitops/clusters/homelab-01`). Pinned `registry.rupan.dev` digests and HelmRelease post-renderers are now standard in the base manifests. The cutover mapping below is retained for audit and provenance reference.
 
-| Cohort | Existing path | Registry path |
+| Cohort | Base path | Former cutover overlay |
 | --- | --- | --- |
 | Single stateless canary | `./gitops/websites` | `./gitops/registry-cutover/components/websites-canary` |
 | Remaining stateless sites | `./gitops/websites` | `./gitops/registry-cutover/components/websites` |
@@ -135,13 +133,7 @@ objects with kubectl.
 | cert-manager | `./gitops/cert-manager` | `./gitops/registry-cutover/components/cert-manager` |
 | External Secrets Operator | `./gitops/platform` | `./gitops/registry-cutover/components/platform` |
 | NFS provisioner | `./gitops/storage` | `./gitops/registry-cutover/components/storage` |
-
-The prepared Flux controller overlay is
-`gitops/registry-cutover/components/flux-system`. Activate it only after all
-ordinary workloads and bootstrap images have passed uncached pulls. Updating
-Flux's self-reconciling path requires a separate reviewed commit and recovery
-proof. Until then, the node rewrite routes the locked controller source names
-to zot.
+| Flux system controllers | `./gitops/clusters/homelab-01` | `./gitops/registry-cutover/components/flux-system` |
 
 ## Import and update rules
 
