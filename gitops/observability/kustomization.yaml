@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - kube-prometheus-stack/repository.yaml
   - kube-prometheus-stack/release.yaml
+  - kube-prometheus-stack/registry-rules.yaml
   - loki/repository.yaml
   - loki/release.yaml
   - alloy/release.yaml

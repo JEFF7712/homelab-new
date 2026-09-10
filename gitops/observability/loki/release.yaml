@@ -13,6 +13,30 @@ spec:
         kind: HelmRepository
         name: grafana
         namespace: flux-system
+  postRenderers:
+    - kustomize:
+        images:
+          - name: docker.io/grafana/loki
+            newName: registry.rupan.dev/upstream/docker.io/grafana/loki  # yamllint disable-line rule:line-length
+            digest: sha256:3c8fd3570dd9219951a60d3f919c7f31923d10baee578b77bc26c4a0b32d092d
+          - name: docker.io/grafana/loki-canary
+            newName: registry.rupan.dev/upstream/docker.io/grafana/loki-canary  # yamllint disable-line rule:line-length
+            digest: sha256:0dac7d5cb383adb8d3723676a70ed0c65b582e636846f4ce48703556dd509ad1
+          - name: docker.io/grafana/loki-helm-test
+            newName: registry.rupan.dev/upstream/docker.io/grafana/loki-helm-test  # yamllint disable-line rule:line-length
+            digest: sha256:2ed6447bbdbcd23019c3fdb02bce6db3fbef296d5a8f77a68d3dbc386bfa43fb
+          - name: docker.io/kiwigrid/k8s-sidecar
+            newName: registry.rupan.dev/upstream/docker.io/kiwigrid/k8s-sidecar  # yamllint disable-line rule:line-length
+            digest: sha256:a6b3f707f883108376514489a94d6629109a327b2978e1d826cd104c4ca436df
+          - name: docker.io/nginxinc/nginx-unprivileged
+            newName: registry.rupan.dev/upstream/docker.io/nginxinc/nginx-unprivileged  # yamllint disable-line rule:line-length
+            digest: sha256:0c79d56aee561a1d81c63f00eee5fb5fe29279560cdc55e91425133104c7fbe6
+          - name: memcached
+            newName: registry.rupan.dev/upstream/docker.io/library/memcached  # yamllint disable-line rule:line-length
+            digest: sha256:c8503d4491edd3110cc07d0465089d3a41cf1daf8645e71149e39a51835e92cd
+          - name: prom/memcached-exporter
+            newName: registry.rupan.dev/upstream/docker.io/prom/memcached-exporter  # yamllint disable-line rule:line-length
+            digest: sha256:b6763ecb3c47f2408e0398518851b7f8c5fc46232b2649f8c78a321130c54266
   values:
     deploymentMode: SingleBinary
     backend:

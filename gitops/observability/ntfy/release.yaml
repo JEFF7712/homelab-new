@@ -13,6 +13,12 @@ spec:
         kind: HelmRepository
         name: helmforge
         namespace: flux-system
+  postRenderers:
+    - kustomize:
+        images:
+          - name: docker.io/binwiederhier/ntfy
+            newName: registry.rupan.dev/upstream/docker.io/binwiederhier/ntfy  # yamllint disable-line rule:line-length
+            digest: sha256:6ef4b819f722fccdc036af611c4774cfdc2de821ab74fdd48bbf4c9d6f8973da
   values:
     ntfy:
       baseUrl: https://ntfy.rupan.dev

@@ -13,12 +13,54 @@ spec:
         kind: HelmRepository
         name: prometheus-community
         namespace: flux-system
+  postRenderers:
+    - kustomize:
+        images:
+          - name: docker.io/grafana/grafana
+            newName: registry.rupan.dev/upstream/docker.io/grafana/grafana  # yamllint disable-line rule:line-length
+            digest: sha256:2d1f9ae67c1778d33e291d4c3c759cd8b650e67491f02533499eb950e075eeb5
+          - name: ghcr.io/jkroepke/kube-webhook-certgen
+            newName: registry.rupan.dev/upstream/ghcr.io/jkroepke/kube-webhook-certgen  # yamllint disable-line rule:line-length
+            digest: sha256:8ce13c365c8e9ced0aad5ef350a53c50b7ca5817f99d856b9eec895db1056728
+          - name: quay.io/kiwigrid/k8s-sidecar
+            newName: registry.rupan.dev/upstream/quay.io/kiwigrid/k8s-sidecar  # yamllint disable-line rule:line-length
+            digest: sha256:694950d736c8b532eba4006527ccbdac98fefc9f30b3346ba2de50b6cad91c94
+          - name: quay.io/prometheus-operator/prometheus-config-reloader
+            newName: registry.rupan.dev/upstream/quay.io/prometheus-operator/prometheus-config-reloader  # yamllint disable-line rule:line-length
+            digest: sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1
+          - name: quay.io/prometheus-operator/prometheus-operator
+            newName: registry.rupan.dev/upstream/quay.io/prometheus-operator/prometheus-operator  # yamllint disable-line rule:line-length
+            digest: sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d
+          - name: quay.io/prometheus/alertmanager
+            newName: registry.rupan.dev/upstream/quay.io/prometheus/alertmanager  # yamllint disable-line rule:line-length
+            digest: sha256:51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286
+          - name: quay.io/prometheus/node-exporter
+            newName: registry.rupan.dev/upstream/quay.io/prometheus/node-exporter  # yamllint disable-line rule:line-length
+            digest: sha256:6112664fd761bb964d8a2d3d0119d6c8402618a89edbb3a43c8f7b4090fb53c9
+          - name: quay.io/prometheus/prometheus
+            newName: registry.rupan.dev/upstream/quay.io/prometheus/prometheus  # yamllint disable-line rule:line-length
+            digest: sha256:f39df5334dee301b885f77e0ff1159f5d8a43bf9db518f885544594799a1e3c2
+          - name: registry.k8s.io/kube-state-metrics/kube-state-metrics
+            newName: registry.rupan.dev/upstream/registry.k8s.io/kube-state-metrics/kube-state-metrics  # yamllint disable-line rule:line-length
+            digest: sha256:6b2f0b6f2f86ac5b1aa883a033a8dd55bb96c16d191ec973393bdaadaddac914
   values:
     prometheus:
       prometheusSpec:
+        image:
+          registry: registry.rupan.dev
+          repository: upstream/quay.io/prometheus/prometheus
+          tag: v3.12.0-distroless
+          sha: f39df5334dee301b885f77e0ff1159f5d8a43bf9db518f885544594799a1e3c2
         replicas: 1
         retention: 7d
         retentionSize: 9GB
+        additionalScrapeConfigs:
+          - job_name: nas-01-node
+            static_configs:
+              - targets:
+                  - 10.0.30.20:9100
+                labels:
+                  host: nas-01
         resources:
           requests:
             cpu: 250m
@@ -35,6 +77,11 @@ spec:
                   storage: 10Gi
     alertmanager:
       alertmanagerSpec:
+        image:
+          registry: registry.rupan.dev
+          repository: upstream/quay.io/prometheus/alertmanager
+          tag: v0.32.1
+          sha: 51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286
         replicas: 1
         configSecret: alertmanager-kube-prometheus-stack-alertmanager
         resources:
@@ -73,3 +120,10 @@ spec:
           type: loki
           url: http://loki.observability.svc.cluster.local:3100
           access: proxy
+    prometheusOperator:
+      prometheusConfigReloader:
+        image:
+          registry: registry.rupan.dev
+          repository: upstream/quay.io/prometheus-operator/prometheus-config-reloader
+          tag: v0.91.0
+          sha: 7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1
