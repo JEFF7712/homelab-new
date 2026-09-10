@@ -12,6 +12,8 @@ done
 ruff format --check scripts/home_assistant tests/test_home_assistant_*.py
 ruff check --select E,F,I,UP --ignore E501 scripts/home_assistant tests/test_home_assistant_*.py
 pyright scripts/home_assistant
-python -m unittest discover -s tests -p 'test_home_assistant_*.py' -v
+if [[ "${SKIP_TESTS:-0}" != "1" ]]; then
+  python -m unittest discover -s tests -p 'test_home_assistant_*.py' -v
+fi
 python -m scripts.home_assistant validate
 yamllint home-assistant

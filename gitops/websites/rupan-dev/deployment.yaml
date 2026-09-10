@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-deploy
+  namespace: rupan-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rupan-dev-web
+  template:
+    metadata:
+      labels:
+        app: rupan-dev-web
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: web
+          # STAGED, not yet referenced from gitops/websites/kustomization.yaml.
+          # Activation after the first producer publish passes
+          # `python -m scripts.registry verify`:
+          # 1. pin image to registry.rupan.dev/apps/rupan-dev@sha256:<verified>,
+          # 2. add rupan-dev to gitops/websites/kustomization.yaml,
+          # 3. add the website-deploy/rupan-dev healthcheck to
+          #    gitops/clusters/homelab-01/websites.yaml.
+          # Wiring it earlier breaks `just check` (registry policy requires an
+          # exact locked local digest in every rendered overlay).
+          image: registry.rupan.dev/apps/rupan-dev:0.0.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 101
+      volumes:
+        - name: tmp
+          emptyDir: {}

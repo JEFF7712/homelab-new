@@ -127,7 +127,7 @@
 
   services.gitlab-runner = {
     enable = true;
-    settings.concurrent = 2;
+    settings.concurrent = 5;
     services.nas = {
       executor = "shell";
       authenticationTokenConfigFile = "/persist/gitlab-runner/authentication-token";
@@ -171,8 +171,8 @@
       executor = "shell";
       authenticationTokenConfigFile = "/persist/gitlab-runner/ci-authentication-token";
       buildsDir = "/tmp/gitlab-runner-ci-builds";
-      limit = 1;
-      requestConcurrency = 1;
+      limit = 4;
+      requestConcurrency = 4;
       environmentVariables = {
         PATH = lib.makeBinPath (
           with pkgs;

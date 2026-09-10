@@ -16,4 +16,6 @@ hosts=(
   homelab-03-registry
 )
 if [[ $target != all ]]; then hosts=("$target"); fi
-for host in "${hosts[@]}"; do nix eval --no-write-lock-file "path:.?dir=flake#nixosConfigurations.${host}.config.system.build.toplevel.drvPath" >/dev/null; done
+if [[ "${SKIP_NIX_EVAL:-0}" != "1" ]]; then
+  for host in "${hosts[@]}"; do nix eval --no-write-lock-file "path:.?dir=flake#nixosConfigurations.${host}.config.system.build.toplevel.drvPath" >/dev/null; done
+fi

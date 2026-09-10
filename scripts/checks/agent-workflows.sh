@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-python -m unittest discover -s tests -p 'test_agent_*.py' -v
+if [[ "${SKIP_TESTS:-0}" != "1" ]]; then
+  python -m unittest discover -s tests -p 'test_agent_*.py' -v
+fi
 shellcheck hooks/* scripts/checks/*.sh 2>/dev/null || [[ ! -d hooks ]]

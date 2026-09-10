@@ -14,6 +14,7 @@ data:
     notes|https://notes.rupan.dev
     pulse|https://pulseagent.dev
     rupanism|https://rupanism.rupan.dev
+    rupan-dev|https://rupan.dev
     soluble|https://soluble.rupan.dev
   deployments.txt: |
     apolline|website-deploy
@@ -23,6 +24,7 @@ data:
     pulse|website-deploy
     obsidian|quartz-notes
     rupanism|website-deploy
+    rupan-dev|website-deploy
     soluble-rupan|website-deploy
   dockerhub-repositories.txt: |
     jeff7712|apolline|20
@@ -42,6 +44,7 @@ data:
     JEFF7712|distrojeff-site
     JEFF7712|pulse
     JEFF7712|rupanism
+    JEFF7712|rupan.dev
     JEFF7712|solubility-predictor
     JEFF7712|obsidian-vault
   renovate-agent-gitlab-infra-repositories.txt: |

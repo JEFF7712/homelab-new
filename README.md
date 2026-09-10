@@ -36,7 +36,7 @@ one job, and configured not to accept untagged jobs. Scope `SSH_DEPLOY_KEY`,
 `HOSTS_KNOWN`, OPNsense, and registry credentials to the `production`
 environment in GitLab.
 
-`nas-ci` is a separate, one-job NAS runner for formatting, repository tests,
+`nas-ci` is a separate NAS runner for formatting, repository tests,
 YAML/schema checks, secret scanning, registry-lock validation, and GitHub sync
 across `main`, release tags, and feature branches / merge requests. Register it
 with the `nas-ci` tag, locked, with untagged jobs disabled, and unprotected
