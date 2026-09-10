@@ -509,6 +509,48 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/websites/rupan-dev/deployment.yaml:22"
+      ],
+      "destination_repository": "apps/rupan-dev",
+      "destination_tags": [
+        "0.0.2",
+        "retention-deployed-ab036b43bace3c77"
+      ],
+      "digest": "sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
+      "id": "first-party-jeff7712-rupan-dev-04f11f62a2d1",
+      "kind": "first-party",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "unknown/unknown"
+      ],
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/rupan-dev",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
+        "reference": "ghcr.io/jeff7712/rupan-dev:0.0.2@sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/rupan-dev",
+        "tag": "0.0.2"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "gitops/websites/rupanism/deployment.yaml:22",
         "observed:rupanism/website-deploy-868b45d7fb-kdg9m/web"
       ],
@@ -3210,6 +3252,14 @@
       "consumer": "gitops/obsidian/deployment.yaml:25,observed:obsidian/quartz-notes-64b8478c64-69cfh/quartz,observed:obsidian/quartz-notes-64b8478c64-fzmfs/quartz",
       "id": "producer:first-party-jeff7712-quartz-21f9999c8e03",
       "input": "ghcr.io/jeff7712/quartz:0.0.278@sha256:0023aa4fff0cbe5df1ec652425cdc3b7177fba4641165f3ec8d2d8f8b025f797",
+      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
+    },
+    {
+      "blocking": false,
+      "class": "producer-pipeline",
+      "consumer": "gitops/websites/rupan-dev/deployment.yaml:22",
+      "id": "producer:first-party-jeff7712-rupan-dev-04f11f62a2d1",
+      "input": "ghcr.io/jeff7712/rupan-dev:0.0.2@sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
     },
     {

@@ -19,16 +19,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: web
-          # STAGED, not yet referenced from gitops/websites/kustomization.yaml.
-          # Activation after the first producer publish passes
-          # `python -m scripts.registry verify`:
-          # 1. pin image to registry.rupan.dev/apps/rupan-dev@sha256:<verified>,
-          # 2. add rupan-dev to gitops/websites/kustomization.yaml,
-          # 3. add the website-deploy/rupan-dev healthcheck to
-          #    gitops/clusters/homelab-01/websites.yaml.
-          # Wiring it earlier breaks `just check` (registry policy requires an
-          # exact locked local digest in every rendered overlay).
-          image: registry.rupan.dev/apps/rupan-dev:0.0.1
+          image: registry.rupan.dev/apps/rupan-dev@sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5  # yamllint disable-line rule:line-length
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
