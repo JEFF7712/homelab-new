@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -10,7 +11,14 @@ from pathlib import Path
 from typing import Any
 
 from .adapters import ADAPTERS, get_adapter
-from .canonical import canonical_hash, detect_secrets
+from .adapters.core import sync_core_to_gitops
+from .canonical import (
+    canonical_hash,
+    canonical_json,
+    detect_secrets,
+    sanitize_error,
+    to_json_compatible,
+)
 from .client import (
     HomeAssistantClient,
     MockHomeAssistantClient,
@@ -19,6 +27,7 @@ from .compare import compare_three_way
 from .models import (
     ActionType,
     ApplyPlan,
+    BaselineRecord,
     DiffStatus,
     ExitCode,
     InventoryReport,
@@ -27,7 +36,12 @@ from .models import (
     SurfaceInventory,
 )
 from .planner import LockError, Planner, StalePlanError
-from .source import adopt_resources, load_source_tree
+from .source import (
+    adopt_resources,
+    get_source_path,
+    load_source_tree,
+    remove_resource,
+)
 
 
 def find_repo_root() -> Path:
@@ -265,7 +279,9 @@ def cmd_capture(args: argparse.Namespace, repo_root: Path) -> int:
     try:
         client.check_health()
     except Exception as exc:
-        output_result({"status": "unavailable", "error": str(exc)}, args.json)
+        output_result(
+            {"status": "unavailable", "error": sanitize_error(exc)}, args.json
+        )
         return ExitCode.UNAVAILABLE.value
 
     capture_id = f"cap-{int(datetime.now(timezone.utc).timestamp())}"
@@ -278,25 +294,49 @@ def cmd_capture(args: argparse.Namespace, repo_root: Path) -> int:
         / capture_id
     )
     capture_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(capture_dir, 0o700)
+    except Exception:
+        pass
 
     captured_docs: dict[str, Any] = {}
+    secret_findings: list[str] = []
+
     for kind, adapter in ADAPTERS.items():
         try:
             docs = adapter.export_from_live(client)
             for d in docs:
                 rk_str = str(d.resource_key)
+                findings = detect_secrets(d.desired, path=rk_str)
+                if findings:
+                    secret_findings.extend(findings)
                 captured_docs[rk_str] = d.to_dict()
         except Exception as exc:
-            captured_docs[f"{kind}/error"] = {"error": str(exc)}
+            captured_docs[f"{kind}/error"] = {"error": sanitize_error(exc)}
+
+    if secret_findings:
+        output_result(
+            {
+                "status": "error",
+                "message": f"Capture rejected: sensitive credentials detected in live state: {'; '.join(secret_findings)}",
+                "secret_findings": secret_findings,
+            },
+            args.json,
+        )
+        return ExitCode.CONFLICT_OR_INVALID.value
 
     out_file = capture_dir / "capture.json"
     meta = {
         "capture_id": capture_id,
         "instance": args.instance,
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "resources": captured_docs,
+        "resources": to_json_compatible(captured_docs),
     }
     out_file.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+    try:
+        os.chmod(out_file, 0o600)
+    except Exception:
+        pass
 
     output_result(
         {
@@ -408,11 +448,13 @@ def cmd_adopt(args: argparse.Namespace, repo_root: Path) -> int:
     try:
         client.check_health()
     except Exception as exc:
-        output_result({"status": "unavailable", "error": str(exc)}, args.json)
+        output_result(
+            {"status": "unavailable", "error": sanitize_error(exc)}, args.json
+        )
         return ExitCode.UNAVAILABLE.value
 
     selected = set(args.select) if args.select else None
-    if not selected and not args.all:
+    if not selected and not getattr(args, "all", False):
         err_res = {
             "status": "error",
             "message": "Specify --select <kind/key> or --all to adopt live resources",
@@ -420,31 +462,199 @@ def cmd_adopt(args: argparse.Namespace, repo_root: Path) -> int:
         output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
         return ExitCode.CONFLICT_OR_INVALID.value
 
-    live_docs: list[ResourceDocument] = []
-    for kind, adapter in ADAPTERS.items():
-        try:
-            docs = adapter.export_from_live(client)
-            live_docs.extend(docs)
-        except Exception as exc:
-            output_result(
-                {"status": "error", "message": f"Failed exporting {kind}: {exc}"},
-                args.json,
+    # Load baseline, git source, and live state
+    planner = Planner(repo_root, args.instance)
+    baseline_rec = planner.load_baseline()
+    raw_baseline: dict[str, ResourceDocument] = {}
+    if baseline_rec:
+        for rk, rdata in baseline_rec.resources.items():
+            kind, key = rk.split("/", 1)
+            raw_baseline[rk] = ResourceDocument(
+                kind=kind, key=key, desired=rdata.get("desired")
             )
-            return ExitCode.UNAVAILABLE.value
+    baseline_docs = canonicalize_docs(raw_baseline)
+    git_docs = canonicalize_docs(load_source_tree(repo_root))
+    live_docs, errors = export_live_docs(client)
 
-    written = adopt_resources(repo_root, live_docs, selected_keys=selected)
+    diff_report = compare_three_way(
+        instance=args.instance,
+        baseline=baseline_docs,
+        git=git_docs,
+        live=live_docs,
+        errors=errors,
+    )
+
+    # Validate selected keys
+    if selected:
+        all_keys = {str(item.resource_key) for item in diff_report.items} | {
+            item.key for item in diff_report.items
+        }
+        unknown_keys = [k for k in selected if k not in all_keys]
+        if unknown_keys:
+            err_res = {
+                "status": "error",
+                "message": f"Selected resource(s) not found: {', '.join(sorted(unknown_keys))}",
+            }
+            output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
+            return ExitCode.CONFLICT_OR_INVALID.value
+        items_to_adopt = [
+            item
+            for item in diff_report.items
+            if str(item.resource_key) in selected or item.key in selected
+        ]
+    else:
+        items_to_adopt = [
+            item for item in diff_report.items if item.status != DiffStatus.CLEAN
+        ]
+
+    if not items_to_adopt:
+        res = {
+            "status": "adopted",
+            "instance": args.instance,
+            "adopted_count": 0,
+            "files": [],
+            "deleted": [],
+        }
+        output_result(res, args.json, lambda d: print("No changes detected to adopt."))
+        return ExitCode.CLEAN.value
+
+    # Reject unresolved conflicts
+    conflicts = [item for item in items_to_adopt if item.status == DiffStatus.CONFLICT]
+    if conflicts:
+        conflict_keys = [str(item.resource_key) for item in conflicts]
+        err_res = {
+            "status": "error",
+            "message": f"Adoption blocked: unresolved conflicts on {', '.join(conflict_keys)}. "
+            "Git desired state and live state diverged independently. "
+            "Resolve conflicts manually or revert live state before adopting.",
+            "conflicts": conflict_keys,
+        }
+        output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
+        return ExitCode.CONFLICT_OR_INVALID.value
+
+    # Reject unknown live states caused by errors
+    unknowns = [item for item in items_to_adopt if item.status == DiffStatus.UNKNOWN]
+    if unknowns:
+        unknown_keys = [str(item.resource_key) for item in unknowns]
+        err_res = {
+            "status": "error",
+            "message": f"Adoption blocked: live state unknown or export failed for {', '.join(unknown_keys)}.",
+            "unknown": unknown_keys,
+        }
+        output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
+        return ExitCode.CONFLICT_OR_INVALID.value
+
+    # Check for uncommitted Git changes on target files
+    dirty_files: list[str] = []
+    for item in items_to_adopt:
+        target_path = get_source_path(repo_root, item.kind, item.key)
+        try:
+            res = subprocess.run(
+                ["git", "status", "--porcelain", "--", str(target_path)],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if res.returncode == 0 and res.stdout.strip():
+                dirty_files.append(str(target_path.relative_to(repo_root)))
+        except Exception:
+            pass
+
+    if dirty_files:
+        err_res = {
+            "status": "error",
+            "message": f"Adoption blocked: target destination file(s) have uncommitted Git changes: {', '.join(dirty_files)}. Commit or stash them before adopting.",
+            "dirty_files": dirty_files,
+        }
+        output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
+        return ExitCode.CONFLICT_OR_INVALID.value
+
+    # Preflight secret check: reject plaintext credentials before any file write
+    secret_findings: list[str] = []
+    for item in items_to_adopt:
+        if item.live is not None:
+            findings = detect_secrets(item.live, path=str(item.resource_key))
+            secret_findings.extend(findings)
+
+    if secret_findings:
+        err_res = {
+            "status": "error",
+            "message": f"Adoption blocked: sensitive credentials detected in live resources: {'; '.join(secret_findings)}. Replace with !secret references before adopting.",
+            "secret_findings": secret_findings,
+        }
+        output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
+        return ExitCode.CONFLICT_OR_INVALID.value
+
+    # Separate writes from deletions
+    deletions = [item for item in items_to_adopt if item.live is None]
+    writes = [item for item in items_to_adopt if item.live is not None]
+
+    if deletions:
+        if not getattr(args, "allow_delete", False):
+            del_keys = [str(item.resource_key) for item in deletions]
+            err_res = {
+                "status": "error",
+                "message": f"Adoption includes UI deletion of {', '.join(del_keys)}. Specify --allow-delete to confirm removing source files.",
+                "deletions": del_keys,
+            }
+            output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
+            return ExitCode.CONFLICT_OR_INVALID.value
+
+        # Dependency check: check if any remaining Git resources depend on the deleted resource
+        del_refs = {f"{item.kind}.{item.key}" for item in deletions} | {
+            f"{item.kind}/{item.key}" for item in deletions
+        }
+        remaining_git = {
+            k: v
+            for k, v in git_docs.items()
+            if k not in {str(d.resource_key) for d in deletions}
+        }
+        dependency_conflicts: list[str] = []
+        for rem_rk, rem_doc in remaining_git.items():
+            rem_str = json.dumps(to_json_compatible(rem_doc.desired))
+            for ref in del_refs:
+                if ref in rem_str:
+                    dependency_conflicts.append(f"{ref} is referenced by {rem_rk}")
+
+        if dependency_conflicts and not getattr(args, "force", False):
+            err_res = {
+                "status": "error",
+                "message": f"Adoption blocked: deleted resource(s) still referenced in Git source: {'; '.join(dependency_conflicts)}. Use --force to override.",
+                "dependencies": dependency_conflicts,
+            }
+            output_result(err_res, args.json, lambda d: print(f"Error: {d['message']}"))
+            return ExitCode.CONFLICT_OR_INVALID.value
+
+    written_paths: list[Path] = []
+    if writes:
+        docs_to_write = [
+            ResourceDocument(kind=item.kind, key=item.key, desired=item.live)
+            for item in writes
+            if item.live is not None
+        ]
+        written_paths = adopt_resources(repo_root, docs_to_write, selected_keys=None)
+
+    deleted_paths: list[Path] = []
+    for item in deletions:
+        dest = get_source_path(repo_root, item.kind, item.key)
+        if remove_resource(repo_root, item.kind, item.key):
+            deleted_paths.append(dest)
 
     res = {
         "status": "adopted",
         "instance": args.instance,
-        "adopted_count": len(written),
-        "files": [str(p.relative_to(repo_root)) for p in written],
+        "adopted_count": len(written_paths) + len(deleted_paths),
+        "files": [str(p.relative_to(repo_root)) for p in written_paths],
+        "deleted": [str(p.relative_to(repo_root)) for p in deleted_paths],
     }
 
     def _fmt(d: dict[str, Any]) -> None:
         print(f"Adopted {d['adopted_count']} resources into Git source:")
         for f in d.get("files", []):
-            print(f"  - {f}")
+            print(f"  [WRITTEN] {f}")
+        for f in d.get("deleted", []):
+            print(f"  [DELETED] {f}")
         print(
             "\nNote: Adoption updates local source files. It does not advance the deployment baseline."
         )
@@ -457,9 +667,34 @@ def cmd_adopt(args: argparse.Namespace, repo_root: Path) -> int:
 # Command: validate
 # ----------------------------------------------------------------------
 def cmd_validate(args: argparse.Namespace, repo_root: Path) -> int:
+    if getattr(args, "sync_gitops", False):
+        sync_core_to_gitops(repo_root)
+
     git_docs = load_source_tree(repo_root)
     errors: list[str] = []
     secret_findings: list[str] = []
+
+    # Check GitOps ConfigMap sync for core configuration
+    core_file = repo_root / "home-assistant" / "core" / "configuration.yaml"
+    cm_file = repo_root / "gitops" / "home-assistant" / "config.yaml"
+    if core_file.is_file() and cm_file.is_file():
+        core_raw = core_file.read_text(encoding="utf-8")
+        cm_raw = cm_file.read_text(encoding="utf-8")
+        indented_lines = ["    " + line for line in core_raw.splitlines()]
+        expected_cm = (
+            "apiVersion: v1\n"
+            "kind: ConfigMap\n"
+            "metadata:\n"
+            "  name: home-assistant-config\n"
+            "  namespace: home-assistant\n"
+            "data:\n"
+            f"  configuration.yaml: |\n{chr(10).join(indented_lines)}\n"
+        )
+        if cm_raw.strip() != expected_cm.strip():
+            errors.append(
+                "Core configuration in gitops/home-assistant/config.yaml is out of sync with home-assistant/core/configuration.yaml. "
+                "Run 'python -m scripts.home_assistant validate --sync-gitops' to synchronize."
+            )
 
     for rk_str, doc in git_docs.items():
         # Schema validation
@@ -489,7 +724,7 @@ def cmd_validate(args: argparse.Namespace, repo_root: Path) -> int:
             print("  All resources passed offline validation cleanly.")
         else:
             if d.get("errors"):
-                print("\nSchema errors:")
+                print("\nSchema / sync errors:")
                 for e in d["errors"]:
                     print(f"  - {e}")
             if d.get("secret_findings"):
@@ -521,17 +756,32 @@ def cmd_plan(args: argparse.Namespace, repo_root: Path) -> int:
     baseline_docs = canonicalize_docs(raw_baseline)
     git_docs = canonicalize_docs(load_source_tree(repo_root))
     client = get_client(args, repo_root)
-    live_docs, _ = export_live_docs(client)
+    try:
+        health = client.check_health()
+        ha_version = health.get("version", "unknown")
+    except Exception as exc:
+        output_result(
+            {"status": "unavailable", "error": sanitize_error(exc)}, args.json
+        )
+        return ExitCode.UNAVAILABLE.value
+
+    live_docs, errors = export_live_docs(client)
 
     diff_report = compare_three_way(
         instance=args.instance,
         baseline=baseline_docs,
         git=git_docs,
         live=live_docs,
+        errors=errors,
     )
 
     selected = set(args.select) if args.select else None
     git_rev = get_git_revision(repo_root)
+
+    source_payload = canonical_json(
+        {rk: d.desired for rk, d in sorted(git_docs.items())}
+    )
+    source_hash = hashlib.sha256(source_payload.encode("utf-8")).hexdigest()
 
     try:
         plan = planner.create_plan(
@@ -539,9 +789,11 @@ def cmd_plan(args: argparse.Namespace, repo_root: Path) -> int:
             git_revision=git_rev,
             baseline_hash=baseline_hash,
             selected_keys=selected,
+            ha_version=ha_version,
+            source_hash=source_hash,
         )
     except Exception as exc:
-        output_result({"status": "error", "message": str(exc)}, args.json)
+        output_result({"status": "error", "message": sanitize_error(exc)}, args.json)
         return ExitCode.CONFLICT_OR_INVALID.value
 
     # Save plan file
@@ -572,9 +824,9 @@ def cmd_plan(args: argparse.Namespace, repo_root: Path) -> int:
 # Command: apply
 # ----------------------------------------------------------------------
 def cmd_apply(args: argparse.Namespace, repo_root: Path) -> int:
-    planner = Planner(repo_root, args.instance)
     client = get_client(args, repo_root)
-    git_docs = load_source_tree(repo_root)
+    planner = Planner(repo_root, args.instance, client=client)
+    git_docs = canonicalize_docs(load_source_tree(repo_root))
 
     plan_path: Path | None = None
     if getattr(args, "plan_file", None):
@@ -603,25 +855,44 @@ def cmd_apply(args: argparse.Namespace, repo_root: Path) -> int:
                 )
 
         baseline_docs = canonicalize_docs(raw_baseline)
-        git_docs = canonicalize_docs(git_docs)
-        live_docs, _ = export_live_docs(client)
+        canon_git_docs = git_docs
+        try:
+            health = client.check_health()
+            ha_version = health.get("version", "unknown")
+        except Exception as exc:
+            output_result(
+                {"status": "unavailable", "error": sanitize_error(exc)}, args.json
+            )
+            return ExitCode.UNAVAILABLE.value
+
+        live_docs, errors = export_live_docs(client)
 
         diff_report = compare_three_way(
             instance=args.instance,
             baseline=baseline_docs,
-            git=git_docs,
+            git=canon_git_docs,
             live=live_docs,
+            errors=errors,
         )
         selected = set(args.select) if args.select else None
+        source_payload = canonical_json(
+            {rk: d.desired for rk, d in sorted(canon_git_docs.items())}
+        )
+        source_hash = hashlib.sha256(source_payload.encode("utf-8")).hexdigest()
+
         try:
             plan = planner.create_plan(
                 diff_report=diff_report,
                 git_revision=get_git_revision(repo_root),
                 baseline_hash=baseline_hash,
                 selected_keys=selected,
+                ha_version=ha_version,
+                source_hash=source_hash,
             )
         except Exception as exc:
-            output_result({"status": "error", "message": str(exc)}, args.json)
+            output_result(
+                {"status": "error", "message": sanitize_error(exc)}, args.json
+            )
             return ExitCode.CONFLICT_OR_INVALID.value
 
     try:
@@ -646,12 +917,22 @@ def cmd_apply(args: argparse.Namespace, repo_root: Path) -> int:
         return ExitCode.CLEAN.value
     except (LockError, StalePlanError, RuntimeError) as exc:
         output_result(
-            {"status": "failed", "plan_id": plan.plan_id, "error": str(exc)}, args.json
+            {
+                "status": "failed",
+                "plan_id": plan.plan_id,
+                "error": sanitize_error(exc),
+            },
+            args.json,
         )
         return ExitCode.CONFLICT_OR_INVALID.value
     except Exception as exc:
         output_result(
-            {"status": "failed", "plan_id": plan.plan_id, "error": str(exc)}, args.json
+            {
+                "status": "failed",
+                "plan_id": plan.plan_id,
+                "error": sanitize_error(exc),
+            },
+            args.json,
         )
         return ExitCode.UNAVAILABLE.value
 
@@ -664,7 +945,9 @@ def cmd_verify(args: argparse.Namespace, repo_root: Path) -> int:
     try:
         health = client.check_health()
     except Exception as exc:
-        output_result({"status": "unavailable", "error": str(exc)}, args.json)
+        output_result(
+            {"status": "unavailable", "error": sanitize_error(exc)}, args.json
+        )
         return ExitCode.UNAVAILABLE.value
 
     git_docs = load_source_tree(repo_root)
@@ -677,14 +960,11 @@ def cmd_verify(args: argparse.Namespace, repo_root: Path) -> int:
             if not verified:
                 mismatches.append(rk_str)
         except Exception as exc:
-            mismatches.append(f"{rk_str} (error: {exc})")
+            mismatches.append(f"{rk_str} (error: {sanitize_error(exc)})")
 
     is_verified = len(mismatches) == 0
     if is_verified:
-        from .canonical import canonical_hash
-        from .models import BaselineRecord
-
-        planner = Planner(repo_root, args.instance)
+        planner = Planner(repo_root, args.instance, client=client)
         git_rev = get_git_revision(repo_root)
         now_str = datetime.now(timezone.utc).isoformat()
         baseline = planner.load_baseline() or BaselineRecord(
@@ -742,8 +1022,8 @@ def cmd_revert(args: argparse.Namespace, repo_root: Path) -> int:
         return ExitCode.CONFLICT_OR_INVALID.value
 
     git_docs = load_source_tree(repo_root)
-    planner = Planner(repo_root, args.instance)
     client = get_client(args, repo_root)
+    planner = Planner(repo_root, args.instance, client=client)
 
     # Build revert actions restoring live from git
     actions: list[PlanAction] = []
@@ -752,9 +1032,14 @@ def cmd_revert(args: argparse.Namespace, repo_root: Path) -> int:
             continue
         kind, key = rk_str.split("/", 1)
         adapter = get_adapter(kind)
-        live_docs = {
-            d.key: adapter.canonicalize(d) for d in adapter.export_from_live(client)
-        }
+        try:
+            live_docs = {
+                d.key: adapter.canonicalize(d) for d in adapter.export_from_live(client)
+            }
+        except Exception as exc:
+            output_result({"status": "failed", "error": sanitize_error(exc)}, args.json)
+            return ExitCode.UNAVAILABLE.value
+
         live_doc = live_docs.get(key)
         live_hash = (
             canonical_hash(live_doc.desired) if live_doc and live_doc.desired else None
@@ -808,7 +1093,7 @@ def cmd_revert(args: argparse.Namespace, repo_root: Path) -> int:
         )
         return ExitCode.CLEAN.value
     except Exception as exc:
-        output_result({"status": "failed", "error": str(exc)}, args.json)
+        output_result({"status": "failed", "error": sanitize_error(exc)}, args.json)
         return ExitCode.CONFLICT_OR_INVALID.value
 
 
@@ -871,10 +1156,25 @@ def build_parser() -> argparse.ArgumentParser:
     adopt_p.add_argument(
         "--all", action="store_true", help="Adopt all discovered live resources"
     )
+    adopt_p.add_argument(
+        "--allow-delete",
+        action="store_true",
+        help="Allow adoption of live UI deletions by removing Git source files",
+    )
+    adopt_p.add_argument(
+        "--force",
+        action="store_true",
+        help="Force adoption even if deleted resources are referenced by other resources",
+    )
 
     # validate
-    subparsers.add_parser(
+    validate_p = subparsers.add_parser(
         "validate", help="Perform offline schema, reference, and secret checks"
+    )
+    validate_p.add_argument(
+        "--sync-gitops",
+        action="store_true",
+        help="Sync home-assistant/core/configuration.yaml to gitops/home-assistant/config.yaml and update deployment checksum",
     )
 
     # plan

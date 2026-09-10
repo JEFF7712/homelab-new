@@ -67,24 +67,28 @@ class ResourceDocument:
         return ResourceKey(self.kind, self.key)
 
     def to_dict(self) -> dict[str, Any]:
+        from .canonical import to_json_compatible
+
         return {
             "schema_version": self.schema_version,
             "kind": self.kind,
             "key": self.key,
             "owner_mode": self.owner_mode,
-            "desired": self.desired,
-            "metadata": self.metadata,
+            "desired": to_json_compatible(self.desired),
+            "metadata": to_json_compatible(self.metadata),
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ResourceDocument:
+        from .canonical import from_json_compatible
+
         return cls(
             schema_version=data.get("schema_version", "1.0"),
             kind=data["kind"],
             key=data["key"],
             owner_mode=data.get("owner_mode", OwnerMode.UI_EDITABLE.value),
-            desired=data.get("desired"),
-            metadata=data.get("metadata", {}),
+            desired=from_json_compatible(data.get("desired")),
+            metadata=from_json_compatible(data.get("metadata", {})),
         )
 
 
@@ -106,6 +110,8 @@ class ComparisonItem:
         return ResourceKey(self.kind, self.key)
 
     def to_dict(self) -> dict[str, Any]:
+        from .canonical import to_json_compatible
+
         return {
             "kind": self.kind,
             "key": self.key,
@@ -114,6 +120,9 @@ class ComparisonItem:
             "git_hash": self.git_hash,
             "live_hash": self.live_hash,
             "details": self.details,
+            "baseline": to_json_compatible(self.baseline),
+            "git": to_json_compatible(self.git),
+            "live": to_json_compatible(self.live),
         }
 
 
@@ -169,23 +178,27 @@ class PlanAction:
         return ResourceKey(self.kind, self.key)
 
     def to_dict(self) -> dict[str, Any]:
+        from .canonical import to_json_compatible
+
         return {
             "kind": self.kind,
             "key": self.key,
             "action": self.action.value,
             "expected_live_hash": self.expected_live_hash,
-            "before": self.before,
-            "after": self.after,
+            "before": to_json_compatible(self.before),
+            "after": to_json_compatible(self.after),
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> PlanAction:
+        from .canonical import from_json_compatible
+
         return cls(
             kind=data["kind"],
             key=data["key"],
             action=ActionType(data["action"]),
-            before=data.get("before"),
-            after=data.get("after"),
+            before=from_json_compatible(data.get("before")),
+            after=from_json_compatible(data.get("after")),
             expected_live_hash=data.get("expected_live_hash"),
         )
 
@@ -198,6 +211,8 @@ class ApplyPlan:
     git_revision: str
     baseline_hash: str
     actions: list[PlanAction]
+    ha_version: str = ""
+    source_hash: str = ""
     schema_version: str = "1.0"
 
     def to_dict(self) -> dict[str, Any]:
@@ -208,6 +223,8 @@ class ApplyPlan:
             "instance": self.instance,
             "git_revision": self.git_revision,
             "baseline_hash": self.baseline_hash,
+            "ha_version": self.ha_version,
+            "source_hash": self.source_hash,
             "actions": [a.to_dict() for a in self.actions],
         }
 
@@ -220,6 +237,8 @@ class ApplyPlan:
             instance=data["instance"],
             git_revision=data["git_revision"],
             baseline_hash=data["baseline_hash"],
+            ha_version=data.get("ha_version", ""),
+            source_hash=data.get("source_hash", ""),
             actions=[PlanAction.from_dict(a) for a in data.get("actions", [])],
         )
 

@@ -272,7 +272,7 @@ class HomeAssistantClient:
         }
 
     def get_core_configuration(self) -> dict[str, Any]:
-        """Read live core configuration.yaml from cluster pod or fallback."""
+        """Read live core configuration.yaml from cluster pod."""
         try:
             res = subprocess.run(
                 [
@@ -298,12 +298,18 @@ class HomeAssistantClient:
                 parsed = parse_yaml(res.stdout)
                 if isinstance(parsed, dict):
                     return parsed
-        except Exception:
-            pass
-        return self.check_health()
+            err_msg = res.stderr.strip() or f"Process returned code {res.returncode}"
+            raise RuntimeError(
+                f"Failed to read live /config/configuration.yaml: {err_msg}"
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                f"Failed to read live /config/configuration.yaml from pod: {exc}"
+            ) from exc
 
     # Automations
     def list_automations(self) -> list[dict[str, Any]]:
+        file_err: Exception | None = None
         try:
             res = subprocess.run(
                 [
@@ -323,17 +329,26 @@ class HomeAssistantClient:
                 check=False,
                 timeout=5,
             )
-            if res.returncode == 0 and res.stdout.strip():
+            if res.returncode == 0:
                 from .canonical import parse_yaml
 
-                items = parse_yaml(res.stdout)
+                content = res.stdout.strip()
+                if not content or content == "[]":
+                    return []
+                items = parse_yaml(content)
                 if isinstance(items, list):
                     return [it for it in items if isinstance(it, dict)]
-        except Exception:
-            pass
+                return []
+            else:
+                file_err = RuntimeError(
+                    f"kubectl cat /config/automations.yaml failed (rc={res.returncode}): {res.stderr.strip()}"
+                )
+        except Exception as exc:
+            file_err = exc
 
-        results: list[dict[str, Any]] = []
+        # Fallback to entity registry / REST API
         try:
+            results: list[dict[str, Any]] = []
             entities = self.list_entities()
             for ent in entities:
                 ent_id = ent.get("entity_id", "")
@@ -344,9 +359,11 @@ class HomeAssistantClient:
                         results.append(cfg)
                     except Exception:
                         pass
-        except Exception:
-            pass
-        return results
+            return results
+        except Exception as api_err:
+            raise RuntimeError(
+                f"Failed to list automations from filesystem ({file_err}) and API ({api_err})"
+            ) from api_err
 
     def get_automation(self, automation_id: str) -> dict[str, Any]:
         return self.http_request(
@@ -363,6 +380,7 @@ class HomeAssistantClient:
 
     # Scripts
     def list_scripts(self) -> list[dict[str, Any]]:
+        file_err: Exception | None = None
         try:
             res = subprocess.run(
                 [
@@ -382,19 +400,28 @@ class HomeAssistantClient:
                 check=False,
                 timeout=5,
             )
-            if res.returncode == 0 and res.stdout.strip():
+            if res.returncode == 0:
                 from .canonical import parse_yaml
 
-                data = parse_yaml(res.stdout)
+                content = res.stdout.strip()
+                if not content or content == "{}":
+                    return []
+                data = parse_yaml(content)
                 if isinstance(data, dict):
                     return [
                         {"id": k, **v} for k, v in data.items() if isinstance(v, dict)
                     ]
-        except Exception:
-            pass
+                return []
+            else:
+                file_err = RuntimeError(
+                    f"kubectl cat /config/scripts.yaml failed (rc={res.returncode}): {res.stderr.strip()}"
+                )
+        except Exception as exc:
+            file_err = exc
 
-        results: list[dict[str, Any]] = []
+        # Fallback to entity registry / REST API
         try:
+            results: list[dict[str, Any]] = []
             entities = self.list_entities()
             for ent in entities:
                 ent_id = ent.get("entity_id", "")
@@ -405,9 +432,11 @@ class HomeAssistantClient:
                         results.append({"id": s_id, **cfg})
                     except Exception:
                         pass
-        except Exception:
-            pass
-        return results
+            return results
+        except Exception as api_err:
+            raise RuntimeError(
+                f"Failed to list scripts from filesystem ({file_err}) and API ({api_err})"
+            ) from api_err
 
     def get_script(self, script_key: str) -> dict[str, Any]:
         return self.http_request("GET", f"/api/config/script/config/{script_key}")
@@ -420,6 +449,7 @@ class HomeAssistantClient:
 
     # Scenes
     def list_scenes(self) -> list[dict[str, Any]]:
+        file_err: Exception | None = None
         try:
             res = subprocess.run(
                 [
@@ -439,17 +469,26 @@ class HomeAssistantClient:
                 check=False,
                 timeout=5,
             )
-            if res.returncode == 0 and res.stdout.strip():
+            if res.returncode == 0:
                 from .canonical import parse_yaml
 
-                items = parse_yaml(res.stdout)
+                content = res.stdout.strip()
+                if not content or content == "[]":
+                    return []
+                items = parse_yaml(content)
                 if isinstance(items, list):
                     return [it for it in items if isinstance(it, dict)]
-        except Exception:
-            pass
+                return []
+            else:
+                file_err = RuntimeError(
+                    f"kubectl cat /config/scenes.yaml failed (rc={res.returncode}): {res.stderr.strip()}"
+                )
+        except Exception as exc:
+            file_err = exc
 
-        results: list[dict[str, Any]] = []
+        # Fallback to entity registry / REST API
         try:
+            results: list[dict[str, Any]] = []
             entities = self.list_entities()
             for ent in entities:
                 ent_id = ent.get("entity_id", "")
@@ -460,9 +499,11 @@ class HomeAssistantClient:
                         results.append(cfg)
                     except Exception:
                         pass
-        except Exception:
-            pass
-        return results
+            return results
+        except Exception as api_err:
+            raise RuntimeError(
+                f"Failed to list scenes from filesystem ({file_err}) and API ({api_err})"
+            ) from api_err
 
     def get_scene(self, scene_id: str) -> dict[str, Any]:
         return self.http_request("GET", f"/api/config/scene/config/{scene_id}")
@@ -597,6 +638,61 @@ class HomeAssistantClient:
         res = ws.call("config_entries/get")
         return res if isinstance(res, list) else []
 
+    def update_dashboard(self, dashboard_id: str, **kwargs: Any) -> dict[str, Any]:
+        ws = self._get_ws()
+        res = ws.call("lovelace/dashboards/update", dashboard_id=dashboard_id, **kwargs)
+        return res if isinstance(res, dict) else {}
+
+    def get_cluster_baseline(self, instance: str) -> dict[str, Any] | None:
+        try:
+            res = subprocess.run(
+                [
+                    "kubectl",
+                    "-n",
+                    "home-assistant",
+                    "get",
+                    "configmap",
+                    f"home-assistant-baseline-{instance}",
+                    "-o",
+                    "json",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=5,
+            )
+            if res.returncode == 0:
+                cm = json.loads(res.stdout)
+                baseline_str = cm.get("data", {}).get("baseline.json")
+                if baseline_str:
+                    return json.loads(baseline_str)
+        except Exception:
+            pass
+        return None
+
+    def save_cluster_baseline(
+        self, instance: str, baseline_data: dict[str, Any]
+    ) -> None:
+        payload = json.dumps(baseline_data, indent=2)
+        cm_name = f"home-assistant-baseline-{instance}"
+        cm = {
+            "apiVersion": "v1",
+            "kind": "ConfigMap",
+            "metadata": {"name": cm_name, "namespace": "home-assistant"},
+            "data": {"baseline.json": payload},
+        }
+        try:
+            subprocess.run(
+                ["kubectl", "apply", "-f", "-"],
+                input=json.dumps(cm),
+                text=True,
+                capture_output=True,
+                check=False,
+                timeout=10,
+            )
+        except Exception:
+            pass
+
     def close(self) -> None:
         if self._ws is not None:
             self._ws.close()
@@ -623,6 +719,7 @@ class MockHomeAssistantClient(HomeAssistantClient):
                 "show_in_sidebar": True,
             }
         ]
+        self.cluster_baselines: dict[str, dict[str, Any]] = {}
         self.areas: list[dict[str, Any]] = [
             {
                 "area_id": "living_room",
@@ -751,6 +848,13 @@ class MockHomeAssistantClient(HomeAssistantClient):
         if dashboard_id in self.dashboards:
             del self.dashboards[dashboard_id]
 
+    def update_dashboard(self, dashboard_id: str, **kwargs: Any) -> dict[str, Any]:
+        for d in self.dashboard_list:
+            if d.get("id") == dashboard_id or d.get("url_path") == dashboard_id:
+                d.update(kwargs)
+                return d
+        raise HomeAssistantNotFoundError(f"Dashboard {dashboard_id} not found")
+
     def list_areas(self) -> list[dict[str, Any]]:
         return list(self.areas)
 
@@ -790,3 +894,11 @@ class MockHomeAssistantClient(HomeAssistantClient):
 
     def list_config_entries(self) -> list[dict[str, Any]]:
         return list(self.config_entries)
+
+    def get_cluster_baseline(self, instance: str) -> dict[str, Any] | None:
+        return self.cluster_baselines.get(instance)
+
+    def save_cluster_baseline(
+        self, instance: str, baseline_data: dict[str, Any]
+    ) -> None:
+        self.cluster_baselines[instance] = baseline_data

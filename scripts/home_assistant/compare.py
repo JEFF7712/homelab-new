@@ -21,6 +21,13 @@ def compare_three_way(
 ) -> DiffReport:
     """Perform a deterministic three-way comparison between Baseline (B), Git (G), and Live (L)."""
     errors = errors or {}
+    errored_kinds: dict[str, str] = {}
+    for err_k, err_msg in errors.items():
+        if "/" in err_k:
+            ek, ekey = err_k.split("/", 1)
+            if ekey in ("all", "error"):
+                errored_kinds[ek] = err_msg
+
     all_keys = (
         set(baseline.keys()) | set(git.keys()) | set(live.keys()) | set(errors.keys())
     )
@@ -32,20 +39,45 @@ def compare_three_way(
         else:
             kind, key = rk_str.split("/", 1)
 
+        b_doc = baseline.get(rk_str)
+        g_doc = git.get(rk_str)
+        l_doc = live.get(rk_str)
+
         if rk_str in errors:
+            # If this is an aggregate error like 'kind/all' and there are concrete resources of this kind,
+            # we will mark those resources UNKNOWN below. Only include aggregate if no resources exist.
+            has_concrete = any(
+                k.startswith(f"{kind}/") and k != rk_str
+                for k in (set(baseline.keys()) | set(git.keys()) | set(live.keys()))
+            )
+            if not has_concrete or key not in ("all", "error"):
+                items.append(
+                    ComparisonItem(
+                        kind=kind,
+                        key=key,
+                        status=DiffStatus.UNKNOWN,
+                        details=f"Live capture error: {errors[rk_str]}",
+                        baseline=b_doc.desired if b_doc else None,
+                        git=g_doc.desired if g_doc else None,
+                        live=None,
+                    )
+                )
+            continue
+
+        if kind in errored_kinds and l_doc is None:
+            # Kind-wide collection failed: NEVER classify missing live state as deleted/absent!
             items.append(
                 ComparisonItem(
                     kind=kind,
                     key=key,
                     status=DiffStatus.UNKNOWN,
-                    details=f"Live capture error: {errors[rk_str]}",
+                    details=f"Live capture error for {kind}: {errored_kinds[kind]}",
+                    baseline=b_doc.desired if b_doc else None,
+                    git=g_doc.desired if g_doc else None,
+                    live=None,
                 )
             )
             continue
-
-        b_doc = baseline.get(rk_str)
-        g_doc = git.get(rk_str)
-        l_doc = live.get(rk_str)
 
         b_hash = hash_or_none(b_doc)
         g_hash = hash_or_none(g_doc)
@@ -139,5 +171,12 @@ def compare_three_way(
             )
         )
 
+    summary: dict[str, int] = {}
+    for it in items:
+        s_val = it.status.value
+        summary[s_val] = summary.get(s_val, 0) + 1
+
     now_iso = datetime.now(timezone.utc).isoformat()
-    return DiffReport(instance=instance, timestamp=now_iso, items=items)
+    return DiffReport(
+        instance=instance, timestamp=now_iso, summary=summary, items=items
+    )

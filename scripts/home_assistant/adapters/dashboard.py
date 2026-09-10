@@ -22,17 +22,14 @@ class DashboardAdapter(BaseAdapter):
                 continue
             try:
                 conf = client.get_dashboard_config(url_path)
-                # Combine dashboard metadata and views
-                desired = {
-                    "title": d.get("title", url_path.capitalize()),
-                    "icon": d.get("icon"),
-                    "require_admin": d.get("require_admin", False),
-                    "show_in_sidebar": d.get("show_in_sidebar", True),
-                }
-                if "views" in conf:
-                    desired["views"] = conf["views"]
-                if "strategy" in conf:
-                    desired["strategy"] = conf["strategy"]
+                desired: dict[str, Any] = dict(conf)
+                # Combine dashboard metadata and configuration
+                if "title" not in desired or not desired["title"]:
+                    desired["title"] = d.get("title", url_path.capitalize())
+                for meta_key in ("icon", "require_admin", "show_in_sidebar"):
+                    if meta_key in d:
+                        desired[meta_key] = d[meta_key]
+
                 docs.append(
                     ResourceDocument(
                         kind=self.kind,
@@ -74,7 +71,6 @@ class DashboardAdapter(BaseAdapter):
                 raise ValueError(
                     f"Cannot apply dashboard {action.key}: payload must be a dict"
                 )
-            # If dashboard doesn't exist, create it in dashboard collection
             existing_dashboards = {
                 d.get("url_path"): d for d in client.list_dashboards()
             }
@@ -86,12 +82,24 @@ class DashboardAdapter(BaseAdapter):
                     require_admin=action.after.get("require_admin", False),
                     show_in_sidebar=action.after.get("show_in_sidebar", True),
                 )
-            # Save configuration (views or strategy)
-            conf: dict[str, Any] = {}
-            if "views" in action.after:
-                conf["views"] = action.after["views"]
-            if "strategy" in action.after:
-                conf["strategy"] = action.after["strategy"]
+            else:
+                dashboard_info = existing_dashboards[action.key]
+                dashboard_id = dashboard_info.get("id") or action.key
+                metadata_updates: dict[str, Any] = {}
+                for field in ("title", "icon", "require_admin", "show_in_sidebar"):
+                    if field in action.after:
+                        metadata_updates[field] = action.after[field]
+                if metadata_updates:
+                    client.update_dashboard(
+                        dashboard_id=dashboard_id, **metadata_updates
+                    )
+
+            # Save configuration (exclude collection-only metadata fields from config body)
+            conf = {
+                k: v
+                for k, v in action.after.items()
+                if k not in ("icon", "require_admin", "show_in_sidebar")
+            }
             client.save_dashboard_config(action.key, conf)
         elif action.action == ActionType.DELETE:
             dashboards = {
@@ -103,15 +111,15 @@ class DashboardAdapter(BaseAdapter):
 
     def verify(self, client: HomeAssistantClient, doc: ResourceDocument) -> bool:
         try:
-            live_conf = client.get_dashboard_config(doc.key)
-            expected_conf: dict[str, Any] = {}
-            if isinstance(doc.desired, dict):
-                if "views" in doc.desired:
-                    expected_conf["views"] = doc.desired["views"]
-                if "strategy" in doc.desired:
-                    expected_conf["strategy"] = doc.desired["strategy"]
-            return canonical_hash(live_conf) == canonical_hash(expected_conf)
-        except HomeAssistantNotFoundError:
+            live_docs = {
+                d.key: self.canonicalize(d) for d in self.export_from_live(client)
+            }
+            live_doc = live_docs.get(doc.key)
+            if live_doc is None or live_doc.desired is None:
+                return False
+            expected = self.canonicalize(doc).desired
+            return canonical_hash(live_doc.desired) == canonical_hash(expected)
+        except Exception:
             return False
 
     def delete(self, client: HomeAssistantClient, key: str) -> None:

@@ -32,12 +32,12 @@ When a user asks an agent to make a Home Assistant change (e.g. "Create an autom
    Create or edit the resource file under `home-assistant/` (e.g. `home-assistant/automations/bedtime_lights.yaml`).
    Ensure required fields (`id`, `alias`, `trigger`, `action`) are present.
 3. **Validate Offline**:
-   Run `just ha-validate`. Confirm schema validity and secret cleanliness.
+   Run `just ha-validate`. Confirm schema validity, secret cleanliness, and GitOps synchronization.
 4. **Plan Application**:
-   Run `just ha-plan --select automation/bedtime_lights`. Inspect generated actions.
-5. **Apply and Verify**:
-   Execute `just ha-apply --select automation/bedtime_lights`.
-   The tool performs read-before-write validation, applies the change through Home Assistant's API, verifies readback, and advances the verified baseline.
+   Run `just ha-plan --select automation/bedtime_lights`. Inspect generated immutable actions and bindings.
+5. **Commit and Deploy**:
+   Commit and push accepted source changes. The protected GitLab CI deployment job (`deploy_home_assistant`) plans, applies, and verifies changes against the target cluster, advancing the shared cluster baseline (`home-assistant-baseline-<instance>`).
+   *Authorized Local Apply*: If authorized for manual execution, run `just ha-apply --select automation/bedtime_lights` after ensuring UI edits are paused. The tool acquires an atomic lock, performs read-before-write validation, verifies readback, and advances the shared and local baseline.
 6. **Report Completion**:
    Confirm to the user that the automation is live, active, and editable in the Home Assistant UI.
 
@@ -54,13 +54,14 @@ When a user experiments in the Home Assistant UI and later requests to "reconcil
 2. **Present Detected Scope**:
    Show the user which resources were added or changed in the UI.
 3. **Adopt Selected Resources**:
-   Run `just ha-adopt --select <kind>/<key>` (or `--all` if the user wants all changes adopted).
+   Run `just ha-adopt --select <kind>/<key>` (or `--all` if adopting all changes).
+   If adopting UI deletions, provide `--allow-delete` to confirm removal of Git source files.
    This updates the local YAML files in `home-assistant/` atomically.
    *Note: Adoption does NOT advance the verified baseline, nor does it stage or commit files.*
 4. **Validate Candidate Source**:
    Run `just ha-validate` and `just check-changed`.
 5. **Commit and Deploy**:
-   Once committed and deployed through authorized repository workflow, the verified baseline advances upon deployment verification.
+   Once committed and deployed through authorized repository workflow (or CI `deploy_home_assistant`), the verified baseline advances upon deployment verification.
 
 ### Revert Workflow (Explicit Live Reset)
 
@@ -91,13 +92,13 @@ Tool invocations are exposed through `just ha-*` or `python -m scripts.home_assi
 | Recipe / Command | Arguments | Description |
 | --- | --- | --- |
 | `just ha-inventory` | `[--json]` | Report installed integrations, surface counts, and capability limits |
-| `just ha-capture` | `[--json]` | Capture sanitized live snapshot to `.agent-state/` |
+| `just ha-capture` | `[--json]` | Capture sanitized live snapshot to `.agent-state/` (0700/0600 permissions) |
 | `just ha-diff` | `[--select <kind>/<key>] [--json]` | 3-way comparison between Baseline, Git, and Live |
-| `just ha-adopt` | `(--select <key> \| --all) [--json]` | Atomically update local Git files from live state |
-| `just ha-validate` | `[--json]` | Offline schema, entity reference, and secret check |
-| `just ha-plan` | `[--select <key>] [--json]` | Generate immutable deployment plan |
-| `just ha-apply` | `[--select <key>] [--plan-file <f>]` | Apply plan with lock, read-before-write, and verification |
-| `just ha-verify` | `[--json]` | Verify live HA matches accepted Git source |
+| `just ha-adopt` | `(--select <key> \| --all) [--allow-delete] [--force] [--json]` | Atomically update local Git files from live state |
+| `just ha-validate` | `[--sync-gitops] [--json]` | Offline schema, entity reference, GitOps sync, and secret check |
+| `just ha-plan` | `[--select <key>] [--json]` | Generate immutable deployment plan bound to target, version, and source hash |
+| `just ha-apply` | `[--select <key>] [--plan-file <f>]` | Apply plan with atomic lock, renewal, read-before-write, and verification |
+| `just ha-verify` | `[--json]` | Verify live HA matches accepted Git source and update cluster baseline |
 | `just ha-revert` | `--select <key> [--json]` | Restore live resource to Git accepted configuration |
 
 ### Exit Codes
@@ -113,18 +114,23 @@ Tool invocations are exposed through `just ha-*` or `python -m scripts.home_assi
 
 - **No Plaintext Secrets in Desired State**: All sensitive tokens and credentials use the `!secret <secret_name>` tag in YAML, resolved at runtime via Kubernetes ExternalSecrets and SOPS.
 - **Access Tokens**: Home Assistant Long-Lived Access Tokens (LLAT) must never be committed to Git. The CLI resolves tokens from `HASS_TOKEN`, `HASS_TOKEN_FILE`, or `.agent-state/home-assistant/token`.
-- **Pre-Write Secret Scanning**: `just ha-validate` checks candidate configurations against regex patterns for API keys, private keys, JWTs, and database URLs.
+- **Pre-Write Secret Scanning**: `just ha-validate` checks candidate configurations against regex patterns for API keys, private keys, JWTs, and database URLs. Both `capture` and `adopt` execute preflight secret validation before any filesystem persistence.
 
 ---
 
-## 6. Concurrency and Race Safety
+## 6. Concurrency, Race Safety, and UI Pause
 
-1. **Instance Lock**:
-   Every apply operation acquires a lease lock in `.agent-state/home-assistant/<instance>/lock.json` with an expiration timestamp (15 minutes). Unclean crashes auto-expire.
+> [!WARNING]
+> Home Assistant's REST API and UI WebSocket do not provide server-side transactional compare-and-swap or frontend-level edit locking. During planned mutation application, **UI editing on the target resources must be paused**.
+
+1. **Atomic Lease Lock**:
+   Every apply operation acquires a lease lock using atomic file creation (`O_CREAT | O_EXCL`) with restrictive permissions (`0600`). The lock lease is automatically renewed during plan execution and released with owner verification upon completion. Stale crashed locks (> 15 minutes) are reclaimed safely.
 2. **Read-Before-Write Verification**:
    Immediately before applying each mutation, the planner reads the live resource and validates that its current content hash matches the expected pre-apply hash (`expected_live_hash`). If the UI was edited concurrently, the write is aborted as stale.
 3. **Journaling**:
    Every operation records progress (`started`, `applied`, `verified`, `failed`) in `.agent-state/home-assistant/<instance>/journal/<plan_id>.jsonl`.
+4. **Shared Authoritative Baseline**:
+   In addition to local `.agent-state`, verified baselines are persisted to the Kubernetes cluster ConfigMap `home-assistant-baseline-<instance>` so CI pipelines and multiple checkouts share the authoritative deployment checkpoint.
 
 ---
 

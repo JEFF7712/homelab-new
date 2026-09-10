@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
 from .adapters import get_adapter
-from .canonical import canonical_hash
+from .canonical import canonical_hash, canonical_json
 from .client import HomeAssistantClient
 from .models import (
     ActionType,
@@ -32,17 +34,33 @@ class StalePlanError(Exception):
 
 
 class Planner:
-    def __init__(self, repo_root: Path, instance: str = "homelab-01") -> None:
+    def __init__(
+        self,
+        repo_root: Path,
+        instance: str = "homelab-01",
+        client: HomeAssistantClient | None = None,
+    ) -> None:
         self.repo_root = repo_root
         self.instance = instance
+        self.client = client
         self.state_dir = repo_root / ".agent-state" / "home-assistant" / instance
-        self.state_dir.mkdir(parents=True, exist_ok=True)
+        self.state_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.lock_file = self.state_dir / "lock.json"
         self.baseline_file = self.state_dir / "baseline.json"
         self.journal_dir = self.state_dir / "journal"
-        self.journal_dir.mkdir(parents=True, exist_ok=True)
+        self.journal_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
 
     def load_baseline(self) -> BaselineRecord | None:
+        if self.client is not None:
+            try:
+                cluster_data = self.client.get_cluster_baseline(self.instance)
+                if cluster_data:
+                    rec = BaselineRecord.from_dict(cluster_data)
+                    self.save_baseline_local(rec)
+                    return rec
+            except Exception:
+                pass
+
         if not self.baseline_file.is_file():
             return None
         try:
@@ -51,38 +69,77 @@ class Planner:
         except Exception:
             return None
 
+    def save_baseline_local(self, baseline: BaselineRecord) -> None:
+        self.baseline_file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        temp_file = self.baseline_file.with_suffix(f".tmp.{os.getpid()}")
+        content = json.dumps(baseline.to_dict(), indent=2)
+        fd = os.open(temp_file, os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o600)
+        with open(fd, "w", encoding="utf-8") as f:
+            f.write(content)
+        temp_file.replace(self.baseline_file)
+
     def save_baseline(self, baseline: BaselineRecord) -> None:
-        self.baseline_file.parent.mkdir(parents=True, exist_ok=True)
-        self.baseline_file.write_text(
-            json.dumps(baseline.to_dict(), indent=2), encoding="utf-8"
-        )
+        self.save_baseline_local(baseline)
+        if self.client is not None:
+            try:
+                self.client.save_cluster_baseline(self.instance, baseline.to_dict())
+            except Exception:
+                pass
 
     def acquire_lock(self, owner: str, plan_id: str) -> None:
         now = time.time()
-        if self.lock_file.is_file():
-            try:
-                data = json.loads(self.lock_file.read_text(encoding="utf-8"))
-                expires_at = data.get("expires_at", 0)
-                if now < expires_at:
-                    raise LockError(
-                        f"Apply lock already held by '{data.get('owner')}' for plan '{data.get('plan_id')}' until {data.get('expires_at')}"
-                    )
-            except (json.JSONDecodeError, OSError):
-                pass  # Corrupt lock file can be overwritten
-
         lock_data = {
             "owner": owner,
             "plan_id": plan_id,
             "acquired_at": now,
             "expires_at": now + LOCK_TIMEOUT_SECONDS,
         }
-        self.lock_file.write_text(json.dumps(lock_data, indent=2), encoding="utf-8")
+        content = json.dumps(lock_data, indent=2)
 
-    def release_lock(self, plan_id: str) -> None:
+        while True:
+            try:
+                fd = os.open(
+                    self.lock_file,
+                    os.O_CREAT | os.O_EXCL | os.O_WRONLY,
+                    0o600,
+                )
+                with open(fd, "w", encoding="utf-8") as f:
+                    f.write(content)
+                return
+            except FileExistsError:
+                try:
+                    data = json.loads(self.lock_file.read_text(encoding="utf-8"))
+                    expires_at = data.get("expires_at", 0)
+                    held_owner = data.get("owner", "unknown")
+                    held_plan = data.get("plan_id", "unknown")
+                    if time.time() < expires_at:
+                        raise LockError(
+                            f"Apply lock already held by '{held_owner}' for plan '{held_plan}' until {expires_at}"
+                        )
+                    # Expired lock takeover
+                    self.lock_file.unlink(missing_ok=True)
+                except (json.JSONDecodeError, OSError):
+                    self.lock_file.unlink(missing_ok=True)
+
+    def renew_lock(self, plan_id: str, owner: str) -> None:
         if self.lock_file.is_file():
             try:
                 data = json.loads(self.lock_file.read_text(encoding="utf-8"))
-                if data.get("plan_id") == plan_id:
+                if data.get("plan_id") == plan_id and data.get("owner") == owner:
+                    data["expires_at"] = time.time() + LOCK_TIMEOUT_SECONDS
+                    self.lock_file.write_text(
+                        json.dumps(data, indent=2), encoding="utf-8"
+                    )
+            except Exception:
+                pass
+
+    def release_lock(self, plan_id: str, owner: str | None = None) -> None:
+        if self.lock_file.is_file():
+            try:
+                data = json.loads(self.lock_file.read_text(encoding="utf-8"))
+                if data.get("plan_id") == plan_id and (
+                    owner is None or data.get("owner") == owner
+                ):
                     self.lock_file.unlink(missing_ok=True)
             except Exception:
                 self.lock_file.unlink(missing_ok=True)
@@ -98,6 +155,8 @@ class Planner:
         git_revision: str,
         baseline_hash: str,
         selected_keys: set[str] | None = None,
+        ha_version: str = "",
+        source_hash: str = "",
     ) -> ApplyPlan:
         """Create an immutable apply plan from a diff report."""
         actions: list[PlanAction] = []
@@ -116,6 +175,20 @@ class Planner:
             if item.status == DiffStatus.CONFLICT:
                 raise ValueError(
                     f"Cannot generate plan with unresolved conflict on {rk_str}"
+                )
+
+            # Check for unknown / failed reads
+            if item.status == DiffStatus.UNKNOWN:
+                raise ValueError(
+                    f"Cannot generate plan with unknown live state on {rk_str}: {item.details}"
+                )
+
+            # Reject planned mutations on observe-only adapters
+            adapter = get_adapter(item.kind)
+            if item.status == DiffStatus.GIT_CHANGE and not adapter.supports_mutation:
+                raise ValueError(
+                    f"Cannot plan mutation for observe-only resource {rk_str}. "
+                    f"Resource kind '{item.kind}' is observe-only and cannot be mutated."
                 )
 
             # Git changes are planned
@@ -165,6 +238,8 @@ class Planner:
             git_revision=git_revision,
             baseline_hash=baseline_hash,
             actions=actions,
+            ha_version=ha_version,
+            source_hash=source_hash,
         )
 
     def execute_plan(
@@ -175,21 +250,115 @@ class Planner:
         owner: str = "agent-cli",
     ) -> list[JournalEntry]:
         """Execute an apply plan with locking, read-before-write checks, journaling, and verification."""
+        # 1. Validate plan target instance
+        if plan.instance != self.instance:
+            raise StalePlanError(
+                f"Plan target instance '{plan.instance}' does not match executor instance '{self.instance}'"
+            )
+
+        # 2. Validate plan age TTL (plans expire after 30 minutes)
+        try:
+            plan_dt = datetime.fromisoformat(plan.timestamp)
+            age = (datetime.now(timezone.utc) - plan_dt).total_seconds()
+            if age > 1800:
+                raise StalePlanError(
+                    f"Plan '{plan.plan_id}' expired ({int(age)}s old > 1800s TTL). Please generate a fresh plan."
+                )
+        except (ValueError, TypeError):
+            pass
+
+        # 3. Validate baseline binding
+        baseline = self.load_baseline()
+        if baseline is None:
+            if plan.baseline_hash and plan.baseline_hash not in (
+                "uninitialized",
+                "bootstrap",
+                "revert",
+            ):
+                raise StalePlanError(
+                    f"Missing or uninitialized baseline. Explicit bootstrap required before executing plan '{plan.plan_id}' expecting baseline hash '{plan.baseline_hash}'."
+                )
+            baseline = BaselineRecord(
+                instance=self.instance,
+                source_commit=plan.git_revision,
+                content_hash=plan.baseline_hash,
+                timestamp=datetime.now(timezone.utc).isoformat(),
+                resources={},
+            )
+        elif (
+            plan.baseline_hash
+            and plan.baseline_hash != "revert"
+            and plan.baseline_hash != baseline.content_hash
+        ):
+            raise StalePlanError(
+                f"Stale plan baseline refusal: plan expects baseline '{plan.baseline_hash}', "
+                f"but current baseline is '{baseline.content_hash}'"
+            )
+
+        # 4. Validate HA version binding if specified
+        if plan.ha_version and plan.ha_version != "unknown":
+            try:
+                health = client.check_health()
+                live_ver = health.get("version")
+                if live_ver and live_ver != plan.ha_version:
+                    raise StalePlanError(
+                        f"Plan HA version mismatch: plan was created for HA '{plan.ha_version}', but target is running '{live_ver}'"
+                    )
+            except StalePlanError:
+                raise
+            except Exception:
+                pass
+
+        # 5. Validate source tree fingerprint if specified
+        if plan.source_hash and git_resources:
+            source_payload = canonical_json(
+                {rk: d.desired for rk, d in sorted(git_resources.items())}
+            )
+            current_src_hash = hashlib.sha256(
+                source_payload.encode("utf-8")
+            ).hexdigest()
+            if current_src_hash != plan.source_hash:
+                raise StalePlanError(
+                    "Plan source fingerprint mismatch: Git source tree modified since plan was generated."
+                )
+
+        # 6. Validate planned actions match current Git source definitions
+        for action in plan.actions:
+            rk_str = f"{action.kind}/{action.key}"
+            git_doc = git_resources.get(rk_str)
+            adapter = get_adapter(action.kind)
+            if not adapter.supports_mutation:
+                raise StalePlanError(
+                    f"Cannot execute mutation on observe-only resource {rk_str}."
+                )
+            if action.action in (ActionType.CREATE, ActionType.UPDATE):
+                if git_doc is None:
+                    raise StalePlanError(
+                        f"Stale plan refusal on {rk_str}: resource was removed from Git source since plan generation."
+                    )
+                canon_git = adapter.canonicalize(git_doc).desired
+                canon_after = adapter.canonicalize(
+                    ResourceDocument(
+                        kind=action.kind, key=action.key, desired=action.after
+                    )
+                ).desired
+                if canonical_hash(canon_git) != canonical_hash(canon_after):
+                    raise StalePlanError(
+                        f"Stale plan refusal on {rk_str}: Git source modified since plan generation."
+                    )
+            elif action.action == ActionType.DELETE:
+                if git_doc is not None:
+                    raise StalePlanError(
+                        f"Stale plan refusal on {rk_str}: planned for deletion but now present in Git source."
+                    )
+
+        # 5. Acquire atomic lock
         self.acquire_lock(owner=owner, plan_id=plan.plan_id)
         journal: list[JournalEntry] = []
 
         try:
-            baseline = self.load_baseline()
-            if baseline is None:
-                baseline = BaselineRecord(
-                    instance=self.instance,
-                    source_commit=plan.git_revision,
-                    content_hash=plan.baseline_hash,
-                    timestamp=datetime.now(timezone.utc).isoformat(),
-                    resources={},
-                )
-
             for action in plan.actions:
+                self.renew_lock(plan_id=plan.plan_id, owner=owner)
                 rk_str = f"{action.kind}/{action.key}"
                 now_str = datetime.now(timezone.utc).isoformat()
                 adapter = get_adapter(action.kind)
@@ -317,4 +486,4 @@ class Planner:
             return journal
 
         finally:
-            self.release_lock(plan.plan_id)
+            self.release_lock(plan.plan_id, owner=owner)

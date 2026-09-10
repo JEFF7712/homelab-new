@@ -175,20 +175,33 @@ VOLATILE_FIELDS = frozenset(
         "modified_at",
         "created_at",
         "last_updated",
+        "last_changed",
         "time_fired",
-        "context",
     }
 )
 
 
-def strip_volatile(obj: Any) -> Any:
-    """Remove volatile runtime timestamps and identifiers from configuration."""
+def strip_volatile(obj: Any, path: tuple[str, ...] = ()) -> Any:
+    """Remove volatile runtime timestamps and identifiers from configuration.
+
+    Path-aware: only removes runtime volatile fields at top level (path == ()),
+    preserving arbitrary user configuration such as nested variables, context,
+    action payloads, and custom card fields.
+    """
     if isinstance(obj, dict):
-        return {
-            k: strip_volatile(v) for k, v in obj.items() if k not in VOLATILE_FIELDS
-        }
+        result: dict[str, Any] = {}
+        is_entity_state = len(path) == 0 and "entity_id" in obj and "state" in obj
+        for k, v in obj.items():
+            if len(path) == 0 and k in VOLATILE_FIELDS:
+                continue
+            if is_entity_state and k == "context":
+                continue
+            result[k] = strip_volatile(v, path + (str(k),))
+        return result
     if isinstance(obj, list):
-        return [strip_volatile(item) for item in obj]
+        return [
+            strip_volatile(item, path + (str(idx),)) for idx, item in enumerate(obj)
+        ]
     return obj
 
 
@@ -249,6 +262,10 @@ SECRET_PATTERNS = [
     ),
 ]
 
+AUTH_HEADER_PATTERN = re.compile(
+    r"(Bearer\s+|token\s+|token=)[A-Za-z0-9._-]{10,}", re.IGNORECASE
+)
+
 
 def detect_secrets(obj: Any, path: str = "") -> list[str]:
     """Check configuration data for potential plaintext credentials."""
@@ -271,7 +288,14 @@ def detect_secrets(obj: Any, path: str = "") -> list[str]:
             k_lower = str(k).lower()
             if any(
                 term in k_lower
-                for term in ("password", "secret", "token", "auth_key", "bearer")
+                for term in (
+                    "password",
+                    "secret",
+                    "token",
+                    "auth_key",
+                    "bearer",
+                    "authorization",
+                )
             ):
                 if isinstance(v, str) and not isinstance(v, SecretTag) and len(v) > 0:
                     findings.append(
@@ -290,4 +314,10 @@ def redact(text: str) -> str:
     """Sanitize sensitive strings from text."""
     for pattern in SECRET_PATTERNS:
         text = pattern.sub("[REDACTED]", text)
+    text = AUTH_HEADER_PATTERN.sub(r"\1[REDACTED]", text)
     return text
+
+
+def sanitize_error(error: Any) -> str:
+    """Scrub sensitive tokens, headers, and credentials from exception or error strings."""
+    return redact(str(error))

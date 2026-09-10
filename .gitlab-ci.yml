@@ -545,6 +545,53 @@ deploy_fleet:
     - export KUBECONFIG="$HOME/.kube/config"
     - nix develop ./flake -c just deploy-fleet ${DEPLOY_TARGETS:+--target $DEPLOY_TARGETS}
 
+.deploy_home_assistant_base:
+  stage: deploy
+  tags:
+    - nas-privileged
+  environment:
+    name: production
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - home-assistant/**/*
+        - gitops/home-assistant/**/*
+      when: manual
+  before_script:
+    - export PATH="/run/current-system/sw/bin:$PATH"
+    - mkdir -p ~/.ssh ~/.kube
+    - cp "$SSH_DEPLOY_KEY" ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - cp "$HOSTS_KNOWN" ~/.ssh/known_hosts
+    - chmod 600 ~/.ssh/known_hosts
+    - export SSH_OPTS="-i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes"
+    - export KH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+    - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
+    - >-
+      ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.11
+      'sudo cat /etc/rancher/k3s/k3s.yaml' |
+      sed 's/127.0.0.1/10.0.30.11/' > ~/.kube/config
+    - chmod 600 ~/.kube/config
+    - export KUBECONFIG="$HOME/.kube/config"
+    - >-
+      if [ -z "${HASS_TOKEN:-}" ]; then
+        token_b64=$(kubectl get secret -n home-assistant home-assistant-token \
+          -o jsonpath='{.data.token}' 2>/dev/null || true)
+        export HASS_TOKEN=$(echo "$token_b64" | base64 -d 2>/dev/null || true)
+      fi
+
+deploy_home_assistant_dry_run:
+  extends: .deploy_home_assistant_base
+  script:
+    - nix develop ./flake -c python -m scripts.home_assistant diff --instance homelab-01
+
+deploy_home_assistant:
+  extends: .deploy_home_assistant_base
+  script:
+    - nix develop ./flake -c python -m scripts.home_assistant plan --instance homelab-01
+    - nix develop ./flake -c python -m scripts.home_assistant apply --instance homelab-01
+    - nix develop ./flake -c python -m scripts.home_assistant verify --instance homelab-01
+
 sync_to_github:
   stage: sync
   tags:

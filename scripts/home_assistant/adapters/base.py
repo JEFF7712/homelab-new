@@ -11,6 +11,7 @@ class BaseAdapter(ABC):
 
     kind: str
     owner_mode: str = OwnerMode.UI_EDITABLE.value
+    supports_mutation: bool = True
 
     @abstractmethod
     def export_from_live(self, client: HomeAssistantClient) -> list[ResourceDocument]:

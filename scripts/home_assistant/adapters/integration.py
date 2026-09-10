@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..canonical import strip_volatile
+from ..canonical import canonical_hash, strip_volatile
 from ..client import HomeAssistantClient
 from ..models import OwnerMode, PlanAction, ResourceDocument
 from .base import BaseAdapter
@@ -9,6 +9,7 @@ from .base import BaseAdapter
 class IntegrationAdapter(BaseAdapter):
     kind = "integration"
     owner_mode = OwnerMode.OBSERVE_ONLY.value
+    supports_mutation = False
 
     def export_from_live(self, client: HomeAssistantClient) -> list[ResourceDocument]:
         entries = client.list_config_entries()
@@ -56,11 +57,20 @@ class IntegrationAdapter(BaseAdapter):
         return []
 
     def apply(self, client: HomeAssistantClient, action: PlanAction) -> None:
-        # Integrations are observe-only
-        pass
+        raise NotImplementedError(
+            f"Mutations are not supported for observe-only integration '{action.key}'."
+        )
 
     def verify(self, client: HomeAssistantClient, doc: ResourceDocument) -> bool:
-        return True
+        live_docs = {d.key: self.canonicalize(d) for d in self.export_from_live(client)}
+        live_doc = live_docs.get(doc.key)
+        if live_doc is None or live_doc.desired is None:
+            return False
+        return canonical_hash(live_doc.desired) == canonical_hash(
+            self.canonicalize(doc).desired
+        )
 
     def delete(self, client: HomeAssistantClient, key: str) -> None:
-        pass
+        raise NotImplementedError(
+            f"Deletions are not supported for observe-only integration '{key}'."
+        )
