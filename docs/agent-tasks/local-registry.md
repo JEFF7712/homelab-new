@@ -10,7 +10,7 @@ The conventional OCI registry is deployed and serving the new homelab. Zot
 privately as `registry.rupan.dev`. The three k3s nodes have authenticated mirror
 configuration with the default upstream endpoint disabled. Repository-owned
 Flux consumers render to digest-pinned zot references, and all 17 Flux
-Kustomizations applied the accepted revision successfully. Nine
+Kustomizations applied the accepted revision successfully. Thirteen
 repository-scoped GitHub runner Deployments also run their runner and DinD
 containers from digest-pinned zot references.
 
@@ -28,7 +28,7 @@ storage, and nix-snapshotter were not introduced.
 | Update workflow | Valkey 9.1.2 was discovered as digest `sha256:c123e...e1d`, imported under an immutable release tag, verified, then rolled out from zot while retaining the previous digest | Accepted |
 | Node runtime | Registry variants are active on all three nodes with upstream fallback disabled; a node pull of the new Valkey index succeeded through `registry.rupan.dev` | Accepted |
 | Flux cutover | 17 of 17 Kustomizations Ready at `c23d5d0`; Home Assistant, Immich, Reloader, direct applications, controllers, storage, observability, backup workloads, and GitHub runners use their prepared local overlays | Accepted |
-| Runner adoption | Nine of nine GitHub runner Deployments are Ready with zero container restarts; their 18 runner and DinD container references use the two imported zot digests | Accepted |
+| Runner adoption | Thirteen of thirteen GitHub runner Deployments are Ready; their 26 runner and DinD container references use the two imported zot digests | Accepted |
 | Stateful data | Home Assistant and Immich PostgreSQL PVCs remained Bound to `home-assistant-postgres-nvme` and `immich-postgres-nvme`; Immich remains on its intentional PostgreSQL 16 deployment | Accepted |
 | Applications | `apollinestore.com`, `notes.rupan.dev`, `photos.rupan.dev`, and Home Assistant at `10.0.40.13:8123` returned HTTP 200 | Accepted |
 | Observability | Prometheus returned `Prometheus Server is Ready`; Loki returned `ready`; registry alerts and node-exporter collectors are deployed | Accepted |
@@ -54,6 +54,9 @@ The temporary `migration-importer` identity has been decommissioned and removed
 from `/persist/zot/htpasswd` on `nas-01`. Authentication attempts with this user
 now return HTTP 401 Unauthorized, and all live publishing is strictly scoped to
 authenticated repository-specific `publisher-<project>` identities.
+The node deployment gate no longer depends on replaying the retired migration
+job. It verifies the complete lock with the read-only node identity before any
+host activation.
 
 ## Recovery evidence and retained state
 
@@ -147,8 +150,8 @@ images and has unrelated local changes, so it was not modified here.
 The GitHub runner manifests were adopted under
 `gitops/automation/github-runner`. The actions-runner and DinD images were added
 to the inventory and lock, imported and digest-verified, and rolled out through
-the runner manifests using direct `registry.rupan.dev` references. All 12 runner Pods
-are Running with both containers Ready and no restarts.
+the runner manifests using direct `registry.rupan.dev` references. All 13 runner
+Pods are Running with both containers Ready.
 
 The registry platform, upstream update workflow, restore path, direct
 first-party publishing, runner adoption, and all repository-owned consumers are

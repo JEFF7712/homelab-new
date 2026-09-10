@@ -68,10 +68,13 @@ platform job regenerates the same policy from the reviewed lock and installs it
 as a runtime file.
 
 The migration identity can create and update both application and upstream
-repositories but cannot delete. Use it only for `registry_import`. Remove its
-htpasswd entry and rotate its CI auth file after initial content acceptance;
-the remaining inert ACL entry grants nothing without a valid credential. The
-ongoing `registry_update_import` job uses the upstream-only `importer` identity.
+repositories but cannot delete. Use it only for the initial `registry_import`.
+Remove its htpasswd entry and rotate its CI auth file after initial content
+acceptance; the remaining inert ACL entry grants nothing without a valid
+credential. After removal, `registry_import` is an archival bootstrap job and
+must fail authentication if replayed. Node rollout instead verifies the full
+lock with the read-only node identity before activation. The ongoing
+`registry_update_import` job uses the upstream-only `importer` identity.
 
 Zot authorization roles are intentionally separate:
 
@@ -102,7 +105,7 @@ If it already exists, verify its pool identity, mountpoint, ownership, and conte
 4. Trigger `deploy_registry_dns`. Verify `registry.rupan.dev` resolves to `10.0.30.20` from the NAS, runner, all nodes, and an authorized NetBird client. The job also requires a TLS-valid anonymous `/v2/` request to return HTTP 401.
 5. Verify anonymous denial, trusted HTTPS hostname validation, UI availability after authentication, zot persistence, mount failure behavior, and node-exporter metrics.
 6. Generate the locked copy plan. Import current, bootstrap, and retained rollback images from the NAS runner. Verify destination manifest or index digest equality, platform coverage, and required referrers.
-7. Trigger `deploy_registry_node_01`, then `_02`, then `_03`. The jobs are dependency-chained and use the `homelab-0N-registry` NixOS variants. Each generates the protected `registries.yaml` from the same lock before activation.
+7. Trigger `deploy_registry_node_01`, then `_02`, then `_03`. The jobs are dependency-chained and use the `homelab-0N-registry` NixOS variants. The first job authenticates as the read-only node identity and verifies the complete lock before any activation. Each generates the protected `registries.yaml` from the same lock.
 8. Each node job requires the local config, active k3s, API readiness including etcd, and all nodes Ready before the next job becomes available. Do not delete node image caches.
 9. Prove an uncached local pull with a disposable image digest that is already in the lock. Use fresh containerd, kubelet, and zot access logs as evidence.
 10. Enable the separately reviewable Flux consumer cutover only after `python -m scripts.registry verify` passes from the node network. Migrate a small stateless workload first, then cohorts, then bootstrap/system images.

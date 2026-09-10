@@ -376,6 +376,19 @@ registry_import:
       --password-file "$REGISTRY_NODE_PASSWORD_FILE"
       --output /tmp/k3s-registries.yaml
     - >-
+      node_password="$(tr -d '\r\n' < "$REGISTRY_NODE_PASSWORD_FILE")";
+      test -n "$node_password";
+      node_auth="$(printf 'node:%s' "$node_password" | base64 -w0)";
+      jq -n --arg auth "$node_auth"
+      '{"auths":{"registry.rupan.dev":{"auth":$auth}}}'
+      > /tmp/registry-node-auth.json;
+      chmod 0600 /tmp/registry-node-auth.json;
+      unset node_password node_auth
+    - export REGISTRY_DEST_AUTH_FILE=/tmp/registry-node-auth.json
+    - >-
+      nix develop ./flake -c just registry-verify
+      /tmp/registry-node-verify-report.json
+    - >-
       ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@"$DEPLOY_ADDR"
       'sudo install -m 0600 -o root -g root /dev/stdin /persist/secrets/k3s-registries.yaml'
       < /tmp/k3s-registries.yaml
@@ -393,7 +406,7 @@ registry_import:
 deploy_registry_node_01:
   extends: .deploy_registry_node
   needs:
-    - registry_import
+    - registry_lock
   variables:
     DEPLOY_HOST: homelab-01
     DEPLOY_ADDR: 10.0.30.11

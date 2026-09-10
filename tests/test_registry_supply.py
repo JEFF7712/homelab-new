@@ -75,6 +75,25 @@ class OciClientTests(unittest.TestCase):
         self.assertNotIn("--dest-tls-verify=false", command)
 
 
+class RegistryCiContractTests(unittest.TestCase):
+    def test_node_rollout_verifies_lock_without_retired_migration_identity(
+        self,
+    ) -> None:
+        root = pathlib.Path(__file__).resolve().parents[1]
+        pipeline = yaml.safe_load((root / ".gitlab-ci.yml").read_text())
+        template_script = "\n".join(pipeline[".deploy_registry_node"]["script"])
+        node_one = pipeline["deploy_registry_node_01"]
+
+        self.assertEqual(node_one["needs"], ["registry_lock"])
+        self.assertIn("REGISTRY_NODE_PASSWORD_FILE", template_script)
+        self.assertIn("registry-node-auth.json", template_script)
+        self.assertLess(
+            template_script.index("registry-verify"),
+            template_script.index("nixos-rebuild"),
+        )
+        self.assertNotIn("REGISTRY_MIGRATION_AUTH_FILE", template_script)
+
+
 def lock_record(
     raw: bytes, *, tag: str = "1.0", repository: str = "library/demo"
 ) -> dict[str, Any]:
