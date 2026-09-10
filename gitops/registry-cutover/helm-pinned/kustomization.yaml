@@ -23,48 +23,6 @@ patches:
       group: helm.toolkit.fluxcd.io
       version: v2
       kind: HelmRelease
-      name: cert-manager
-      namespace: cert-manager
-    patch: |-
-      - op: add
-        path: /spec/postRenderers
-        value:
-        - kustomize:
-            images:
-            - name: quay.io/jetstack/cert-manager-acmesolver
-              newName: registry.rupan.dev/upstream/quay.io/jetstack/cert-manager-acmesolver
-              digest: sha256:dbc7cc1354f603918e7c5af7f55a0a620537394452c93a565bde75c6f48e8837
-            - name: quay.io/jetstack/cert-manager-cainjector
-              newName: registry.rupan.dev/upstream/quay.io/jetstack/cert-manager-cainjector
-              digest: sha256:ccf6b919ec0500745a47a910118f834f9636d0aac1ff221245cd2557ed8c7c98
-            - name: quay.io/jetstack/cert-manager-controller
-              newName: registry.rupan.dev/upstream/quay.io/jetstack/cert-manager-controller
-              digest: sha256:416a2d76870d996460e62bd7f521bf14fa017be9e3e904aab92163a331fcb61a
-            - name: quay.io/jetstack/cert-manager-startupapicheck
-              newName: registry.rupan.dev/upstream/quay.io/jetstack/cert-manager-startupapicheck
-              digest: sha256:d8ab6416e6e7303a86fa0a8daa82c94a8001f21c9d78eb2e7db20534e5d07ae8
-            - name: quay.io/jetstack/cert-manager-webhook
-              newName: registry.rupan.dev/upstream/quay.io/jetstack/cert-manager-webhook
-              digest: sha256:d8b3961b51c8c7320633f8208dc46bf88aa13804d0f7cbe48a096b2c523cee42
-  - target:
-      group: helm.toolkit.fluxcd.io
-      version: v2
-      kind: HelmRelease
-      name: external-secrets
-      namespace: external-secrets
-    patch: |-
-      - op: add
-        path: /spec/postRenderers
-        value:
-        - kustomize:
-            images:
-            - name: ghcr.io/external-secrets/external-secrets
-              newName: registry.rupan.dev/upstream/ghcr.io/external-secrets/external-secrets
-              digest: sha256:814117b0fd6d121b03e8ba3b6db1cecbe7449a354fc0fc9c4faf73a37aa221b1
-  - target:
-      group: helm.toolkit.fluxcd.io
-      version: v2
-      kind: HelmRelease
       name: kube-prometheus-stack
       namespace: observability
     patch: |-
@@ -156,21 +114,6 @@ patches:
             - name: prom/memcached-exporter
               newName: registry.rupan.dev/upstream/docker.io/prom/memcached-exporter
               digest: sha256:b6763ecb3c47f2408e0398518851b7f8c5fc46232b2649f8c78a321130c54266
-  - target:
-      group: helm.toolkit.fluxcd.io
-      version: v2
-      kind: HelmRelease
-      name: reloader
-      namespace: flux-system
-    patch: |-
-      - op: add
-        path: /spec/postRenderers
-        value:
-        - kustomize:
-            images:
-            - name: ghcr.io/stakater/reloader
-              newName: registry.rupan.dev/upstream/ghcr.io/stakater/reloader
-              digest: sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c
   - target:
       group: helm.toolkit.fluxcd.io
       version: v2

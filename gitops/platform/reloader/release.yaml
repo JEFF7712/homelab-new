@@ -18,6 +18,12 @@ spec:
   upgrade:
     remediation:
       retries: 3
+  postRenderers:
+    - kustomize:
+        images:
+          - name: ghcr.io/stakater/reloader
+            newName: registry.rupan.dev/upstream/ghcr.io/stakater/reloader  # yamllint disable-line rule:line-length
+            digest: sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c
   values:
     fullnameOverride: reloader
     reloader:

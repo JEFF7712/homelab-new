@@ -17,3 +17,9 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
+  postRenderers:
+    - kustomize:
+        images:
+          - name: ghcr.io/external-secrets/external-secrets
+            newName: registry.rupan.dev/upstream/ghcr.io/external-secrets/external-secrets  # yamllint disable-line rule:line-length
+            digest: sha256:814117b0fd6d121b03e8ba3b6db1cecbe7449a354fc0fc9c4faf73a37aa221b1
