@@ -297,13 +297,13 @@ deploy_zigbee_gateway:
       ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.10
       'sudo install -m 0600 -o root -g root /dev/stdin /persist/secrets/zigbee2mqtt-secret.yaml'
     - >-
+      printf '%s' "$HOME_ASSISTANT_MQTT_PASSWORD" |
       ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.10
       'sudo install -m 0600 -o root -g root /dev/stdin /persist/secrets/mosquitto-home-assistant-password'
-      < "$HOME_ASSISTANT_MQTT_PASSWORD"
     - >-
+      printf '%s' "$ZIGBEE2MQTT_MQTT_PASSWORD" |
       ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.10
       'sudo install -m 0600 -o root -g root /dev/stdin /persist/secrets/mosquitto-zigbee2mqtt-password'
-      < "$ZIGBEE2MQTT_MQTT_PASSWORD"
     - >-
       nixos-rebuild --flake ./flake#adguard-netbird-01 --use-remote-sudo switch
       --target-host rupan@10.0.30.10 --build-host rupan@10.0.30.10
