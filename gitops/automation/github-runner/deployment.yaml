@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -51,7 +51,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -153,7 +153,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -182,7 +182,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -284,7 +284,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -313,7 +313,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -415,7 +415,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -444,7 +444,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -546,7 +546,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -575,7 +575,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -677,7 +677,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -706,7 +706,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -808,7 +808,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -837,7 +837,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -939,7 +939,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -968,7 +968,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -1070,7 +1070,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -1099,7 +1099,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -1201,7 +1201,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -1230,7 +1230,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -1332,7 +1332,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -1361,7 +1361,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -1463,7 +1463,7 @@ spec:
     spec:
       containers:
         - name: dind
-          image: docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
+          image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
           securityContext:
             privileged: true
           env:
@@ -1492,7 +1492,7 @@ spec:
               cpu: 4000m
               memory: 4Gi
         - name: runner
-          image: ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
+          image: registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001

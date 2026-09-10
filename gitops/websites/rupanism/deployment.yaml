@@ -19,7 +19,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: web
-          image: ghcr.io/jeff7712/rupanism:0.0.49
+          image: registry.rupan.dev/apps/rupanism@sha256:fdd2bc2a68439f1f993f2e554a60b973422a441caac251a78c32397e2981ecd5  # yamllint disable-line rule:line-length
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
