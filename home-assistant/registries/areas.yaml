@@ -10,3 +10,7 @@
   icon: mdi:sofa
   aliases: []
   area_id: living_room
+- name: Stairs
+  icon: mdi:stairs
+  aliases: []
+  area_id: stairs
