@@ -23,17 +23,14 @@ Related manifests:
 - `gitops/immich/route.yaml` (`photos.rupan.dev`, inert while `Gateway homelab` is parked)
 - `gitops/immich/server.yaml`
 
-## Ingress order (v63, 2026-09-08)
+## Ingress order (v70, 2026-09-10)
 
 Cloudflare evaluates top to bottom, first match wins. Keep specifics first, catch-all last.
 
-Pending cutover (not yet in dashboard): `rupan.dev` and `www.rupan.dev`,
-both `-> http://rupan-dev-svc.rupan-dev:80`, placed above the catch-all alongside
-the other `*.rupan.dev` entries. Add them only after the `rupan-dev`
-Deployment is healthy in-cluster and the first `apps/rupan-dev` image is
-verified in zot. DNS for the apex and `www` currently points at Vercel; move
-both records to the tunnel (`CNAME -> <tunnel-id>.cfargotunnel.com`, apex via
-`CNAME` flattening) as the final cutover step, then remove the Vercel project.
+Cutover completed: `rupan.dev` and `www.rupan.dev` route to `http://rupan-dev-svc.rupan-dev:80`
+via the homelab tunnel, backed by local image `registry.rupan.dev/apps/rupan-dev`. DNS apex and
+`www` point to the tunnel CNAME (`0f08d8c5-6f2c-409e-ba80-dc0601e0227e.cfargotunnel.com`) with
+Cloudflare Access public bypass configured.
 
 1. `photos.rupan.dev -> http://immich-server.immich:80`
 2. `www.pulseagent.dev -> http://pulse-svc.pulse:80`
@@ -51,10 +48,13 @@ both records to the tunnel (`CNAME -> <tunnel-id>.cfargotunnel.com`, apex via
 14. `obsidian.rupan.dev -> http://couchdb.obsidian.svc.cluster.local:5984`
 15. `renovate-approve.rupan.dev -> http://renovate-approval-webhook.automation:8080`
 16. `renovate-status.rupan.dev -> http://renovate-dashboard.automation:8080`
-17. `distrojeff.com -> http://distrojeff-site-svc.distrojeff:80`
-18. `apollinestore.com -> http://apolline-svc.apolline:80`
-19. `darkbitapparel.com -> http://darkbit-svc.darkbit:80`
-20. `http_status:404`
+17. `ha.rupan.dev -> http://home-assistant.home-assistant:8123`
+18. `rupan.dev -> http://rupan-dev-svc.rupan-dev:80`
+19. `www.rupan.dev -> http://rupan-dev-svc.rupan-dev:80`
+20. `distrojeff.com -> http://distrojeff-site-svc.distrojeff:80`
+21. `apollinestore.com -> http://apolline-svc.apolline:80`
+22. `darkbitapparel.com -> http://darkbit-svc.darkbit:80`
+23. `http_status:404`
 
 Legacy routes removed:
 - `*.rupan.dev -> https://10.0.20.180:443` (defunct Talos Traefik VIP; caused timeouts)
