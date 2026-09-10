@@ -15,7 +15,7 @@ images:
     digest: sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
   - name: cloudflare/cloudflared
     newName: registry.rupan.dev/upstream/docker.io/cloudflare/cloudflared
-    digest: sha256:51c9cefcb4569df44e1ad403ab1d3d8065aa8e84339bcfc6aee75502e1140339
+    digest: sha256:ff69a2225ad7c6f85ed84fbd5f3087df46202426b2388ec60214098e0adf05e9
   - name: docker.io/library/busybox
     newName: registry.rupan.dev/upstream/docker.io/library/busybox
     digest: sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616
