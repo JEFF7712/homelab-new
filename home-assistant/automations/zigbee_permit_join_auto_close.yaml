@@ -1,0 +1,20 @@
+id: zigbee_permit_join_auto_close
+alias: "Zigbee: Permit Join Auto-Close"
+description: "Automatically disable Zigbee permit-join mode after 5 minutes and notify phone."
+triggers:
+  - trigger: state
+    entity_id: switch.zigbee2mqtt_bridge_permit_join
+    to: "on"
+    for: "00:05:00"
+conditions: []
+actions:
+  - action: switch.turn_off
+    target:
+      entity_id: switch.zigbee2mqtt_bridge_permit_join
+  - action: notify.send_message
+    target:
+      entity_id: notify.rupan_phone
+    data:
+      title: "Zigbee Security"
+      message: "Zigbee pairing mode was automatically turned off after 5 minutes."
+mode: single

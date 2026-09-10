@@ -1,0 +1,28 @@
+id: stairs_light_sunset_to_sunrise
+alias: "Stairs Light: Sunset to Sunrise"
+description: "Turn on stairs light when it is dark (sunset to sunrise)."
+triggers:
+  - trigger: sun
+    event: sunset
+    id: "sunset"
+  - trigger: sun
+    event: sunrise
+    id: "sunrise"
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "sunset"
+        sequence:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.0xffffb40e0608faec
+      - conditions:
+          - condition: trigger
+            id: "sunrise"
+        sequence:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.0xffffb40e0608faec
+mode: single

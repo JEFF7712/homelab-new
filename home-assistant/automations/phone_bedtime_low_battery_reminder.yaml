@@ -1,0 +1,27 @@
+id: phone_bedtime_low_battery_reminder
+alias: "Phone: Bedtime Low Battery Reminder"
+description: "Send a reminder at 10:30 PM if phone battery is low and not charging."
+triggers:
+  - trigger: time
+    at: "22:30:00"
+conditions:
+  - condition: state
+    entity_id: person.rupan_sunderapandyan
+    state: "home"
+  - condition: numeric_state
+    entity_id: sensor.rupan_phone_battery_level
+    below: 30
+  - condition: not
+    conditions:
+      - condition: state
+        entity_id: sensor.rupan_phone_battery_state
+        state: "Charging"
+actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.rupan_phone
+    data:
+      title: "Low Battery Reminder"
+      message: >-
+        Your phone is at {{ states('sensor.rupan_phone_battery_level') }}%. Remember to plug it in before bed!
+mode: single
