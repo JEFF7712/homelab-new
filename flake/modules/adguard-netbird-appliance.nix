@@ -339,6 +339,7 @@ in
             acl = [
               "readwrite homeassistant/#"
               "readwrite zigbee2mqtt/#"
+              "readwrite roku/#"
             ];
           };
           zigbee2mqtt = {

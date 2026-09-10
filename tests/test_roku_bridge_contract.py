@@ -24,6 +24,13 @@ class RokuBridgeContractTests(unittest.TestCase):
             appliance,
         )
 
+    def test_home_assistant_may_command_roku_topics(self) -> None:
+        appliance = (ROOT / "flake/modules/adguard-netbird-appliance.nix").read_text()
+
+        ha_start = appliance.index('"home-assistant" = {')
+        ha_block = appliance[ha_start : appliance.index("};", ha_start)]
+        self.assertIn('"readwrite roku/#"', ha_block)
+
     def test_bridge_runs_as_own_user_with_staged_secrets(self) -> None:
         appliance = (ROOT / "flake/modules/adguard-netbird-appliance.nix").read_text()
 
