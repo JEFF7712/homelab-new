@@ -66,7 +66,9 @@ class HttpsClient:
             response = connection.getresponse()
             body = response.read()
             if response.status >= 400:
-                raise RuntimeError(f"OPNsense returned HTTP {response.status}")
+                raise RuntimeError(
+                    f"OPNsense returned HTTP {response.status}: {body.decode(errors='replace')}"
+                )
             return body
         finally:
             connection.close()
