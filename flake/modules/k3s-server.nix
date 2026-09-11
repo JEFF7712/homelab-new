@@ -110,6 +110,8 @@ in
           ip saddr 10.0.30.0/24 tcp dport { 22, 179, 2379, 2380, 6443, 6444, 10250, 4240 } accept
           ip saddr 10.0.30.0/24 udp dport 8472 accept
           ip saddr 10.42.0.0/16 tcp dport { 6443, 10250 } accept
+          ip saddr { 10.0.20.0/24, 10.0.30.0/24, 10.0.40.0/24, 10.42.0.0/16 } tcp dport { 8123, 21063 } accept
+          ip saddr 10.0.30.0/24 udp dport 5353 accept
         '';
       };
     };
