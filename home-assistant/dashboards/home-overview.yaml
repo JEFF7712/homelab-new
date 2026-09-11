@@ -1,0 +1,55 @@
+title: Home
+icon: mdi:home
+require_admin: true
+show_in_sidebar: true
+views:
+  - title: Home
+    type: sections
+    sections:
+      - cards:
+          - type: heading
+            heading: Boards
+          - type: button
+            name: Rupan Bedroom
+            icon: mdi:bed
+            tap_action:
+              action: navigate
+              navigation_path: /bedroom-lights
+          - type: button
+            name: 3D Printing
+            icon: mdi:printer-3d
+            tap_action:
+              action: navigate
+              navigation_path: /3d-printing
+          - type: button
+            name: Shared Spaces
+            icon: mdi:sofa
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces
+          - type: weather-forecast
+            entity: weather.forecast_home
+            show_current: true
+            show_forecast: true
+      - cards:
+          - type: heading
+            heading: Status
+          - type: glance
+            entities:
+              - entity: sensor.a1_03900d642327265_print_status
+                name: Printer
+              - entity: sensor.a1_03900d642327265_print_progress
+                name: Progress
+              - entity: sensor.a1_03900d642327265_remaining_time
+                name: Remaining
+              - entity: switch.0xffffb40e0608faec
+                name: Stairs
+          - type: entities
+            title: System
+            entities:
+              - entity: sensor.backup_last_successful_automatic_backup
+                name: Last backup
+              - entity: sensor.backup_next_scheduled_automatic_backup
+                name: Next backup
+              - entity: sensor.ha_latest_version
+                name: Latest HA version
