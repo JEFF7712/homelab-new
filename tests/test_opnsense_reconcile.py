@@ -842,6 +842,25 @@ class OutboundNatReconciliationTests(unittest.TestCase):
         client = NatClient()
         reconcile_outbound_nat(client, self.desired())
 
+    def test_verification_normalizes_string_sequence_to_int(self) -> None:
+        rule = self._DESIRED_RULE
+
+        class NatClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str]] = []
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path))
+                # OPNsense search_rule returns sequence as a string.
+                live_rule = dict(rule, uuid="uuid-nat", sequence="200000")
+                return {"rows": [live_rule]}
+
+            def post(self, path: str, payload: object) -> object:
+                raise AssertionError(f"normalized match must not write: {path}")
+
+        client = NatClient()
+        reconcile_outbound_nat(client, self.desired())
+
     def test_adds_missing_rule_applies_and_verifies(self) -> None:
         rule = self._DESIRED_RULE
 
