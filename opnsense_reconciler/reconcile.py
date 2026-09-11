@@ -380,6 +380,18 @@ OUTBOUND_NAT_FIELDS: tuple[str, ...] = (
     "sequence",
 )
 
+OUTBOUND_NAT_VERIFY_FIELDS: tuple[str, ...] = (
+    "interface",
+    "ipprotocol",
+    "protocol",
+    "source_net",
+    "destination_net",
+    "target",
+    "description",
+    "enabled",
+    "sequence",
+)
+
 
 def reconcile_outbound_nat(
     client: Client,
@@ -403,7 +415,7 @@ def reconcile_outbound_nat(
                 client.post("/api/firewall/source_nat/add_rule", {"rule": desired})
             )
             changed = True
-        elif _outbound_nat_live_fields(live) != desired:
+        elif _outbound_nat_diff_fields(live) != _outbound_nat_diff_fields(desired):
             _require_stored(
                 client.post(
                     f"/api/firewall/source_nat/set_rule/{live['uuid']}",
@@ -417,7 +429,8 @@ def reconcile_outbound_nat(
     mismatches = sorted(
         description
         for description, desired in desired_by_description.items()
-        if _outbound_nat_live_fields(verified.get(description, {})) != desired
+        if _outbound_nat_verify_fields(verified.get(description, {}))
+        != _outbound_nat_verify_fields(desired)
     )
     if mismatches:
         raise RuntimeError(
@@ -480,6 +493,18 @@ def _outbound_nat_live_fields(
     live: dict[str, object],
 ) -> dict[str, object]:
     return {key: live.get(key) for key in OUTBOUND_NAT_FIELDS}
+
+
+def _outbound_nat_verify_fields(
+    live: dict[str, object],
+) -> dict[str, object]:
+    return {key: live.get(key) for key in OUTBOUND_NAT_VERIFY_FIELDS}
+
+
+def _outbound_nat_diff_fields(
+    rule: dict[str, object],
+) -> dict[str, object]:
+    return {key: rule.get(key) for key in OUTBOUND_NAT_FIELDS}
 
 
 UNBOUND_ACL_FIELDS: tuple[str, ...] = ("name", "action", "networks")
