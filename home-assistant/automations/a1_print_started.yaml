@@ -16,5 +16,7 @@ actions:
       title: "A1 Print Started"
       message: >-
         {% set eta = states('sensor.a1_03900d642327265_end_time') %}
-        {{ states('sensor.a1_03900d642327265_task_name') | default('Print', true) }} started{% if eta not in ('unknown', 'unavailable') %}, ETA {{ (eta | as_datetime | as_local).strftime('%H:%M') }}{% endif %}.
+        {{ states('sensor.a1_03900d642327265_task_name') | default('Print', true) }}
+        started{% if eta not in ('unknown', 'unavailable') %},
+        ETA {{ (eta | as_datetime | as_local).strftime('%H:%M') }}{% endif %}.
 mode: single

@@ -26,7 +26,8 @@ actions:
             data:
               title: "Backup Complete"
               message: >-
-                Weekly automatic backup finished successfully at {{ states('sensor.backup_last_successful_automatic_backup') }}.
+                Weekly automatic backup finished successfully at
+                {{ states('sensor.backup_last_successful_automatic_backup') }}.
       - conditions: []
         sequence:
           - action: notify.send_message
@@ -35,5 +36,6 @@ actions:
             data:
               title: "Backup Failed"
               message: >-
-                Weekly automatic backup did not complete within an hour. Last success: {{ states('sensor.backup_last_successful_automatic_backup') }}.
+                Weekly automatic backup did not complete within an hour.
+                Last success: {{ states('sensor.backup_last_successful_automatic_backup') }}.
 mode: single

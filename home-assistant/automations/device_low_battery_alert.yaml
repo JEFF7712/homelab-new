@@ -4,7 +4,10 @@ description: "Notify phone when any battery device class sensor stays below 20 p
 triggers:
   - trigger: template
     value_template: >-
-      {{ states.sensor | selectattr('attributes.device_class', 'defined') | selectattr('attributes.device_class', 'eq', 'battery') | selectattr('state', 'is_number') | map(attribute='state') | map('int', 100) | select('lt', 20) | list | count > 0 }}
+      {{ states.sensor | selectattr('attributes.device_class', 'defined') |
+      selectattr('attributes.device_class', 'eq', 'battery') |
+      selectattr('state', 'is_number') | map(attribute='state') |
+      map('int', 100) | select('lt', 20) | list | count > 0 }}
     for: "01:00:00"
 conditions: []
 actions:
@@ -15,7 +18,9 @@ actions:
       title: "Low Battery"
       message: >-
         {% set ns = namespace(devs=[]) %}
-        {% for s in states.sensor | selectattr('attributes.device_class', 'defined') | selectattr('attributes.device_class', 'eq', 'battery') | selectattr('state', 'is_number') %}
+        {% for s in states.sensor | selectattr('attributes.device_class', 'defined') |
+        selectattr('attributes.device_class', 'eq', 'battery') |
+        selectattr('state', 'is_number') %}
         {% if s.state | int(100) < 20 %}{% set ns.devs = ns.devs + [s.name ~ ' (' ~ s.state ~ '%)'] %}{% endif %}
         {% endfor %}
         These batteries are low: {{ ns.devs | join(', ') }}.

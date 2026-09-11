@@ -1,6 +1,9 @@
 id: bedroom_lights_bedtime_charging
 alias: "Bedroom Lights: Bedtime Phone Charging"
-description: "Turn off bedroom lights when phone starts charging after 10:00 PM. Trigger via the Companion App native Shortcut action firing the bedtime_phone_charging event."
+description: >-
+  Turn off bedroom lights when phone starts charging after 10:00 PM. Trigger
+  via the Companion App native Shortcut action firing the
+  bedtime_phone_charging event.
 triggers:
   - trigger: event
     event_type: bedtime_phone_charging

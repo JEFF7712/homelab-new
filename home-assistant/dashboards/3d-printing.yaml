@@ -15,9 +15,12 @@ views:
               {% if raw not in ('unknown', 'unavailable', 'none') %}
               {% set mins = (raw | float(0) * 60) | int %}
               {% set h = mins // 60 %}{% set m = mins % 60 %}
-              {{ states('sensor.a1_03900d642327265_current_stage') | capitalize }} · {{ states('sensor.a1_03900d642327265_print_progress') }}% · {% if h > 0 %}{{ h }}h {% endif %}{{ m }}m left
+              {{ states('sensor.a1_03900d642327265_current_stage') | capitalize }} ·
+              {{ states('sensor.a1_03900d642327265_print_progress') }}% ·
+              {% if h > 0 %}{{ h }}h {% endif %}{{ m }}m left
               {% else %}
-              {{ states('sensor.a1_03900d642327265_current_stage') | capitalize }} · {{ states('sensor.a1_03900d642327265_print_progress') }}%
+              {{ states('sensor.a1_03900d642327265_current_stage') | capitalize }} ·
+              {{ states('sensor.a1_03900d642327265_print_progress') }}%
               {% endif %}
           - type: picture-entity
             entity: camera.a1_03900d642327265_camera

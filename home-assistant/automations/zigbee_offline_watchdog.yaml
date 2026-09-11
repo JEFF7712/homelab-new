@@ -26,5 +26,6 @@ actions:
     data:
       title: "Zigbee Offline"
       message: >-
-        {{ trigger.entity_id }} has been {{ trigger.to_state.state }} for a while. Check Zigbee2MQTT and the MQTT broker.
+        {{ trigger.entity_id }} has been {{ trigger.to_state.state }} for a while.
+        Check Zigbee2MQTT and the MQTT broker.
 mode: single

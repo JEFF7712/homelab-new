@@ -1,6 +1,8 @@
 id: a1_print_error
 alias: "A1: Print Error Notification"
-description: "Notify phone when the A1 reports a print error, failure, or HMS fault, with progress detail and a camera snapshot."
+description: >-
+  Notify phone when the A1 reports a print error, failure, or HMS fault,
+  with progress detail and a camera snapshot.
 triggers:
   - trigger: state
     entity_id: binary_sensor.a1_03900d642327265_print_error
@@ -23,8 +25,11 @@ actions:
       message: >-
         {{ states('sensor.a1_03900d642327265_task_name') | default('Print', true) }} reported an error
         at {{ states('sensor.a1_03900d642327265_print_progress') | default('?', true) }}%
-        (layer {{ states('sensor.a1_03900d642327265_current_layer') | default('?', true) }}/{{ states('sensor.a1_03900d642327265_total_layer_count') | default('?', true) }}).
-        Nozzle {{ states('sensor.a1_03900d642327265_nozzle_temperature') | default('?', true) }}C, bed {{ states('sensor.a1_03900d642327265_bed_temperature') | default('?', true) }}C.
+        (layer {{ states('sensor.a1_03900d642327265_current_layer')
+        | default('?', true) }}/{{ states('sensor.a1_03900d642327265_total_layer_count')
+        | default('?', true) }}).
+        Nozzle {{ states('sensor.a1_03900d642327265_nozzle_temperature') | default('?', true) }}C,
+        bed {{ states('sensor.a1_03900d642327265_bed_temperature') | default('?', true) }}C.
         Check the camera.
       image: /api/camera_proxy/camera.a1_03900d642327265_camera
 mode: single
