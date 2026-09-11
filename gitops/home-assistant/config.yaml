@@ -14,6 +14,7 @@ data:
     homekit:
       - name: Homelab Bridge
         port: 21063
+        advertise_ip: 10.0.40.13
         filter:
           include_domains:
             - light
