@@ -551,14 +551,17 @@ def reconcile_unbound_acls(
         live = live_by_name.get(name)
         if live is None:
             _require_stored(
-                client.post("/api/unbound/settings/add_acl", {"acl": desired})
+                client.post(
+                    "/api/unbound/settings/add_acl",
+                    {"acl": _serialize_unbound_acl(desired)},
+                )
             )
             changed = True
         elif _normalize_unbound_acl(live) != _normalize_unbound_acl(desired):
             _require_stored(
                 client.post(
                     f"/api/unbound/settings/set_acl/{live['uuid']}",
-                    {"acl": desired},
+                    {"acl": _serialize_unbound_acl(desired)},
                 )
             )
             changed = True
@@ -575,6 +578,13 @@ def reconcile_unbound_acls(
         raise RuntimeError(
             "Unbound ACL verification failed for " + ", ".join(mismatches)
         )
+
+
+def _serialize_unbound_acl(acl: dict[str, object]) -> dict[str, object]:
+    networks = acl.get("networks")
+    if isinstance(networks, list):
+        return {**acl, "networks": ",".join(str(net) for net in networks)}
+    return acl
 
 
 def _normalize_unbound_acl(acl: dict[str, object]) -> dict[str, object]:

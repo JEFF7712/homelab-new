@@ -1091,7 +1091,7 @@ class UnboundAclReconciliationTests(unittest.TestCase):
                         "name": "management-allowed",
                         "enabled": "1",
                         "action": "allow",
-                        "networks": ["10.0.10.0/24"],
+                        "networks": "10.0.10.0/24",
                         "description": "Allow recursive DNS from the management VLAN",
                     }
                 },
