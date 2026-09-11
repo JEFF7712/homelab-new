@@ -525,7 +525,13 @@ def _outbound_nat_diff_fields(
     return {key: rule.get(key) for key in OUTBOUND_NAT_FIELDS}
 
 
-UNBOUND_ACL_FIELDS: tuple[str, ...] = ("name", "action", "networks")
+UNBOUND_ACL_FIELDS: tuple[str, ...] = (
+    "name",
+    "enabled",
+    "action",
+    "networks",
+    "description",
+)
 
 
 def reconcile_unbound_acls(
@@ -548,7 +554,7 @@ def reconcile_unbound_acls(
                 client.post("/api/unbound/settings/add_acl", {"acl": desired})
             )
             changed = True
-        elif _unbound_acl_live_fields(live) != desired:
+        elif _normalize_unbound_acl(live) != _normalize_unbound_acl(desired):
             _require_stored(
                 client.post(
                     f"/api/unbound/settings/set_acl/{live['uuid']}",
@@ -562,12 +568,24 @@ def reconcile_unbound_acls(
     mismatches = sorted(
         name
         for name, desired in desired_by_name.items()
-        if _unbound_acl_live_fields(verified.get(name, {})) != desired
+        if _normalize_unbound_acl(verified.get(name, {}))
+        != _normalize_unbound_acl(desired)
     )
     if mismatches:
         raise RuntimeError(
             "Unbound ACL verification failed for " + ", ".join(mismatches)
         )
+
+
+def _normalize_unbound_acl(acl: dict[str, object]) -> dict[str, object]:
+    raw = acl.get("networks")
+    networks: list[object] = list(raw) if isinstance(raw, list) else []
+    return {
+        "name": acl.get("name"),
+        "enabled": _normalize_unbound_enabled(acl.get("enabled")),
+        "action": acl.get("action"),
+        "networks": networks,
+    }
 
 
 def _desired_unbound_acls(
@@ -583,8 +601,17 @@ def _desired_unbound_acls(
             raise ValueError("Unbound ACL requires a name")
         if name in desired_by_name:
             raise ValueError(f"duplicate Unbound ACL name: {name}")
-        if entry["action"] not in ("allow", "deny", "refuse", "redirect"):
+        if entry["action"] not in (
+            "allow",
+            "deny",
+            "refuse",
+            "allow_snoop",
+            "deny_non_local",
+            "refuse_non_local",
+        ):
             raise ValueError(f"Unbound ACL {name} action must be a known verb")
+        if entry["enabled"] not in ("0", "1"):
+            raise ValueError(f"Unbound ACL {name} enabled must be 0 or 1")
         if not isinstance(entry["networks"], list) or not all(
             isinstance(net, str) and net for net in entry["networks"]
         ):
@@ -612,6 +639,7 @@ def _live_unbound_acls(response: object) -> dict[str, dict[str, object]]:
             continue
         entry: dict[str, object] = {
             "name": name,
+            "enabled": _normalize_unbound_enabled(row.get("enabled")),
             "action": row.get("action"),
             "networks": _split_networks(row.get("networks")),
         }
@@ -628,11 +656,16 @@ def _split_networks(value: object) -> list[str]:
     return []
 
 
+def _normalize_unbound_enabled(value: object) -> str:
+    return "1" if value in (1, "1", True, "true") else "0"
+
+
 def _unbound_acl_live_fields(
     live: dict[str, object],
 ) -> dict[str, object]:
     return {
         "name": live.get("name"),
+        "enabled": live.get("enabled"),
         "action": live.get("action"),
         "networks": live.get("networks", []),
     }

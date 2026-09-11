@@ -1015,8 +1015,10 @@ class UnboundAclReconciliationTests(unittest.TestCase):
         return [
             {
                 "name": "management-allowed",
+                "enabled": "1",
                 "action": "allow",
                 "networks": ["10.0.10.0/24"],
+                "description": "Allow recursive DNS from the management VLAN",
             }
         ]
 
@@ -1032,6 +1034,7 @@ class UnboundAclReconciliationTests(unittest.TestCase):
                         {
                             "uuid": "uuid-acl",
                             "name": "management-allowed",
+                            "enabled": "1",
                             "action": "allow",
                             "networks": "10.0.10.0/24",
                         }
@@ -1066,6 +1069,7 @@ class UnboundAclReconciliationTests(unittest.TestCase):
                         {
                             "uuid": "uuid-acl",
                             "name": "management-allowed",
+                            "enabled": "1",
                             "action": "allow",
                             "networks": "10.0.10.0/24",
                         }
@@ -1085,8 +1089,10 @@ class UnboundAclReconciliationTests(unittest.TestCase):
                 {
                     "acl": {
                         "name": "management-allowed",
+                        "enabled": "1",
                         "action": "allow",
                         "networks": ["10.0.10.0/24"],
+                        "description": "Allow recursive DNS from the management VLAN",
                     }
                 },
             ),
@@ -1123,6 +1129,7 @@ class UnboundAclReconciliationTests(unittest.TestCase):
                 desired_acls=[
                     {
                         "name": "bad",
+                        "enabled": "1",
                         "action": "trust-me",
                         "networks": ["10.0.10.0/24"],
                     }
@@ -1136,8 +1143,23 @@ class UnboundAclReconciliationTests(unittest.TestCase):
                 desired_acls=[
                     {
                         "name": "bad",
+                        "enabled": "1",
                         "action": "allow",
                         "networks": "10.0.10.0/24",
+                    }
+                ],
+            )
+
+    def test_rejects_invalid_enabled(self) -> None:
+        with self.assertRaisesRegex(ValueError, "enabled"):
+            reconcile_unbound_acls(
+                client=FakeClient(),
+                desired_acls=[
+                    {
+                        "name": "bad",
+                        "enabled": "yes",
+                        "action": "allow",
+                        "networks": ["10.0.10.0/24"],
                     }
                 ],
             )
