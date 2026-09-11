@@ -12,18 +12,18 @@ ha_version: 2026.9.1
 instance: homelab-01
 schema_version: '1.0'
 summary:
-  entities: 89
+  entities: 99
   areas: 4
-  automations: 0
+  automations: 7
   dashboards: 1
-  devices: 9
+  devices: 12
   integrations: 10
   scenes: 0
   scripts: 0
 surfaces:
   - description: Home Assistant UI automations
     category: ui-editable
-    count: 0
+    count: 7
     details: {}
     surface: automations
   - description: Home Assistant UI scripts
@@ -48,12 +48,12 @@ surfaces:
     surface: areas
   - description: Device registry entries
     category: ui-editable
-    count: 9
+    count: 12
     details: {}
     surface: devices
   - description: Entity registry entries
     category: ui-editable
-    count: 89
+    count: 99
     details: {}
     surface: entities
   - description: Config entry integrations
@@ -61,7 +61,7 @@ surfaces:
     count: 10
     details: {}
     surface: integrations
-timestamp: '2026-09-10T05:19:18.942152+00:00'
+timestamp: '2026-09-11T00:50:06.549584+00:00'
 unsupported:
   - oauth_credentials
   - zha_pairing
