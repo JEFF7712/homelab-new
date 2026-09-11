@@ -357,6 +357,235 @@ def _kea_interfaces(configuration: object) -> set[str]:
     }
 
 
+OUTBOUND_NAT_FIELDS: tuple[str, ...] = (
+    "interface",
+    "ip_protocol",
+    "protocol",
+    "source",
+    "destination",
+    "target",
+    "description",
+    "enabled",
+    "sequence",
+)
+
+
+def reconcile_outbound_nat(
+    client: Client,
+    desired_rules: list[dict[str, object]],
+) -> None:
+    desired_by_description = _desired_outbound_nat(desired_rules)
+    live_by_description = _live_outbound_nat(
+        client.get("/api/firewall/source_nat/search_rule")
+    )
+    unexpected = sorted(set(live_by_description) - set(desired_by_description))
+    if unexpected:
+        raise RuntimeError(
+            "unexpected outbound NAT rules require human-directed removal: "
+            + ", ".join(unexpected)
+        )
+    changed = False
+    for description, desired in desired_by_description.items():
+        live = live_by_description.get(description)
+        if live is None:
+            _require_stored(
+                client.post("/api/firewall/source_nat/add_rule", {"rule": desired})
+            )
+            changed = True
+        elif _outbound_nat_live_fields(live) != desired:
+            _require_stored(
+                client.post(
+                    f"/api/firewall/source_nat/set_rule/{live['uuid']}",
+                    {"rule": desired},
+                )
+            )
+            changed = True
+    if changed:
+        client.post("/api/firewall/filter/apply", {})
+    verified = _live_outbound_nat(client.get("/api/firewall/source_nat/search_rule"))
+    mismatches = sorted(
+        description
+        for description, desired in desired_by_description.items()
+        if _outbound_nat_live_fields(verified.get(description, {})) != desired
+    )
+    if mismatches:
+        raise RuntimeError(
+            "outbound NAT verification failed for " + ", ".join(mismatches)
+        )
+
+
+def _desired_outbound_nat(
+    desired_rules: list[dict[str, object]],
+) -> dict[str, dict[str, object]]:
+    desired_by_description: dict[str, dict[str, object]] = {}
+    for desired in desired_rules:
+        if not isinstance(desired, dict):
+            raise ValueError("outbound NAT rules must contain objects")
+        rule = {key: desired.get(key) for key in OUTBOUND_NAT_FIELDS}
+        description = rule["description"]
+        if not isinstance(description, str) or not description:
+            raise ValueError("outbound NAT rule requires a description")
+        if description in desired_by_description:
+            raise ValueError(f"duplicate outbound NAT description: {description}")
+        if not isinstance(rule["interface"], str) or not rule["interface"]:
+            raise ValueError(f"outbound NAT {description} requires interface")
+        if not isinstance(rule["enabled"], str) or rule["enabled"] not in ("0", "1"):
+            raise ValueError(f"outbound NAT {description} enabled must be 0 or 1")
+        if not isinstance(rule["sequence"], int):
+            raise ValueError(f"outbound NAT {description} sequence must be an integer")
+        for nested in ("source", "destination", "target"):
+            if not isinstance(rule[nested], dict):
+                raise ValueError(
+                    f"outbound NAT {description} {nested} must be an object"
+                )
+        desired_by_description[description] = rule
+    return desired_by_description
+
+
+def _live_outbound_nat(response: object) -> dict[str, dict[str, object]]:
+    rows = response.get("rows") if isinstance(response, dict) else None
+    if not isinstance(rows, list):
+        raise ValueError("outbound NAT search response contains no rows")
+    live_by_description: dict[str, dict[str, object]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        description = row.get("description")
+        uuid = row.get("uuid")
+        if (
+            not isinstance(description, str)
+            or not description
+            or not isinstance(uuid, str)
+            or not uuid
+        ):
+            continue
+        entry: dict[str, object] = {
+            key: row.get(key) for key in OUTBOUND_NAT_FIELDS if key in row
+        }
+        entry["uuid"] = uuid
+        live_by_description[description] = entry
+    return live_by_description
+
+
+def _outbound_nat_live_fields(
+    live: dict[str, object],
+) -> dict[str, object]:
+    return {key: live.get(key) for key in OUTBOUND_NAT_FIELDS}
+
+
+UNBOUND_ACL_FIELDS: tuple[str, ...] = ("name", "action", "networks")
+
+
+def reconcile_unbound_acls(
+    client: Client,
+    desired_acls: list[dict[str, object]],
+) -> None:
+    desired_by_name = _desired_unbound_acls(desired_acls)
+    live_by_name = _live_unbound_acls(client.get("/api/unbound/settings/search_acl"))
+    unexpected = sorted(set(live_by_name) - set(desired_by_name))
+    if unexpected:
+        raise RuntimeError(
+            "unexpected Unbound ACLs require human-directed removal: "
+            + ", ".join(unexpected)
+        )
+    changed = False
+    for name, desired in desired_by_name.items():
+        live = live_by_name.get(name)
+        if live is None:
+            _require_stored(
+                client.post("/api/unbound/settings/add_acl", {"acl": desired})
+            )
+            changed = True
+        elif _unbound_acl_live_fields(live) != desired:
+            _require_stored(
+                client.post(
+                    f"/api/unbound/settings/set_acl/{live['uuid']}",
+                    {"acl": desired},
+                )
+            )
+            changed = True
+    if changed:
+        client.post("/api/unbound/service/reconfigure", {})
+    verified = _live_unbound_acls(client.get("/api/unbound/settings/search_acl"))
+    mismatches = sorted(
+        name
+        for name, desired in desired_by_name.items()
+        if _unbound_acl_live_fields(verified.get(name, {})) != desired
+    )
+    if mismatches:
+        raise RuntimeError(
+            "Unbound ACL verification failed for " + ", ".join(mismatches)
+        )
+
+
+def _desired_unbound_acls(
+    desired_acls: list[dict[str, object]],
+) -> dict[str, dict[str, object]]:
+    desired_by_name: dict[str, dict[str, object]] = {}
+    for desired in desired_acls:
+        if not isinstance(desired, dict):
+            raise ValueError("Unbound ACLs must contain objects")
+        entry = {key: desired.get(key) for key in UNBOUND_ACL_FIELDS}
+        name = entry["name"]
+        if not isinstance(name, str) or not name:
+            raise ValueError("Unbound ACL requires a name")
+        if name in desired_by_name:
+            raise ValueError(f"duplicate Unbound ACL name: {name}")
+        if entry["action"] not in ("allow", "deny", "refuse", "redirect"):
+            raise ValueError(f"Unbound ACL {name} action must be a known verb")
+        if not isinstance(entry["networks"], list) or not all(
+            isinstance(net, str) and net for net in entry["networks"]
+        ):
+            raise ValueError(f"Unbound ACL {name} networks must be a list of CIDRs")
+        desired_by_name[name] = entry
+    return desired_by_name
+
+
+def _live_unbound_acls(response: object) -> dict[str, dict[str, object]]:
+    rows = response.get("rows") if isinstance(response, dict) else None
+    if not isinstance(rows, list):
+        raise ValueError("Unbound ACL search response contains no rows")
+    live_by_name: dict[str, dict[str, object]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        name = row.get("name")
+        uuid = row.get("uuid")
+        if (
+            not isinstance(name, str)
+            or not name
+            or not isinstance(uuid, str)
+            or not uuid
+        ):
+            continue
+        entry: dict[str, object] = {
+            "name": name,
+            "action": row.get("action"),
+            "networks": _split_networks(row.get("networks")),
+        }
+        entry["uuid"] = uuid
+        live_by_name[name] = entry
+    return live_by_name
+
+
+def _split_networks(value: object) -> list[str]:
+    if isinstance(value, str):
+        return [net.strip() for net in value.split(",") if net.strip()]
+    if isinstance(value, list):
+        return [str(net) for net in value if isinstance(net, str) and net]
+    return []
+
+
+def _unbound_acl_live_fields(
+    live: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "name": live.get("name"),
+        "action": live.get("action"),
+        "networks": live.get("networks", []),
+    }
+
+
 def main(
     argv: list[str] | None = None,
     environ: Mapping[str, str] | None = None,
@@ -368,6 +597,12 @@ def main(
     reconcile_bgp: Callable[
         [Client, list[dict[str, object]]], dict[str, int]
     ] = reconcile_bgp_neighbors,
+    reconcile_outbound: Callable[
+        [Client, list[dict[str, object]]], None
+    ] = reconcile_outbound_nat,
+    reconcile_acls: Callable[
+        [Client, list[dict[str, object]]], None
+    ] = reconcile_unbound_acls,
     prove_bgp: Callable[[Reader, dict[str, int], set[str]], BgpProof] = verify_bgp,
 ) -> None:
     parser = argparse.ArgumentParser(
@@ -378,6 +613,8 @@ def main(
     parser.add_argument("--kea-interfaces", required=True, type=Path)
     parser.add_argument("--bgp-neighbors", required=True, type=Path)
     parser.add_argument("--bgp-expected-routes", required=True, type=Path)
+    parser.add_argument("--outbound-nat-rules", required=True, type=Path)
+    parser.add_argument("--unbound-acls", required=True, type=Path)
     arguments = parser.parse_args(argv)
     environment = environ if environ is not None else os.environ
     required = (
@@ -396,6 +633,8 @@ def main(
     desired_kea_interfaces = json.loads(arguments.kea_interfaces.read_text())
     desired_bgp_neighbors = json.loads(arguments.bgp_neighbors.read_text())
     expected_routes = json.loads(arguments.bgp_expected_routes.read_text())
+    desired_outbound_nat = json.loads(arguments.outbound_nat_rules.read_text())
+    desired_unbound_acls = json.loads(arguments.unbound_acls.read_text())
     if not isinstance(inventory, dict) or not isinstance(
         inventory.get("assignment_api_available"), bool
     ):
@@ -416,6 +655,14 @@ def main(
         isinstance(item, str) and item for item in expected_routes
     ):
         raise ValueError("BGP expected routes must contain a list of prefixes")
+    if not isinstance(desired_outbound_nat, list) or not all(
+        isinstance(item, dict) for item in desired_outbound_nat
+    ):
+        raise ValueError("outbound NAT rules must contain a list of objects")
+    if not isinstance(desired_unbound_acls, list) or not all(
+        isinstance(item, dict) for item in desired_unbound_acls
+    ):
+        raise ValueError("Unbound ACLs must contain a list of objects")
     client = client_factory(
         environment["OPNSENSE_URL"],
         Credentials(
@@ -427,6 +674,8 @@ def main(
     reconcile(client, inventory["assignment_api_available"], desired)
     reconcile_kea(client, set(desired_kea_interfaces))
     expected_peers = reconcile_bgp(client, desired_bgp_neighbors)
+    reconcile_outbound(client, desired_outbound_nat)
+    reconcile_acls(client, desired_unbound_acls)
     proof = prove_bgp(client, expected_peers, set(expected_routes))
     if not proof.ready:
         raise RuntimeError(
@@ -441,6 +690,8 @@ def main(
                 "assignment_count": len(desired),
                 "bgp_peer_count": len(expected_peers),
                 "kea_interface_count": len(desired_kea_interfaces),
+                "outbound_nat_count": len(desired_outbound_nat),
+                "unbound_acl_count": len(desired_unbound_acls),
             },
             sort_keys=True,
         )

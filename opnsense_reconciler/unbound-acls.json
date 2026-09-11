@@ -1,0 +1,30 @@
+[
+  {
+    "name": "management-allowed",
+    "action": "allow",
+    "networks": [
+      "10.0.10.0/24"
+    ]
+  },
+  {
+    "name": "clients-allowed",
+    "action": "allow",
+    "networks": [
+      "10.0.20.0/24"
+    ]
+  },
+  {
+    "name": "infrastructure-allowed",
+    "action": "allow",
+    "networks": [
+      "10.0.30.0/24"
+    ]
+  },
+  {
+    "name": "load-balancers-allowed",
+    "action": "allow",
+    "networks": [
+      "10.0.40.0/24"
+    ]
+  }
+]

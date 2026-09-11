@@ -192,7 +192,9 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(inventory.dhcp_subnet_ids, {"uuid-2"})
         self.assertEqual(inventory.dhcp_reservation_ids, {"uuid-3"})
         self.assertEqual(inventory.firewall_filter_ids, {"uuid-4"})
-        self.assertEqual(inventory.unbound_forward_ids, {"uuid-5"})
+        self.assertEqual(inventory.outbound_nat_ids, {"uuid-5"})
+        self.assertEqual(inventory.unbound_acl_ids, {"uuid-6"})
+        self.assertEqual(inventory.unbound_forward_ids, {"uuid-7"})
         self.assertEqual(
             client.calls,
             [
@@ -200,6 +202,8 @@ class InventoryTests(unittest.TestCase):
                 ("GET", "/api/kea/dhcpv4/search_subnet"),
                 ("GET", "/api/kea/dhcpv4/search_reservation"),
                 ("GET", "/api/firewall/filter/search_rule"),
+                ("GET", "/api/firewall/source_nat/search_rule"),
+                ("GET", "/api/unbound/settings/search_acl"),
                 ("GET", "/api/unbound/settings/search_forward"),
             ],
         )

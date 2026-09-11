@@ -10,6 +10,8 @@ from opnsense_reconciler.reconcile import (
     reconcile_bgp_neighbors,
     reconcile_interfaces,
     reconcile_kea_interfaces,
+    reconcile_outbound_nat,
+    reconcile_unbound_acls,
     resolve_vlan_devices,
     verify_bgp,
 )
@@ -62,6 +64,16 @@ class ReconcileInterfaceTests(unittest.TestCase):
             seen["bgp_neighbors"] = desired
             return {"10.0.30.11": 64512}
 
+        def reconcile_outbound(
+            client: object, desired: list[dict[str, object]]
+        ) -> None:
+            seen["outbound_client"] = client
+            seen["outbound_rules"] = desired
+
+        def reconcile_acls(client: object, desired: list[dict[str, object]]) -> None:
+            seen["acl_client"] = client
+            seen["acls"] = desired
+
         def prove_bgp(
             client: object, peers: dict[str, int], routes: set[str]
         ) -> object:
@@ -81,11 +93,15 @@ class ReconcileInterfaceTests(unittest.TestCase):
             kea_interfaces = root / "kea-interfaces.json"
             bgp_neighbors = root / "bgp-neighbors.json"
             bgp_expected_routes = root / "bgp-expected-routes.json"
+            outbound_nat_rules = root / "outbound-nat-rules.json"
+            unbound_acls = root / "unbound-acls.json"
             assignments.write_text('[{"parent":"igb0","tag":30}]')
             inventory.write_text('{"assignment_api_available":true}')
             kea_interfaces.write_text('["opt1","opt2"]')
             bgp_neighbors.write_text('[{"address":"10.0.30.11","remoteas":"64512"}]')
             bgp_expected_routes.write_text('["10.0.40.10/32"]')
+            outbound_nat_rules.write_text("[]")
+            unbound_acls.write_text("[]")
 
             main(
                 [
@@ -99,6 +115,10 @@ class ReconcileInterfaceTests(unittest.TestCase):
                     str(bgp_neighbors),
                     "--bgp-expected-routes",
                     str(bgp_expected_routes),
+                    "--outbound-nat-rules",
+                    str(outbound_nat_rules),
+                    "--unbound-acls",
+                    str(unbound_acls),
                 ],
                 environ={
                     "OPNSENSE_URL": "https://192.168.1.1",
@@ -111,6 +131,8 @@ class ReconcileInterfaceTests(unittest.TestCase):
                 reconcile=reconcile,
                 reconcile_kea=reconcile_kea,
                 reconcile_bgp=reconcile_bgp,
+                reconcile_outbound=reconcile_outbound,
+                reconcile_acls=reconcile_acls,
                 prove_bgp=prove_bgp,
             )
 
@@ -123,6 +145,8 @@ class ReconcileInterfaceTests(unittest.TestCase):
         )
         self.assertEqual(seen["proof_peers"], {"10.0.30.11": 64512})
         self.assertEqual(seen["proof_routes"], {"10.0.40.10/32"})
+        self.assertEqual(seen["outbound_rules"], [])
+        self.assertEqual(seen["acls"], [])
 
     def test_resolve_vlan_devices_uses_live_parent_and_tag(self) -> None:
         desired = [
@@ -746,6 +770,334 @@ class BgpNeighborReconciliationTests(unittest.TestCase):
                 self.assertEqual(neighbor["updatesource"], "opt3")
                 self.assertEqual(neighbor["nexthopself"], "1")
                 self.assertEqual(neighbor["enabled"], "1")
+
+
+class OutboundNatReconciliationTests(unittest.TestCase):
+    def desired(self) -> list[dict[str, object]]:
+        return [
+            {
+                "interface": "wan",
+                "ip_protocol": "inet",
+                "protocol": "any",
+                "source": {"net": "10.0.10.0/24"},
+                "destination": {"net": "any", "port": ""},
+                "target": {"ip": "wanip"},
+                "description": "Management VLAN to WAN",
+                "enabled": "1",
+                "sequence": 1,
+            }
+        ]
+
+    def test_noop_when_live_matches_desired(self) -> None:
+        class NatClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str]] = []
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path))
+                return {
+                    "rows": [
+                        {
+                            "uuid": "uuid-nat",
+                            "interface": "wan",
+                            "ip_protocol": "inet",
+                            "protocol": "any",
+                            "source": {"net": "10.0.10.0/24"},
+                            "destination": {"net": "any", "port": ""},
+                            "target": {"ip": "wanip"},
+                            "description": "Management VLAN to WAN",
+                            "enabled": "1",
+                            "sequence": 1,
+                        }
+                    ]
+                }
+
+            def post(self, path: str, payload: object) -> object:
+                raise AssertionError(f"matching outbound NAT must not write: {path}")
+
+        client = NatClient()
+        reconcile_outbound_nat(client, self.desired())
+        self.assertEqual(
+            client.calls,
+            [
+                ("GET", "/api/firewall/source_nat/search_rule"),
+                ("GET", "/api/firewall/source_nat/search_rule"),
+            ],
+        )
+
+    def test_adds_missing_rule_applies_and_verifies(self) -> None:
+        class NatClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str, object | None]] = []
+                self.reads = 0
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path, None))
+                self.reads += 1
+                rows: list[dict[str, object]] = []
+                if self.reads > 1:
+                    rows.append(
+                        {
+                            "uuid": "uuid-nat",
+                            "interface": "wan",
+                            "ip_protocol": "inet",
+                            "protocol": "any",
+                            "source": {"net": "10.0.10.0/24"},
+                            "destination": {"net": "any", "port": ""},
+                            "target": {"ip": "wanip"},
+                            "description": "Management VLAN to WAN",
+                            "enabled": "1",
+                            "sequence": 1,
+                        }
+                    )
+                return {"rows": rows}
+
+            def post(self, path: str, payload: object) -> object:
+                self.calls.append(("POST", path, payload))
+                return {"result": "saved"}
+
+        client = NatClient()
+        reconcile_outbound_nat(client, self.desired())
+        self.assertIn(
+            (
+                "POST",
+                "/api/firewall/source_nat/add_rule",
+                {
+                    "rule": {
+                        "interface": "wan",
+                        "ip_protocol": "inet",
+                        "protocol": "any",
+                        "source": {"net": "10.0.10.0/24"},
+                        "destination": {"net": "any", "port": ""},
+                        "target": {"ip": "wanip"},
+                        "description": "Management VLAN to WAN",
+                        "enabled": "1",
+                        "sequence": 1,
+                    }
+                },
+            ),
+            client.calls,
+        )
+        self.assertIn(("POST", "/api/firewall/filter/apply", {}), client.calls)
+
+    def test_refuses_unknown_live_rule_without_writing(self) -> None:
+        class NatClient:
+            def get(self, path: str) -> object:
+                return {
+                    "rows": [
+                        {
+                            "uuid": "uuid-rogue",
+                            "interface": "lan",
+                            "ip_protocol": "inet",
+                            "protocol": "any",
+                            "source": {"net": "192.168.0.0/24"},
+                            "destination": {"net": "any", "port": ""},
+                            "target": {"ip": "wanip"},
+                            "description": "rogue",
+                            "enabled": "1",
+                            "sequence": 1,
+                        }
+                    ]
+                }
+
+            def post(self, path: str, payload: object) -> object:
+                raise AssertionError(
+                    f"unexpected rule must not be removed automatically: {path}"
+                )
+
+        with self.assertRaisesRegex(RuntimeError, "rogue"):
+            reconcile_outbound_nat(NatClient(), [])
+
+    def test_rejects_failed_store_result(self) -> None:
+        class NatClient:
+            def get(self, path: str) -> object:
+                return {"rows": []}
+
+            def post(self, path: str, payload: object) -> object:
+                return {"result": "failed", "validations": {"rule.sequence": "x"}}
+
+        with self.assertRaisesRegex(RuntimeError, "failed"):
+            reconcile_outbound_nat(NatClient(), self.desired())
+
+    def test_rejects_duplicate_descriptions(self) -> None:
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            reconcile_outbound_nat(
+                client=FakeClient(),
+                desired_rules=[self.desired()[0], self.desired()[0]],
+            )
+
+    def test_outbound_nat_rules_stay_inside_homelab_subnets(self) -> None:
+        import ipaddress
+
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "opnsense_reconciler/outbound-nat-rules.json"
+        )
+        rules = json.loads(path.read_text())
+
+        self.assertIsInstance(rules, list)
+        for rule in rules:
+            with self.subTest(description=rule.get("description")):
+                self.assertEqual(rule["interface"], "wan")
+                self.assertEqual(rule["ip_protocol"], "inet")
+                source_net = ipaddress.ip_network(rule["source"]["net"])
+                self.assertIn(source_net.prefixlen, (24,), "management source is /24")
+                self.assertEqual(rule["destination"]["net"], "any")
+                self.assertEqual(rule["target"]["ip"], "wanip")
+
+
+class UnboundAclReconciliationTests(unittest.TestCase):
+    def desired(self) -> list[dict[str, object]]:
+        return [
+            {
+                "name": "management-allowed",
+                "action": "allow",
+                "networks": ["10.0.10.0/24"],
+            }
+        ]
+
+    def test_noop_when_live_matches_desired(self) -> None:
+        class AclClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str]] = []
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path))
+                return {
+                    "rows": [
+                        {
+                            "uuid": "uuid-acl",
+                            "name": "management-allowed",
+                            "action": "allow",
+                            "networks": "10.0.10.0/24",
+                        }
+                    ]
+                }
+
+            def post(self, path: str, payload: object) -> object:
+                raise AssertionError(f"matching ACL must not write: {path}")
+
+        client = AclClient()
+        reconcile_unbound_acls(client, self.desired())
+        self.assertEqual(
+            client.calls,
+            [
+                ("GET", "/api/unbound/settings/search_acl"),
+                ("GET", "/api/unbound/settings/search_acl"),
+            ],
+        )
+
+    def test_adds_missing_acl_reconfigures_and_verifies(self) -> None:
+        class AclClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str, object | None]] = []
+                self.reads = 0
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path, None))
+                self.reads += 1
+                rows: list[dict[str, object]] = []
+                if self.reads > 1:
+                    rows.append(
+                        {
+                            "uuid": "uuid-acl",
+                            "name": "management-allowed",
+                            "action": "allow",
+                            "networks": "10.0.10.0/24",
+                        }
+                    )
+                return {"rows": rows}
+
+            def post(self, path: str, payload: object) -> object:
+                self.calls.append(("POST", path, payload))
+                return {"result": "saved"}
+
+        client = AclClient()
+        reconcile_unbound_acls(client, self.desired())
+        self.assertIn(
+            (
+                "POST",
+                "/api/unbound/settings/add_acl",
+                {
+                    "acl": {
+                        "name": "management-allowed",
+                        "action": "allow",
+                        "networks": ["10.0.10.0/24"],
+                    }
+                },
+            ),
+            client.calls,
+        )
+        self.assertIn(("POST", "/api/unbound/service/reconfigure", {}), client.calls)
+
+    def test_refuses_unknown_live_acl_without_writing(self) -> None:
+        class AclClient:
+            def get(self, path: str) -> object:
+                return {
+                    "rows": [
+                        {
+                            "uuid": "uuid-rogue",
+                            "name": "rogue",
+                            "action": "allow",
+                            "networks": "192.168.0.0/24",
+                        }
+                    ]
+                }
+
+            def post(self, path: str, payload: object) -> object:
+                raise AssertionError(
+                    f"unexpected ACL must not be removed automatically: {path}"
+                )
+
+        with self.assertRaisesRegex(RuntimeError, "rogue"):
+            reconcile_unbound_acls(AclClient(), [])
+
+    def test_rejects_invalid_action(self) -> None:
+        with self.assertRaisesRegex(ValueError, "action"):
+            reconcile_unbound_acls(
+                client=FakeClient(),
+                desired_acls=[
+                    {
+                        "name": "bad",
+                        "action": "trust-me",
+                        "networks": ["10.0.10.0/24"],
+                    }
+                ],
+            )
+
+    def test_rejects_non_list_networks(self) -> None:
+        with self.assertRaisesRegex(ValueError, "networks"):
+            reconcile_unbound_acls(
+                client=FakeClient(),
+                desired_acls=[
+                    {
+                        "name": "bad",
+                        "action": "allow",
+                        "networks": "10.0.10.0/24",
+                    }
+                ],
+            )
+
+    def test_unbound_acls_cover_homelab_subnets(self) -> None:
+        import ipaddress
+
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "opnsense_reconciler/unbound-acls.json"
+        )
+        acls = json.loads(path.read_text())
+
+        self.assertIsInstance(acls, list)
+        seen_actions = {acl["action"] for acl in acls}
+        self.assertEqual(seen_actions, {"allow"})
+        for acl in acls:
+            with self.subTest(name=acl.get("name")):
+                self.assertTrue(acl["networks"])
+                for net in acl["networks"]:
+                    network = ipaddress.ip_network(net)
+                    self.assertTrue(
+                        network.subnet_of(ipaddress.ip_network("10.0.0.0/8"))
+                    )
 
 
 if __name__ == "__main__":

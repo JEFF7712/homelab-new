@@ -108,6 +108,8 @@ class ProviderInventory:
     dhcp_reservation_ids: set[str]
     dhcp_subnet_ids: set[str]
     firewall_filter_ids: set[str]
+    outbound_nat_ids: set[str]
+    unbound_acl_ids: set[str]
     unbound_forward_ids: set[str]
     vlan_ids: set[str]
 
@@ -147,6 +149,8 @@ def collect_provider_inventory(client: JsonClient) -> ProviderInventory:
             client.get("/api/kea/dhcpv4/search_reservation")
         ),
         firewall_filter_ids=_row_uuids(client.get("/api/firewall/filter/search_rule")),
+        outbound_nat_ids=_row_uuids(client.get("/api/firewall/source_nat/search_rule")),
+        unbound_acl_ids=_row_uuids(client.get("/api/unbound/settings/search_acl")),
         unbound_forward_ids=_row_uuids(
             client.get("/api/unbound/settings/search_forward")
         ),
