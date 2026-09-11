@@ -11,7 +11,14 @@ views:
             content: >-
               ## {{ states('sensor.a1_03900d642327265_task_name') | default('A1', true) }}
 
-              {{ states('sensor.a1_03900d642327265_current_stage') | capitalize }} · {{ states('sensor.a1_03900d642327265_print_progress') }}% · {{ states('sensor.a1_03900d642327265_remaining_time') }} left
+              {% set raw = states('sensor.a1_03900d642327265_remaining_time') %}
+              {% if raw not in ('unknown', 'unavailable', 'none') %}
+              {% set mins = (raw | float(0) * 60) | int %}
+              {% set h = mins // 60 %}{% set m = mins % 60 %}
+              {{ states('sensor.a1_03900d642327265_current_stage') | capitalize }} · {{ states('sensor.a1_03900d642327265_print_progress') }}% · {% if h > 0 %}{{ h }}h {% endif %}{{ m }}m left
+              {% else %}
+              {{ states('sensor.a1_03900d642327265_current_stage') | capitalize }} · {{ states('sensor.a1_03900d642327265_print_progress') }}%
+              {% endif %}
           - type: picture-entity
             entity: camera.a1_03900d642327265_camera
             name: A1 Camera
@@ -22,6 +29,22 @@ views:
             name: Progress
             min: 0
             max: 100
+          - type: horizontal-stack
+            cards:
+              - type: button
+                entity: button.a1_03900d642327265_pause
+                name: Pause
+                icon: mdi:pause
+              - type: button
+                entity: button.a1_03900d642327265_resume
+                name: Resume
+                icon: mdi:play
+              - type: button
+                entity: light.a1_03900d642327265_chamber_light
+                name: Chamber light
+                icon: mdi:lightbulb
+                tap_action:
+                  action: toggle
       - cards:
           - type: glance
             entities:
@@ -62,19 +85,3 @@ views:
                 name: Bed
             hours_to_show: 12
             refresh_interval: 60
-          - type: horizontal-stack
-            cards:
-              - type: button
-                entity: button.a1_03900d642327265_pause
-                name: Pause
-                icon: mdi:pause
-              - type: button
-                entity: button.a1_03900d642327265_resume
-                name: Resume
-                icon: mdi:play
-              - type: button
-                entity: light.a1_03900d642327265_chamber_light
-                name: Chamber light
-                icon: mdi:lightbulb
-                tap_action:
-                  action: toggle
