@@ -54,6 +54,7 @@ let
       just
       perl
       procps
+      util-linux
     ];
     serviceOverrides = {
       MemoryMax = "8G";
