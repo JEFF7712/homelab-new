@@ -28,3 +28,14 @@ def get_adapter(kind: str) -> BaseAdapter:
     if kind not in ADAPTERS:
         raise ValueError(f"No adapter registered for resource kind '{kind}'")
     return ADAPTERS[kind]
+
+
+def try_get_adapter(kind: str) -> BaseAdapter | None:
+    """Return the adapter for `kind`, or None if no adapter is registered.
+
+    Use this in validation passes that should not block the whole pipeline on
+    a single bad resource. The strict `get_adapter` is reserved for commands
+    that should refuse to run (plan/apply/execute) when the resource set is
+    not fully understood.
+    """
+    return ADAPTERS.get(kind)

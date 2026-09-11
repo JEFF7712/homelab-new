@@ -261,6 +261,58 @@ class TestHomeAssistantCLI(unittest.TestCase):
             self.mock_client.automations["fan_control"]["alias"], "Git Fan"
         )
 
+    @patch("scripts.home_assistant.__main__.get_client")
+    def test_validate_warns_on_unknown_kind_without_failing_pipeline(
+        self, mock_get_client: object
+    ) -> None:
+        """A single resource with a typo'd kind must not block the validate
+        pass for every other resource. The bad kind is reported in
+        skipped_unknown_kind so the operator can see and fix it."""
+        mock_get_client.return_value = self.mock_client  # type: ignore[attr-defined]
+
+        # One well-formed automation
+        write_resource_atomic(
+            self.root,
+            ResourceDocument(
+                kind="automation",
+                key="bedtime",
+                desired={
+                    "id": "bedtime",
+                    "alias": "Bedtime",
+                    "trigger": [{"platform": "time", "at": "22:00:00"}],
+                    "action": [],
+                },
+            ),
+        )
+
+        # One resource whose `kind` is not a registered adapter (typo or
+        # live-data bleed). We write a file that the loader will see; the
+        # kind we record is what trips try_get_adapter.
+        from scripts.home_assistant.source import get_source_path
+
+        bad_path = get_source_path(self.root, "entitie", "foo")
+        bad_path.parent.mkdir(parents=True, exist_ok=True)
+        bad_path.write_text(
+            "id: foo\nalias: typo'd kind\n",
+            encoding="utf-8",
+        )
+
+        val_args = DummyArgs()
+        val_code = cmd_validate(val_args, self.root)  # type: ignore[arg-type]
+        # CLEAN, not BLOCKED: the unknown kind is a warning, not a failure.
+        self.assertEqual(val_code, ExitCode.CLEAN.value)
+
+    def test_try_get_adapter_returns_none_for_unknown_kind(self) -> None:
+        from scripts.home_assistant.adapters import (
+            get_adapter,
+            try_get_adapter,
+        )
+
+        self.assertIsNotNone(try_get_adapter("automation"))
+        self.assertIsNone(try_get_adapter("entitie"))
+        with self.assertRaises(ValueError):
+            get_adapter("entitie")
+
 
 if __name__ == "__main__":
     unittest.main()

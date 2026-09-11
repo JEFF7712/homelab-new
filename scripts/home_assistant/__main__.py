@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .adapters import ADAPTERS, get_adapter
+from .adapters import ADAPTERS, get_adapter, try_get_adapter
 from .adapters.core import sync_core_to_gitops
 from .canonical import (
     canonical_hash,
@@ -752,26 +752,39 @@ def cmd_validate(args: argparse.Namespace, repo_root: Path) -> int:
                 "Run 'python -m scripts.home_assistant validate --sync-gitops' to synchronize."
             )
 
+    skipped_unknown_kind: list[str] = []
     for rk_str, doc in git_docs.items():
-        # Schema validation
-        try:
-            adapter = get_adapter(doc.kind)
-            errs = adapter.validate(doc)
+        # Schema validation. `try_get_adapter` makes this pass robust to a
+        # single bad resource (e.g. a YAML that parses with the wrong kind):
+        # we surface the unknown kind as a warning and continue, instead of
+        # failing the whole pipeline. The strict `get_adapter` is reserved
+        # for plan/apply so a bad kind still aborts there.
+        adapter = try_get_adapter(doc.kind)
+        if adapter is None:
+            skipped_unknown_kind.append(f"{rk_str}: kind '{doc.kind}' has no adapter")
+        else:
+            try:
+                errs = adapter.validate(doc)
+            except Exception as e:
+                errs = [f"adapter raised during validation: {e}"]
             for e in errs:
                 errors.append(f"{rk_str}: {e}")
-        except ValueError as e:
-            errors.append(f"{rk_str}: {e}")
 
         # Secret detection
         findings = detect_secrets(doc.desired, path=rk_str)
         secret_findings.extend(findings)
 
-    is_valid = len(errors) == 0 and len(secret_findings) == 0
+    is_valid = (
+        len(errors) == 0
+        and len(secret_findings) == 0
+        and len(skipped_unknown_kind) == 0
+    )
     res = {
         "status": "valid" if is_valid else "invalid",
         "resources_checked": len(git_docs),
         "errors": errors,
         "secret_findings": secret_findings,
+        "skipped_unknown_kind": skipped_unknown_kind,
     }
 
     def _fmt(d: dict[str, Any]) -> None:
@@ -783,6 +796,10 @@ def cmd_validate(args: argparse.Namespace, repo_root: Path) -> int:
                 print("\nSchema / sync errors:")
                 for e in d["errors"]:
                     print(f"  - {e}")
+            if d.get("skipped_unknown_kind"):
+                print("\nResources with unknown kind (skipped, do not block):")
+                for s in d["skipped_unknown_kind"]:
+                    print(f"  - {s}")
             if d.get("secret_findings"):
                 print("\nSecret findings (must be replaced with !secret references):")
                 for s in d["secret_findings"]:
