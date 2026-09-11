@@ -428,17 +428,25 @@ def reconcile_outbound_nat(
     if changed:
         client.post("/api/firewall/filter/apply", {})
     verified = _live_outbound_nat(client.get("/api/firewall/source_nat/search_rule"))
-    mismatches = sorted(
-        description
-        for description, desired in desired_by_description.items()
-        if _normalize_outbound_nat(
+    mismatches: dict[str, dict[str, object]] = {}
+    for description, desired in desired_by_description.items():
+        live_norm = _normalize_outbound_nat(
             _outbound_nat_verify_fields(verified.get(description, {}))
         )
-        != _normalize_outbound_nat(_outbound_nat_verify_fields(desired))
-    )
+        desired_norm = _normalize_outbound_nat(_outbound_nat_verify_fields(desired))
+        if live_norm != desired_norm:
+            mismatches[description] = {
+                "live": live_norm,
+                "desired": desired_norm,
+            }
     if mismatches:
+        import json as _json
+
         raise RuntimeError(
-            "outbound NAT verification failed for " + ", ".join(mismatches)
+            "outbound NAT verification failed for "
+            + ", ".join(sorted(mismatches))
+            + ": "
+            + _json.dumps(mismatches, sort_keys=True, default=str)
         )
 
 
@@ -447,6 +455,8 @@ def _normalize_outbound_nat(rule: dict[str, object]) -> dict[str, object]:
     for key, value in rule.items():
         if key in ("enabled", "source_not", "destination_not", "nonat", "nosync"):
             normalized[key] = "1" if value in (1, "1", True, "true") else "0"
+        elif key == "sequence" and isinstance(value, int):
+            normalized[key] = value
         else:
             normalized[key] = value
     return normalized
