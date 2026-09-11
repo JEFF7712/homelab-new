@@ -1,13 +1,10 @@
 id: morning_weather_briefing
 alias: "Morning: Weather & Rain Briefing"
-description: "Send a weather briefing to phone at 8:05 AM with rain alerts if home."
+description: "Send a weather briefing to phone at 8:05 AM with rain alerts, home or away."
 triggers:
   - trigger: time
     at: "08:05:00"
-conditions:
-  - condition: state
-    entity_id: person.rupan_sunderapandyan
-    state: "home"
+conditions: []
 actions:
   - action: weather.get_forecasts
     target:
@@ -24,7 +21,7 @@ actions:
         {% set today = daily_forecast['weather.forecast_home'].forecast[0] %}
         Good morning! Today will be {{ today.condition }} with a high of {{ today.temperature }}°
         and a low of {{ today.templow }}°.
-        {%- if 'rain' in today.condition or today.precipitation > 0 %}
+        {%- if 'rain' in (today.condition | lower) or (today.precipitation | default(0)) > 0 %}
         Don't forget an umbrella today!
         {%- endif %}
 mode: single

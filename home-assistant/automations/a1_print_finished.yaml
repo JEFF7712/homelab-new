@@ -1,14 +1,18 @@
 id: a1_print_finished
 alias: "A1: Print Finished Notification"
-description: "Notify phone when the A1 finishes a print."
+description: "Notify phone when the A1 finishes a print, with filename and filament used."
 triggers:
   - trigger: state
     entity_id: sensor.a1_03900d642327265_print_status
     to: finish
 conditions: []
 actions:
-  - action: notify.mobile_app_rupan_phone
+  - action: notify.send_message
+    target:
+      entity_id: notify.rupan_phone
     data:
       title: "A1 Print Finished"
-      message: "The A1 finished printing."
+      message: >-
+        {{ states('sensor.a1_03900d642327265_task_name') | default('Print', true) }} finished.
+        {{ states('sensor.a1_03900d642327265_print_weight') | default('?', true) }}g of filament used.
 mode: single

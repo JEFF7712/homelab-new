@@ -1,0 +1,74 @@
+id: away_lights_off_restore
+alias: "Away: Lights Off Enforcement & Restore"
+description: "Snapshot bedroom and stairs lights when leaving, keep everything off while away, restore the snapshot on daytime return. Night returns are handled by the evening presence automation."
+triggers:
+  - trigger: state
+    entity_id: person.rupan_sunderapandyan
+    from: "home"
+    id: "away"
+  - trigger: state
+    entity_id: person.rupan_sunderapandyan
+    to: "home"
+    id: "return"
+  - trigger: state
+    entity_id:
+      - switch.0xffffb40e0608c96f
+      - switch.0xffffb40e0608d02e
+      - switch.0xffffb40e0608faec
+      - light.desk_lamp_desk_lamp
+      - light.floor_lamp_floor_lamp
+      - light.light_strip_light_strip
+    to: "on"
+    id: "enforced"
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "away"
+        sequence:
+          - action: scene.create
+            data:
+              scene_id: pre_away_lights
+              snapshot_entities:
+                - switch.0xffffb40e0608c96f
+                - switch.0xffffb40e0608d02e
+                - switch.0xffffb40e0608faec
+                - light.desk_lamp_desk_lamp
+                - light.floor_lamp_floor_lamp
+                - light.light_strip_light_strip
+          - action: switch.turn_off
+            target:
+              entity_id:
+                - switch.0xffffb40e0608c96f
+                - switch.0xffffb40e0608d02e
+                - switch.0xffffb40e0608faec
+          - action: light.turn_off
+            target:
+              entity_id:
+                - light.desk_lamp_desk_lamp
+                - light.floor_lamp_floor_lamp
+                - light.light_strip_light_strip
+      - conditions:
+          - condition: trigger
+            id: "enforced"
+          - condition: state
+            entity_id: person.rupan_sunderapandyan
+            state: "not_home"
+        sequence:
+          - action: homeassistant.turn_off
+            target:
+              entity_id: "{{ trigger.entity_id }}"
+      - conditions:
+          - condition: trigger
+            id: "return"
+          - condition: state
+            entity_id: sun.sun
+            state: "above_horizon"
+          - condition: template
+            value_template: "{{ states('scene.pre_away_lights') not in ('unknown', 'unavailable') }}"
+        sequence:
+          - action: scene.turn_on
+            target:
+              entity_id: scene.pre_away_lights
+mode: single

@@ -17,4 +17,3 @@ artifacts/
 .worktrees/
 *.tfstate
 *.tfstate.*
-home-assistant/automations/bedroom_lights_bedtime_charging.yaml

@@ -1,9 +1,13 @@
 id: a1_print_error
 alias: "A1: Print Error Notification"
-description: "Notify phone when the A1 reports a print error or failure."
+description: "Notify phone when the A1 reports a print error, failure, or HMS fault, with progress detail and a camera snapshot."
 triggers:
   - trigger: state
     entity_id: binary_sensor.a1_03900d642327265_print_error
+    from: "off"
+    to: "on"
+  - trigger: state
+    entity_id: binary_sensor.a1_03900d642327265_hms_errors
     from: "off"
     to: "on"
   - trigger: state
@@ -11,8 +15,16 @@ triggers:
     to: failed
 conditions: []
 actions:
-  - action: notify.mobile_app_rupan_phone
+  - action: notify.send_message
+    target:
+      entity_id: notify.rupan_phone
     data:
       title: "A1 Print Error"
-      message: "The A1 reported a print error. Check the printer."
+      message: >-
+        {{ states('sensor.a1_03900d642327265_task_name') | default('Print', true) }} reported an error
+        at {{ states('sensor.a1_03900d642327265_print_progress') | default('?', true) }}%
+        (layer {{ states('sensor.a1_03900d642327265_current_layer') | default('?', true) }}/{{ states('sensor.a1_03900d642327265_total_layer_count') | default('?', true) }}).
+        Nozzle {{ states('sensor.a1_03900d642327265_nozzle_temperature') | default('?', true) }}C, bed {{ states('sensor.a1_03900d642327265_bed_temperature') | default('?', true) }}C.
+        Check the camera.
+      image: /api/camera_proxy/camera.a1_03900d642327265_camera
 mode: single

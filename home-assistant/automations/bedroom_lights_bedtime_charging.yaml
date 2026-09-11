@@ -1,0 +1,29 @@
+id: bedroom_lights_bedtime_charging
+alias: "Bedroom Lights: Bedtime Phone Charging"
+description: "Turn off bedroom lights when phone starts charging after 10:00 PM. Trigger via the Companion App native Shortcut action firing the bedtime_phone_charging event."
+triggers:
+  - trigger: event
+    event_type: bedtime_phone_charging
+  - trigger: state
+    entity_id: sensor.rupan_phone_battery_state
+    to: "Charging"
+conditions:
+  - condition: time
+    after: "22:00:00"
+    before: "08:00:00"
+  - condition: state
+    entity_id: person.rupan_sunderapandyan
+    state: "home"
+actions:
+  - action: switch.turn_off
+    target:
+      entity_id:
+        - switch.0xffffb40e0608c96f
+        - switch.0xffffb40e0608d02e
+  - action: light.turn_off
+    target:
+      entity_id:
+        - light.desk_lamp_desk_lamp
+        - light.floor_lamp_floor_lamp
+        - light.light_strip_light_strip
+mode: single
