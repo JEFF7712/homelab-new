@@ -1,0 +1,14 @@
+id: a1_print_finished
+alias: "A1: Print Finished Notification"
+description: "Notify phone when the A1 finishes a print."
+triggers:
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    to: finish
+conditions: []
+actions:
+  - action: notify.mobile_app_rupan_phone
+    data:
+      title: "A1 Print Finished"
+      message: "The A1 finished printing."
+mode: single

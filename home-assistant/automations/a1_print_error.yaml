@@ -1,0 +1,18 @@
+id: a1_print_error
+alias: "A1: Print Error Notification"
+description: "Notify phone when the A1 reports a print error or failure."
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.a1_03900d642327265_print_error
+    from: "off"
+    to: "on"
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    to: failed
+conditions: []
+actions:
+  - action: notify.mobile_app_rupan_phone
+    data:
+      title: "A1 Print Error"
+      message: "The A1 reported a print error. Check the printer."
+mode: single
