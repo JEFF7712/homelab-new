@@ -14,3 +14,7 @@ spec:
     - name: http
       port: 8123
       targetPort: http
+    - name: hap
+      port: 21063
+      targetPort: hap
+      protocol: TCP

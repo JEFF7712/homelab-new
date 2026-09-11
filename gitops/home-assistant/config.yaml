@@ -11,6 +11,19 @@ data:
     automation: !include automations.yaml
     script: !include scripts.yaml
     scene: !include scenes.yaml
+    homekit:
+      - name: Homelab Bridge
+        port: 21063
+        filter:
+          include_domains:
+            - light
+          include_entities:
+            - switch.0xffffb40e0608c96f
+            - switch.0xffffb40e0608d02e
+            - switch.0xffffb40e0608f37a
+            - switch.0xffffb40e0608faec
+          exclude_entities:
+            - light.a1_03900d642327265_chamber_light
     recorder:
       db_url: !secret recorder_db_url
     rest:

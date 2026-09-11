@@ -15,7 +15,7 @@ spec:
       labels:
         app: home-assistant
       annotations:
-        checksum/config: 1d5d2523bfbd4dfd5f8f6b953d32c4babcbf6f7baaccfc4921bd7f2cd37e732e
+        checksum/config: ce2b3648fda8bcb5dbaaea43b5c03556a9f350e1a593cccd4d86a0b315b870d7
     spec:
       securityContext:
         seccompProfile:
@@ -51,6 +51,9 @@ spec:
           ports:
             - name: http
               containerPort: 8123
+            - name: hap
+              containerPort: 21063
+              protocol: TCP
           resources:
             requests:
               cpu: 200m
