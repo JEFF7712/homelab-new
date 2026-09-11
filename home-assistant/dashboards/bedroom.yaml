@@ -1,0 +1,48 @@
+title: Bedroom
+icon: mdi:bed
+require_admin: false
+show_in_sidebar: true
+views:
+  - title: Bedroom
+    type: sections
+    sections:
+      - cards:
+          - type: heading
+            heading: Lights
+          - type: tile
+            entity: light.desk_lamp_desk_lamp
+            name: Desk Lamp
+            features:
+              - type: light-brightness
+              - type: light-color-temp
+          - type: tile
+            entity: light.floor_lamp_floor_lamp
+            name: Floor Lamp
+            features:
+              - type: light-brightness
+              - type: light-color-temp
+          - type: tile
+            entity: light.light_strip_light_strip
+            name: Light Strip
+            features:
+              - type: light-brightness
+              - type: light-color-temp
+      - cards:
+          - type: heading
+            heading: Plugs
+          - type: horizontal-stack
+            cards:
+              - type: button
+                entity: switch.0xffffb40e0608c96f
+                name: Window Plug
+                icon: mdi:power-plug
+                show_state: true
+                tap_action:
+                  action: toggle
+              - type: button
+                entity: switch.0xffffb40e0608d02e
+                name: Mushroom Plug
+                icon: mdi:power-plug
+                show_state: true
+                tap_action:
+                  action: toggle
