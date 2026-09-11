@@ -2,12 +2,6 @@ title: 3D Printing
 icon: mdi:printer-3d
 require_admin: false
 show_in_sidebar: true
-visibility:
-  - condition: user
-    users:
-      - 8415ac1522be4ac5a1a5460a40e5127f
-      - 46782c6ae9bf4318a0c3d977c90111d4
-      - 718a0bc70a4c4038be64433dcb9f6816
 views:
   - title: A1
     type: sections

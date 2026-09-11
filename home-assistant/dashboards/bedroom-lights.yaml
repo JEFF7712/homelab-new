@@ -1,11 +1,7 @@
 title: Rupan Bedroom
 icon: mdi:bed
-require_admin: false
+require_admin: true
 show_in_sidebar: true
-visibility:
-  - condition: user
-    users:
-      - 8415ac1522be4ac5a1a5460a40e5127f
 views:
   - title: Bedroom
     type: sections

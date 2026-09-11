@@ -1,10 +1,6 @@
 icon: mdi:map
-require_admin: false
+require_admin: true
 show_in_sidebar: true
-visibility:
-  - condition: user
-    users:
-      - 8415ac1522be4ac5a1a5460a40e5127f
 strategy:
   type: map
 title: Map
