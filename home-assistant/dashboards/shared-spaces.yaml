@@ -9,9 +9,8 @@ views:
       - cards:
           - type: heading
             heading: Rooms
-          - type: area
-            area: stairs
-          - type: area
-            area: kitchen
-          - type: area
-            area: living_room
+          - type: tile
+            entity: switch.0xffffb40e0608faec
+            name: Stairs Light
+            features:
+              - type: toggle
