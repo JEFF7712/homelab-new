@@ -908,6 +908,92 @@ class OutboundNatReconciliationTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "rogue"):
             reconcile_outbound_nat(NatClient(), [])
 
+    def test_filters_auto_generated_rules_from_live_inventory(self) -> None:
+        class NatClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str, object | None]] = []
+                self.reads = 0
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path, None))
+                self.reads += 1
+                rows: list[dict[str, object]] = [
+                    {
+                        "uuid": "uuid-auto",
+                        "interface": "wan",
+                        "ip_protocol": "inet",
+                        "protocol": "any",
+                        "source": {"net": "10.0.20.0/24"},
+                        "destination": {"net": "any", "port": ""},
+                        "target": {"ip": "wanip"},
+                        "description": "Auto created rule",
+                        "enabled": "1",
+                        "sequence": 1,
+                    },
+                    {
+                        "uuid": "uuid-isakmp",
+                        "interface": "wan",
+                        "ip_protocol": "inet",
+                        "protocol": "udp",
+                        "source": {"net": "any"},
+                        "destination": {"net": "any", "port": "500"},
+                        "target": {"ip": "wanip"},
+                        "description": "Auto created rule for ISAKMP",
+                        "enabled": "1",
+                        "sequence": 2,
+                    },
+                ]
+                if self.reads > 1:
+                    rows.append(
+                        {
+                            "uuid": "uuid-mgmt",
+                            "interface": "wan",
+                            "ip_protocol": "inet",
+                            "protocol": "any",
+                            "source": {"net": "10.0.10.0/24"},
+                            "destination": {"net": "any", "port": ""},
+                            "target": {"ip": "wanip"},
+                            "description": "Management VLAN to WAN",
+                            "enabled": "1",
+                            "sequence": 1,
+                        }
+                    )
+                return {"rows": rows}
+
+            def post(self, path: str, payload: object) -> object:
+                self.calls.append(("POST", path, payload))
+                return {"result": "saved"}
+
+        client = NatClient()
+        reconcile_outbound_nat(client, self.desired())
+        add_calls = [
+            call
+            for call in client.calls
+            if call[1] == "/api/firewall/source_nat/add_rule"
+        ]
+        self.assertEqual(
+            add_calls,
+            [
+                (
+                    "POST",
+                    "/api/firewall/source_nat/add_rule",
+                    {
+                        "rule": {
+                            "interface": "wan",
+                            "ip_protocol": "inet",
+                            "protocol": "any",
+                            "source": {"net": "10.0.10.0/24"},
+                            "destination": {"net": "any", "port": ""},
+                            "target": {"ip": "wanip"},
+                            "description": "Management VLAN to WAN",
+                            "enabled": "1",
+                            "sequence": 1,
+                        }
+                    },
+                )
+            ],
+        )
+
     def test_rejects_failed_store_result(self) -> None:
         class NatClient:
             def get(self, path: str) -> object:

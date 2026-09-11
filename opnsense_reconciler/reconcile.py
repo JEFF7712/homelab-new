@@ -457,11 +457,10 @@ def _live_outbound_nat(response: object) -> dict[str, dict[str, object]]:
             or not description
             or not isinstance(uuid, str)
             or not uuid
+            or description.startswith("Auto created rule")
         ):
             continue
-        entry: dict[str, object] = {
-            key: row.get(key) for key in OUTBOUND_NAT_FIELDS if key in row
-        }
+        entry: dict[str, object] = {key: row.get(key) for key in OUTBOUND_NAT_FIELDS}
         entry["uuid"] = uuid
         live_by_description[description] = entry
     return live_by_description
