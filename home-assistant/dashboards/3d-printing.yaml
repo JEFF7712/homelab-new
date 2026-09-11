@@ -4,23 +4,77 @@ require_admin: false
 show_in_sidebar: true
 views:
   - title: A1
-    cards:
-      - type: picture-entity
-        entity: camera.a1_03900d642327265_camera
-        name: A1 Camera
-        show_state: false
-      - type: entities
-        title: A1 Status
-        entities:
-          - sensor.a1_03900d642327265_print_status
-          - sensor.a1_03900d642327265_current_stage
-          - sensor.a1_03900d642327265_print_progress
-          - sensor.a1_03900d642327265_current_layer
-          - sensor.a1_03900d642327265_total_layer_count
-          - sensor.a1_03900d642327265_remaining_time
-          - sensor.a1_03900d642327265_end_time
-          - sensor.a1_03900d642327265_nozzle_temperature
-          - sensor.a1_03900d642327265_bed_temperature
-          - sensor.a1_03900d642327265_wi_fi_signal
-          - binary_sensor.a1_03900d642327265_print_error
-          - binary_sensor.a1_03900d642327265_online
+    type: sections
+    sections:
+      - cards:
+          - type: markdown
+            content: >-
+              ## {{ states('sensor.a1_03900d642327265_task_name') | default('A1', true) }}
+
+              {{ states('sensor.a1_03900d642327265_current_stage') | capitalize }} · {{ states('sensor.a1_03900d642327265_print_progress') }}% · {{ states('sensor.a1_03900d642327265_remaining_time') }} left
+          - type: picture-entity
+            entity: camera.a1_03900d642327265_camera
+            name: A1 Camera
+            show_state: false
+            camera_view: live
+          - type: gauge
+            entity: sensor.a1_03900d642327265_print_progress
+            name: Progress
+            min: 0
+            max: 100
+      - cards:
+          - type: glance
+            entities:
+              - entity: sensor.a1_03900d642327265_print_status
+                name: Status
+              - entity: sensor.a1_03900d642327265_remaining_time
+                name: Remaining
+              - entity: sensor.a1_03900d642327265_nozzle_temperature
+                name: Nozzle
+              - entity: sensor.a1_03900d642327265_bed_temperature
+                name: Bed
+          - type: entities
+            title: Print details
+            entities:
+              - entity: sensor.a1_03900d642327265_task_name
+                name: File
+              - entity: sensor.a1_03900d642327265_current_layer
+                name: Current layer
+              - entity: sensor.a1_03900d642327265_total_layer_count
+                name: Total layers
+              - entity: sensor.a1_03900d642327265_print_weight
+                name: Filament used
+              - entity: sensor.a1_03900d642327265_print_length
+                name: Filament length
+              - entity: sensor.a1_03900d642327265_end_time
+                name: Finishes at
+              - entity: binary_sensor.a1_03900d642327265_print_error
+                name: Print error
+              - entity: binary_sensor.a1_03900d642327265_online
+                name: Online
+              - entity: sensor.a1_03900d642327265_wi_fi_signal
+                name: Wi-Fi signal
+          - type: history-graph
+            entities:
+              - entity: sensor.a1_03900d642327265_nozzle_temperature
+                name: Nozzle
+              - entity: sensor.a1_03900d642327265_bed_temperature
+                name: Bed
+            hours_to_show: 12
+            refresh_interval: 60
+          - type: horizontal-stack
+            cards:
+              - type: button
+                entity: button.a1_03900d642327265_pause
+                name: Pause
+                icon: mdi:pause
+              - type: button
+                entity: button.a1_03900d642327265_resume
+                name: Resume
+                icon: mdi:play
+              - type: button
+                entity: light.a1_03900d642327265_chamber_light
+                name: Chamber light
+                icon: mdi:lightbulb
+                tap_action:
+                  action: toggle
