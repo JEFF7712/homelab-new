@@ -272,6 +272,22 @@ firewall_filters = {
       destination = { net = "10.0.20.124/32", port = "990" }
     }
   }
+  infrastructure-allow-bambu-ftp-data = {
+    description = "Allow infrastructure to Bambu Lab A1 FTP passive data ports"
+    enabled     = true
+    sequence    = 316
+    interface   = { interface = ["opt3"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet"
+      protocol    = "TCP"
+      quick       = true
+      log         = false
+      source      = { net = "10.0.30.0/24", port = "" }
+      destination = { net = "10.0.20.124/32", port = "2024:2025" }
+    }
+  }
   infrastructure-block-private = {
     description = "Block infrastructure from initiating to other private VLANs"
     enabled     = true
