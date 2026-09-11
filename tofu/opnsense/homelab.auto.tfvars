@@ -70,6 +70,13 @@ dhcpv4_reservations = {
     mac_address = "80:cc:9c:21:88:e7"
     subnet_id   = "542fde27-1972-42e1-9376-057b5cae2f5e"
   }
+  bambu_a1 = {
+    description = "Bambu Lab A1 3D printer"
+    hostname    = "bambu-a1"
+    ip_address  = "10.0.20.124"
+    mac_address = "28:84:85:4d:92:e8"
+    subnet_id   = "542fde27-1972-42e1-9376-057b5cae2f5e"
+  }
 }
 
 firewall_filters = {
@@ -231,6 +238,38 @@ firewall_filters = {
       log         = true
       source      = { net = "10.0.30.10/32", port = "" }
       destination = { net = "10.0.20.112/29", port = "88" }
+    }
+  }
+  infrastructure-allow-bambu-mqtt = {
+    description = "Allow infrastructure to Bambu Lab A1 MQTT"
+    enabled     = true
+    sequence    = 318
+    interface   = { interface = ["opt3"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet"
+      protocol    = "TCP"
+      quick       = true
+      log         = false
+      source      = { net = "10.0.30.0/24", port = "" }
+      destination = { net = "10.0.20.124/32", port = "8883" }
+    }
+  }
+  infrastructure-allow-bambu-ftps = {
+    description = "Allow infrastructure to Bambu Lab A1 FTPS"
+    enabled     = true
+    sequence    = 319
+    interface   = { interface = ["opt3"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet"
+      protocol    = "TCP"
+      quick       = true
+      log         = false
+      source      = { net = "10.0.30.0/24", port = "" }
+      destination = { net = "10.0.20.124/32", port = "990" }
     }
   }
   infrastructure-block-private = {
