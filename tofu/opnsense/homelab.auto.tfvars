@@ -285,7 +285,7 @@ firewall_filters = {
       quick       = true
       log         = false
       source      = { net = "10.0.30.0/24", port = "" }
-      destination = { net = "10.0.20.124/32", port = "2024:2025" }
+      destination = { net = "10.0.20.124/32", port = "2024-2025" }
     }
   }
   infrastructure-block-private = {
