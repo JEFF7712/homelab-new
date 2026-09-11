@@ -38,11 +38,22 @@ let
     # so the two instances must not share one.
     workDir = "${baseDir}/work-${toString n}";
     # git/nix/bash/coreutils/tar come from the module defaults; these are the
-    # CI-specific extras (attic for the ISO push step).
+    # CI-specific extras (attic for the ISO push step, plus the standard
+    # script userland the checks assume: Ubuntu runners had all of these).
     extraPackages = with pkgs; [
       attic-client
+      bc
+      curl
+      diffutils
+      file
+      findutils
+      gawk
+      gnugrep
+      gnused
       jq
       just
+      perl
+      procps
     ];
     serviceOverrides = {
       MemoryMax = "8G";
