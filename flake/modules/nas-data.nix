@@ -100,6 +100,14 @@
       database = {
         url = "sqlite:///persist/attic/server.db?mode=rwc";
       };
+      # Weekly sweep; objects neither created nor accessed within 90 days are
+      # collected. 90d comfortably exceeds the consumers' GC windows (laptop
+      # nh clean 7d, nas nix GC 30d). Monolithic mode runs this on interval;
+      # garbage-collector-once covers one-shot runs.
+      garbage-collection = {
+        interval = "7 days";
+        default-retention-period = "90 days";
+      };
     };
   };
 
