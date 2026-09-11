@@ -823,6 +823,25 @@ class OutboundNatReconciliationTests(unittest.TestCase):
             ],
         )
 
+    def test_verification_normalizes_bool_to_string_enabled(self) -> None:
+        rule = self._DESIRED_RULE
+
+        class NatClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str]] = []
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path))
+                # OPNsense may return enabled as bool True instead of "1".
+                live_rule = dict(rule, uuid="uuid-nat", enabled=True)
+                return {"rows": [live_rule]}
+
+            def post(self, path: str, payload: object) -> object:
+                raise AssertionError(f"normalized match must not write: {path}")
+
+        client = NatClient()
+        reconcile_outbound_nat(client, self.desired())
+
     def test_adds_missing_rule_applies_and_verifies(self) -> None:
         rule = self._DESIRED_RULE
 

@@ -415,7 +415,9 @@ def reconcile_outbound_nat(
                 client.post("/api/firewall/source_nat/add_rule", {"rule": desired})
             )
             changed = True
-        elif _outbound_nat_diff_fields(live) != _outbound_nat_diff_fields(desired):
+        elif _normalize_outbound_nat(
+            _outbound_nat_diff_fields(live)
+        ) != _normalize_outbound_nat(_outbound_nat_diff_fields(desired)):
             _require_stored(
                 client.post(
                     f"/api/firewall/source_nat/set_rule/{live['uuid']}",
@@ -429,13 +431,25 @@ def reconcile_outbound_nat(
     mismatches = sorted(
         description
         for description, desired in desired_by_description.items()
-        if _outbound_nat_verify_fields(verified.get(description, {}))
-        != _outbound_nat_verify_fields(desired)
+        if _normalize_outbound_nat(
+            _outbound_nat_verify_fields(verified.get(description, {}))
+        )
+        != _normalize_outbound_nat(_outbound_nat_verify_fields(desired))
     )
     if mismatches:
         raise RuntimeError(
             "outbound NAT verification failed for " + ", ".join(mismatches)
         )
+
+
+def _normalize_outbound_nat(rule: dict[str, object]) -> dict[str, object]:
+    normalized: dict[str, object] = {}
+    for key, value in rule.items():
+        if key in ("enabled", "source_not", "destination_not", "nonat", "nosync"):
+            normalized[key] = "1" if value in (1, "1", True, "true") else "0"
+        else:
+            normalized[key] = value
+    return normalized
 
 
 def _desired_outbound_nat(
