@@ -272,7 +272,12 @@
   };
 
   systemd.tmpfiles.rules = [
-    "d /persist/attic 0700 root root -"
+    # atticd (not root) owns this dir: the atticd ExecStartPre ensure script
+    # enforces the same ownership, and sqlite needs directory write access
+    # for its WAL files. A root-owned rule here revokes access on every
+    # switch without an atticd restart, which surfaces as HTTP 500s with
+    # "unable to open database file".
+    "d /persist/attic 0700 atticd atticd -"
     "d /persist/gitlab-runner 0700 root root -"
     "d /persist/keys 0700 root root -"
     "d /mnt/backup-2tb/registry-restic 0700 zot zot -"
