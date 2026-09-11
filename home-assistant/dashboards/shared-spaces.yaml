@@ -4,63 +4,65 @@ require_admin: false
 show_in_sidebar: true
 views:
   - title: Shared Spaces
-    type: sections
     sections:
       - cards:
-          - type: heading
-            heading: Rooms
-          - type: button
-            entity: switch.0xffffb40e0608faec
-            name: Stairs
+          - heading: Rooms
+            type: heading
+          - name: Stairs
             icon: mdi:stairs
+            entity: switch.0xffffb40e0608faec
+            hold_action:
+              action: toggle
             show_state: true
             tap_action:
               action: navigate
               navigation_path: /shared-spaces/stairs
-            hold_action:
-              action: toggle
-          - type: button
-            name: Kitchen
+            type: button
+          - name: Kitchen
             icon: mdi:stove
             tap_action:
               action: navigate
               navigation_path: /shared-spaces/kitchen
-          - type: button
-            name: Living Room
+            type: button
+          - name: Living Room
             icon: mdi:sofa
             tap_action:
               action: navigate
               navigation_path: /shared-spaces/living-room
+            type: button
+    type: sections
   - title: Stairs
     path: stairs
-    subview: true
-    type: sections
     sections:
       - cards:
-          - type: heading
-            heading: Stairs
-          - type: tile
+          - heading: Stairs
+            type: heading
+          - name: Stairs Light
             entity: switch.0xffffb40e0608faec
-            name: Stairs Light
             features:
               - type: toggle
+            type: tile
+    subview: true
+    type: sections
   - title: Kitchen
     path: kitchen
-    subview: true
-    type: sections
     sections:
       - cards:
-          - type: heading
-            heading: Kitchen
-          - type: markdown
-            content: No devices in here yet.
+          - heading: Kitchen
+            type: heading
+          - content: No devices in here yet.
+            type: markdown
+    subview: true
+    type: sections
   - title: Living Room
     path: living-room
-    subview: true
-    type: sections
     sections:
       - cards:
-          - type: heading
-            heading: Living Room
-          - type: markdown
-            content: No devices in here yet.
+          - heading: Living Room
+            type: heading
+          - entity: switch.0xffffb40e0608f37a
+            features:
+              - type: toggle
+            type: tile
+    subview: true
+    type: sections
