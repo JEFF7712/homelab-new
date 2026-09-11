@@ -9,8 +9,58 @@ views:
       - cards:
           - type: heading
             heading: Rooms
+          - type: button
+            entity: switch.0xffffb40e0608faec
+            name: Stairs
+            icon: mdi:stairs
+            show_state: true
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/stairs
+            hold_action:
+              action: toggle
+          - type: button
+            name: Kitchen
+            icon: mdi:stove
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/kitchen
+          - type: button
+            name: Living Room
+            icon: mdi:sofa
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/living-room
+  - title: Stairs
+    path: stairs
+    subview: true
+    type: sections
+    sections:
+      - cards:
+          - type: heading
+            heading: Stairs
           - type: tile
             entity: switch.0xffffb40e0608faec
             name: Stairs Light
             features:
               - type: toggle
+  - title: Kitchen
+    path: kitchen
+    subview: true
+    type: sections
+    sections:
+      - cards:
+          - type: heading
+            heading: Kitchen
+          - type: markdown
+            content: No devices in here yet.
+  - title: Living Room
+    path: living-room
+    subview: true
+    type: sections
+    sections:
+      - cards:
+          - type: heading
+            heading: Living Room
+          - type: markdown
+            content: No devices in here yet.
