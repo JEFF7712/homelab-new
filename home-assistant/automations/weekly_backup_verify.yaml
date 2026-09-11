@@ -1,0 +1,39 @@
+id: weekly_backup_verify
+alias: "System: Weekly Backup & Verify"
+description: "Create an automatic backup every Sunday at 3 AM and notify phone on success or failure."
+triggers:
+  - trigger: time
+    at: "03:00:00"
+conditions:
+  - condition: time
+    weekday:
+      - sun
+actions:
+  - variables:
+      backup_before: "{{ states('sensor.backup_last_successful_automatic_backup') }}"
+  - action: backup.create_automatic
+  - wait_template: "{{ states('sensor.backup_last_successful_automatic_backup') != backup_before }}"
+    timeout: "01:00:00"
+    continue_on_timeout: true
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ wait.completed }}"
+        sequence:
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "Backup Complete"
+              message: >-
+                Weekly automatic backup finished successfully at {{ states('sensor.backup_last_successful_automatic_backup') }}.
+      - conditions: []
+        sequence:
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "Backup Failed"
+              message: >-
+                Weekly automatic backup did not complete within an hour. Last success: {{ states('sensor.backup_last_successful_automatic_backup') }}.
+mode: single

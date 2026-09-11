@@ -1,0 +1,20 @@
+id: a1_print_started
+alias: "A1: Print Started Notification"
+description: "Notify phone when the A1 starts a print, with filename and ETA."
+triggers:
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    to: running
+conditions:
+  - condition: template
+    value_template: "{{ trigger.from_state.state in ('idle', 'finish', 'failed', 'unknown', 'unavailable') }}"
+actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.rupan_phone
+    data:
+      title: "A1 Print Started"
+      message: >-
+        {% set eta = states('sensor.a1_03900d642327265_end_time') %}
+        {{ states('sensor.a1_03900d642327265_task_name') | default('Print', true) }} started{% if eta not in ('unknown', 'unavailable') %}, ETA {{ (eta | as_datetime | as_local).strftime('%H:%M') }}{% endif %}.
+mode: single

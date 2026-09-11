@@ -6,3 +6,9 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 recorder:
   db_url: !secret recorder_db_url
+rest:
+  - resource: https://version.home-assistant.io/stable.json
+    scan_interval: 21600
+    sensor:
+      - name: HA latest version
+        value_template: "{{ value_json.homeassistant.default }}"

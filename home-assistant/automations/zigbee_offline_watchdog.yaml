@@ -1,0 +1,30 @@
+id: zigbee_offline_watchdog
+alias: "Zigbee: Offline Watchdog"
+description: "Notify phone when the Zigbee bridge loses connection or tracked lights go unavailable."
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.zigbee2mqtt_bridge_connection_state
+    to: "off"
+    for: "00:10:00"
+    id: "bridge"
+  - trigger: state
+    entity_id:
+      - switch.0xffffb40e0608c96f
+      - switch.0xffffb40e0608d02e
+      - switch.0xffffb40e0608faec
+      - light.desk_lamp_desk_lamp
+      - light.floor_lamp_floor_lamp
+      - light.light_strip_light_strip
+    to: "unavailable"
+    for: "00:15:00"
+    id: "device"
+conditions: []
+actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.rupan_phone
+    data:
+      title: "Zigbee Offline"
+      message: >-
+        {{ trigger.entity_id }} has been {{ trigger.to_state.state }} for a while. Check Zigbee2MQTT and the MQTT broker.
+mode: single
