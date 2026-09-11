@@ -11,6 +11,18 @@ from .models import OwnerMode, ResourceDocument, ResourceKey
 
 SAFE_KEY_PATTERN = re.compile(r"^[a-zA-Z0-9_-]+$")
 
+REGISTRY_PLURAL: dict[str, str] = {
+    "area": "areas",
+    "floor": "floors",
+    "label": "labels",
+    "device": "devices",
+    "entity": "entities",
+}
+
+REGISTRY_SINGULAR: dict[str, str] = {v: k for k, v in REGISTRY_PLURAL.items()} | {
+    "entitys": "entity",
+}
+
 
 def validate_key(key: str) -> None:
     """Validate that a resource key is safe for filesystem paths."""
@@ -37,8 +49,8 @@ def get_source_path(repo_root: Path, kind: str, key: str) -> Path:
         return base / "dashboards" / f"{key}.yaml"
     if kind == "registry":
         return base / "registries" / f"{key}.yaml"
-    if kind in ("area", "floor", "label", "device", "entity"):
-        return base / "registries" / f"{kind}s.yaml"
+    if kind in REGISTRY_PLURAL:
+        return base / "registries" / f"{REGISTRY_PLURAL[kind]}.yaml"
     if kind == "helper":
         return base / "helpers" / f"{key}.yaml"
     if kind == "integration":
@@ -103,7 +115,9 @@ def load_source_tree(repo_root: Path) -> dict[str, ResourceDocument]:
     if reg_dir.is_dir():
         for reg_file in sorted(reg_dir.glob("*.yaml")):
             stem = reg_file.stem
-            singular = stem.rstrip("s") if stem.endswith("s") else stem
+            singular = REGISTRY_SINGULAR.get(stem)
+            if singular is None:
+                singular = stem.rstrip("s") if stem.endswith("s") else stem
             content = parse_yaml(reg_file.read_text(encoding="utf-8"))
             if isinstance(content, list):
                 # We store each list item or the whole registry

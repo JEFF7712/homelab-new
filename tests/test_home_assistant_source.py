@@ -105,6 +105,41 @@ class TestHomeAssistantSource(unittest.TestCase):
         self.assertTrue(removed)
         self.assertFalse(path.exists())
 
+    def test_registry_plural_filenames_round_trip(self) -> None:
+        from scripts.home_assistant.source import get_source_path
+
+        expected = {
+            "area": "areas.yaml",
+            "floor": "floors.yaml",
+            "label": "labels.yaml",
+            "device": "devices.yaml",
+            "entity": "entities.yaml",
+        }
+        for kind, filename in expected.items():
+            _ = ResourceDocument(kind=kind, key="collection", desired=[])
+            self.assertEqual(
+                get_source_path(self.root, kind, "collection").name, filename
+            )
+
+        entity_doc = ResourceDocument(
+            kind="entity",
+            key="collection",
+            desired=[{"entity_id": "light.test", "labels": []}],
+        )
+        written = write_resource_atomic(self.root, entity_doc)
+        self.assertEqual(written.name, "entities.yaml")
+        tree = load_source_tree(self.root)
+        self.assertIn("entity/collection", tree)
+
+    def test_legacy_entitys_filename_still_loads(self) -> None:
+        reg_dir = self.root / "home-assistant" / "registries"
+        reg_dir.mkdir(parents=True, exist_ok=True)
+        (reg_dir / "entitys.yaml").write_text(
+            "- entity_id: light.legacy\n  labels: []\n", encoding="utf-8"
+        )
+        tree = load_source_tree(self.root)
+        self.assertIn("entity/collection", tree)
+
 
 if __name__ == "__main__":
     unittest.main()
