@@ -773,44 +773,42 @@ class BgpNeighborReconciliationTests(unittest.TestCase):
 
 
 class OutboundNatReconciliationTests(unittest.TestCase):
+    _DESIRED_RULE = {
+        "interface": "wan",
+        "ipprotocol": "inet",
+        "protocol": "any",
+        "source_net": "10.0.10.0/24",
+        "source_not": "0",
+        "source_port": "",
+        "destination_net": "any",
+        "destination_not": "0",
+        "destination_port": "",
+        "target": "wanip",
+        "target_port": "",
+        "poolopts": "round-robin",
+        "staticnatport": "0",
+        "log": "0",
+        "nonat": "0",
+        "nosync": "0",
+        "endpoint_independent": "0",
+        "description": "Management VLAN to WAN",
+        "enabled": "1",
+        "sequence": 200000,
+    }
+
     def desired(self) -> list[dict[str, object]]:
-        return [
-            {
-                "interface": "wan",
-                "ip_protocol": "inet",
-                "protocol": "any",
-                "source": {"net": "10.0.10.0/24"},
-                "destination": {"net": "any", "port": ""},
-                "target": {"ip": "wanip"},
-                "description": "Management VLAN to WAN",
-                "enabled": "1",
-                "sequence": 1,
-            }
-        ]
+        return [dict(self._DESIRED_RULE)]
 
     def test_noop_when_live_matches_desired(self) -> None:
+        rule = self._DESIRED_RULE
+
         class NatClient:
             def __init__(self) -> None:
                 self.calls: list[tuple[str, str]] = []
 
             def get(self, path: str) -> object:
                 self.calls.append(("GET", path))
-                return {
-                    "rows": [
-                        {
-                            "uuid": "uuid-nat",
-                            "interface": "wan",
-                            "ip_protocol": "inet",
-                            "protocol": "any",
-                            "source": {"net": "10.0.10.0/24"},
-                            "destination": {"net": "any", "port": ""},
-                            "target": {"ip": "wanip"},
-                            "description": "Management VLAN to WAN",
-                            "enabled": "1",
-                            "sequence": 1,
-                        }
-                    ]
-                }
+                return {"rows": [dict(rule, uuid="uuid-nat")]}
 
             def post(self, path: str, payload: object) -> object:
                 raise AssertionError(f"matching outbound NAT must not write: {path}")
@@ -826,6 +824,8 @@ class OutboundNatReconciliationTests(unittest.TestCase):
         )
 
     def test_adds_missing_rule_applies_and_verifies(self) -> None:
+        rule = self._DESIRED_RULE
+
         class NatClient:
             def __init__(self) -> None:
                 self.calls: list[tuple[str, str, object | None]] = []
@@ -836,20 +836,7 @@ class OutboundNatReconciliationTests(unittest.TestCase):
                 self.reads += 1
                 rows: list[dict[str, object]] = []
                 if self.reads > 1:
-                    rows.append(
-                        {
-                            "uuid": "uuid-nat",
-                            "interface": "wan",
-                            "ip_protocol": "inet",
-                            "protocol": "any",
-                            "source": {"net": "10.0.10.0/24"},
-                            "destination": {"net": "any", "port": ""},
-                            "target": {"ip": "wanip"},
-                            "description": "Management VLAN to WAN",
-                            "enabled": "1",
-                            "sequence": 1,
-                        }
-                    )
+                    rows.append(dict(rule, uuid="uuid-nat"))
                 return {"rows": rows}
 
             def post(self, path: str, payload: object) -> object:
@@ -859,23 +846,7 @@ class OutboundNatReconciliationTests(unittest.TestCase):
         client = NatClient()
         reconcile_outbound_nat(client, self.desired())
         self.assertIn(
-            (
-                "POST",
-                "/api/firewall/source_nat/add_rule",
-                {
-                    "rule": {
-                        "interface": "wan",
-                        "ip_protocol": "inet",
-                        "protocol": "any",
-                        "source": {"net": "10.0.10.0/24"},
-                        "destination": {"net": "any", "port": ""},
-                        "target": {"ip": "wanip"},
-                        "description": "Management VLAN to WAN",
-                        "enabled": "1",
-                        "sequence": 1,
-                    }
-                },
-            ),
+            ("POST", "/api/firewall/source_nat/add_rule", {"rule": rule}),
             client.calls,
         )
         self.assertIn(("POST", "/api/firewall/filter/apply", {}), client.calls)
@@ -888,11 +859,11 @@ class OutboundNatReconciliationTests(unittest.TestCase):
                         {
                             "uuid": "uuid-rogue",
                             "interface": "lan",
-                            "ip_protocol": "inet",
+                            "ipprotocol": "inet",
                             "protocol": "any",
-                            "source": {"net": "192.168.0.0/24"},
-                            "destination": {"net": "any", "port": ""},
-                            "target": {"ip": "wanip"},
+                            "source_net": "192.168.0.0/24",
+                            "destination_net": "any",
+                            "target": "wanip",
                             "description": "rogue",
                             "enabled": "1",
                             "sequence": 1,
@@ -909,6 +880,8 @@ class OutboundNatReconciliationTests(unittest.TestCase):
             reconcile_outbound_nat(NatClient(), [])
 
     def test_filters_auto_generated_rules_from_live_inventory(self) -> None:
+        rule = self._DESIRED_RULE
+
         class NatClient:
             def __init__(self) -> None:
                 self.calls: list[tuple[str, str, object | None]] = []
@@ -921,11 +894,11 @@ class OutboundNatReconciliationTests(unittest.TestCase):
                     {
                         "uuid": "uuid-auto",
                         "interface": "wan",
-                        "ip_protocol": "inet",
+                        "ipprotocol": "inet",
                         "protocol": "any",
-                        "source": {"net": "10.0.20.0/24"},
-                        "destination": {"net": "any", "port": ""},
-                        "target": {"ip": "wanip"},
+                        "source_net": "10.0.20.0/24",
+                        "destination_net": "any",
+                        "target": "wanip",
                         "description": "Auto created rule",
                         "enabled": "1",
                         "sequence": 1,
@@ -933,31 +906,19 @@ class OutboundNatReconciliationTests(unittest.TestCase):
                     {
                         "uuid": "uuid-isakmp",
                         "interface": "wan",
-                        "ip_protocol": "inet",
+                        "ipprotocol": "inet",
                         "protocol": "udp",
-                        "source": {"net": "any"},
-                        "destination": {"net": "any", "port": "500"},
-                        "target": {"ip": "wanip"},
+                        "source_net": "any",
+                        "destination_net": "any",
+                        "destination_port": "500",
+                        "target": "wanip",
                         "description": "Auto created rule for ISAKMP",
                         "enabled": "1",
                         "sequence": 2,
                     },
                 ]
                 if self.reads > 1:
-                    rows.append(
-                        {
-                            "uuid": "uuid-mgmt",
-                            "interface": "wan",
-                            "ip_protocol": "inet",
-                            "protocol": "any",
-                            "source": {"net": "10.0.10.0/24"},
-                            "destination": {"net": "any", "port": ""},
-                            "target": {"ip": "wanip"},
-                            "description": "Management VLAN to WAN",
-                            "enabled": "1",
-                            "sequence": 1,
-                        }
-                    )
+                    rows.append(dict(rule, uuid="uuid-mgmt"))
                 return {"rows": rows}
 
             def post(self, path: str, payload: object) -> object:
@@ -971,28 +932,7 @@ class OutboundNatReconciliationTests(unittest.TestCase):
             for call in client.calls
             if call[1] == "/api/firewall/source_nat/add_rule"
         ]
-        self.assertEqual(
-            add_calls,
-            [
-                (
-                    "POST",
-                    "/api/firewall/source_nat/add_rule",
-                    {
-                        "rule": {
-                            "interface": "wan",
-                            "ip_protocol": "inet",
-                            "protocol": "any",
-                            "source": {"net": "10.0.10.0/24"},
-                            "destination": {"net": "any", "port": ""},
-                            "target": {"ip": "wanip"},
-                            "description": "Management VLAN to WAN",
-                            "enabled": "1",
-                            "sequence": 1,
-                        }
-                    },
-                )
-            ],
-        )
+        self.assertEqual(len(add_calls), 1)
 
     def test_rejects_failed_store_result(self) -> None:
         class NatClient:
@@ -1025,11 +965,11 @@ class OutboundNatReconciliationTests(unittest.TestCase):
         for rule in rules:
             with self.subTest(description=rule.get("description")):
                 self.assertEqual(rule["interface"], "wan")
-                self.assertEqual(rule["ip_protocol"], "inet")
-                source_net = ipaddress.ip_network(rule["source"]["net"])
+                self.assertEqual(rule["ipprotocol"], "inet")
+                source_net = ipaddress.ip_network(rule["source_net"])
                 self.assertIn(source_net.prefixlen, (24,), "management source is /24")
-                self.assertEqual(rule["destination"]["net"], "any")
-                self.assertEqual(rule["target"]["ip"], "wanip")
+                self.assertEqual(rule["destination_net"], "any")
+                self.assertEqual(rule["target"], "wanip")
 
 
 class UnboundAclReconciliationTests(unittest.TestCase):

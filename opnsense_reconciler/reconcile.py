@@ -359,11 +359,22 @@ def _kea_interfaces(configuration: object) -> set[str]:
 
 OUTBOUND_NAT_FIELDS: tuple[str, ...] = (
     "interface",
-    "ip_protocol",
+    "ipprotocol",
     "protocol",
-    "source",
-    "destination",
+    "source_net",
+    "source_not",
+    "source_port",
+    "destination_net",
+    "destination_not",
+    "destination_port",
     "target",
+    "target_port",
+    "poolopts",
+    "staticnatport",
+    "log",
+    "nonat",
+    "nosync",
+    "endpoint_independent",
     "description",
     "enabled",
     "sequence",
@@ -429,15 +440,14 @@ def _desired_outbound_nat(
             raise ValueError(f"duplicate outbound NAT description: {description}")
         if not isinstance(rule["interface"], str) or not rule["interface"]:
             raise ValueError(f"outbound NAT {description} requires interface")
-        if not isinstance(rule["enabled"], str) or rule["enabled"] not in ("0", "1"):
+        if rule["enabled"] not in ("0", "1"):
             raise ValueError(f"outbound NAT {description} enabled must be 0 or 1")
         if not isinstance(rule["sequence"], int):
             raise ValueError(f"outbound NAT {description} sequence must be an integer")
-        for nested in ("source", "destination", "target"):
-            if not isinstance(rule[nested], dict):
-                raise ValueError(
-                    f"outbound NAT {description} {nested} must be an object"
-                )
+        if not isinstance(rule["target"], str) or not rule["target"]:
+            raise ValueError(f"outbound NAT {description} target must be a string")
+        if not isinstance(rule["source_net"], str) or not rule["source_net"]:
+            raise ValueError(f"outbound NAT {description} source_net must be a string")
         desired_by_description[description] = rule
     return desired_by_description
 

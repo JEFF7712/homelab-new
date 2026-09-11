@@ -1,20 +1,24 @@
 [
   {
     "interface": "wan",
-    "ip_protocol": "inet",
+    "ipprotocol": "inet",
     "protocol": "any",
-    "source": {
-      "net": "10.0.10.0/24"
-    },
-    "destination": {
-      "net": "any",
-      "port": ""
-    },
-    "target": {
-      "ip": "wanip"
-    },
+    "source_net": "10.0.10.0/24",
+    "source_not": "0",
+    "source_port": "",
+    "destination_net": "any",
+    "destination_not": "0",
+    "destination_port": "",
+    "target": "wanip",
+    "target_port": "",
+    "poolopts": "round-robin",
+    "staticnatport": "0",
+    "log": "0",
+    "nonat": "0",
+    "nosync": "0",
+    "endpoint_independent": "0",
     "description": "Management VLAN to WAN",
     "enabled": "1",
-    "sequence": 1
+    "sequence": 200000
   }
 ]
