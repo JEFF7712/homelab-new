@@ -1,5 +1,14 @@
 schema_version: "1.0"
-custom_integrations: []
+custom_integrations:
+  - domain: bambu_lab
+    name: Bambu Lab
+    source: https://github.com/greghesp/ha-bambulab
+    version: v2.2.25
+    artifact: https://github.com/greghesp/ha-bambulab/releases/download/v2.2.25/bambu_lab.zip
+    sha256: 10981d0127ac189d8f37976446e044943153eefd372ffceb0c442a17634a251c
+    install_path: /config/custom_components/bambu_lab
+    connection: lan_mode
+    status: installed
 custom_frontend_cards: []
 blueprints: []
 dependencies_policy:
