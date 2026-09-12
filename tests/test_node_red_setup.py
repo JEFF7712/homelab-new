@@ -54,9 +54,9 @@ class TestNodeRedSeeds(unittest.TestCase):
     def test_settings_template_uses_envsubst_placeholders(self) -> None:
         raw = (NODE_RED_DIR / "settings.js.tpl").read_text(encoding="utf-8")
         for placeholder in (
-            "${NODERED_CREDENTIAL_SECRET}",
-            "${NODERED_ADMIN_USERNAME}",
-            "${NODERED_ADMIN_PASSWORD_HASH}",
+            "__NODERED_CREDENTIAL_SECRET__",
+            "__NODERED_ADMIN_USERNAME__",
+            "__NODERED_ADMIN_PASSWORD_HASH__",
         ):
             self.assertIn(placeholder, raw, f"missing placeholder: {placeholder}")
         self.assertIn("flowFile: 'flows.json'", raw)

@@ -30,7 +30,19 @@ spec:
             - -ec
             - |
               mkdir -p /data
-              envsubst < /seed/settings.js.tpl > /data/settings.js
+              awk '
+                BEGIN {
+                  cs = ENVIRON["NODERED_CREDENTIAL_SECRET"]
+                  au = ENVIRON["NODERED_ADMIN_USERNAME"]
+                  ph = ENVIRON["NODERED_ADMIN_PASSWORD_HASH"]
+                }
+                {
+                  gsub(/__NODERED_CREDENTIAL_SECRET__/, cs)
+                  gsub(/__NODERED_ADMIN_USERNAME__/, au)
+                  gsub(/__NODERED_ADMIN_PASSWORD_HASH__/, ph)
+                  print
+                }
+              ' /seed/settings.js.tpl > /data/settings.js
               if [ ! -f /data/flows.json ]; then
                 cp /seed/flows.json /data/flows.json
               fi

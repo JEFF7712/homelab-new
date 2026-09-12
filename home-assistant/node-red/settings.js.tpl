@@ -1,12 +1,12 @@
 module.exports = {
   flowFile: 'flows.json',
-  credentialSecret: '${NODERED_CREDENTIAL_SECRET}',
+  credentialSecret: '__NODERED_CREDENTIAL_SECRET__',
   adminAuth: {
     type: 'credentials',
     users: [
       {
-        username: '${NODERED_ADMIN_USERNAME}',
-        password: '${NODERED_ADMIN_PASSWORD_HASH}',
+        username: '__NODERED_ADMIN_USERNAME__',
+        password: '__NODERED_ADMIN_PASSWORD_HASH__',
         permissions: '*',
       },
     ],
