@@ -1,3 +1,5 @@
+**NOTE - This repository is a mirror.** Active development happens on [GitLab](https://gitlab.com/JEFF7712/homelab-new).
+
 # homelab-new
 
 NixOS homelab desired state.
