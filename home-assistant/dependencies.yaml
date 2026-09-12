@@ -9,6 +9,15 @@ custom_integrations:
     install_path: /config/custom_components/bambu_lab
     connection: lan_mode
     status: installed
+  - domain: smarthq
+    name: SmartHQ
+    source: https://github.com/geappliances/geappliances-smarthq-integration
+    version: v1.3.0
+    artifact: https://github.com/geappliances/geappliances-smarthq-integration/archive/refs/tags/v1.3.0.tar.gz
+    sha256: bfb87d8972614cdcfb0c36be1dd60c367aa6d2aa914ba322d261bc9dfb5d0ba8
+    install_path: /config/custom_components/smarthq
+    connection: cloud_oauth
+    status: installed
 custom_frontend_cards: []
 blueprints: []
 dependencies_policy:

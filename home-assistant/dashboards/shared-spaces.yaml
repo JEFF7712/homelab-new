@@ -64,5 +64,7 @@ views:
             features:
               - type: toggle
             type: tile
+          - entity: climate.living_room_ac_living_room_ac_thermostat
+            type: thermostat
     subview: true
     type: sections

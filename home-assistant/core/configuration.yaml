@@ -16,6 +16,7 @@ homekit:
         - switch.0xffffb40e0608d02e
         - switch.0xffffb40e0608f37a
         - switch.0xffffb40e0608faec
+        - climate.living_room_ac_living_room_ac_thermostat
       exclude_entities:
         - light.a1_03900d642327265_chamber_light
 recorder:
