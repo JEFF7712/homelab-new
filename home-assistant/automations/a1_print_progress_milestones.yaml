@@ -1,0 +1,32 @@
+id: a1_print_progress_milestones
+alias: "A1: Print Progress Milestones"
+description: "Notify phone when the A1 crosses 25, 50, and 75 percent during a running print."
+triggers:
+  - trigger: numeric_state
+    entity_id: sensor.a1_03900d642327265_print_progress
+    above: 24
+    id: "p25"
+  - trigger: numeric_state
+    entity_id: sensor.a1_03900d642327265_print_progress
+    above: 49
+    id: "p50"
+  - trigger: numeric_state
+    entity_id: sensor.a1_03900d642327265_print_progress
+    above: 74
+    id: "p75"
+conditions:
+  - condition: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    state: running
+actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.rupan_phone
+    data:
+      title: "A1 Print Progress"
+      message: >-
+        {% set eta = states('sensor.a1_03900d642327265_end_time') %}
+        {{ states('sensor.a1_03900d642327265_task_name') | default('Print', true) }} is
+        at {{ states('sensor.a1_03900d642327265_print_progress') }}%{% if eta not in ('unknown', 'unavailable') %},
+        ETA {{ (eta | as_datetime | as_local).strftime('%H:%M') }}{% endif %}.
+mode: single

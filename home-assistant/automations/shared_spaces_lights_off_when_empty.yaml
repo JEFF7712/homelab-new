@@ -1,0 +1,19 @@
+id: shared_spaces_lights_off_when_empty
+alias: "Shared Spaces: Lights Off When Empty"
+description: "Turn off all shared-space lights when nobody is home."
+triggers:
+  - trigger: state
+    entity_id:
+      - person.rupan_sunderapandyan
+      - person.sam
+    to: "not_home"
+  - trigger: homeassistant
+    event: start
+conditions:
+  - condition: template
+    value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
+actions:
+  - action: homeassistant.turn_off
+    target:
+      label_id: shared_space
+mode: single

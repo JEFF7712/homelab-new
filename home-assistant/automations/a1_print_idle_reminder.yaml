@@ -1,0 +1,18 @@
+id: a1_print_idle_reminder
+alias: "A1: Idle Finished Print Reminder"
+description: "Remind the user to remove the finished print after it sits in finish state for an hour."
+triggers:
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    to: finish
+    for: "01:00:00"
+actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.rupan_phone
+    data:
+      title: "A1 Print Still Sitting"
+      message: >-
+        {{ states('sensor.a1_03900d642327265_task_name') | default('Print', true) }}
+        finished over an hour ago and the printer is still occupied.
+mode: single

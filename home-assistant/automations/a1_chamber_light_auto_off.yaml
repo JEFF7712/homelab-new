@@ -1,0 +1,14 @@
+id: a1_chamber_light_auto_off
+alias: "A1: Chamber Light Auto-Off"
+description: "Turn off the A1 chamber light 5 minutes after a print finishes."
+triggers:
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    to: finish
+actions:
+  - delay:
+      minutes: 5
+  - action: light.turn_off
+    target:
+      entity_id: light.a1_03900d642327265_chamber_light
+mode: single

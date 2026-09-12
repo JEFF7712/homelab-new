@@ -1,0 +1,36 @@
+id: a1_print_stalled_detection
+alias: "A1: Print Stalled Detection"
+description: "Notify phone if the A1 stays in running status with no progress change for 15 minutes."
+triggers:
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    to: running
+conditions: []
+actions:
+  - wait_for_trigger:
+      - trigger: state
+        entity_id: sensor.a1_03900d642327265_print_progress
+      - trigger: state
+        entity_id: sensor.a1_03900d642327265_print_status
+        to: finish
+      - trigger: state
+        entity_id: sensor.a1_03900d642327265_print_status
+        to: failed
+    timeout:
+      minutes: 15
+    continue_on_timeout: true
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ not wait.completed }}"
+        sequence:
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "A1 Print Possibly Stalled"
+              message: >-
+                {{ states('sensor.a1_03900d642327265_task_name') | default('Print', true) }}
+                has been at {{ states('sensor.a1_03900d642327265_print_progress') }}%
+                for 15 minutes without progress. Check the printer.
+mode: single

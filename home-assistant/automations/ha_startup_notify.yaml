@@ -1,0 +1,20 @@
+id: ha_startup_notify
+alias: "System: Startup Notification"
+description: "Send a phone notification when Home Assistant finishes starting."
+triggers:
+  - trigger: homeassistant
+    event: start
+conditions: []
+actions:
+  - delay:
+      seconds: 15
+  - action: notify.send_message
+    target:
+      entity_id: notify.rupan_phone
+    data:
+      title: "Home Assistant Restarted"
+      message: >-
+        Home Assistant is back online. Current version installed;
+        latest available is {{ states('sensor.ha_latest_version')
+        | default('unknown', true) }}.
+mode: single

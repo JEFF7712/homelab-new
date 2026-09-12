@@ -1,0 +1,53 @@
+id: living_room_sign_by_presence
+alias: "Living Room: Good Vibes Sign by Presence"
+description: "Turn on the Good Vibes sign when arriving home during evening hours; off when away or at sunrise."
+triggers:
+  - trigger: state
+    entity_id: person.rupan_sunderapandyan
+    to: "home"
+    id: "arrive"
+  - trigger: state
+    entity_id: person.rupan_sunderapandyan
+    from: "home"
+    id: "leave"
+  - trigger: sun
+    event: sunset
+    id: "sunset"
+  - trigger: sun
+    event: sunrise
+    id: "sunrise"
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "leave"
+        sequence:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.0xffffb40e0608f37a
+      - conditions:
+          - condition: or
+            conditions:
+              - condition: trigger
+                id: "arrive"
+              - condition: trigger
+                id: "sunset"
+          - condition: state
+            entity_id: person.rupan_sunderapandyan
+            state: "home"
+          - condition: state
+            entity_id: sun.sun
+            state: "below_horizon"
+        sequence:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.0xffffb40e0608f37a
+      - conditions:
+          - condition: trigger
+            id: "sunrise"
+        sequence:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.0xffffb40e0608f37a
+mode: single
