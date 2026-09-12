@@ -6,7 +6,12 @@ from .core import CoreConfigurationAdapter
 from .dashboard import DashboardAdapter
 from .helper import HelperAdapter
 from .integration import IntegrationAdapter
-from .registry import AreaRegistryAdapter, DeviceRegistryAdapter, EntityRegistryAdapter
+from .registry import (
+    AreaRegistryAdapter,
+    DeviceRegistryAdapter,
+    EntityRegistryAdapter,
+    LabelRegistryAdapter,
+)
 from .scene import SceneAdapter
 from .script import ScriptAdapter
 
@@ -17,6 +22,7 @@ ADAPTERS: dict[str, BaseAdapter] = {
     "scene": SceneAdapter(),
     "dashboard": DashboardAdapter(),
     "area": AreaRegistryAdapter(),
+    "label": LabelRegistryAdapter(),
     "device": DeviceRegistryAdapter(),
     "entity": EntityRegistryAdapter(),
     "helper": HelperAdapter(),

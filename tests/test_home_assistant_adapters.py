@@ -7,6 +7,7 @@ from scripts.home_assistant.adapters.core import CoreConfigurationAdapter
 from scripts.home_assistant.adapters.dashboard import DashboardAdapter
 from scripts.home_assistant.adapters.registry import (
     AreaRegistryAdapter,
+    LabelRegistryAdapter,
 )
 from scripts.home_assistant.adapters.scene import SceneAdapter
 from scripts.home_assistant.adapters.script import ScriptAdapter
@@ -143,6 +144,77 @@ class TestHomeAssistantAdapters(unittest.TestCase):
         area_item = exported[0].desired[0]
         self.assertEqual(area_item["name"], "Kitchen")
         self.assertNotIn("unwanted_runtime_field", area_item)
+
+    def test_label_adapter_crud(self) -> None:
+        adapter = LabelRegistryAdapter()
+        action_create = PlanAction(
+            kind="label",
+            key="collection",
+            action=ActionType.CREATE,
+            after=[
+                {
+                    "label_id": "shared_space",
+                    "name": "Shared Space",
+                    "icon": "mdi:home-group",
+                    "description": "Lighting in areas shared by all residents.",
+                }
+            ],
+        )
+        adapter.apply(self.client, action_create)
+        self.assertEqual(len(self.client.labels), 1)
+        self.assertEqual(self.client.labels[0]["label_id"], "shared_space")
+
+        doc = ResourceDocument(
+            kind="label", key="collection", desired=self.client.labels
+        )
+        self.assertEqual(adapter.validate(doc), [])
+        self.assertTrue(adapter.verify(self.client, doc))
+
+        action_update = PlanAction(
+            kind="label",
+            key="collection",
+            action=ActionType.UPDATE,
+            after=[
+                {
+                    "label_id": "shared_space",
+                    "name": "Shared Space",
+                    "icon": "mdi:home-floor-1",
+                }
+            ],
+        )
+        adapter.apply(self.client, action_update)
+        self.assertEqual(self.client.labels[0]["icon"], "mdi:home-floor-1")
+
+    def test_label_adapter_export_filters_allowlisted_fields(self) -> None:
+        adapter = LabelRegistryAdapter()
+        self.client.labels = [
+            {
+                "label_id": "shared_space",
+                "name": "Shared Space",
+                "icon": "mdi:home-group",
+                "color": "red",
+                "description": "...",
+                "unwanted_runtime_field": 9999,
+            }
+        ]
+        exported = adapter.export_from_live(self.client)
+        self.assertEqual(len(exported), 1)
+        item = exported[0].desired[0]
+        self.assertEqual(item["label_id"], "shared_space")
+        self.assertNotIn("unwanted_runtime_field", item)
+
+    def test_label_adapter_validates_duplicates(self) -> None:
+        adapter = LabelRegistryAdapter()
+        doc = ResourceDocument(
+            kind="label",
+            key="collection",
+            desired=[
+                {"label_id": "shared_space", "name": "Shared Space"},
+                {"label_id": "shared_space", "name": "Dup"},
+            ],
+        )
+        errors = adapter.validate(doc)
+        self.assertTrue(any("Duplicate label_id" in e for e in errors))
 
     def test_core_configuration_adapter(self) -> None:
         adapter = CoreConfigurationAdapter()

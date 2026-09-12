@@ -106,6 +106,89 @@ class AreaRegistryAdapter(BaseAdapter):
         pass
 
 
+class LabelRegistryAdapter(BaseAdapter):
+    kind = "label"
+    owner_mode = OwnerMode.UI_EDITABLE.value
+
+    def export_from_live(self, client: HomeAssistantClient) -> list[ResourceDocument]:
+        labels = client.list_labels()
+        clean_labels = [
+            _filter_dict(lbl, ALLOWLISTED_LABEL_FIELDS)
+            for lbl in sorted(labels, key=lambda x: str(x.get("label_id", "")))
+        ]
+        return [
+            ResourceDocument(
+                kind=self.kind,
+                key="collection",
+                owner_mode=self.owner_mode,
+                desired=clean_labels,
+            )
+        ]
+
+    def canonicalize(self, doc: ResourceDocument) -> ResourceDocument:
+        desired = doc.desired if isinstance(doc.desired, list) else []
+        clean = [_filter_dict(lbl, ALLOWLISTED_LABEL_FIELDS) for lbl in desired]
+        clean.sort(key=lambda x: str(x.get("label_id", "")))
+        return ResourceDocument(
+            schema_version=doc.schema_version,
+            kind=self.kind,
+            key=doc.key,
+            owner_mode=self.owner_mode,
+            desired=clean,
+        )
+
+    def validate(self, doc: ResourceDocument) -> list[str]:
+        errors: list[str] = []
+        if not isinstance(doc.desired, list):
+            return ["Label collection must be a list of label objects"]
+        seen_ids: set[str] = set()
+        for idx, label in enumerate(doc.desired):
+            if not isinstance(label, dict):
+                errors.append(f"Label at index {idx} must be a mapping")
+                continue
+            lid = label.get("label_id")
+            if not lid:
+                errors.append(f"Label at index {idx} missing required 'label_id'")
+            elif lid in seen_ids:
+                errors.append(f"Duplicate label_id '{lid}' at index {idx}")
+            else:
+                seen_ids.add(lid)
+        return errors
+
+    def apply(self, client: HomeAssistantClient, action: PlanAction) -> None:
+        if action.action in (ActionType.CREATE, ActionType.UPDATE):
+            desired_labels = action.after if isinstance(action.after, list) else []
+            existing_labels = {
+                lbl["label_id"]: lbl
+                for lbl in client.list_labels()
+                if "label_id" in lbl
+            }
+
+            for label in desired_labels:
+                if not isinstance(label, dict):
+                    continue
+                lid = label.get("label_id")
+                if not lid:
+                    continue
+                name = label.get("name", lid.capitalize())
+                kwargs = {
+                    k: v for k, v in label.items() if k not in ("label_id", "name")
+                }
+                if lid in existing_labels:
+                    client.update_label(lid, name=name, **kwargs)
+                else:
+                    client.create_label(name=name, **kwargs)
+
+    def verify(self, client: HomeAssistantClient, doc: ResourceDocument) -> bool:
+        live = self.export_from_live(client)
+        if not live:
+            return False
+        return canonical_hash(live[0].desired) == canonical_hash(doc.desired)
+
+    def delete(self, client: HomeAssistantClient, key: str) -> None:
+        pass
+
+
 class DeviceRegistryAdapter(BaseAdapter):
     kind = "device"
     owner_mode = OwnerMode.UI_EDITABLE.value

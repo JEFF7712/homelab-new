@@ -1116,6 +1116,22 @@ class MockHomeAssistantClient(HomeAssistantClient):
     def list_labels(self) -> list[dict[str, Any]]:
         return list(self.labels)
 
+    def create_label(self, name: str, **kwargs: Any) -> dict[str, Any]:
+        label_id = name.lower().replace(" ", "_")
+        label = {"label_id": label_id, "name": name, **kwargs}
+        self.labels.append(label)
+        return label
+
+    def update_label(self, label_id: str, **kwargs: Any) -> dict[str, Any]:
+        for lbl in self.labels:
+            if lbl.get("label_id") == label_id:
+                lbl.update(kwargs)
+                return lbl
+        raise HomeAssistantNotFoundError(f"Label {label_id} not found")
+
+    def delete_label(self, label_id: str) -> None:
+        self.labels = [lbl for lbl in self.labels if lbl.get("label_id") != label_id]
+
     def list_devices(self) -> list[dict[str, Any]]:
         return list(self.devices)
 
