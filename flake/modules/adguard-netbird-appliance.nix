@@ -5,7 +5,8 @@ let
     ps.paho-mqtt
     ps.pycryptodome
   ]);
-  # Canonical source: roku-bulb-local/scripts/bridge.py. Keep in sync when it changes.
+  # Canonical source: github.com:JEFF7712/roku-bulb-local, scripts/bridge.py.
+  # Keep this Nix mirror in sync when the canonical source changes.
   rokuBridgeDaemon = pkgs.writeTextFile {
     name = "roku-bridge";
     executable = true;
