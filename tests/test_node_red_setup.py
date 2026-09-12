@@ -194,6 +194,13 @@ class TestGitopsNodeRedManifests(unittest.TestCase):
         image = main_container["image"]
         self.assertTrue(image.startswith("registry.rupan.dev/"))
         self.assertIn("@sha256:", image, "image must be digest pinned")
+        # Multi-platform index manifests require all referenced platform manifests
+        # and their layer blobs to be present in zot. The cluster is amd64, so we
+        # pin the single-platform digest the registry has instead of the index
+        # digest `sha256:7aa04e1c...`.
+        self.assertNotIn(
+            "7aa04e1c", image, "pin the single-platform digest, not the multi-arch index"
+        )
 
     def test_service_advertises_via_bgp(self) -> None:
         service_doc = next(d for d in self.docs if d.get("kind") == "Service")

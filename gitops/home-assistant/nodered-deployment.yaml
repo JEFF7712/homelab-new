@@ -78,7 +78,7 @@ spec:
               mountPath: /tmp
       containers:
         - name: nodered
-          image: registry.rupan.dev/upstream/docker.io/nodered/node-red@sha256:7aa04e1c7be16aec5b4b4d6e64ae863c4720b0ab18e2c1f46905f7b0c71e3a19  # yamllint disable-line rule:line-length
+          image: registry.rupan.dev/upstream/docker.io/nodered/node-red@sha256:fc1aa8732852e5cd8eb182f054aa98807872b09233942e0ca134a1cd14b03e3b  # yamllint disable-line rule:line-length
           env:
             - name: TZ
               value: America/Chicago
