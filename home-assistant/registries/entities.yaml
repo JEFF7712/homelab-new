@@ -439,3 +439,9 @@
 - disabled_by: integration
   entity_id: sensor.zigbee2mqtt_bridge_network_map
   labels: []
+- entity_id: switch.0xffffb40e0608f37a
+  labels:
+    - shared_space
+- entity_id: switch.0xffffb40e0608faec
+  labels:
+    - shared_space
