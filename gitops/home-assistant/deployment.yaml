@@ -15,7 +15,7 @@ spec:
       labels:
         app: home-assistant
       annotations:
-        checksum/config: 7d4da3053adac4dc88e3df62a9c20db51eec4a38da3badc78814736cd3d26f8e
+        checksum/config: beec3971447074fa736005ffe6b8ef81fb0ac230d81e9ada8949760fe13d1f81
     spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
