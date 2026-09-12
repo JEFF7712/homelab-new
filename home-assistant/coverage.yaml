@@ -220,6 +220,25 @@ surfaces:
     identity_rules: "Single rendered settings.js per deployment"
     recovery_procedure: "Rebuilt by init container from nodered-seed ConfigMap on pod restart"
 
+  - surface: "http_settings"
+    owner_mode: "ui-editable"
+    readable_fields:
+      - "server_port"
+      - "use_x_forwarded_for"
+      - "trusted_proxies"
+      - "cors_allowed_origins"
+      - "ssl_profile"
+      - "ip_ban_enabled"
+    writable_fields:
+      - "use_x_forwarded_for"
+      - "trusted_proxies"
+      - "cors_allowed_origins"
+      - "login_attempts_threshold"
+      - "ip_ban_enabled"
+    secret_handling: "None required"
+    identity_rules: "Storage key 'http' in /config/.storage/http on the home-assistant-config PVC; YAML http block is deprecated and ignored as of 2026.x"
+    recovery_procedure: "Configured in HA UI under Settings > System > Network; survives PVC recreation only if re-applied"
+
   - surface: "oauth_credentials"
     owner_mode: "runtime-only"
     readable_fields: []
