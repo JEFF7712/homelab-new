@@ -8,7 +8,3 @@ resources:
   - postgres.yaml
   - deployment.yaml
   - service.yaml
-  - nodered-secrets.yaml
-  - nodered-volume.yaml
-  - nodered-config.yaml
-  - nodered-deployment.yaml

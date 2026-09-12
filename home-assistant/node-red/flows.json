@@ -1,9 +1,0 @@
-[
-  {
-    "id": "tab_seed_overview",
-    "type": "tab",
-    "label": "Bootstrap",
-    "disabled": false,
-    "info": "Bootstrap flow.\nAuthor in editor.\nState on nodered-data PVC.\nSee docs/runbooks/node-red-setup.md."
-  }
-]
