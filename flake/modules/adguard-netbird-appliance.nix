@@ -29,31 +29,31 @@ let
           return max(lo, min(hi, v))
 
 
-       def ha_to_plist(cmd):
-           plist = []
-           state = (cmd.get("state") or "").upper()
-           if state == "OFF":
-               return [{"pid": "P3", "pvalue": "0"}]
-           if state == "ON":
-               plist.append({"pid": "P3", "pvalue": "1"})
-           if "color_temp" in cmd and cmd["color_temp"] is not None:
-               kelvin = round(1_000_000 / int(cmd["color_temp"]))
-               plist.append({"pid": "P1502", "pvalue": str(clamp(kelvin, TEMP_MIN_K, TEMP_MAX_K))})
-           elif isinstance(cmd.get("color"), dict):
-               c = cmd["color"]
-               r, g, b = (
-                   clamp(int(c.get("r", 0)), 0, 255),
-                   clamp(int(c.get("g", 0)), 0, 255),
-                   clamp(int(c.get("b", 0)), 0, 255),
-               )
-               plist.append({"pid": "P1507", "pvalue": f"{r:02X}{g:02X}{b:02X}"})
-           elif cmd.get("rgb_color"):
-               r, g, b = (clamp(int(x), 0, 255) for x in cmd["rgb_color"][:3])
-               plist.append({"pid": "P1507", "pvalue": f"{r:02X}{g:02X}{b:02X}"})
-           if "brightness" in cmd and cmd["brightness"] is not None:
-               pct = clamp(round(int(cmd["brightness"]) * 100 / 255), 1, 100)
-               plist.append({"pid": "P1501", "pvalue": str(pct)})
-           return plist
+      def ha_to_plist(cmd):
+          plist = []
+          state = (cmd.get("state") or "").upper()
+          if state == "OFF":
+              return [{"pid": "P3", "pvalue": "0"}]
+          if state == "ON":
+              plist.append({"pid": "P3", "pvalue": "1"})
+          if "color_temp" in cmd and cmd["color_temp"] is not None:
+              kelvin = round(1_000_000 / int(cmd["color_temp"]))
+              plist.append({"pid": "P1502", "pvalue": str(clamp(kelvin, TEMP_MIN_K, TEMP_MAX_K))})
+          elif isinstance(cmd.get("color"), dict):
+              c = cmd["color"]
+              r, g, b = (
+                  clamp(int(c.get("r", 0)), 0, 255),
+                  clamp(int(c.get("g", 0)), 0, 255),
+                  clamp(int(c.get("b", 0)), 0, 255),
+              )
+              plist.append({"pid": "P1507", "pvalue": f"{r:02X}{g:02X}{b:02X}"})
+          elif cmd.get("rgb_color"):
+              r, g, b = (clamp(int(x), 0, 255) for x in cmd["rgb_color"][:3])
+              plist.append({"pid": "P1507", "pvalue": f"{r:02X}{g:02X}{b:02X}"})
+          if "brightness" in cmd and cmd["brightness"] is not None:
+              pct = clamp(round(int(cmd["brightness"]) * 100 / 255), 1, 100)
+              plist.append({"pid": "P1501", "pvalue": str(pct)})
+          return plist
 
 
       def encrypt_characteristics(enr, mac, plist):
@@ -105,20 +105,20 @@ let
           }
 
 
-       def commanded_state(cmd):
-           state = {"state": (cmd.get("state") or "ON").upper()}
-           if cmd.get("color_temp") is not None:
-               state["color_mode"] = "color_temp"
-           elif isinstance(cmd.get("color"), dict):
-               state["color_mode"] = "rgb"
-               state["color"] = {k: cmd["color"][k] for k in ("r", "g", "b") if k in cmd["color"]}
-           elif cmd.get("rgb_color"):
-               state["color_mode"] = "rgb"
-           if cmd.get("brightness") is not None:
-               state["brightness"] = cmd["brightness"]
-           if cmd.get("color_temp") is not None:
-               state["color_temp"] = cmd["color_temp"]
-           return state
+      def commanded_state(cmd):
+          state = {"state": (cmd.get("state") or "ON").upper()}
+          if cmd.get("color_temp") is not None:
+              state["color_mode"] = "color_temp"
+          elif isinstance(cmd.get("color"), dict):
+              state["color_mode"] = "rgb"
+              state["color"] = {k: cmd["color"][k] for k in ("r", "g", "b") if k in cmd["color"]}
+          elif cmd.get("rgb_color"):
+              state["color_mode"] = "rgb"
+          if cmd.get("brightness") is not None:
+              state["brightness"] = cmd["brightness"]
+          if cmd.get("color_temp") is not None:
+              state["color_temp"] = cmd["color_temp"]
+          return state
 
 
       def run(config_path, prefix, mqtt_host, mqtt_port, user, password):
