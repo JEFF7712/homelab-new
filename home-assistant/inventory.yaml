@@ -61,6 +61,18 @@ surfaces:
     count: 11
     details: {}
     surface: integrations
+  - description: Node-RED flow definitions
+    category: ui-editable
+    count: 1
+    details:
+      source: home-assistant/node-red/flows.json
+      surface: nodered_flows
+  - description: Node-RED rendered settings.js
+    category: git-owned
+    count: 1
+    details:
+      source: home-assistant/node-red/settings.js.tpl
+      surface: nodered_settings
 timestamp: '2026-09-11T03:59:59.481506+00:00'
 unsupported:
   - oauth_credentials

@@ -9,6 +9,16 @@ custom_integrations:
     install_path: /config/custom_components/bambu_lab
     connection: lan_mode
     status: installed
+core_integrations:
+  - domain: nodered
+    name: Node-RED
+    version: bundled
+    install_path: builtin
+    connection: in_cluster
+    status: configured
+    upstream: https://github.com/home-assistant/core/tree/dev/homeassistant/components/nodered
+    palette_dependency: node-red-contrib-home-assistant-websocket
+    palette_source: https://github.com/bah2830/node-red-contrib-home-assistant-websocket
 custom_frontend_cards: []
 blueprints: []
 dependencies_policy:

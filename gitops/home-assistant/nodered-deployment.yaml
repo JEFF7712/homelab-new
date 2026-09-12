@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodered
+  namespace: home-assistant
+  labels:
+    app: nodered
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nodered
+  template:
+    metadata:
+      labels:
+        app: nodered
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab-01
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: render-settings
+          image: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616  # yamllint disable-line rule:line-length
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              mkdir -p /data
+              envsubst < /seed/settings.js.tpl > /data/settings.js
+              if [ ! -f /data/flows.json ]; then
+                cp /seed/flows.json /data/flows.json
+              fi
+          env:
+            - name: NODERED_CREDENTIAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nodered-secrets
+                  key: credential-secret
+            - name: NODERED_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: nodered-secrets
+                  key: admin-username
+            - name: NODERED_ADMIN_PASSWORD_HASH
+              valueFrom:
+                secretKeyRef:
+                  name: nodered-secrets
+                  key: admin-password-hash
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: seed
+              mountPath: /seed
+              readOnly: true
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: nodered
+          image: registry.rupan.dev/upstream/docker.io/nodered/node-red@sha256:7aa04e1c7be16aec5b4b4d6e64ae863c4720b0ab18e2c1f46905f7b0c71e3a19  # yamllint disable-line rule:line-length
+          env:
+            - name: TZ
+              value: America/Chicago
+            - name: NODE_RED_ENABLE_PROJECTS
+              value: "false"
+            - name: NODE_RED_ENABLE_SAFE_MODE
+              value: "false"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          ports:
+            - name: http
+              containerPort: 1880
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 60
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: nodered-data
+        - name: seed
+          configMap:
+            name: nodered-seed
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodered
+  namespace: home-assistant
+  labels:
+    bgp-advertise: "true"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: io.cilium/bgp-control-plane
+  selector:
+    app: nodered
+  ports:
+    - name: http
+      port: 1880
+      targetPort: http

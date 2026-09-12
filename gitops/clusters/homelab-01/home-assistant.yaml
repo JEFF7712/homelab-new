@@ -22,3 +22,7 @@ spec:
       kind: Deployment
       name: home-assistant
       namespace: home-assistant
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: nodered
+      namespace: home-assistant

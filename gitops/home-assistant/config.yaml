@@ -25,6 +25,14 @@ data:
             - switch.0xffffb40e0608faec
           exclude_entities:
             - light.a1_03900d642327265_chamber_light
+    nodered:
+      http_link:
+        url: !secret nodered_url
+        username: !secret nodered_username
+        password: !secret nodered_password
+        ssl: false
+        verify_ssl: false
+        compatibility_mode: false
     recorder:
       db_url: !secret recorder_db_url
     rest:

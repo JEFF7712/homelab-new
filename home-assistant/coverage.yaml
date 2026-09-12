@@ -184,6 +184,42 @@ surfaces:
     identity_rules: "entry_id string"
     recovery_procedure: "Persistent storage backup or UI setup flow"
 
+  - surface: "nodered_flows"
+    owner_mode: "ui-editable"
+    readable_fields:
+      - "id"
+      - "type"
+      - "label"
+      - "disabled"
+      - "info"
+      - "env"
+    writable_fields:
+      - "label"
+      - "disabled"
+      - "info"
+    secret_handling: "Encrypted via credentialSecret in flows_cred.json"
+    identity_rules: "Tab id is a flow-stable UUID"
+    recovery_procedure: "Edited via Node-RED UI; seeded from home-assistant/node-red/flows.json on first deploy"
+
+  - surface: "nodered_settings"
+    owner_mode: "git-owned"
+    readable_fields:
+      - "credentialSecret"
+      - "adminAuth"
+      - "httpAdminRoot"
+      - "httpNodeRoot"
+      - "uiPort"
+      - "logging"
+      - "externalModules"
+    writable_fields:
+      - "httpAdminRoot"
+      - "httpNodeRoot"
+      - "logging"
+      - "externalModules"
+    secret_handling: "credentialSecret and adminAuth.password hash injected from SOPS at deploy time"
+    identity_rules: "Single rendered settings.js per deployment"
+    recovery_procedure: "Rebuilt by init container from nodered-seed ConfigMap on pod restart"
+
   - surface: "oauth_credentials"
     owner_mode: "runtime-only"
     readable_fields: []
