@@ -1,6 +1,6 @@
 # Switch and access-point port map
 
-OPNsense is the only router, DHCP server, DNS provider, and inter-VLAN firewall.
+OPNsense is the only inter-VLAN router, DHCP server, DNS provider, and inter-VLAN firewall. A host may route only its explicitly isolated per-VM workspace segments under `flake/modules/agent-workspace-network.nix`; those segments are not VLANs and do not extend onto the physical switches.
 The wall run is an 802.1Q transit link: VLAN 99 carries the ISP handoff to the
 OPNsense WAN NIC, while VLANs 10 and 20 provide downstairs management and
 trusted-client access. VLAN 99 never reaches the OPNsense LAN trunk.

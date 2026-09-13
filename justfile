@@ -95,6 +95,21 @@ status target *args:
 check-ha:
     bash scripts/checks/home-assistant.sh
 
+workspace-validate *args:
+    python -m scripts.agent_workspaces --manifest config/agent-workspaces/workspaces.json validate {{args}}
+
+workspace-plan *args:
+    python -m scripts.agent_workspaces --manifest config/agent-workspaces/workspaces.json plan {{args}}
+
+workspace-status id *args:
+    python -m scripts.agent_workspaces --manifest config/agent-workspaces/workspaces.json status {{id}} {{args}}
+
+workspace-provision id *args:
+    python -m scripts.agent_workspaces --manifest config/agent-workspaces/workspaces.json provision {{id}} {{args}}
+
+workspace-deprovision id *args:
+    python -m scripts.agent_workspaces --manifest config/agent-workspaces/workspaces.json deprovision {{id}} {{args}}
+
 ha-inventory *args:
     python -m scripts.home_assistant inventory {{args}}
 
