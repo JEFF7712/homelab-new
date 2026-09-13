@@ -47,11 +47,11 @@ Exports omit raw task logs and redact common secrets and credential paths. An ex
 | Client | Config | Session start | Validation failure | Stop |
 | --- | --- | --- | --- | --- |
 | Claude Code | `.claude/settings.json` | SessionStart | PostToolUseFailure (Bash) | Stop |
-| Codex | `.codex/hooks.json` | SessionStart | not wired | Stop |
+| Codex | `.codex/hooks.json` | SessionStart | PostToolUse (Bash), failures filtered by the hook | Stop |
 | Cursor | `.cursor/hooks.json` | sessionStart | postToolUseFailure (Shell) | stop |
 | OpenCode | `opencode.json` | not wired, run `just agent-context` | not wired | not wired, run `just task-checkpoint <id>` |
 
-Session start injects the bounded context packet without selecting a task; export `AGENT_TASK_ID` to scope context and the stop reminder to one task. Failing `just`, `nix`, `tofu`, `ruff`, `pyright`, `yamllint`, `kubeconform`, `kubectl`, `python`, `bash`, and `gh` commands are recorded as sanitized JSONL under `.agent-state/evidence/hooks/`. Hooks fail open: missing `jq`, a timeout, recursive invocation, or an unwritable evidence directory exits silently so sessions are never blocked. Where a client has no wired event, use the explicit `just` command instead.
+Session start injects the bounded context packet without selecting a task; export `AGENT_TASK_ID` to scope context to one task. The stop hook inspects the scoped task, or every active task when none is scoped, and reminds when checkout drift or unresolved validation exists. Failing `just`, `nix`, `tofu`, `ruff`, `pyright`, `yamllint`, `kubeconform`, `kubectl`, `python`, `bash`, and `gh` commands are recorded as sanitized JSONL under `.agent-state/evidence/hooks/`. Hooks fail open: missing `jq`, a timeout, recursive invocation, or an unwritable evidence directory exits silently so sessions are never blocked. Where a client has no wired event, use the explicit `just` command instead.
 
 ## JSON envelope
 
@@ -75,5 +75,7 @@ Structured commands return `schema_version`, `command`, and command-specific dat
 | Live timeout is bounded and nonhealthy | `tests.test_agent_status.AgentStatusTest.test_unknown_probe_is_nonhealthy_and_bounded` |
 | Secrets are removed from evidence and handoff | `tests.test_agent_status.AgentStatusTest.test_evidence_is_sanitized` and `tests.test_agent_context.AgentContextTest.test_export_redacts_and_explains_uncommitted_recovery` |
 | Unsupported hook event has an explicit fallback | `tests.test_agent_hooks.AgentHookTest.test_client_hook_configuration_is_valid_json`; use `just agent-context` where a lifecycle event is unavailable |
+| Codex PostToolUse payload records failures | `tests.test_agent_hooks.AgentHookTest.test_validation_result_accepts_codex_post_tool_use_payload` |
+| Stop without a scoped task scans active tasks | `tests.test_agent_hooks.AgentStopHookTest.test_unscoped_scan_finds_drifted_tasks` |
 | Export contains fresh-session recovery fields | `tests.test_agent_context.AgentContextTest.test_export_redacts_and_explains_uncommitted_recovery` |
 | Export records export time and HEADs | `tests.test_agent_context.AgentContextTest.test_export_redacts_and_explains_uncommitted_recovery` |

@@ -2,9 +2,12 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+from tests.agent_helpers import commit, make_repository
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -128,6 +131,111 @@ class AgentHookTest(unittest.TestCase):
             )
             self.assertEqual(unmatched.returncode, 0, unmatched.stderr)
             self.assertFalse(other_evidence.exists())
+
+    def test_validation_result_accepts_codex_post_tool_use_payload(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agent-hooks-") as directory:
+            hooks = Path(directory) / "hooks"
+            shutil.copytree(ROOT / "hooks", hooks)
+            identity = f"codex-fixture-{os.getpid()}"
+            evidence = (
+                Path(directory) / ".agent-state/evidence/hooks" / f"{identity}.jsonl"
+            )
+            result = subprocess.run(
+                ["bash", str(hooks / "validation-result")],
+                cwd=directory,
+                input=json.dumps(
+                    {
+                        "session_id": identity,
+                        "hook_event_name": "PostToolUse",
+                        "tool_name": "Bash",
+                        "tool_input": {"command": "just check"},
+                        "tool_response": {"exit_code": 1},
+                    }
+                ),
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            record = json.loads(evidence.read_text())
+            self.assertEqual(record["exit_code"], 1)
+            self.assertIn("just check", record["check"])
+
+
+class AgentStopHookTest(unittest.TestCase):
+    def make_repo(self, directory: str) -> Path:
+        repository = make_repository(Path(directory))
+        (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
+        commit(repository, "initial")
+        shutil.copytree(ROOT / "hooks", repository / "hooks")
+        commit(repository, "hooks")
+        return repository
+
+    def create_task(self, repository: Path, task_id: str) -> None:
+        from tests.test_agent_tasks import creation_payload
+
+        result = subprocess.run(
+            [sys.executable, "-m", "scripts.agent", "task-new", task_id],
+            cwd=repository,
+            env={**os.environ, "PYTHONPATH": str(ROOT)},
+            input=json.dumps(creation_payload()),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def run_stop(
+        self, repository: Path, task_id: str | None
+    ) -> subprocess.CompletedProcess[str]:
+        environment = {**os.environ, "PYTHONPATH": str(ROOT)}
+        environment.pop("AGENT_TASK_ID", None)
+        environment.pop("AGENT_HOOK_ACTIVE", None)
+        if task_id is not None:
+            environment["AGENT_TASK_ID"] = task_id
+        hooks = repository / "hooks"
+        if not hooks.is_dir():
+            shutil.copytree(ROOT / "hooks", hooks)
+        return subprocess.run(
+            ["bash", str(hooks / "stop")],
+            cwd=repository,
+            env=environment,
+            input="{}",
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_scoped_task_with_drift_reminds(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = self.make_repo(directory)
+            self.create_task(repository, "stop-demo")
+            (repository / "untracked.txt").write_text("drift\n", encoding="utf-8")
+            result = self.run_stop(repository, "stop-demo")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn("stop-demo", payload["followup_message"])
+
+    def test_unscoped_scan_finds_drifted_tasks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = self.make_repo(directory)
+            self.create_task(repository, "stop-scan")
+            (repository / "untracked.txt").write_text("drift\n", encoding="utf-8")
+            result = self.run_stop(repository, None)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn("stop-scan", payload["followup_message"])
+
+    def test_clean_checkout_is_silent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = self.make_repo(directory)
+            self.create_task(repository, "stop-clean")
+            scoped = self.run_stop(repository, "stop-clean")
+            unscoped = self.run_stop(repository, None)
+        self.assertEqual(scoped.returncode, 0, scoped.stderr)
+        self.assertEqual(json.loads(scoped.stdout), {})
+        self.assertEqual(unscoped.returncode, 0, unscoped.stderr)
+        self.assertEqual(json.loads(unscoped.stdout), {})
 
 
 if __name__ == "__main__":
