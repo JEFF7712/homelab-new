@@ -69,11 +69,18 @@ class WorkspaceNetworkModuleTests(unittest.TestCase):
             value["preStop"].index("virsh destroy"),
         )
         self.assertIn('iifname "aw-rupan-br" ip saddr != 192.0.2.2 counter drop', rules)
+        self.assertIn(
+            'iifname "aw-rupan-br" ether saddr != 02:00:00:00:00:01 counter drop',
+            rules,
+        )
         self.assertIn('iifname "aw-rupan-br" ip6 saddr ::/0 counter drop', rules)
         self.assertIn("ip daddr 198.51.100.10 tcp dport 443", rules)
         self.assertIn("10.0.0.0/8", rules)
         self.assertIn('oifname "aw-rupan-br" counter drop', rules)
         self.assertIn("tcp dport { 22, 443 } ct state new accept", rules)
+        mac_anti_spoof = rules.index(
+            'iifname "aw-rupan-br" ether saddr != 02:00:00:00:00:01'
+        )
         anti_spoof = rules.index('iifname "aw-rupan-br" ip saddr != 192.0.2.2')
         established = rules.index(
             'iifname "aw-rupan-br" ct state established,related accept'
@@ -81,6 +88,7 @@ class WorkspaceNetworkModuleTests(unittest.TestCase):
         new_egress = rules.index(
             'iifname "aw-rupan-br" oifname "eno1" ct state new accept'
         )
+        self.assertLess(mac_anti_spoof, anti_spoof)
         self.assertLess(anti_spoof, established)
         self.assertLess(established, new_egress)
         self.assertLess(
