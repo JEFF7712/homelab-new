@@ -148,10 +148,10 @@ P2, `ha_core_update_available` fires on any sensor change with only a `to_state`
 
 ### Suggested next automations (highest value first)
 
-1. Climate guard: window open while living room AC runs (notify plus set HVAC off after 3 minutes, re-armed on both edges). AC entity already exists and has no automation.
+1. Climate guard: blocked, no window/door contact sensors exist. Only `climate.living_room_ac_living_room_ac_thermostat` is present. Revisit when contact sensors arrive (notify plus set HVAC off after 3 minutes, re-armed on both edges).
 2. Critical-alerts script with repeat-until-acknowledged for water/smoke/freezer when those sensors arrive; route existing failure legs (backup failed, print error) through it.
-3. `input_boolean.vacation_mode` plus `input_boolean.guest_mode` gates on evening and away automations; one dashboard card to flip them.
-4. Bedroom wake-up fade via brightness ramp tied to next-alarm sensor, replacing the instant 08:00 on.
+3. Next-alarm tie-in for the wake-up fade: `sensor.sm_s948u1_next_alarm` exists but is integration-disabled and untested. Enable it, confirm the companion app reports alarms, then drive fade start off the earlier of next alarm and the wake-time helper.
+4. `morning_weather_briefing` coupling: still fixed at 08:05 while wake time is tunable. Either derive it (wake plus 5 minutes needs a second helper or time-pattern gate) or leave intentional.
 
 ## 9. Repo conventions (must follow)
 

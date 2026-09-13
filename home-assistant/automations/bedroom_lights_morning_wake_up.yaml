@@ -1,15 +1,24 @@
 id: bedroom_lights_morning_wake_up
-alias: "Bedroom Lights: Morning Wake-Up"
+alias: "Bedroom Lights: Morning Wake-Up Fade"
 description: >-
-  Turn on bedroom lights at the Bedroom Wake Time helper if home.
-  Roku lights come on warm and gentle.
+  Ramp bedroom lamps from 1 to 30 percent warm over the 20 minutes before
+  the Bedroom Wake Time helper. Plugs come on at fade start. Brightness is
+  computed from elapsed time each minute, so a restart mid-fade resumes at
+  the correct level instead of restarting or stalling.
 triggers:
-  - trigger: time
-    at: input_datetime.bedroom_wake_time
+  - trigger: time_pattern
+    minutes: "/1"
 conditions:
+  - condition: template
+    value_template: >-
+      {% set wake = today_at(states('input_datetime.bedroom_wake_time')) %}
+      {{ wake is not none and (wake - timedelta(minutes=20)) <= now() <= wake }}
   - condition: state
     entity_id: person.rupan_sunderapandyan
     state: "home"
+  - condition: state
+    entity_id: input_boolean.vacation_mode
+    state: "off"
 actions:
   - action: switch.turn_on
     target:
@@ -23,6 +32,9 @@ actions:
         - light.floor_lamp_floor_lamp
         - light.light_strip_light_strip
     data:
-      brightness_pct: 30
+      brightness_pct: >-
+        {% set wake = today_at(states('input_datetime.bedroom_wake_time')) %}
+        {{ (((now() - (wake - timedelta(minutes=20))).total_seconds()
+        / 1200 * 30) | int | max(1)) | min(100) }}
       color_temp_kelvin: 2700
 mode: single
