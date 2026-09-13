@@ -1,9 +1,8 @@
-id: away_lights_off_restore
-alias: "Away: Lights Off Enforcement & Restore"
+id: bedroom_away_lights
+alias: "Bedroom: Lights Off While Away"
 description: >-
-  Snapshot bedroom and stairs lights when leaving, keep everything off while
-  away, restore the snapshot on daytime return. Night returns are handled by
-  the evening presence automation.
+  Rupan bedroom only. Snapshot and switch bedroom lights off when Rupan
+  leaves, keep them off while Rupan is away, restore the snapshot on return.
 triggers:
   - trigger: state
     entity_id: person.rupan_sunderapandyan
@@ -17,7 +16,6 @@ triggers:
     entity_id:
       - switch.0xffffb40e0608c96f
       - switch.0xffffb40e0608d02e
-      - switch.0xffffb40e0608faec
       - light.desk_lamp_desk_lamp
       - light.floor_lamp_floor_lamp
       - light.light_strip_light_strip
@@ -32,11 +30,10 @@ actions:
         sequence:
           - action: scene.create
             data:
-              scene_id: pre_away_lights
+              scene_id: pre_away_bedroom
               snapshot_entities:
                 - switch.0xffffb40e0608c96f
                 - switch.0xffffb40e0608d02e
-                - switch.0xffffb40e0608faec
                 - light.desk_lamp_desk_lamp
                 - light.floor_lamp_floor_lamp
                 - light.light_strip_light_strip
@@ -45,7 +42,6 @@ actions:
               entity_id:
                 - switch.0xffffb40e0608c96f
                 - switch.0xffffb40e0608d02e
-                - switch.0xffffb40e0608faec
           - action: light.turn_off
             target:
               entity_id:
@@ -65,13 +61,10 @@ actions:
       - conditions:
           - condition: trigger
             id: "return"
-          - condition: state
-            entity_id: sun.sun
-            state: "above_horizon"
           - condition: template
-            value_template: "{{ states('scene.pre_away_lights') not in ('unknown', 'unavailable') }}"
+            value_template: "{{ states('scene.pre_away_bedroom') not in ('unknown', 'unavailable') }}"
         sequence:
           - action: scene.turn_on
             target:
-              entity_id: scene.pre_away_lights
+              entity_id: scene.pre_away_bedroom
 mode: single

@@ -1,0 +1,98 @@
+id: shared_spaces_empty_lights_off
+alias: "Shared Spaces: Lights Off When Empty"
+description: >-
+  Shared spaces only. Snapshot and switch shared lights off when the last
+  person leaves, keep them off while nobody is home, restore the snapshot on
+  daytime return. Dark returns re-apply the sunset-driven stairs light, since
+  the snapshot alone would leave it off all night.
+triggers:
+  - trigger: state
+    entity_id:
+      - person.rupan_sunderapandyan
+      - person.sam
+    to: "not_home"
+    id: "left_empty"
+  - trigger: state
+    entity_id:
+      - person.rupan_sunderapandyan
+      - person.sam
+    to: "home"
+    id: "return"
+  - trigger: state
+    entity_id:
+      - switch.0xffffb40e0608f37a
+      - switch.0xffffb40e0608faec
+    to: "on"
+    id: "enforced"
+  - trigger: homeassistant
+    event: start
+    id: "restart"
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "left_empty"
+          - condition: template
+            value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
+        sequence:
+          - action: scene.create
+            data:
+              scene_id: pre_away_shared
+              snapshot_entities:
+                - switch.0xffffb40e0608f37a
+                - switch.0xffffb40e0608faec
+          - action: homeassistant.turn_off
+            target:
+              label_id: shared_space
+          - action: switch.turn_off
+            target:
+              entity_id:
+                - switch.0xffffb40e0608f37a
+                - switch.0xffffb40e0608faec
+      - conditions:
+          - condition: trigger
+            id: "enforced"
+          - condition: template
+            value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
+        sequence:
+          - action: homeassistant.turn_off
+            target:
+              entity_id: "{{ trigger.entity_id }}"
+      - conditions:
+          - condition: trigger
+            id: "restart"
+          - condition: template
+            value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
+        sequence:
+          - action: homeassistant.turn_off
+            target:
+              label_id: shared_space
+          - action: switch.turn_off
+            target:
+              entity_id:
+                - switch.0xffffb40e0608f37a
+                - switch.0xffffb40e0608faec
+      - conditions:
+          - condition: trigger
+            id: "return"
+          - condition: template
+            value_template: "{{ states('scene.pre_away_shared') not in ('unknown', 'unavailable') }}"
+          - condition: state
+            entity_id: sun.sun
+            state: "above_horizon"
+        sequence:
+          - action: scene.turn_on
+            target:
+              entity_id: scene.pre_away_shared
+      - conditions:
+          - condition: trigger
+            id: "return"
+          - condition: state
+            entity_id: sun.sun
+            state: "below_horizon"
+        sequence:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.0xffffb40e0608faec
+mode: single
