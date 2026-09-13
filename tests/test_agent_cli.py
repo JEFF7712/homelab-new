@@ -117,11 +117,32 @@ class AgentCliTest(unittest.TestCase):
         self.assertIsNone(payload["repository"]["branch"])
         self.assertTrue(payload["repository"]["detached"])
 
+    def test_task_new_template_prints_valid_creation_document(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = run_agent(
+                "task-new", "template-demo", "--template", cwd=Path(directory)
+            )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        template = json.loads(result.stdout)
+        self.assertEqual(template["status"], "active")
+        self.assertIn("acceptance_criteria", template)
+        self.assertIn("owned_files", template)
+
     def test_unknown_command_exits_two_without_traceback(self) -> None:
         result = run_agent("does-not-exist")
 
         self.assertEqual(result.returncode, 2)
         self.assertNotIn("Traceback", result.stderr)
+
+    def test_validation_and_formatting_have_no_cli_stubs(self) -> None:
+        for command in ("check", "fmt", "fmt-check"):
+            with self.subTest(command=command):
+                result = run_agent(command)
+
+                self.assertEqual(result.returncode, 2)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertNotIn("not implemented", result.stderr)
 
     def test_doctor_returns_its_structured_contract(self) -> None:
         result = run_agent("doctor", "--json")

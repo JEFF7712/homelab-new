@@ -49,6 +49,14 @@ def run_agent(
 
 
 class TaskRecordTest(unittest.TestCase):
+    def test_creation_template_passes_creation_validation(self) -> None:
+        from scripts.agent.tasks import creation_template, validate_task_record
+
+        template = creation_template()
+        validated = validate_task_record(template, require_system=False)
+        self.assertEqual(validated["status"], "active")
+        self.assertTrue(validated["acceptance_criteria"])
+
     def test_task_id_validation_rejects_unsafe_values(self) -> None:
         from scripts.agent.tasks import TaskValidationError, validate_task_id
 

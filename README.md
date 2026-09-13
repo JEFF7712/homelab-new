@@ -10,7 +10,7 @@ evidence are kept separate from desired state.
 
 - `flake/` owns NixOS hosts, disks, host networking, k3s installation, and host secrets.
 - `tofu/` owns API-managed external systems and supported OPNsense resources.
-- `opnsense-reconciler/` owns OPNsense interface and FRR settings absent from the OpenTofu provider.
+- `opnsense_reconciler/` owns OPNsense interface and FRR settings absent from the OpenTofu provider.
 - `gitops/` owns all Kubernetes objects through Flux.
 - `secrets/` contains only SOPS-encrypted material.
 

@@ -13,9 +13,14 @@ from .evidence import write_evidence
 from .git_state import GitBaseError, collect_git_state
 from .redact import redact
 from .status import status_payload
-from .tasks import TaskError, checkpoint_task, create_task, export_task, resume_task
-
-UNAVAILABLE = 69
+from .tasks import (
+    TaskError,
+    checkpoint_task,
+    create_task,
+    creation_template,
+    export_task,
+    resume_task,
+)
 
 
 def add_json_option(parser: argparse.ArgumentParser) -> None:
@@ -42,6 +47,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     task_new = subparsers.add_parser("task-new", help="create local task state")
     task_new.add_argument("id")
+    task_new.add_argument(
+        "--template",
+        action="store_true",
+        help="print a blank creation document instead of reading stdin",
+    )
     add_json_option(task_new)
 
     task_resume = subparsers.add_parser(
@@ -67,10 +77,6 @@ def build_parser() -> argparse.ArgumentParser:
     add_json_option(status)
     status.add_argument("--timeout", type=float, default=30.0)
     status.add_argument("--record", action="store_true")
-
-    subparsers.add_parser("check", help="run full offline validation")
-    subparsers.add_parser("fmt", help="format supported repository files")
-    subparsers.add_parser("fmt-check", help="check formatting without mutation")
     return parser
 
 
@@ -186,7 +192,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 write_evidence(
                     Path.cwd(),
                     arguments.target,
-                    str(payload["selected_targets"]),
+                    json.dumps(payload["selected_targets"], sort_keys=True),
                     payload["status"],
                     json.dumps(payload["probes"]),
                 )
@@ -204,10 +210,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     if arguments.command in {"task-new", "task-checkpoint", "task-resume"}:
         try:
             if arguments.command == "task-new":
-                _print_task_result(
-                    create_task(Path.cwd(), arguments.id, _read_json_stdin()),
-                    arguments.json,
-                )
+                if arguments.template:
+                    print(json.dumps(creation_template(), sort_keys=True, indent=2))
+                else:
+                    _print_task_result(
+                        create_task(Path.cwd(), arguments.id, _read_json_stdin()),
+                        arguments.json,
+                    )
             elif arguments.command == "task-checkpoint":
                 _print_task_result(
                     checkpoint_task(Path.cwd(), arguments.id, _read_json_stdin()),
@@ -236,8 +245,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(f"{arguments.command}: {redact(str(error))}", file=sys.stderr)
             return 2
 
-    print(f"{arguments.command}: not implemented in this work package", file=sys.stderr)
-    return UNAVAILABLE
+    raise AssertionError(f"unhandled command: {arguments.command}")
 
 
 if __name__ == "__main__":

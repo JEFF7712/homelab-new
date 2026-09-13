@@ -75,6 +75,32 @@ def validate_task_id(task_id: str) -> str:
     return task_id
 
 
+def creation_template() -> dict[str, Any]:
+    """Return a blank creation document that passes creation validation."""
+    return {
+        "objective": "<one-sentence objective>",
+        "status": "active",
+        "acceptance_criteria": [
+            {
+                "description": "<observable criterion>",
+                "satisfied": False,
+                "evidence": "",
+            }
+        ],
+        "owning_agent": "<agent or operator>",
+        "session": "<session identifier>",
+        "owned_files": ["<owned/file/path>"],
+        "decisions": [],
+        "durable_record_links": [],
+        "completed_work": [],
+        "remaining_work": ["<next unit of work>"],
+        "unresolved_failures": [],
+        "next_action": "<exact next command or edit>",
+        "verification_records": [],
+        "blocked_on": [],
+    }
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -479,7 +505,8 @@ def export_task(root: Path, task_id: str, *, replace: bool = False) -> Path:
         f"# Agent Task: {record['task_id']}\n\n"
         f"Status: `{record['status']}`\n\nBase commit: `{record['base_commit']}`\n\n"
         f"Checkpoint HEAD: `{record['checkpoint_head']}`\n\nOwner: `{record['owning_agent']}`\n\n"
-        f"Session: `{record['session']}`\n\n## Objective\n\n{record['objective']}\n\n"
+        f"Session: `{record['session']}`\n\nExported at: `{_now()}`\n\n"
+        f"Current HEAD at export: `{state.head or 'unborn'}`\n\n## Objective\n\n{record['objective']}\n\n"
         f"## Acceptance criteria\n\n{criteria}\n\n## Owned source\n\n{source}\n\n"
         f"## Remaining work\n\n{remaining}\n\n## Verification\n\n{evidence}\n\n"
         f"## Next action\n\n{record['next_action']}\n\n## Uncommitted work\n\n"

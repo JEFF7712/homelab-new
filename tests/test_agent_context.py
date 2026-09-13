@@ -102,6 +102,8 @@ class AgentContextTest(unittest.TestCase):
         self.assertIn("[REDACTED]", handoff)
         self.assertIn("uncommitted", handoff.lower())
         self.assertIn("patch", handoff.lower())
+        self.assertIn("Exported at:", handoff)
+        self.assertIn("Current HEAD at export:", handoff)
 
 
 if __name__ == "__main__":

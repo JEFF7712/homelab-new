@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
@@ -12,6 +13,8 @@ def run_doctor(root: Path) -> dict[str, Any]:
         "git",
         "just",
         "python",
+        "jq",
+        "timeout",
         "nix",
         "nixfmt",
         "ruff",
@@ -54,7 +57,10 @@ def run_doctor(root: Path) -> dict[str, Any]:
     for relative in (
         ".claude/settings.json",
         ".codex/config.toml",
+        ".codex/hooks.json",
         ".cursor/hooks.json",
+        ".mcp.json",
+        "opencode.json",
     ):
         present = (root / relative).is_file()
         checks.append(
@@ -67,8 +73,30 @@ def run_doctor(root: Path) -> dict[str, Any]:
                 else "",
             }
         )
+    for relative in (
+        "hooks/session-start",
+        "hooks/stop",
+        "hooks/validation-result",
+    ):
+        executable = (root / relative).is_file() and os.access(root / relative, os.X_OK)
+        checks.append(
+            {
+                "name": f"hook:{relative}",
+                "status": "pass" if executable else "fail",
+                "detail": "executable" if executable else "missing or not executable",
+                "remedy": ""
+                if executable
+                else f"restore executable {relative} from git",
+            }
+        )
     credential_refs = (root / ".gitlab-ci.yml").read_text(encoding="utf-8")
-    for name in ("OPNSENSE_API_KEY", "OPNSENSE_API_SECRET", "OPNSENSE_CA_FILE"):
+    for name in (
+        "OPNSENSE_API_KEY",
+        "OPNSENSE_API_SECRET",
+        "OPNSENSE_CA_FILE",
+        "SSH_DEPLOY_KEY",
+        "HASS_TOKEN",
+    ):
         present = name in credential_refs or any(
             name in path.read_text(encoding="utf-8")
             for path in (root / "opnsense_reconciler").glob("*.py")

@@ -28,6 +28,9 @@ class AgentCheckSelectionTest(unittest.TestCase):
             "gitops/platform/namespace.yaml": "gitops",
             "tofu/opnsense/network.tf": "tofu",
             "scripts/agent/context.py": "agent-workflows",
+            "scripts/agent_workspaces/core.py": "workspace-validate",
+            "config/agent-workspaces/workspaces.json": "workspace-validate",
+            "flake/tests/agent-workspace-packet-flow.nix": "full",
             "docs/readme.md": "docs",
             "unknown/code.go": "full",
             ".gitlab-ci.yml": "full",
@@ -37,6 +40,27 @@ class AgentCheckSelectionTest(unittest.TestCase):
                 selection = self.select(path)
                 self.assertIn(check, [item.name for item in selection.checks])
                 self.assertTrue(all(item.reasons for item in selection.checks))
+
+    def test_workspace_changes_select_narrow_checks(self) -> None:
+        expected = {
+            "scripts/agent_workspaces/core.py": (
+                "workspace-validate",
+                "workspace-tests",
+            ),
+            "tests/test_agent_workspaces.py": (
+                "workspace-validate",
+                "workspace-tests",
+            ),
+            "config/agent-workspaces/workspaces.json": ("workspace-validate",),
+            "flake/modules/agent-workspaces.nix": (
+                "nix-all-hosts",
+                "workspace-validate",
+            ),
+        }
+        for path, checks in expected.items():
+            with self.subTest(path=path):
+                selection = self.select(path)
+                self.assertEqual([item.name for item in selection.checks], list(checks))
 
     def test_deduplicates_checks(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

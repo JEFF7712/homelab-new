@@ -6,7 +6,7 @@ Complete authorized work through verification. Inspect `git status`, applicable 
 
 ## Workflow Entry Points
 
-Start with `just agent-context`, then use `AGENT_MAP.md` to find the owning source. Resume explicit task state with `just task-resume <id>`. Use `just check-changed` for scoped validation, `just check` for the full offline gate, and `just fmt-check` before handoff. Run live diagnostics explicitly with `just status cluster` or `just status network`.
+Start with `just agent-context`, then use `AGENT_MAP.md` to find the owning source. Track work with `just task-new <id>`, `just task-resume <id>`, `just task-checkpoint <id>`, and `just task-export <id>`. Use `just check-changed` for scoped validation, `just check` for the full offline gate, and `just fmt-check` before handoff. Diagnose the local setup with `just doctor`. Run live diagnostics explicitly with `just status cluster` or `just status network`.
 
 Task records and evidence under `.agent-state/` are local and ignored. Export reviewed handoffs with `just task-export <id>` and transfer uncommitted patches separately. Do not auto-stage files. Full command contracts and schemas are in `docs/agent-workflow.md`.
 
@@ -18,6 +18,10 @@ Read narrowly: start with `README.md`, then affected modules, tests, and runbook
 - `tofu/opnsense/`: provider-supported firewall resources.
 - `opnsense_reconciler/`: inventory and settings outside provider coverage.
 - `gitops/`: Kubernetes desired state, owned by Flux.
+- `home-assistant/` and `scripts/home_assistant/`: Home Assistant source-first configuration.
+- `registry/` and `scripts/registry/`: local container registry supply contract.
+- `config/agent-workspaces/`, `scripts/agent_workspaces/`, and `flake/modules/agent-workspace*.nix`: multiuser agent workspaces.
+- `scripts/agent/`, `hooks/`, and client adapters (`.claude/`, `.codex/`, `.cursor/`, `opencode.json`): agent workflow tooling.
 - `tests/`: checks; `docs/`: architecture and runbooks.
 - `secrets/`: encrypted material; `HARDWARE.md`: hardware inventory only.
 
@@ -31,14 +35,12 @@ Use `nixfmt`, two-space YAML indentation, and typed Python with four-space inden
 
 ## Verification Contract
 
-Use the pinned environment. From the repository root:
+Use the pinned environment (`nix develop ./flake`). The canonical gates are:
 
 ```sh
-nix develop ./flake
-python -m unittest discover -s tests -v
-nix flake check ./flake
-yamllint .
-gitleaks detect --source . --redact
+just check-changed  # scoped validation selected from changed paths
+just check          # full offline gate, defined by scripts/checks/all.sh
+just fmt-check      # formatting gate before handoff
 ```
 
 Format changed Nix files with `nixfmt`. Test observable behavior and failure paths in `test_*.py` files. Add meaningful regression tests for bugs. Prefer evaluated configuration and rendered manifests over source-string assertions. Keep routine tests offline and credential-free. Match verification to risk; static success does not prove deployment. Report missing checks explicitly.

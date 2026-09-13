@@ -26,6 +26,23 @@ class AgentDoctorTest(unittest.TestCase):
         rendered = str(payload)
         self.assertNotIn("OPNSENSE_API_SECRET=", rendered)
 
+    def test_doctor_covers_hooks_adapters_and_hook_dependencies(self) -> None:
+        payload = run_doctor(ROOT)
+        names = [item["name"] for item in payload["checks"]]
+        for expected in (
+            "command:jq",
+            "command:timeout",
+            "adapter:.codex/hooks.json",
+            "adapter:opencode.json",
+            "adapter:.mcp.json",
+            "hook:hooks/session-start",
+            "hook:hooks/stop",
+            "hook:hooks/validation-result",
+            "credential-reference:SSH_DEPLOY_KEY",
+            "credential-reference:HASS_TOKEN",
+        ):
+            self.assertIn(expected, names)
+
 
 if __name__ == "__main__":
     unittest.main()

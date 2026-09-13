@@ -43,6 +43,23 @@ COMMANDS = {
     "home-assistant": ("bash", "scripts/checks/home-assistant.sh"),
     "docs": ("python", "scripts/checks/docs.py"),
     "registry": ("bash", "scripts/checks/registry.sh"),
+    "workspace-validate": (
+        "python",
+        "-m",
+        "scripts.agent_workspaces",
+        "--manifest",
+        "config/agent-workspaces/workspaces.json",
+        "validate",
+    ),
+    "workspace-tests": (
+        "python",
+        "-m",
+        "unittest",
+        "tests.test_agent_workspaces",
+        "tests.test_agent_workspace_lifecycle",
+        "tests.test_agent_workspace_network",
+        "-v",
+    ),
     "nix-all-hosts": ("bash", "scripts/checks/nix.sh", "all"),
     "full": ("bash", "scripts/checks/all.sh"),
 }
@@ -56,6 +73,20 @@ def _route(path: str) -> list[tuple[str, str]]:
         "justfile",
     } or path.startswith(("scripts/checks/", "scripts/agent/checks.py")):
         return [("full", f"{path} changes validation infrastructure")]
+    if path.startswith("flake/tests/") and path.endswith(".nix"):
+        return [("full", f"{path} changes flake check infrastructure")]
+    if path.startswith("flake/modules/agent-workspace") and path.endswith(".nix"):
+        return [
+            ("nix-all-hosts", f"{path} is consumed by multiple hosts"),
+            ("workspace-validate", f"{path} changes workspace network behavior"),
+        ]
+    if path.startswith("config/agent-workspaces/"):
+        return [("workspace-validate", f"{path} changes the workspace manifest")]
+    if path.startswith(("scripts/agent_workspaces/", "tests/test_agent_workspace")):
+        return [
+            ("workspace-validate", f"{path} changes agent workspace behavior"),
+            ("workspace-tests", f"{path} changes agent workspace behavior"),
+        ]
     if path.startswith("flake/hosts/") and path.endswith(".nix"):
         parts = path.split("/")
         host = parts[2] if len(parts) > 2 else "all"
