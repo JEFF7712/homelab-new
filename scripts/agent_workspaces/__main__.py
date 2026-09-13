@@ -5,6 +5,7 @@ import json
 import pathlib
 import sys
 
+from .acceptance import run_two_guest_acceptance
 from .core import WorkspaceError, load_manifest, render_plan
 from .lifecycle import deprovision_workspace, provision_status, provision_workspace
 
@@ -35,6 +36,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     deprovision.add_argument("workspace_id")
     deprovision.add_argument("--authorized", action="store_true")
+    acceptance = subparsers.add_parser(
+        "acceptance-two-guest",
+        help="run bounded pressure and health checks on two disposable guests",
+    )
+    acceptance.add_argument("--authorized", action="store_true")
+    acceptance.add_argument("--ssh-key", required=True, type=pathlib.Path)
+    acceptance.add_argument("--network-url", required=True)
+    acceptance.add_argument("--duration", type=int, default=60)
+    acceptance.add_argument("--evidence", required=True, type=pathlib.Path)
     return parser
 
 
@@ -55,6 +65,19 @@ def main(argv: list[str] | None = None) -> int:
             )
         elif args.command == "plan":
             print(json.dumps(render_plan(workspaces), indent=2, sort_keys=True))
+        elif args.command == "acceptance-two-guest":
+            if not args.authorized:
+                raise WorkspaceError(
+                    "live acceptance requires the explicit --authorized flag"
+                )
+            result = run_two_guest_acceptance(
+                workspaces,
+                ssh_key=args.ssh_key,
+                network_url=args.network_url,
+                duration_seconds=args.duration,
+                evidence_path=args.evidence,
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
         else:
             selected = next(
                 (
