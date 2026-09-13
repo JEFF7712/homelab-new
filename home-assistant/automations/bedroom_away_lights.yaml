@@ -37,17 +37,7 @@ actions:
                 - light.desk_lamp_desk_lamp
                 - light.floor_lamp_floor_lamp
                 - light.light_strip_light_strip
-          - action: switch.turn_off
-            target:
-              entity_id:
-                - switch.0xffffb40e0608c96f
-                - switch.0xffffb40e0608d02e
-          - action: light.turn_off
-            target:
-              entity_id:
-                - light.desk_lamp_desk_lamp
-                - light.floor_lamp_floor_lamp
-                - light.light_strip_light_strip
+          - action: script.bedroom_lights_off
       - conditions:
           - condition: trigger
             id: "enforced"

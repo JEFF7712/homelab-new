@@ -1,8 +1,9 @@
 id: bedroom_lights_evening_presence
 alias: "Bedroom Lights: Evening Presence"
 description: >-
-  Turn on bedroom lights when home after sunset; full brightness before 10 PM,
-  dim and warm late at night. Turn off when leaving or at sunrise.
+  Turn on bedroom lights when home after sunset via the shared bedroom
+  scripts; full brightness before 10 PM, dim and warm late at night.
+  Turn off when leaving or at sunrise.
 triggers:
   - trigger: sun
     event: sunset
@@ -33,17 +34,9 @@ actions:
                 after: "22:00:00"
                 before: "08:00:00"
         sequence:
-          - action: switch.turn_on
-            target:
-              entity_id:
-                - switch.0xffffb40e0608c96f
-                - switch.0xffffb40e0608d02e
-          - action: light.turn_on
-            target:
-              entity_id:
-                - light.desk_lamp_desk_lamp
-                - light.floor_lamp_floor_lamp
-                - light.light_strip_light_strip
+          - action: script.bedroom_lights_on
+            data:
+              dim: false
       - conditions:
           - condition: trigger
             id: "sunset"
@@ -54,20 +47,9 @@ actions:
             after: "22:00:00"
             before: "08:00:00"
         sequence:
-          - action: switch.turn_on
-            target:
-              entity_id:
-                - switch.0xffffb40e0608c96f
-                - switch.0xffffb40e0608d02e
-          - action: light.turn_on
-            target:
-              entity_id:
-                - light.desk_lamp_desk_lamp
-                - light.floor_lamp_floor_lamp
-                - light.light_strip_light_strip
+          - action: script.bedroom_lights_on
             data:
-              brightness_pct: 20
-              color_temp_kelvin: 2700
+              dim: true
       - conditions:
           - condition: trigger
             id: "arrive_home"
@@ -80,17 +62,9 @@ actions:
                 after: "22:00:00"
                 before: "08:00:00"
         sequence:
-          - action: switch.turn_on
-            target:
-              entity_id:
-                - switch.0xffffb40e0608c96f
-                - switch.0xffffb40e0608d02e
-          - action: light.turn_on
-            target:
-              entity_id:
-                - light.desk_lamp_desk_lamp
-                - light.floor_lamp_floor_lamp
-                - light.light_strip_light_strip
+          - action: script.bedroom_lights_on
+            data:
+              dim: false
       - conditions:
           - condition: trigger
             id: "arrive_home"
@@ -101,20 +75,9 @@ actions:
             after: "22:00:00"
             before: "08:00:00"
         sequence:
-          - action: switch.turn_on
-            target:
-              entity_id:
-                - switch.0xffffb40e0608c96f
-                - switch.0xffffb40e0608d02e
-          - action: light.turn_on
-            target:
-              entity_id:
-                - light.desk_lamp_desk_lamp
-                - light.floor_lamp_floor_lamp
-                - light.light_strip_light_strip
+          - action: script.bedroom_lights_on
             data:
-              brightness_pct: 20
-              color_temp_kelvin: 2700
+              dim: true
       - conditions:
           - condition: or
             conditions:
@@ -123,15 +86,5 @@ actions:
               - condition: trigger
                 id: "sunrise"
         sequence:
-          - action: switch.turn_off
-            target:
-              entity_id:
-                - switch.0xffffb40e0608c96f
-                - switch.0xffffb40e0608d02e
-          - action: light.turn_off
-            target:
-              entity_id:
-                - light.desk_lamp_desk_lamp
-                - light.floor_lamp_floor_lamp
-                - light.light_strip_light_strip
+          - action: script.bedroom_lights_off
 mode: single

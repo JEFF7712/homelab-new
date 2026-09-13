@@ -1,0 +1,15 @@
+alias: "Bedroom: Lights Off"
+description: "Turn off all bedroom plugs and lamps."
+sequence:
+  - action: switch.turn_off
+    target:
+      entity_id:
+        - switch.0xffffb40e0608c96f
+        - switch.0xffffb40e0608d02e
+  - action: light.turn_off
+    target:
+      entity_id:
+        - light.desk_lamp_desk_lamp
+        - light.floor_lamp_floor_lamp
+        - light.light_strip_light_strip
+mode: single
