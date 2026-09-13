@@ -140,7 +140,7 @@ P2, DRY violation: fixed via `script.bedroom_lights_on` / `script.bedroom_lights
 
 P2, missing tunability: fixed via helpers (`input_boolean.vacation_mode`, `input_boolean.guest_mode`, `input_datetime.bedroom_wake_time`, two battery `input_number` thresholds). Still literal: wake-up fade values, `morning_weather_briefing` 08:05 (coupled to wake time, intentionally separate for now).
 
-P2, entity hygiene (open): Zigbee plugs still carry IEEE-ish IDs (`switch.0xffffb40e0608c96f` etc.) referenced across 13 files including the HomeKit filter in `core/configuration.yaml`. Rename requires live registry renames plus coordinated Git edits plus a HA restart for the HomeKit filter, and re-provisions Apple Home accessories. Plan the rename mapping and restart window with the user before executing.
+P2, entity hygiene: done 2026-09-14. The 4 Zigbee switches now carry functional IDs (`switch.bedroom_window_plug`, `switch.bedroom_mushroom_plug`, `switch.living_room_good_vibes_sign`, `switch.stairs_light`) across 13 Git files plus the Flux `gitops/home-assistant` mirror. Live renames via the entity registry, surfaces applied via the reconciler, HomeKit filter picked up through the Flux pod rollout. Disabled linkquality/power sensors keep their IEEE names (unreferenced, integration-disabled).
 
 P2, stairs light uses sunset at 0 degrees; if the stairwell still feels dark too early or late in the year, switch to a sun elevation trigger around minus 4 degrees.
 
