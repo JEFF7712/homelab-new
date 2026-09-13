@@ -622,6 +622,12 @@ deploy_fleet:
           -o jsonpath='{.data.token}' 2>/dev/null || true)
         export HASS_TOKEN=$(echo "$token_b64" | base64 -d 2>/dev/null || true)
       fi
+    - >-
+      if [ -z "${HASS_TOKEN:-}" ]; then echo 'ERROR: HASS_TOKEN is empty and
+      cluster secret home-assistant/home-assistant-token is missing or
+      unreadable. Provision it once with: kubectl create secret -n
+      home-assistant generic home-assistant-token
+      --from-literal=token=<HA long-lived access token>' >&2; exit 1; fi
 
 deploy_home_assistant_dry_run:
   extends: .deploy_home_assistant_base
@@ -631,8 +637,9 @@ deploy_home_assistant_dry_run:
 deploy_home_assistant:
   extends: .deploy_home_assistant_base
   script:
-    - nix develop ./flake -c python -m scripts.home_assistant plan --instance homelab-01 --json > plan.json
-    - cat plan.json
+    - >-
+      nix develop ./flake -c python -m scripts.home_assistant plan --instance homelab-01 --json > plan.json;
+      rc=$?; cat plan.json; exit $rc
     - >-
       plan_file=$(python3 -c 'import json; print(json.load(open("plan.json"))["plan_file"])')
     - nix develop ./flake -c python -m scripts.home_assistant apply --instance homelab-01 --plan-file "$plan_file" --yes
