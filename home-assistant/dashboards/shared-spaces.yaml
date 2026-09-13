@@ -10,7 +10,7 @@ views:
             type: heading
           - name: Stairs
             icon: mdi:stairs
-            entity: switch.0xffffb40e0608faec
+            entity: switch.stairs_light
             hold_action:
               action: toggle
             show_state: true
@@ -38,7 +38,7 @@ views:
           - heading: Stairs
             type: heading
           - name: Stairs Light
-            entity: switch.0xffffb40e0608faec
+            entity: switch.stairs_light
             features:
               - type: toggle
             type: tile
@@ -60,7 +60,7 @@ views:
       - cards:
           - heading: Living Room
             type: heading
-          - entity: switch.0xffffb40e0608f37a
+          - entity: switch.living_room_good_vibes_sign
             features:
               - type: toggle
             type: tile

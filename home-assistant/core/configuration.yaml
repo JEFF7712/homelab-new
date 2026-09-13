@@ -12,10 +12,10 @@ homekit:
       include_domains:
         - light
       include_entities:
-        - switch.0xffffb40e0608c96f
-        - switch.0xffffb40e0608d02e
-        - switch.0xffffb40e0608f37a
-        - switch.0xffffb40e0608faec
+        - switch.bedroom_window_plug
+        - switch.bedroom_mushroom_plug
+        - switch.living_room_good_vibes_sign
+        - switch.stairs_light
         - climate.living_room_ac_living_room_ac_thermostat
       exclude_entities:
         - light.a1_03900d642327265_chamber_light

@@ -4,8 +4,8 @@ sequence:
   - action: switch.turn_off
     target:
       entity_id:
-        - switch.0xffffb40e0608c96f
-        - switch.0xffffb40e0608d02e
+        - switch.bedroom_window_plug
+        - switch.bedroom_mushroom_plug
   - action: light.turn_off
     target:
       entity_id:

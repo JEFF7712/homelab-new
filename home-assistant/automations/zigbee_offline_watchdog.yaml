@@ -9,9 +9,9 @@ triggers:
     id: "bridge"
   - trigger: state
     entity_id:
-      - switch.0xffffb40e0608c96f
-      - switch.0xffffb40e0608d02e
-      - switch.0xffffb40e0608faec
+      - switch.bedroom_window_plug
+      - switch.bedroom_mushroom_plug
+      - switch.stairs_light
       - light.desk_lamp_desk_lamp
       - light.floor_lamp_floor_lamp
       - light.light_strip_light_strip

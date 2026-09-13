@@ -33,14 +33,14 @@ views:
           - type: horizontal-stack
             cards:
               - type: button
-                entity: switch.0xffffb40e0608c96f
+                entity: switch.bedroom_window_plug
                 name: Window Plug
                 icon: mdi:power-plug
                 show_state: true
                 tap_action:
                   action: toggle
               - type: button
-                entity: switch.0xffffb40e0608d02e
+                entity: switch.bedroom_mushroom_plug
                 name: Mushroom Plug
                 icon: mdi:power-plug
                 show_state: true

@@ -17,12 +17,12 @@ actions:
         sequence:
           - action: switch.turn_on
             target:
-              entity_id: switch.0xffffb40e0608faec
+              entity_id: switch.stairs_light
       - conditions:
           - condition: trigger
             id: "sunrise"
         sequence:
           - action: switch.turn_off
             target:
-              entity_id: switch.0xffffb40e0608faec
+              entity_id: switch.stairs_light
 mode: single

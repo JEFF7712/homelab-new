@@ -42,7 +42,7 @@ views:
                 name: Progress
               - entity: sensor.a1_03900d642327265_remaining_time
                 name: Remaining
-              - entity: switch.0xffffb40e0608faec
+              - entity: switch.stairs_light
                 name: Stairs
           - type: entities
             title: System

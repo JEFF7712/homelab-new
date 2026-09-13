@@ -25,7 +25,7 @@ actions:
         sequence:
           - action: switch.turn_off
             target:
-              entity_id: switch.0xffffb40e0608f37a
+              entity_id: switch.living_room_good_vibes_sign
       - conditions:
           - condition: or
             conditions:
@@ -42,12 +42,12 @@ actions:
         sequence:
           - action: switch.turn_on
             target:
-              entity_id: switch.0xffffb40e0608f37a
+              entity_id: switch.living_room_good_vibes_sign
       - conditions:
           - condition: trigger
             id: "sunrise"
         sequence:
           - action: switch.turn_off
             target:
-              entity_id: switch.0xffffb40e0608f37a
+              entity_id: switch.living_room_good_vibes_sign
 mode: single
