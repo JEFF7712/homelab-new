@@ -85,6 +85,7 @@ pkgs.testers.nixosTest {
     machine.succeed("ip netns add guest")
     machine.succeed("ip netns add public")
     machine.succeed("ip link add aw-test-tap type veth peer name guest-ns")
+    machine.succeed("ip link set guest-ns address 52:54:00:00:00:01")
     machine.succeed("ip link set aw-test-tap master aw-test-br")
     machine.succeed("ip link set aw-test-tap up")
     machine.succeed("ip link set guest-ns netns guest")
