@@ -97,41 +97,44 @@ When adding a use case, check the community blueprint forum first for motion lig
 - Recorder growth: this repo uses external Postgres (`recorder.db_url` via `!secret`), which avoids SQLite bloat. Keep `purge_keep_days` and `commit_interval` intentional, exclude noisy domains fromRecorder when adding cameras or power sensors, and note that 30-day trace retention costs database space.
 - Backup before risky work: full backup before upgrades, blueprint conversions, and entity renames. A single-object rollback beats a full restore, which discards every unrelated change since the archive and restarts HA. Never delete a backup or start a Core/OS upgrade without explicit user confirmation.
 
-## 8. Audit of current setup (2026-09-13)
+## 8. Audit of current setup (2026-09-13, refreshed 2026-09-14)
 
-Offline validation: `just ha-validate` passes (44 resources clean). Live diff/verify not run in this pass (needs `HASS_TOKEN`); re-run `just ha-diff` and `just ha-verify` before changing behavior.
+Offline validation: `just ha-validate` passes (45 resources clean), canonical `scripts/checks/home-assistant.sh` clean, HA unit tests pass (22 tests). Live diff/verify not run in this pass (needs `HASS_TOKEN`); re-run `just ha-diff` and `just ha-verify` before changing behavior.
 
-Inventory drift: `inventory.yaml` claims 15 automations but `home-assistant/automations/` contains 21 files. Refresh with `just ha-inventory` / `just ha-capture` and commit the result so the baseline matches reality.
+Inventory drift: `inventory.yaml` claims 15 automations but `home-assistant/automations/` contains 22 files. Refresh with `just ha-inventory` / `just ha-capture` (needs live token) and commit the result so the baseline matches reality.
 
 ### Strengths to preserve
 
 - Sun-driven lighting throughout (no hardcoded dusk/dawn times except intentional schedules). `stairs_light_sunset_to_sunrise` and `living_room_sign_by_presence` are exemplary minimal automations.
-- Snapshot-restore away pattern via `scene.create`/`scene.turn_on` in `away_lights_off_restore`. This is the textbook scene use and is done correctly.
-- `wait_for_trigger` with timeout in `a1_print_stalled_detection` instead of polling. Correct primitive, wrong mode (see P1 below).
+- Snapshot-restore away pattern via `scene.create`/`scene.turn_on`, now split into two scoped automations (`bedroom_away_lights` for Rupan-only bedroom, `shared_spaces_empty_lights_off` for last-person-leaves shared spaces). The split resolved the two-person snapshot race. Both run `mode: queued` so away, empty, and enforcement legs cannot drop each other.
+- `wait_for_trigger` with timeout in `a1_print_stalled_detection` and `weekly_backup_verify` instead of polling. Correct primitive in both.
 - `weather.get_forecasts` with `response_variable` in `morning_weather_briefing`. Correct modern pattern, not the deprecated forecast attribute.
 - Battery scan excludes non-numeric states (`is_number` filter) and uses `default(..., true)` fallbacks in printer messages. Good unavailable hygiene in messages.
 - Zigbee permit-join auto-close (5 minutes plus notify) and offline watchdog with `for:` debouncing. Correct security and flapping posture.
 - Modern action keys (`triggers`/`actions`/`action:`) and `color_temp_kelvin`. No `device_id`, no `service:` legacy keys, no `color_temp` mireds.
+- Restart-hardened printer triggers: `a1_print_started` allows only real predecessor states, `a1_print_finished` and `a1_chamber_light_auto_off` require `from: running`, the `failed` leg of `a1_print_error` and the stall/milestone automations reject `unknown`/`unavailable` `from_state`. Chamber auto-off and stall detection run `mode: restart` with the restart gap documented in their descriptions.
 
-### Findings (ordered by priority)
+### Findings (ordered by priority; P0 and P1 fixed 2026-09-14 unless noted)
 
-P0, false-start notify on `a1_print_started`: the guard condition explicitly allows `unknown` and `unavailable` as `from_state` values, so `unavailable -> running` after a restart sends a phantom Print Started notification. Fix: allow only real predecessor states (`idle`, `finish`, `failed`, and `paused` if the integration uses it), drop `unknown`/`unavailable`.
+Fixed, `a1_print_started` phantom notify: the guard condition allowed `unknown` and `unavailable` as `from_state` values. Now allows only (`idle`, `finish`, `failed`).
 
-P0, unguarded `to: finish`/`to: failed` transitions: `a1_chamber_light_auto_off`, `a1_print_finished`, and the `failed` leg of `a1_print_error` fire on `unavailable -> finish`/`failed` with no `from:` guard. Add `from:` (for example, `from: running`) or a template condition rejecting `trigger.from_state.state in ('unknown','unavailable','none')`.
+Fixed, unguarded `to: finish`/`to: failed` transitions: `a1_print_finished` and `a1_chamber_light_auto_off` now require `from: running`; the `failed` leg of `a1_print_error` rejects non-real `from_state`.
 
-P1, wrong modes on delay/wait automations: `a1_chamber_light_auto_off` (`delay: 5 min` in `single` drops overlapping finishes and dies on restart; use `restart` plus document the restart gap, or a `timer` helper for survival), `a1_print_stalled_detection` (15 minute `wait_for_trigger` in `single` drops a second print started mid-wait; use `restart` so the newest print owns the timer).
+Fixed, wrong modes on delay/wait automations: `a1_chamber_light_auto_off` and `a1_print_stalled_detection` now run `mode: restart` with the restart gap documented in their descriptions.
 
-P1, notification spam on `phone_bedtime_low_battery_reminder`: `numeric_state below: 30` with no `for:` notifies on every 1 percent drop all evening. Add `for: "00:05:00"` (or a cooldown) and consider `max_exceeded: silent`.
+Fixed, notification spam on `phone_bedtime_low_battery_reminder`: the `below: 30` trigger now carries `for: "00:05:00"`.
 
-P1, two-person race in `away_lights_off_restore`: the snapshot is taken only on the `away` leg (Rupan leaves), not on `left_empty` (Sam leaves last). If Rupan is already away when Sam leaves, the enforce-off runs with no fresh snapshot and a later return restores a stale scene. Fix: snapshot on `left_empty` when no snapshot exists yet, or snapshot on both legs. Also consider `mode: queued` so `away`, `left_empty`, and `enforced` legs cannot drop each other; the current `single` mode can silently drop enforcement triggers.
+Fixed, two-person race in the away routine: resolved by the split into `bedroom_away_lights` and `shared_spaces_empty_lights_off`, each snapshotting on its own leave leg, both on `mode: queued`.
 
-P2, restart amnesia on long waits: `a1_print_idle_reminder` (1 hour `for:`), `a1_chamber_light_auto_off` (5 minute `delay`), `weekly_backup_verify` (1 hour `wait_template`), and the stall detector (15 minute wait) all reset silently on restart. Acceptable for reminders, not for safety offs. At minimum document the gap in each description; for the chamber light add a HA-start reconciliation trigger (if print status is not running and chamber light is on, turn it off).
+Fixed, `weekly_backup_verify` polling wait: now `wait_for_trigger` on the backup sensor with a 1 hour timeout; dead `backup_before` variable removed.
 
-P2, `weekly_backup_verify` uses `wait_template` where `wait_for_trigger` on the backup sensor is the preferred primitive, and its success message renders the post-wait state (correct) but has no failure escalation beyond one phone note. Add a repeat or persistent notification on the failure leg.
+Fixed, `a1_print_progress_milestones` re-arm on blips: added a `from_state` unavailable guard. Trigger IDs (`p25`/`p50`/`p75`) remain message-unused; either use `trigger.id` in the message or drop them.
 
-P2, `a1_print_progress_milestones` defines trigger IDs (`p25`/`p50`/`p75`) but never uses them; the message re-reads the progress sensor, which is fine but makes the IDs dead weight. Either use `trigger.id` in the message or drop the IDs. Also add an unavailable guard: bare `above:` triggers re-arm on blips.
+Fixed, `ha_core_update_available` restart blip: added a `from_state` guard. Tradeoff accepted: a release published while HA is down is missed once (the update entity persists in the UI).
 
-P2, entity hygiene: Zigbee plugs still carry IEEE-ish IDs (`switch.0xffffb40e0608c96f` etc.) repeated across 6 plus automations, and only 2 of the implied set carry the `shared_space` label while `away_lights_off_restore` targets both the label and hardcoded lists. Rename to functional IDs (`switch.bedroom_window_plug`) via the safe-refactoring workflow (impact analysis across automations, scripts, scenes, dashboards, and config-entry data, then group membership repair), or at minimum converge all shared-space members onto the label and target the label everywhere.
+P2, restart amnesia on long waits: `a1_print_idle_reminder` (1 hour `for:`) and the stall detector (15 minute wait) still reset silently on restart, and the chamber light delay gap is documented but has no HA-start reconciliation trigger. Acceptable for reminders, not for safety offs. Optional follow-up: HA-start reconciliation for the chamber light (if print status is not running and chamber light is on, turn it off).
+
+P2, entity hygiene: Zigbee plugs still carry IEEE-ish IDs (`switch.0xffffb40e0608c96f` etc.) repeated across 6 plus automations, and only 2 of the implied set carry the `shared_space` label while the shared-spaces automation targets both the label and hardcoded lists. Rename to functional IDs (`switch.bedroom_window_plug`) via the safe-refactoring workflow (impact analysis across automations, scripts, scenes, dashboards, and config-entry data, then group membership repair), or at minimum converge all shared-space members onto the label and target the label everywhere.
 
 P2, DRY violation: `bedroom_lights_evening_presence` repeats the same five-entity blocks four times. Extract a `script.bedroom_lights_evening` (or a scene pair for full vs dim-warm) and call it from the four branches. Same for the bedroom off-block shared with `bedroom_lights_bedtime_charging` and the away routine.
 
@@ -143,11 +146,10 @@ P2, `ha_core_update_available` fires on any sensor change with only a `to_state`
 
 ### Suggested next automations (highest value first)
 
-1. Fix the P0 guards above before adding anything. Phantom printer notifications erode trust fastest.
-2. Climate guard: window open while living room AC runs (notify plus set HVAC off after 3 minutes, re-armed on both edges). AC entity already exists and has no automation.
-3. Critical-alerts script with repeat-until-acknowledged for water/smoke/freezer when those sensors arrive; route existing failure legs (backup failed, print error) through it.
-4. `input_boolean.vacation_mode` plus `input_boolean.guest_mode` gates on evening and away automations; one dashboard card to flip them.
-5. Bedroom wake-up fade via brightness ramp tied to next-alarm sensor, replacing the instant 08:00 on.
+1. Climate guard: window open while living room AC runs (notify plus set HVAC off after 3 minutes, re-armed on both edges). AC entity already exists and has no automation.
+2. Critical-alerts script with repeat-until-acknowledged for water/smoke/freezer when those sensors arrive; route existing failure legs (backup failed, print error) through it.
+3. `input_boolean.vacation_mode` plus `input_boolean.guest_mode` gates on evening and away automations; one dashboard card to flip them.
+4. Bedroom wake-up fade via brightness ramp tied to next-alarm sensor, replacing the instant 08:00 on.
 
 ## 9. Repo conventions (must follow)
 
