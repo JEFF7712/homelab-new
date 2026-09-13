@@ -1,10 +1,17 @@
 id: morning_weather_briefing
 alias: "Morning: Weather & Rain Briefing"
-description: "Send a weather briefing to phone at 8:05 AM with rain alerts, home or away."
+description: >-
+  Send a weather briefing to phone 5 minutes after the Bedroom Wake Time
+  helper, with rain alerts, home or away. Fires once inside the minute
+  after wake plus 5, so a restart during the window still delivers it.
 triggers:
-  - trigger: time
-    at: "08:05:00"
-conditions: []
+  - trigger: time_pattern
+    minutes: "/1"
+conditions:
+  - condition: template
+    value_template: >-
+      {% set wake_ts = as_timestamp(today_at(states('input_datetime.bedroom_wake_time')), none) %}
+      {{ wake_ts is not none and wake_ts + 300 <= as_timestamp(now()) < wake_ts + 360 }}
 actions:
   - action: weather.get_forecasts
     target:
