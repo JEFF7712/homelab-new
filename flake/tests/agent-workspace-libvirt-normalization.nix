@@ -61,12 +61,16 @@ let
   verify = pkgs.writeText "verify-libvirt-normalization.py" ''
     import pathlib
     import subprocess
+    import xml.etree.ElementTree as ET
 
     from scripts.agent_workspaces.core import load_manifest, render_domain
     from scripts.agent_workspaces.lifecycle import _domain_projection
 
     workspace = load_manifest(pathlib.Path("${manifest}"))[0]
     expected_xml = render_domain(workspace)
+    root = ET.fromstring(expected_xml)
+    root.set("type", "qemu")
+    expected_xml = ET.tostring(root, encoding="unicode")
     domain_path = pathlib.Path("/tmp/domain.xml")
     domain_path.write_text(expected_xml, encoding="utf-8")
     subprocess.run(["virsh", "define", str(domain_path)], check=True)
