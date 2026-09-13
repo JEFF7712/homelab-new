@@ -539,6 +539,7 @@ nas_proof:
 
 .deploy_fleet_base:
   stage: deploy
+  resource_group: homelab-fleet-deploy
   tags:
     - nas-privileged
   environment:
@@ -584,6 +585,16 @@ deploy_fleet:
     - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
     - export KUBECONFIG="$HOME/.kube/config"
     - nix develop ./flake -c just deploy-fleet ${DEPLOY_TARGETS:+--target $DEPLOY_TARGETS}
+
+deploy_agent_workspace_host_dry_run:
+  extends: .deploy_fleet_base
+  script:
+    - nix develop ./flake -c just deploy-fleet --dry-run --target homelab-01
+
+deploy_agent_workspace_host:
+  extends: .deploy_fleet_base
+  script:
+    - nix develop ./flake -c just deploy-fleet --target homelab-01
 
 .deploy_home_assistant_base:
   stage: deploy
