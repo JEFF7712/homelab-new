@@ -112,6 +112,8 @@ Inventory drift: `inventory.yaml` claims 15 automations but `home-assistant/auto
 - Battery scan excludes non-numeric states (`is_number` filter) and uses `default(..., true)` fallbacks in printer messages. Good unavailable hygiene in messages.
 - Zigbee permit-join auto-close (5 minutes plus notify) and offline watchdog with `for:` debouncing. Correct security and flapping posture.
 - Modern action keys (`triggers`/`actions`/`action:`) and `color_temp_kelvin`. No `device_id`, no `service:` legacy keys, no `color_temp` mireds.
+- Shared scripts: `script.bedroom_lights_on` (with `dim` field) and `script.bedroom_lights_off` own the bedroom entity lists once; evening, bedtime, and away automations call them instead of repeating targets.
+- House tunables as helpers: `input_boolean.vacation_mode` gates bedroom evening lighting, `input_boolean.guest_mode` gates shared-spaces shutoff, `input_datetime.bedroom_wake_time` drives the wake-up trigger, and two `input_number` thresholds drive the battery alerts. Helpers are observe-only in the reconciler, so they are created live (collection API or UI) and adopted into `home-assistant/helpers/`.
 - Restart-hardened printer triggers: `a1_print_started` allows only real predecessor states, `a1_print_finished` and `a1_chamber_light_auto_off` require `from: running`, the `failed` leg of `a1_print_error` and the stall/milestone automations reject `unknown`/`unavailable` `from_state`. Chamber auto-off and stall detection run `mode: restart` with the restart gap documented in their descriptions.
 
 ### Findings (ordered by priority; P0 and P1 fixed 2026-09-14 unless noted)
@@ -134,11 +136,11 @@ Fixed, `ha_core_update_available` restart blip: added a `from_state` guard. Trad
 
 P2, restart amnesia on long waits: `a1_print_idle_reminder` (1 hour `for:`) and the stall detector (15 minute wait) still reset silently on restart. The chamber light gap is closed by `a1_chamber_light_reconcile` (HA-start trigger, 60 second settle, off when not running). Acceptable for reminders, not for safety offs.
 
-P2, entity hygiene: Zigbee plugs still carry IEEE-ish IDs (`switch.0xffffb40e0608c96f` etc.) repeated across 6 plus automations, and only 2 of the implied set carry the `shared_space` label while the shared-spaces automation targets both the label and hardcoded lists. Rename to functional IDs (`switch.bedroom_window_plug`) via the safe-refactoring workflow (impact analysis across automations, scripts, scenes, dashboards, and config-entry data, then group membership repair), or at minimum converge all shared-space members onto the label and target the label everywhere.
+P2, DRY violation: fixed via `script.bedroom_lights_on` / `script.bedroom_lights_off`; the evening, bedtime, and bedroom-away automations now call them.
 
-P2, DRY violation: `bedroom_lights_evening_presence` repeats the same five-entity blocks four times. Extract a `script.bedroom_lights_evening` (or a scene pair for full vs dim-warm) and call it from the four branches. Same for the bedroom off-block shared with `bedroom_lights_bedtime_charging` and the away routine.
+P2, missing tunability: fixed via helpers (`input_boolean.vacation_mode`, `input_boolean.guest_mode`, `input_datetime.bedroom_wake_time`, two battery `input_number` thresholds). Still literal: wake-up fade values, `morning_weather_briefing` 08:05 (coupled to wake time, intentionally separate for now).
 
-P2, missing tunability: thresholds and times are literals scattered across files (20 percent battery, 30 percent phone, 5 minutes, 1 hour, 22:00, 08:00). Promote the ones the household may tune to helpers (`input_number`, `input_datetime`, `input_boolean` vacation/guest/night) and reference them, so tuning does not require YAML edits.
+P2, entity hygiene (open): Zigbee plugs still carry IEEE-ish IDs (`switch.0xffffb40e0608c96f` etc.) referenced across 13 files including the HomeKit filter in `core/configuration.yaml`. Rename requires live registry renames plus coordinated Git edits plus a HA restart for the HomeKit filter, and re-provisions Apple Home accessories. Plan the rename mapping and restart window with the user before executing.
 
 P2, stairs light uses sunset at 0 degrees; if the stairwell still feels dark too early or late in the year, switch to a sun elevation trigger around minus 4 degrees.
 
