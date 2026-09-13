@@ -27,6 +27,20 @@ def _filter_dict(data: dict[str, Any], allowlist: tuple[str, ...]) -> dict[str, 
     return {k: data[k] for k in allowlist if k in data and data[k] is not None}
 
 
+def _writable_update_fields(data: dict[str, Any], id_field: str) -> dict[str, Any]:
+    """Drop fields live HA rejects on registry update.
+
+    `disabled_by: integration` is owned by the integration itself; sending it
+    back through config/device_registry/update or
+    config/entity_registry/update fails with invalid_format. The value stays
+    in Git desired state for drift visibility, it is just never written.
+    """
+    kwargs = {k: v for k, v in data.items() if k != id_field}
+    if kwargs.get("disabled_by") == "integration":
+        del kwargs["disabled_by"]
+    return kwargs
+
+
 class AreaRegistryAdapter(BaseAdapter):
     kind = "area"
     owner_mode = OwnerMode.UI_EDITABLE.value
@@ -232,8 +246,9 @@ class DeviceRegistryAdapter(BaseAdapter):
             desired_devices = action.after if isinstance(action.after, list) else []
             for dev in desired_devices:
                 if isinstance(dev, dict) and "id" in dev:
-                    kwargs = {k: v for k, v in dev.items() if k != "id"}
-                    client.update_device(dev["id"], **kwargs)
+                    client.update_device(
+                        dev["id"], **_writable_update_fields(dev, "id")
+                    )
 
     def verify(self, client: HomeAssistantClient, doc: ResourceDocument) -> bool:
         live = self.export_from_live(client)
@@ -295,8 +310,10 @@ class EntityRegistryAdapter(BaseAdapter):
             desired_entities = action.after if isinstance(action.after, list) else []
             for ent in desired_entities:
                 if isinstance(ent, dict) and "entity_id" in ent:
-                    kwargs = {k: v for k, v in ent.items() if k != "entity_id"}
-                    client.update_entity(ent["entity_id"], **kwargs)
+                    client.update_entity(
+                        ent["entity_id"],
+                        **_writable_update_fields(ent, "entity_id"),
+                    )
 
     def verify(self, client: HomeAssistantClient, doc: ResourceDocument) -> bool:
         live = self.export_from_live(client)

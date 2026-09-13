@@ -7,6 +7,8 @@ from scripts.home_assistant.adapters.core import CoreConfigurationAdapter
 from scripts.home_assistant.adapters.dashboard import DashboardAdapter
 from scripts.home_assistant.adapters.registry import (
     AreaRegistryAdapter,
+    DeviceRegistryAdapter,
+    EntityRegistryAdapter,
     LabelRegistryAdapter,
 )
 from scripts.home_assistant.adapters.scene import SceneAdapter
@@ -224,6 +226,61 @@ class TestHomeAssistantAdapters(unittest.TestCase):
         self.assertEqual(exported[0].key, "configuration")
         self.assertEqual(adapter.validate(exported[0]), [])
         self.assertTrue(adapter.verify(self.client, exported[0]))
+
+    def test_entity_adapter_apply_skips_integration_disabled_by(self) -> None:
+        from typing import Any
+
+        adapter = EntityRegistryAdapter()
+        calls: list[dict[str, Any]] = []
+
+        def spy(entity_id: str, **kwargs: Any) -> dict[str, Any]:
+            calls.append({"entity_id": entity_id, **kwargs})
+            return {}
+
+        self.client.update_entity = spy  # type: ignore[method-assign]
+        action = PlanAction(
+            kind="entity",
+            key="collection",
+            action=ActionType.UPDATE,
+            after=[
+                {
+                    "entity_id": "sensor.noisy",
+                    "disabled_by": "integration",
+                    "labels": [],
+                },
+                {
+                    "entity_id": "light.kept",
+                    "disabled_by": "user",
+                    "labels": ["shared_space"],
+                },
+            ],
+        )
+        adapter.apply(self.client, action)
+        self.assertEqual(len(calls), 2)
+        self.assertNotIn("disabled_by", calls[0])
+        self.assertEqual(calls[0]["labels"], [])
+        self.assertEqual(calls[1]["disabled_by"], "user")
+
+    def test_device_adapter_apply_skips_integration_disabled_by(self) -> None:
+        from typing import Any
+
+        adapter = DeviceRegistryAdapter()
+        calls: list[dict[str, Any]] = []
+
+        def spy(device_id: str, **kwargs: Any) -> dict[str, Any]:
+            calls.append({"id": device_id, **kwargs})
+            return {}
+
+        self.client.update_device = spy  # type: ignore[method-assign]
+        action = PlanAction(
+            kind="device",
+            key="collection",
+            action=ActionType.UPDATE,
+            after=[{"id": "abc123", "disabled_by": "integration"}],
+        )
+        adapter.apply(self.client, action)
+        self.assertEqual(len(calls), 1)
+        self.assertNotIn("disabled_by", calls[0])
 
 
 if __name__ == "__main__":
