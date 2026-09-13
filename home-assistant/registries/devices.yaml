@@ -10,6 +10,8 @@
 - id: b966252d167f43dcb2b94a6e35194ee3
   area_id: bedroom
   name_by_user: Bedroom Window Light
+- id: bdcb71dd19e662d59efa0bac03c9d368
+  area_id: living_room
 - id: e0a2aee78ec665c88edce0d2cd9e4d46
   area_id: bedroom
   name_by_user: Desk Lamp

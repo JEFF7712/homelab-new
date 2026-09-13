@@ -1,0 +1,7 @@
+title: Homelab Bridge:21063
+disabled_by: null
+domain: homekit
+entry_id: 01M290JK2GPDTWZXXTKASZV42C
+pref_disable_new_entities: false
+pref_disable_polling: false
+source: import
