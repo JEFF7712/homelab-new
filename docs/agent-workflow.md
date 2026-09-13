@@ -47,7 +47,7 @@ Exports omit raw task logs and redact common secrets and credential paths. An ex
 | Client | Config | Session start | Validation failure | Stop |
 | --- | --- | --- | --- | --- |
 | Claude Code | `.claude/settings.json` | SessionStart | PostToolUseFailure (Bash) | Stop |
-| Codex | `.codex/hooks.json` | SessionStart | PostToolUse (Bash), failures filtered by the hook | Stop |
+| Codex | `.codex/hooks.json` | SessionStart | not wired, use the client’s failure event where supported | Stop |
 | Cursor | `.cursor/hooks.json` | sessionStart | postToolUseFailure (Shell) | stop |
 | OpenCode | `opencode.json`, `.opencode/plugins/agent-harness.js` | not wired, run `just agent-context` | plugin `tool.execute.after` (Bash), failures via the shared hook | not wired, run `just task-checkpoint <id>` |
 
