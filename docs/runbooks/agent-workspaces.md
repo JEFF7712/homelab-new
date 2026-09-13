@@ -37,4 +37,19 @@ Retain separate evidence for spoofing, tagged frames, IPv6, DNS rebinding, alter
 
 Bedroom isolation is a separate milestone. Do not claim it from workspace isolation, HA entity visibility, or dashboard permissions. It remains unverified until the private control boundary and physical device denial tests pass.
 
+For the two-guest gate, create a temporary validated manifest containing exactly two enabled IDs prefixed with `acceptance-`. Provision both guests and wait for cloud-init, then run:
+
+```sh
+python -m scripts.agent_workspaces \
+  --manifest /run/agent-workspace-acceptance/manifest.json \
+  acceptance-two-guest \
+  --authorized \
+  --ssh-key /run/agent-workspace-acceptance/id_ed25519 \
+  --network-url "$PRESSURE_URL" \
+  --duration 60 \
+  --evidence /run/agent-workspace-acceptance/evidence.json
+```
+
+The HTTPS target must be operator controlled. The runner writes 1 GiB only to each disposable guest's raw data disk, samples the workspace slice and service health throughout the load, and deprovisions both domains before returning. Inspect and remove the preserved disposable disks only after the evidence and domain state agree.
+
 Emergency isolation stops the workspace domain before removing or changing its deny policy. Preserve its disks and receipt. Never disable the firewall while a guest interface remains active.
