@@ -4,6 +4,7 @@ description: "Notify phone when the A1 finishes a print, with filename and filam
 triggers:
   - trigger: state
     entity_id: sensor.a1_03900d642327265_print_status
+    from: running
     to: finish
 conditions: []
 actions:

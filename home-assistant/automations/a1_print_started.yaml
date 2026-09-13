@@ -7,7 +7,7 @@ triggers:
     to: running
 conditions:
   - condition: template
-    value_template: "{{ trigger.from_state.state in ('idle', 'finish', 'failed', 'unknown', 'unavailable') }}"
+    value_template: "{{ trigger.from_state.state in ('idle', 'finish', 'failed') }}"
 actions:
   - action: notify.send_message
     target:
