@@ -26,6 +26,13 @@ let
     && builtins.all safeIPv4 workspace.network.ntp
     && builtins.all safeIPv4CIDR workspace.network.ingress_sources;
   privateRanges = "{ 0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.168.0.0/16, 198.18.0.0/15, 224.0.0.0/4, 240.0.0.0/4 }";
+  workspaceInputRules = workspace: ''
+    iifname "${workspace.network.bridge}" ether saddr != ${workspace.network.mac} counter drop
+    iifname "${workspace.network.bridge}" ip6 saddr ::/0 counter drop
+    iifname "${workspace.network.bridge}" ip saddr != ${builtins.head (lib.splitString "/" workspace.network.address)} counter drop
+    iifname "${workspace.network.bridge}" ct state established,related accept
+    iifname "${workspace.network.bridge}" counter drop
+  '';
   workspaceRules = workspace: ''
     iifname "${workspace.network.bridge}" ether saddr != ${workspace.network.mac} counter drop
     iifname "${workspace.network.bridge}" ip6 saddr ::/0 counter drop
@@ -107,9 +114,7 @@ in
       content = ''
         chain input {
           type filter hook input priority -5; policy accept;
-          ${lib.concatMapStringsSep "\n" (workspace: ''
-            iifname "${workspace.network.bridge}" counter drop
-          '') enabledWorkspaces}
+          ${lib.concatMapStringsSep "\n" workspaceInputRules enabledWorkspaces}
         }
         chain forward {
           type filter hook forward priority -5; policy accept;
@@ -141,9 +146,7 @@ in
       if ${pkgs.iproute2}/bin/ip link show dev "$tap" >/dev/null 2>&1; then
         ${pkgs.iproute2}/bin/ip link set dev "$tap" down
       fi
-      if ${config.virtualisation.libvirtd.package}/bin/virsh domid "$domain" >/dev/null 2>&1; then
-        ${config.virtualisation.libvirtd.package}/bin/virsh destroy "$domain"
-      fi
+      ${pkgs.coreutils}/bin/timeout 10 ${config.virtualisation.libvirtd.package}/bin/virsh destroy "$domain" >/dev/null 2>&1 || true
     '') enabledWorkspaces;
   };
 }

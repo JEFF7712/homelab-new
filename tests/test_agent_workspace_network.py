@@ -61,6 +61,7 @@ class WorkspaceNetworkModuleTests(unittest.TestCase):
         self.assertEqual(value["address"], ["192.0.2.1/30"])
         self.assertIn("nftables.service", value["requires"])
         self.assertIn("virsh destroy", value["preStop"])
+        self.assertIn("/bin/timeout 10", value["preStop"])
         self.assertIn("agent-rupan-dev", value["preStop"])
         self.assertIn("ip link set dev", value["preStop"])
         self.assertIn("aw-rupan-tap", value["preStop"])
@@ -74,6 +75,12 @@ class WorkspaceNetworkModuleTests(unittest.TestCase):
             rules,
         )
         self.assertIn('iifname "aw-rupan-br" ip6 saddr ::/0 counter drop', rules)
+        input_chain = rules.split("chain forward", 1)[0]
+        self.assertIn("ct state established,related accept", input_chain)
+        self.assertLess(
+            input_chain.index('iifname "aw-rupan-br" ip saddr != 192.0.2.2'),
+            input_chain.index("ct state established,related accept"),
+        )
         self.assertIn("ip daddr 198.51.100.10 tcp dport 443", rules)
         self.assertIn("10.0.0.0/8", rules)
         self.assertIn('oifname "aw-rupan-br" counter drop', rules)
