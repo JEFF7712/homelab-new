@@ -1,9 +1,11 @@
 id: bedroom_lights_morning_wake_up
 alias: "Bedroom Lights: Morning Wake-Up"
-description: "Turn on bedroom lights at 8:00 AM if home. Roku lights come on warm and gentle."
+description: >-
+  Turn on bedroom lights at the Bedroom Wake Time helper if home.
+  Roku lights come on warm and gentle.
 triggers:
   - trigger: time
-    at: "08:00:00"
+    at: input_datetime.bedroom_wake_time
 conditions:
   - condition: state
     entity_id: person.rupan_sunderapandyan

@@ -1,0 +1,3 @@
+name: null
+icon: null
+entity_id: input_number.device_low_battery_threshold

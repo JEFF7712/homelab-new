@@ -1,14 +1,14 @@
 id: phone_bedtime_low_battery_reminder
 alias: "Phone: Bedtime Low Battery Reminder"
 description: >-
-  Send a reminder at 10:30 PM, or whenever the battery drops below 30% in the
-  evening, if the phone is not charging.
+  Send a reminder at 10:30 PM, or whenever the battery drops below the Phone
+  Bedtime Battery Threshold in the evening, if the phone is not charging.
 triggers:
   - trigger: time
     at: "22:30:00"
   - trigger: numeric_state
     entity_id: sensor.rupan_phone_battery_level
-    below: 30
+    below: input_number.phone_bedtime_battery_threshold
     for: "00:05:00"
 conditions:
   - condition: time
@@ -19,7 +19,7 @@ conditions:
     state: "home"
   - condition: numeric_state
     entity_id: sensor.rupan_phone_battery_level
-    below: 30
+    below: input_number.phone_bedtime_battery_threshold
   - condition: not
     conditions:
       - condition: state

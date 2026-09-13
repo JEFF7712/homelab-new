@@ -4,7 +4,8 @@ description: >-
   Shared spaces only. Snapshot and switch shared lights off when the last
   person leaves, keep them off while nobody is home, restore the snapshot on
   daytime return. Dark returns re-apply the sunset-driven stairs light, since
-  the snapshot alone would leave it off all night.
+  the snapshot alone would leave it off all night. Skipped while Guest Mode
+  is on, so guests are never left in the dark.
 triggers:
   - trigger: state
     entity_id:
@@ -35,6 +36,9 @@ actions:
             id: "left_empty"
           - condition: template
             value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
+          - condition: state
+            entity_id: input_boolean.guest_mode
+            state: "off"
         sequence:
           - action: scene.create
             data:
@@ -55,6 +59,9 @@ actions:
             id: "enforced"
           - condition: template
             value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
+          - condition: state
+            entity_id: input_boolean.guest_mode
+            state: "off"
         sequence:
           - action: homeassistant.turn_off
             target:
@@ -64,6 +71,9 @@ actions:
             id: "restart"
           - condition: template
             value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
+          - condition: state
+            entity_id: input_boolean.guest_mode
+            state: "off"
         sequence:
           - action: homeassistant.turn_off
             target:
