@@ -2,17 +2,22 @@ id: bedroom_lights_morning_wake_up
 alias: "Bedroom Lights: Morning Wake-Up Fade"
 description: >-
   Ramp bedroom lamps from 1 to 30 percent warm over the 20 minutes before
-  the Bedroom Wake Time helper. Plugs come on at fade start. Brightness is
-  computed from elapsed time each minute, so a restart mid-fade resumes at
-  the correct level instead of restarting or stalling.
+  the earlier of the Bedroom Wake Time helper and the phone's next alarm.
+  Plugs come on at fade start. Brightness is computed from elapsed time
+  each minute, so a restart mid-fade resumes at the correct level instead
+  of restarting or stalling. Unknown or malformed times fall back safely
+  to no fade.
 triggers:
   - trigger: time_pattern
     minutes: "/1"
 conditions:
   - condition: template
     value_template: >-
-      {% set wake = today_at(states('input_datetime.bedroom_wake_time')) %}
-      {{ wake is not none and (wake - timedelta(minutes=20)) <= now() <= wake }}
+      {% set wake_ts = as_timestamp(today_at(states('input_datetime.bedroom_wake_time')), none) %}
+      {% set alarm_ts = as_timestamp(states('sensor.sm_s948u1_next_alarm'), none) %}
+      {% set cands = [wake_ts, alarm_ts] | select('ne', none) | list %}
+      {% set target_ts = cands | min if cands | count > 0 else none %}
+      {{ target_ts is not none and (target_ts - 1200) <= as_timestamp(now()) <= target_ts }}
   - condition: state
     entity_id: person.rupan_sunderapandyan
     state: "home"
@@ -33,8 +38,11 @@ actions:
         - light.light_strip_light_strip
     data:
       brightness_pct: >-
-        {% set wake = today_at(states('input_datetime.bedroom_wake_time')) %}
-        {{ (((now() - (wake - timedelta(minutes=20))).total_seconds()
-        / 1200 * 30) | int | max(1)) | min(100) }}
+        {% set wake_ts = as_timestamp(today_at(states('input_datetime.bedroom_wake_time')), none) %}
+        {% set alarm_ts = as_timestamp(states('sensor.sm_s948u1_next_alarm'), none) %}
+        {% set cands = [wake_ts, alarm_ts] | select('ne', none) | list %}
+        {% set target_ts = cands | min if cands | count > 0 else none %}
+        {{ (((as_timestamp(now()) - (target_ts - 1200)) / 1200 * 30)
+        | int | max(1)) | min(100) }}
       color_temp_kelvin: 2700
 mode: single

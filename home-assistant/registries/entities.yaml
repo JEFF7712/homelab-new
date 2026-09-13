@@ -296,9 +296,6 @@
   entity_id: sensor.sm_s948u1_network_type
   labels: []
 - disabled_by: integration
-  entity_id: sensor.sm_s948u1_next_alarm
-  labels: []
-- disabled_by: integration
   entity_id: sensor.sm_s948u1_os_version
   labels: []
 - disabled_by: integration
