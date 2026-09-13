@@ -13,6 +13,7 @@ def run_doctor(root: Path) -> dict[str, Any]:
         "git",
         "just",
         "python",
+        "node",
         "jq",
         "timeout",
         "nix",
@@ -60,6 +61,7 @@ def run_doctor(root: Path) -> dict[str, Any]:
         ".codex/hooks.json",
         ".cursor/hooks.json",
         ".mcp.json",
+        ".opencode/plugins/agent-harness.js",
         "opencode.json",
     ):
         present = (root / relative).is_file()

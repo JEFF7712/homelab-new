@@ -21,7 +21,7 @@ Read narrowly: start with `README.md`, then affected modules, tests, and runbook
 - `home-assistant/` and `scripts/home_assistant/`: Home Assistant source-first configuration.
 - `registry/` and `scripts/registry/`: local container registry supply contract.
 - `config/agent-workspaces/`, `scripts/agent_workspaces/`, and `flake/modules/agent-workspace*.nix`: multiuser agent workspaces.
-- `scripts/agent/`, `hooks/`, and client adapters (`.claude/`, `.codex/`, `.cursor/`, `opencode.json`): agent workflow tooling.
+- `scripts/agent/`, `hooks/`, `.opencode/plugins/`, and client adapters (`.claude/`, `.codex/`, `.cursor/`, `opencode.json`): agent workflow tooling.
 - `tests/`: checks; `docs/`: architecture and runbooks.
 - `secrets/`: encrypted material; `HARDWARE.md`: hardware inventory only.
 

@@ -116,6 +116,7 @@
             kubernetes-helm
             libvirt
             nixfmt
+            nodejs
             opentofu
             oras
             patchelf
@@ -141,6 +142,7 @@
                 pkgs.just
                 pkgs.kubectl
                 pkgs.libvirt
+                pkgs.nodejs
                 pkgs.patchelf
                 python
               ];

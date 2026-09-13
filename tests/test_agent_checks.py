@@ -4,7 +4,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.agent.checks import select_checks
+from scripts.agent.checks import (
+    CheckSelection,
+    SelectedCheck,
+    render_check_changed_text,
+    select_checks,
+)
 from scripts.agent.git_state import collect_git_state
 from tests.agent_helpers import commit, make_repository
 
@@ -28,6 +33,7 @@ class AgentCheckSelectionTest(unittest.TestCase):
             "gitops/platform/namespace.yaml": "gitops",
             "tofu/opnsense/network.tf": "tofu",
             "scripts/agent/context.py": "agent-workflows",
+            ".opencode/plugins/agent-harness.js": "agent-workflows",
             "scripts/agent_workspaces/core.py": "workspace-validate",
             "config/agent-workspaces/workspaces.json": "workspace-validate",
             "flake/tests/agent-workspace-packet-flow.nix": "full",
@@ -72,6 +78,40 @@ class AgentCheckSelectionTest(unittest.TestCase):
             state = collect_git_state(repository)
             selection = select_checks(state)
         self.assertEqual([item.name for item in selection.checks].count("python"), 1)
+
+    def test_text_rendering_reports_selection_and_results(self) -> None:
+        selection = CheckSelection(
+            ("docs/readme.md",),
+            (
+                SelectedCheck(
+                    "docs",
+                    ("python", "scripts/checks/docs.py"),
+                    ("docs/readme.md changes documentation",),
+                ),
+            ),
+        )
+        without_results = render_check_changed_text(selection, selection.to_dict())
+        self.assertEqual(
+            without_results, "docs: docs/readme.md changes documentation\n"
+        )
+        with_results = render_check_changed_text(
+            selection,
+            {
+                "results": [
+                    {
+                        "name": "docs",
+                        "exit_code": 1,
+                        "evidence_path": "/tmp/evidence/docs.log",
+                    }
+                ],
+                "status": "fail",
+            },
+        )
+        self.assertEqual(
+            with_results,
+            "docs: docs/readme.md changes documentation\n"
+            "result docs: exit 1, evidence /tmp/evidence/docs.log\n",
+        )
 
 
 if __name__ == "__main__":

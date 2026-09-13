@@ -6,7 +6,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from .checks import run_selection, select_checks
+from .checks import render_check_changed_text, run_selection, select_checks
 from .context import context_payload, render_context
 from .doctor import run_doctor
 from .evidence import write_evidence
@@ -154,8 +154,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     )
                 )
             else:
-                for item in selection.checks:
-                    print(f"{item.name}: {'; '.join(item.reasons)}")
+                print(render_check_changed_text(selection, payload), end="")
             return (
                 1
                 if isinstance(payload, dict) and payload.get("status") == "fail"

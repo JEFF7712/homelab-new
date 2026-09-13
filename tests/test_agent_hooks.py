@@ -238,5 +238,99 @@ class AgentStopHookTest(unittest.TestCase):
         self.assertEqual(json.loads(unscoped.stdout), {})
 
 
+class AgentOpencodePluginTest(unittest.TestCase):
+    PLUGIN = ROOT / ".opencode/plugins/agent-harness.js"
+
+    def require_node(self) -> str:
+        node = shutil.which("node")
+        if node is None:
+            self.fail("node is required for plugin tests; run nix develop ./flake")
+        return node
+
+    def test_plugin_is_valid_javascript(self) -> None:
+        node = self.require_node()
+        result = subprocess.run(
+            [node, "--check", str(self.PLUGIN)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_plugin_records_only_failed_validation_commands(self) -> None:
+        node = self.require_node()
+        with tempfile.TemporaryDirectory(prefix="agent-opencode-") as directory:
+            hooks = Path(directory) / "hooks"
+            hooks.mkdir()
+            (hooks / "validation-result").write_text(
+                '#!/usr/bin/env bash\ndir=$(dirname "$0")\ncat >> "$dir/received.jsonl"\n',
+                encoding="utf-8",
+            )
+            (hooks / "validation-result").chmod(0o755)
+            harness = (
+                "const plugin = await import("
+                + json.dumps(f"file://{self.PLUGIN}")
+                + ");"
+                + "const hooks = await plugin.AgentHarness({ worktree: "
+                + json.dumps(directory)
+                + ", directory: "
+                + json.dumps(directory)
+                + " });"
+                + 'const handler = hooks["tool.execute.after"];'
+                + "const calls = ["
+                + '{"tool": "bash", "sessionID": "sess-1", "callID": "c1",'
+                + ' "args": {"command": "just check"},'
+                + ' "output": {"title": "just check", "output": "boom",'
+                + ' "metadata": {"exit": 1}}},'
+                + '{"tool": "bash", "sessionID": "a/b c!", "callID": "c2",'
+                + ' "args": {"command": "python -m unittest"},'
+                + ' "output": {"title": "t", "output": "boom",'
+                + ' "metadata": {"exit": 2}}},'
+                + '{"tool": "bash", "sessionID": "sess-1", "callID": "c3",'
+                + ' "args": {"command": "echo hi"},'
+                + ' "output": {"title": "t", "output": "",'
+                + ' "metadata": {"exit": 1}}},'
+                + '{"tool": "bash", "sessionID": "sess-1", "callID": "c4",'
+                + ' "args": {"command": "just check"},'
+                + ' "output": {"title": "t", "output": "",'
+                + ' "metadata": {"exit": 0}}},'
+                + '{"tool": "read", "sessionID": "sess-1", "callID": "c5",'
+                + ' "args": {"filePath": "x"},'
+                + ' "output": {"title": "t", "output": "", "metadata": {}}},'
+                + '{"tool": "bash", "sessionID": "sess-1", "callID": "c6",'
+                + ' "args": {"command": "just check"},'
+                + ' "output": {"title": "t", "output": "", "metadata": {}}},'
+                + "];"
+                + "for (const call of calls) {"
+                + " await handler("
+                + " {tool: call.tool, sessionID: call.sessionID,"
+                + " callID: call.callID, args: call.args}, call.output); }"
+            )
+            result = subprocess.run(
+                [node, "--input-type=module", "-e", harness],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            received = (hooks / "received.jsonl").read_text(encoding="utf-8")
+        records = [json.loads(line) for line in received.strip().splitlines()]
+        self.assertEqual(
+            records,
+            [
+                {
+                    "session_id": "sess-1",
+                    "tool_input": {"command": "just check"},
+                    "tool_response": {"exit_code": 1},
+                },
+                {
+                    "session_id": "abc",
+                    "tool_input": {"command": "python -m unittest"},
+                    "tool_response": {"exit_code": 2},
+                },
+            ],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

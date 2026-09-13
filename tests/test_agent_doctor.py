@@ -31,10 +31,12 @@ class AgentDoctorTest(unittest.TestCase):
         names = [item["name"] for item in payload["checks"]]
         for expected in (
             "command:jq",
+            "command:node",
             "command:timeout",
             "adapter:.codex/hooks.json",
             "adapter:opencode.json",
             "adapter:.mcp.json",
+            "adapter:.opencode/plugins/agent-harness.js",
             "hook:hooks/session-start",
             "hook:hooks/stop",
             "hook:hooks/validation-result",

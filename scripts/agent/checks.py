@@ -108,7 +108,7 @@ def _route(path: str) -> list[tuple[str, str]]:
                 f"{path} changes Home Assistant configuration management",
             )
         ]
-    if path.startswith(("scripts/agent/", "hooks/", "tests/test_agent_")):
+    if path.startswith(("scripts/agent/", "hooks/", ".opencode/", "tests/test_agent_")):
         return [("agent-workflows", f"{path} changes agent workflow behavior")]
     if path.startswith(("scripts/registry/", "registry/", "tests/test_registry_")):
         return [("registry", f"{path} changes the registry supply contract")]
@@ -132,6 +132,18 @@ def select_checks(state: GitState) -> CheckSelection:
         assert command is not None
         checks.append(SelectedCheck(name, command, tuple(why)))
     return CheckSelection(state.affected_paths, tuple(checks))
+
+
+def render_check_changed_text(
+    selection: CheckSelection, payload: dict[str, Any]
+) -> str:
+    lines = [f"{item.name}: {'; '.join(item.reasons)}" for item in selection.checks]
+    for outcome in payload.get("results", []):
+        lines.append(
+            f"result {outcome['name']}: exit {outcome['exit_code']}, "
+            f"evidence {outcome['evidence_path']}"
+        )
+    return "".join(f"{line}\n" for line in lines)
 
 
 def run_selection(root: Path, selection: CheckSelection) -> dict[str, Any]:
