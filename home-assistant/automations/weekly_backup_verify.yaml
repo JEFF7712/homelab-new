@@ -9,11 +9,12 @@ conditions:
     weekday:
       - sun
 actions:
-  - variables:
-      backup_before: "{{ states('sensor.backup_last_successful_automatic_backup') }}"
   - action: backup.create_automatic
-  - wait_template: "{{ states('sensor.backup_last_successful_automatic_backup') != backup_before }}"
-    timeout: "01:00:00"
+  - wait_for_trigger:
+      - trigger: state
+        entity_id: sensor.backup_last_successful_automatic_backup
+    timeout:
+      hours: 1
     continue_on_timeout: true
   - choose:
       - conditions:

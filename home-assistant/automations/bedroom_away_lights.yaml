@@ -67,4 +67,4 @@ actions:
           - action: scene.turn_on
             target:
               entity_id: scene.pre_away_bedroom
-mode: single
+mode: queued

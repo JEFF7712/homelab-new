@@ -95,4 +95,4 @@ actions:
           - action: switch.turn_on
             target:
               entity_id: switch.0xffffb40e0608faec
-mode: single
+mode: queued

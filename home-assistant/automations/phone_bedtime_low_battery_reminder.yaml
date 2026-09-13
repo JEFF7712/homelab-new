@@ -9,6 +9,7 @@ triggers:
   - trigger: numeric_state
     entity_id: sensor.rupan_phone_battery_level
     below: 30
+    for: "00:05:00"
 conditions:
   - condition: time
     after: "21:30:00"
