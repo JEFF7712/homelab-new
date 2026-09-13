@@ -104,6 +104,7 @@
             apacheHttpd
             attic-client
             cosign
+            cloud-utils
             curl
             dnsutils
             git
@@ -113,11 +114,13 @@
             kubeconform
             kubectl
             kubernetes-helm
+            libvirt
             nixfmt
             opentofu
             oras
             patchelf
             pyright
+            qemu_kvm
             python
             ruff
             shellcheck
@@ -137,6 +140,7 @@
                 pkgs.jq
                 pkgs.just
                 pkgs.kubectl
+                pkgs.libvirt
                 pkgs.patchelf
                 python
               ];
@@ -146,6 +150,67 @@
               python -m unittest discover -s tests
               touch $out
             '';
+
+        checks.agent-workspace-network =
+          let
+            evaluated = nixpkgs.lib.nixosSystem {
+              inherit system;
+              modules = [
+                ./modules/agent-workspace-network.nix
+                {
+                  system.stateVersion = "26.05";
+                  networking.hostName = "homelab-01";
+                  networking.useNetworkd = true;
+                  services.agent-workspace-network.enable = true;
+                }
+              ];
+            };
+          in
+          pkgs.runCommand "agent-workspace-network-evaluation" { } ''
+            test ${nixpkgs.lib.escapeShellArg (builtins.toJSON (builtins.attrNames evaluated.config.networking.nftables.tables))} = '["agent-workspaces"]'
+            touch $out
+          '';
+
+        checks.agent-workspace-packet-flow = import ./tests/agent-workspace-packet-flow.nix {
+          inherit nixpkgs system;
+        };
+
+        checks.agent-workspace-host-reservations =
+          let
+            host = self.nixosConfigurations.homelab-01.config;
+          in
+          pkgs.runCommand "agent-workspace-host-reservations" { } ''
+            test ${nixpkgs.lib.escapeShellArg (builtins.toJSON host.services.k3s.extraFlags)} = ${
+              nixpkgs.lib.escapeShellArg (
+                builtins.toJSON [
+                  "--node-ip=10.0.30.11"
+                  "--advertise-address=10.0.30.11"
+                  "--flannel-backend=none"
+                  "--disable-network-policy"
+                  "--cluster-cidr=10.42.0.0/16"
+                  "--service-cidr=10.43.0.0/16"
+                  "--disable-kube-proxy"
+                  "--disable=servicelb"
+                  "--disable=traefik"
+                  "--disable=local-storage"
+                  "--kubelet-arg=system-reserved=cpu=2,memory=10Gi"
+                ]
+              )
+            }
+            test ${
+              nixpkgs.lib.escapeShellArg host.systemd.slices."machine-agent\\x2dworkspaces".sliceConfig.CPUQuota
+            } = 200%
+            test ${
+              nixpkgs.lib.escapeShellArg host.systemd.slices."machine-agent\\x2dworkspaces".sliceConfig.MemoryMax
+            } = 10240M
+            touch $out
+          '';
+
+        checks.agent-workspace-libvirt-normalization =
+          import ./tests/agent-workspace-libvirt-normalization.nix
+            {
+              inherit nixpkgs system;
+            };
 
         checks.zot-registry = self.nixosConfigurations.nas-01.config.services.homelab-zot-registry.package;
       }

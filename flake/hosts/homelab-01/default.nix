@@ -3,6 +3,8 @@
     ./disk-config.nix
     ./hardware-configuration.nix
     ../../modules/k3s-server.nix
+    ../../modules/agent-workspaces.nix
+    ../../modules/agent-workspace-network.nix
   ];
 
   networking.hostName = "homelab-01";
@@ -25,6 +27,13 @@
     clusterInit = true;
     bootstrapCilium = true;
   };
+
+  services.k3s.extraFlags = [
+    "--kubelet-arg=system-reserved=cpu=2,memory=10Gi"
+  ];
+
+  services.agent-workspaces.enable = true;
+  services.agent-workspace-network.enable = true;
 
   system.stateVersion = "26.05";
 }

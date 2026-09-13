@@ -1,0 +1,83 @@
+from __future__ import annotations
+
+import argparse
+import json
+import pathlib
+import sys
+
+from .core import WorkspaceError, load_manifest, render_plan
+from .lifecycle import deprovision_workspace, provision_status, provision_workspace
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="python -m scripts.agent_workspaces")
+    parser.add_argument(
+        "--manifest",
+        type=pathlib.Path,
+        default=pathlib.Path("config/agent-workspaces/workspaces.json"),
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers.add_parser("validate", help="validate the offline workspace inventory")
+    subparsers.add_parser(
+        "plan", help="render a deterministic, non-mutating libvirt plan"
+    )
+    status = subparsers.add_parser(
+        "status", help="inspect domains, disks, and provisioning receipts"
+    )
+    status.add_argument("workspace_id")
+    provision = subparsers.add_parser(
+        "provision", help="provision one validated workspace"
+    )
+    provision.add_argument("workspace_id")
+    provision.add_argument("--authorized", action="store_true")
+    deprovision = subparsers.add_parser(
+        "deprovision", help="undefine one verified workspace while preserving disks"
+    )
+    deprovision.add_argument("workspace_id")
+    deprovision.add_argument("--authorized", action="store_true")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    try:
+        workspaces = load_manifest(args.manifest)
+        if args.command == "validate":
+            print(
+                json.dumps(
+                    {
+                        "status": "ok",
+                        "workspaces": len(workspaces),
+                        "enabled": sum(item.raw["enabled"] for item in workspaces),
+                    },
+                    sort_keys=True,
+                )
+            )
+        elif args.command == "plan":
+            print(json.dumps(render_plan(workspaces), indent=2, sort_keys=True))
+        else:
+            selected = next(
+                (
+                    workspace
+                    for workspace in workspaces
+                    if workspace.id == args.workspace_id
+                ),
+                None,
+            )
+            if selected is None:
+                raise WorkspaceError(f"unknown workspace: {args.workspace_id}")
+            if args.command == "status":
+                result = provision_status(selected)
+            elif args.command == "provision":
+                result = provision_workspace(selected, authorized=args.authorized)
+            else:
+                result = deprovision_workspace(selected, authorized=args.authorized)
+            print(json.dumps(result, indent=2, sort_keys=True))
+    except WorkspaceError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
