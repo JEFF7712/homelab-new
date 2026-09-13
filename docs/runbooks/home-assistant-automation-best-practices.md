@@ -132,7 +132,7 @@ Fixed, `a1_print_progress_milestones` re-arm on blips: added a `from_state` unav
 
 Fixed, `ha_core_update_available` restart blip: added a `from_state` guard. Tradeoff accepted: a release published while HA is down is missed once (the update entity persists in the UI).
 
-P2, restart amnesia on long waits: `a1_print_idle_reminder` (1 hour `for:`) and the stall detector (15 minute wait) still reset silently on restart, and the chamber light delay gap is documented but has no HA-start reconciliation trigger. Acceptable for reminders, not for safety offs. Optional follow-up: HA-start reconciliation for the chamber light (if print status is not running and chamber light is on, turn it off).
+P2, restart amnesia on long waits: `a1_print_idle_reminder` (1 hour `for:`) and the stall detector (15 minute wait) still reset silently on restart. The chamber light gap is closed by `a1_chamber_light_reconcile` (HA-start trigger, 60 second settle, off when not running). Acceptable for reminders, not for safety offs.
 
 P2, entity hygiene: Zigbee plugs still carry IEEE-ish IDs (`switch.0xffffb40e0608c96f` etc.) repeated across 6 plus automations, and only 2 of the implied set carry the `shared_space` label while the shared-spaces automation targets both the label and hardcoded lists. Rename to functional IDs (`switch.bedroom_window_plug`) via the safe-refactoring workflow (impact analysis across automations, scripts, scenes, dashboards, and config-entry data, then group membership repair), or at minimum converge all shared-space members onto the label and target the label everywhere.
 

@@ -1,0 +1,28 @@
+id: a1_chamber_light_reconcile
+alias: "A1: Chamber Light Reconcile on Start"
+description: >-
+  Turn off the A1 chamber light on HA start when no print is running.
+  Covers the restart gap in the auto-off delay: a restart during the
+  5 minute delay cancels that run and would otherwise leave the light
+  on. States are checked after a 60 second settle, not at trigger time.
+triggers:
+  - trigger: homeassistant
+    event: start
+conditions: []
+actions:
+  - delay:
+      seconds: 60
+  - if:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: sensor.a1_03900d642327265_print_status
+            state: running
+      - condition: state
+        entity_id: light.a1_03900d642327265_chamber_light
+        state: "on"
+    then:
+      - action: light.turn_off
+        target:
+          entity_id: light.a1_03900d642327265_chamber_light
+mode: single
