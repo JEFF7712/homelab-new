@@ -8,7 +8,7 @@ Host: `homelab-01`
 
 The host foundation is deployed and enabled. No user is enrolled: the versioned workspace inventory is empty and no persistent workspace domain exists. One disposable Ubuntu 24.04 guest was booted and exercised, then its domain, disks, runtime policy, key material, and temporary network objects were removed after inspection.
 
-This evidence accepts the single-guest foundation only. It does not accept production enrollment, two-user contention, real LAN and NetBird identities, browser authentication, agent credentials, backup recovery, HA automation deployment, or bedroom isolation.
+This evidence accepts the single-guest foundation and the two-guest isolation and resource-pressure gate. It does not accept production enrollment, real LAN and NetBird identities, browser authentication, agent credentials, backup recovery, HA automation deployment, or bedroom isolation.
 
 ## Desired and deployed state
 
@@ -49,14 +49,14 @@ Tagged-frame and alternate-source-IP probes were attempted, but their live nftab
 
 | Gate | Required evidence | Status |
 | --- | --- | --- |
-| Two simultaneous guests | The initial runner measured two 2-vCPU, 2 GiB guests for 60 seconds: 121.57 aggregate CPU seconds, 2 GiB written, 759,887,130 bytes received, 11 healthy in-load samples, and failed peer connections. That [raw evidence](evidence/agent-workspace-two-guest-2026-09-13.json) predates minimum-load and firewall-counter enforcement. A hardened rerun rejected asymmetric counter attribution, which was corrected, then a later rerun stopped at the pre-load gate because HA was unavailable with its pod at `1/2 ImagePullBackOff`. Both failed attempts contained and removed the guests. | Pending a successful hardened rerun |
+| Two simultaneous guests | The hardened runner at merge `256bf578c82fc5385470cdb8d44ce4ebaf6fff1b` ran two 2-vCPU, 2 GiB guests for 60 seconds against deployed workspace revision `914629e8ffd1df8516c9661c6f12476fcb288e53`. It measured 123.43 aggregate CPU seconds, 1 GiB written per guest, 342,202,643 and 319,747,209 bytes received, verified SSH listeners, and observed three firewall drops in each peer direction. Before, after, and all 11 in-load samples retained three Ready nodes, three etcd voters, PostgreSQL `SELECT 1`, HA HTTP 200, and no pressure conditions. Maximum observed latencies were 0.297 seconds for node status, 0.209 seconds for etcd readiness, 0.336 seconds for PostgreSQL, and 0.031 seconds for HA. The [raw evidence](evidence/agent-workspace-two-guest-hardened-2026-09-14.json) records the accepted run. Both domains, disk trees, bridges, and temporary policy were absent after cleanup; nftables and HA remained healthy. | Accepted |
 | Real access identities | LAN access while NetBird is stopped; remote NetBird access from outside the LAN; cross-user SSH and browser login denial | Not run |
 | Browser and agent use | Authenticated browser session, per-user cloud agent credentials, persisted work, disconnect/reconnect, reboot, and credential revocation | Not run |
 | Backup recovery | Quiesced encrypted backup restored to a separate isolated domain; content and boot verified before any network attachment | Not run |
 | HA capability deployment | Capability API and trusted worker policy rejection, bounded accepted change, exact-resource Git transaction, protected CI, and authenticated live readback | Not implemented |
 | Bedroom isolation | Separate controller/authentication/MQTT boundary and physical denial tests | Separate unverified milestone |
 
-Do not add enabled inventory entries or distribute ingress credentials until the two-guest, real-access, browser-and-agent, backup-recovery, and HA-capability gates are accepted against the same deployed revision or explicitly revalidated after a newer deployment. Bedroom isolation remains a separate milestone.
+Do not add enabled inventory entries or distribute ingress credentials until the real-access, browser-and-agent, backup-recovery, and HA-capability gates are accepted against the same deployed revision or explicitly revalidated after a newer deployment. Bedroom isolation remains a separate milestone.
 
 ## Recovery
 

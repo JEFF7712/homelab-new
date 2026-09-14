@@ -1,0 +1,446 @@
+{
+  "duration_seconds": 60,
+  "health": {
+    "after": {
+      "captured_at": "2026-09-14T04:57:41.800145+00:00",
+      "etcd": {
+        "readyz_seconds": 0.10962093295529485,
+        "voters": 3
+      },
+      "home_assistant": {
+        "http_status": 200,
+        "seconds": 0.010512965964153409
+      },
+      "nodes": {
+        "ready": 3,
+        "seconds": 0.1276537859812379,
+        "total": 3
+      },
+      "postgres": {
+        "query": "SELECT 1",
+        "seconds": 0.18846734298858792
+      },
+      "pressure_conditions": [],
+      "workspace_slice": {
+        "cpu_quota_per_second": "2s",
+        "cpu_usage_nsec": 1592983914000,
+        "memory_current_bytes": 4395569152,
+        "memory_high_bytes": 9663676416,
+        "memory_max_bytes": 10737418240,
+        "memory_peak_bytes": 4453249024,
+        "oomd_action": "kill",
+        "seconds": 0.007099681068211794
+      }
+    },
+    "before": {
+      "captured_at": "2026-09-14T04:56:30.479787+00:00",
+      "etcd": {
+        "readyz_seconds": 0.11741800408344716,
+        "voters": 3
+      },
+      "home_assistant": {
+        "http_status": 200,
+        "seconds": 0.012962677050381899
+      },
+      "nodes": {
+        "ready": 3,
+        "seconds": 0.12495946907438338,
+        "total": 3
+      },
+      "postgres": {
+        "query": "SELECT 1",
+        "seconds": 0.1981318489415571
+      },
+      "pressure_conditions": [],
+      "workspace_slice": {
+        "cpu_quota_per_second": "2s",
+        "cpu_usage_nsec": 1469554639000,
+        "memory_current_bytes": 2804944896,
+        "memory_high_bytes": 9663676416,
+        "memory_max_bytes": 10737418240,
+        "memory_peak_bytes": 4453249024,
+        "oomd_action": "kill",
+        "seconds": 0.01019286795053631
+      }
+    },
+    "during": [
+      {
+        "captured_at": "2026-09-14T04:56:44.126825+00:00",
+        "etcd": {
+          "readyz_seconds": 0.18287286499980837,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.027429089066572487
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.2770727699389681,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.2711087520001456
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1482024023000,
+          "memory_current_bytes": 3445903360,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.0277885360410437
+        }
+      },
+      {
+        "captured_at": "2026-09-14T04:56:49.851409+00:00",
+        "etcd": {
+          "readyz_seconds": 0.20876769395545125,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.010739302961155772
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.20235284697264433,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.28695662098471075
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1493615614000,
+          "memory_current_bytes": 4157493248,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.015018736943602562
+        }
+      },
+      {
+        "captured_at": "2026-09-14T04:56:55.623273+00:00",
+        "etcd": {
+          "readyz_seconds": 0.1710346769541502,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.03059804392978549
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.20882516098208725,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.3356361649930477
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1505019331000,
+          "memory_current_bytes": 4397072384,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.02507653704378754
+        }
+      },
+      {
+        "captured_at": "2026-09-14T04:57:01.392163+00:00",
+        "etcd": {
+          "readyz_seconds": 0.16047343995887786,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.013831304968334734
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.259183645946905,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.3129404670326039
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1516613579000,
+          "memory_current_bytes": 4396417024,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.021745459991507232
+        }
+      },
+      {
+        "captured_at": "2026-09-14T04:57:07.144019+00:00",
+        "etcd": {
+          "readyz_seconds": 0.1727757010376081,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.011179577908478677
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.24489894497673959,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.29083318391349167
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1528164026000,
+          "memory_current_bytes": 4396085248,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.031519714975729585
+        }
+      },
+      {
+        "captured_at": "2026-09-14T04:57:12.966380+00:00",
+        "etcd": {
+          "readyz_seconds": 0.185265320003964,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.011758164968341589
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.2967371590202674,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.3053028010763228
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1539617207000,
+          "memory_current_bytes": 4396118016,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.022598830051720142
+        }
+      },
+      {
+        "captured_at": "2026-09-14T04:57:18.687920+00:00",
+        "etcd": {
+          "readyz_seconds": 0.18438675603829324,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.016846999060362577
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.19137893104925752,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.3169988049194217
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1551231107000,
+          "memory_current_bytes": 4395708416,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.011277962941676378
+        }
+      },
+      {
+        "captured_at": "2026-09-14T04:57:24.405745+00:00",
+        "etcd": {
+          "readyz_seconds": 0.16081426898017526,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.0189709059195593
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.22439762006979436,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.28014226793311536
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1562738997000,
+          "memory_current_bytes": 4395659264,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.03163598699029535
+        }
+      },
+      {
+        "captured_at": "2026-09-14T04:57:30.163981+00:00",
+        "etcd": {
+          "readyz_seconds": 0.15657517302315682,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.01141545595601201
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.2725947640137747,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.2895983849884942
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1574193117000,
+          "memory_current_bytes": 4395601920,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.027305103023536503
+        }
+      },
+      {
+        "captured_at": "2026-09-14T04:57:35.880711+00:00",
+        "etcd": {
+          "readyz_seconds": 0.14455542189534754,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.011220223968848586
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.24938423209823668,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.28466096497140825
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1585647543000,
+          "memory_current_bytes": 4395589632,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.02621825796086341
+        }
+      },
+      {
+        "captured_at": "2026-09-14T04:57:41.356225+00:00",
+        "etcd": {
+          "readyz_seconds": 0.10590981401037425,
+          "voters": 3
+        },
+        "home_assistant": {
+          "http_status": 200,
+          "seconds": 0.011203865986317396
+        },
+        "nodes": {
+          "ready": 3,
+          "seconds": 0.14471889298874885,
+          "total": 3
+        },
+        "postgres": {
+          "query": "SELECT 1",
+          "seconds": 0.1915211189771071
+        },
+        "pressure_conditions": [],
+        "workspace_slice": {
+          "cpu_quota_per_second": "2s",
+          "cpu_usage_nsec": 1592959111000,
+          "memory_current_bytes": 4395569152,
+          "memory_high_bytes": 9663676416,
+          "memory_max_bytes": 10737418240,
+          "memory_peak_bytes": 4453249024,
+          "oomd_action": "kill",
+          "seconds": 0.021432013949379325
+        }
+      }
+    ]
+  },
+  "isolation": {
+    "firewall_drop_delta": {
+      "acceptance-a": 3,
+      "acceptance-b": 3
+    },
+    "listeners_verified": [
+      "acceptance-a",
+      "acceptance-b"
+    ]
+  },
+  "kind": "agent-workspace-two-guest-acceptance",
+  "network_target_host": "photos.rupan.dev",
+  "pressure": [
+    {
+      "disk_bytes": 1073741824,
+      "disk_seconds": 16,
+      "rx_bytes": 342202643,
+      "seconds": 60.289839969947934,
+      "tx_bytes": 3994278,
+      "workspace_id": "acceptance-a"
+    },
+    {
+      "disk_bytes": 1073741824,
+      "disk_seconds": 14,
+      "rx_bytes": 319747209,
+      "seconds": 60.295068611972965,
+      "tx_bytes": 3952188,
+      "workspace_id": "acceptance-b"
+    }
+  ],
+  "result": "accepted",
+  "schema_version": 1,
+  "workspace_ids": [
+    "acceptance-a",
+    "acceptance-b"
+  ]
+}
