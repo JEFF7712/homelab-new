@@ -215,6 +215,34 @@ registry_update_import:
     paths:
       - artifacts/registry/
 
+registry_lock_import:
+  stage: registry
+  tags:
+    - nas-privileged
+  environment:
+    name: production
+  resource_group: registry-content
+  needs:
+    - registry_lock
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  script:
+    - export REGISTRY_DEST_AUTH_FILE="$REGISTRY_IMPORTER_AUTH_FILE"
+    - export REGISTRY_SOURCE_AUTH_FILE
+    - >-
+      nix develop ./flake -c python -m scripts.registry copy
+      --lock registry/images.lock.json --kind upstream
+      --report artifacts/registry/lock-import-report.json
+    - >-
+      nix develop ./flake -c python -m scripts.registry verify
+      --lock registry/images.lock.json --kind upstream
+      --report artifacts/registry/lock-verify-report.json
+  artifacts:
+    expire_in: 30 days
+    paths:
+      - artifacts/registry/
+
 .registry_ssh:
   tags:
     - nas-privileged
