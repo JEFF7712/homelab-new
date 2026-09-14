@@ -647,7 +647,9 @@ class OciClient:
             )
         return self._run(args, operation="manifest inspection", timeout=timeout)
 
-    def copy(self, source: str, destination: str, *, timeout: float | None = None) -> None:
+    def copy(
+        self, source: str, destination: str, *, timeout: float | None = None
+    ) -> None:
         if self.copy_tool != "skopeo":
             raise RegistryError("digest-preserving copy requires skopeo")
         args = [
@@ -852,9 +854,7 @@ def _inspect_digest(
     timeout: float | None = None,
 ) -> tuple[str, str, list[str]]:
     if isinstance(client, OciClient):
-        raw = client.raw_manifest(
-            reference, destination=destination, timeout=timeout
-        )
+        raw = client.raw_manifest(reference, destination=destination, timeout=timeout)
     else:
         raw = client.raw_manifest(reference, destination=destination)
     digest = "sha256:" + hashlib.sha256(raw).hexdigest()
@@ -972,7 +972,9 @@ def _copy_one(
     progress: Any,
 ) -> dict[str, Any]:
     started = time.monotonic()
-    destination_base = f"{lock['destination_registry']}/{record['destination_repository']}"
+    destination_base = (
+        f"{lock['destination_registry']}/{record['destination_repository']}"
+    )
     source = f"{record['source']['registry']}/{record['source']['repository']}@{record['digest']}"
     status = "reused"
     errors: list[str] = []
@@ -1040,7 +1042,10 @@ def _copy_one(
         "destination": f"{destination_base}@{record['digest']}",
         "expected_digest": record["digest"],
         "observed_digest": record["digest"] if not errors else None,
-        "platforms": {"expected": record["platforms"], "observed": record["platforms"] if not errors else []},
+        "platforms": {
+            "expected": record["platforms"],
+            "observed": record["platforms"] if not errors else [],
+        },
         "referrers": [],
         "errors": errors,
     }
@@ -1064,7 +1069,8 @@ def copy_lock(
     if progress is None:
         progress = lambda message: None
     records = [
-        record for record in sorted(lock["images"], key=lambda item: item["id"])
+        record
+        for record in sorted(lock["images"], key=lambda item: item["id"])
         if kind is None or record["kind"] == kind
     ]
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
