@@ -16,6 +16,27 @@ views:
               - type: light-color
             type: tile
       - cards:
+          - heading: All Devices
+            type: heading
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: All On
+                icon: mdi:power
+                tap_action:
+                  action: perform-action
+                  perform_action: homeassistant.turn_on
+                  target:
+                    label_id: shared_space
+              - type: button
+                name: All Off
+                icon: mdi:power-off
+                tap_action:
+                  action: perform-action
+                  perform_action: homeassistant.turn_off
+                  target:
+                    label_id: shared_space
+      - cards:
           - heading: Rooms
             type: heading
           - name: Stairs
