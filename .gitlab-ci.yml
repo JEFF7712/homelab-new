@@ -460,13 +460,13 @@ opnsense_ipv6_inventory:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
-    - >-
-      nix develop ./flake -c python -c '
+    - |
+      nix develop ./flake -c python - <<'PY'
       import json
       from pathlib import Path
       data = json.loads(Path("artifacts/opnsense/inventory.json").read_text())
       print(json.dumps(data["interfaces"], indent=2, sort_keys=True))
-      '
+      PY
 
 opnsense_plan:
   stage: opnsense
