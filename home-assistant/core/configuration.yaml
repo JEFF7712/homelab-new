@@ -15,6 +15,13 @@ light:
     entities:
       - light.living_room_mushroom_lamp
       - light.living_room_floor_lamp
+  - platform: group
+    name: All Govee Lights
+    entities:
+      - light.kitchen_light
+      - light.kitchen_light_2
+      - light.living_room_mushroom_lamp
+      - light.living_room_floor_lamp
 homekit:
   - name: Homelab Bridge
     port: 21063

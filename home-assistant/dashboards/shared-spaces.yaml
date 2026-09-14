@@ -6,6 +6,16 @@ views:
   - title: Shared Spaces
     sections:
       - cards:
+          - heading: All Lights
+            type: heading
+          - entity: light.all_govee_lights
+            name: All Govee Lights
+            features:
+              - type: light-brightness
+              - type: light-color-temp
+              - type: light-color
+            type: tile
+      - cards:
           - heading: Rooms
             type: heading
           - name: Stairs
