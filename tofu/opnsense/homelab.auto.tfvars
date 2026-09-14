@@ -137,7 +137,7 @@ firewall_filters = {
       action      = "pass"
       direction   = "in"
       ip_protocol = "inet"
-      protocol    = "udp"
+      protocol    = "UDP"
       quick       = true
       log         = false
       source      = { net = "10.0.20.0/24", port = "4002" }
@@ -265,7 +265,7 @@ firewall_filters = {
       action      = "pass"
       direction   = "in"
       ip_protocol = "inet"
-      protocol    = "udp"
+      protocol    = "UDP"
       quick       = true
       log         = false
       source      = { net = "10.0.30.0/24", port = "4001" }
