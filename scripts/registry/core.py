@@ -1067,7 +1067,10 @@ def copy_lock(
     if image_timeout <= 0:
         raise RegistryError("image timeout must be positive")
     if progress is None:
-        progress = lambda message: None
+
+        def progress(message: str) -> None:
+            del message
+
     records = [
         record
         for record in sorted(lock["images"], key=lambda item: item["id"])
