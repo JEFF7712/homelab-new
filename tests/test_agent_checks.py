@@ -34,6 +34,8 @@ class AgentCheckSelectionTest(unittest.TestCase):
             "tofu/opnsense/network.tf": "tofu",
             "scripts/agent/context.py": "agent-workflows",
             ".opencode/plugins/agent-harness.js": "agent-workflows",
+            "3d-prints/wyse5070_extended_t1/params.py": "3d-prints",
+            "tests/test_wyse5070_mount.py": "3d-prints",
             "scripts/agent_workspaces/core.py": "workspace-validate",
             "config/agent-workspaces/workspaces.json": "workspace-validate",
             "flake/tests/agent-workspace-packet-flow.nix": "full",

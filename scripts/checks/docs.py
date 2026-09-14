@@ -1,8 +1,9 @@
 """Fail on trailing whitespace in repository Markdown files.
 
-Vendored dependency trees are skipped: their contents are not owned by this
-repository (for example, OpenCode manages .opencode/node_modules itself and
-ignores it via .opencode/.gitignore).
+Skipped trees are not owned prose: vendored dependency content (for example,
+OpenCode manages .opencode/node_modules itself and ignores it via
+.opencode/.gitignore) and CAD sources under 3d-prints/ (binaries, generated
+code, and PRDs that use Markdown hard-break trailing spaces).
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
-SKIP_DIRECTORIES = frozenset({".git", ".agent-state", "node_modules"})
+SKIP_DIRECTORIES = frozenset({".git", ".agent-state", "node_modules", "3d-prints"})
 
 
 def iter_markdown_files(root: Path) -> Iterator[Path]:

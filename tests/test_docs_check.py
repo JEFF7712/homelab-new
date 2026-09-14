@@ -16,6 +16,9 @@ class DocsCheckTest(unittest.TestCase):
             vendored = root / ".opencode" / "node_modules" / "dep"
             vendored.mkdir(parents=True)
             (vendored / "README.md").write_text("dirty   \n", encoding="utf-8")
+            prints = root / "3d-prints" / "rack_extension"
+            prints.mkdir(parents=True)
+            (prints / "part.md").write_text("break  \n", encoding="utf-8")
 
             errors = trailing_whitespace_errors(root)
             scanned = list(iter_markdown_files(root))
