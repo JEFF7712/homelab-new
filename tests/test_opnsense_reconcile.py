@@ -116,6 +116,9 @@ class ReconcileInterfaceTests(unittest.TestCase):
             seen["relay_client"] = client
             seen["relays"] = desired
 
+        def ensure_relay_plugin(client: object) -> None:
+            seen["relay_plugin_client"] = client
+
         def prove_bgp(
             client: object, peers: dict[str, int], routes: set[str]
         ) -> object:
@@ -180,6 +183,7 @@ class ReconcileInterfaceTests(unittest.TestCase):
                 reconcile_outbound=reconcile_outbound,
                 reconcile_acls=reconcile_acls,
                 reconcile_relays=reconcile_relays,
+                ensure_relay_plugin=ensure_relay_plugin,
                 prove_bgp=prove_bgp,
             )
 

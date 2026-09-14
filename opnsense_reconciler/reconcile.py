@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -98,6 +99,26 @@ UDP_RELAY_FIELDS = (
     "RevertTTL",
     "description",
 )
+
+
+def ensure_udp_broadcast_relay_plugin(client: Client) -> None:
+    endpoint = "/api/udpbroadcastrelay/settings/search_relay"
+    try:
+        client.get(endpoint)
+        return
+    except RuntimeError as error:
+        if "HTTP 404" not in str(error):
+            raise
+    _require_stored(client.post("/api/core/firmware/install/os-udpbroadcastrelay", {}))
+    for _ in range(12):
+        time.sleep(5)
+        try:
+            client.get(endpoint)
+            return
+        except RuntimeError as error:
+            if "HTTP 404" not in str(error):
+                raise
+    raise RuntimeError("OPNsense UDP broadcast relay plugin did not become available")
 
 
 def reconcile_udp_broadcast_relays(
@@ -771,6 +792,7 @@ def main(
         [Client, bool, list[dict[str, object]]], None
     ] = reconcile_interfaces,
     reconcile_kea: Callable[[Client, set[str]], None] = reconcile_kea_interfaces,
+    ensure_relay_plugin: Callable[[Client], None] = ensure_udp_broadcast_relay_plugin,
     reconcile_relays: Callable[
         [Client, list[dict[str, object]]], None
     ] = reconcile_udp_broadcast_relays,
@@ -861,6 +883,7 @@ def main(
     )
     reconcile(client, inventory["assignment_api_available"], desired)
     reconcile_kea(client, set(desired_kea_interfaces))
+    ensure_relay_plugin(client)
     reconcile_relays(client, desired_udp_broadcast_relays)
     expected_peers = reconcile_bgp(client, desired_bgp_neighbors)
     reconcile_outbound(client, desired_outbound_nat)
