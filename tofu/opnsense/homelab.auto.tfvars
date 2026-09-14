@@ -259,7 +259,7 @@ firewall_filters = {
   infrastructure-allow-govee-queries = {
     description = "Allow Home Assistant Govee LAN queries"
     enabled     = true
-    sequence    = 316
+    sequence    = 314
     interface   = { interface = ["opt3"] }
     filter = {
       action      = "pass"
@@ -268,8 +268,24 @@ firewall_filters = {
       protocol    = "UDP"
       quick       = true
       log         = false
-      source      = { net = "10.0.30.0/24", port = "4001" }
+      source      = { net = "10.0.30.0/24", port = "4002" }
       destination = { net = "10.0.20.0/24", port = "4001" }
+    }
+  }
+  infrastructure-allow-govee-multicast = {
+    description = "Allow Home Assistant Govee multicast discovery"
+    enabled     = true
+    sequence    = 315
+    interface   = { interface = ["opt3"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet"
+      protocol    = "UDP"
+      quick       = true
+      log         = false
+      source      = { net = "10.0.30.0/24", port = "4002" }
+      destination = { net = "239.255.255.250/32", port = "4001" }
     }
   }
   infrastructure-allow-matter-bulbs = {
