@@ -1226,7 +1226,6 @@ def render_access_control(lock: Mapping[str, Any]) -> dict[str, Any]:
         "apps/**": {
             "policies": [
                 {"users": ["node"], "actions": read},
-                {"users": ["migration-importer"], "actions": write},
             ],
             "defaultPolicy": [],
         },
@@ -1234,7 +1233,6 @@ def render_access_control(lock: Mapping[str, Any]) -> dict[str, Any]:
             "policies": [
                 {"users": ["node"], "actions": read},
                 {"users": ["importer"], "actions": write},
-                {"users": ["migration-importer"], "actions": write},
             ],
             "defaultPolicy": [],
         },
@@ -1250,7 +1248,6 @@ def render_access_control(lock: Mapping[str, Any]) -> dict[str, Any]:
             "policies": [
                 {"users": ["node"], "actions": read},
                 {"users": [f"publisher-{project}"], "actions": write},
-                {"users": ["migration-importer"], "actions": write},
             ],
             "defaultPolicy": [],
         }

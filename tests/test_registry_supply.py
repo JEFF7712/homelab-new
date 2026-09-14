@@ -441,10 +441,6 @@ class PolicyAndNodeConfigTest(unittest.TestCase):
                     "users": ["publisher-demo"],
                     "actions": ["read", "create", "update"],
                 },
-                {
-                    "users": ["migration-importer"],
-                    "actions": ["read", "create", "update"],
-                },
             ],
         )
         self.assertEqual(

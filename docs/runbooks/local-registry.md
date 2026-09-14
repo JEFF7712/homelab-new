@@ -25,7 +25,7 @@ Provision these as protected files before the corresponding NixOS activation. Do
 
 | Host | Path | Required content |
 | --- | --- | --- |
-| `nas-01` | `/persist/zot/htpasswd` | bcrypt htpasswd entries for active node, importer, migration, maintenance, and migrated publisher identities |
+| `nas-01` | `/persist/zot/htpasswd` | bcrypt htpasswd entries for active node, importer, maintenance, and publisher identities |
 | `nas-01` | `/persist/zot/access-control.json` | generated from the committed lock by `scripts.registry access-control` |
 | `nas-01` | `/persist/zot/restic-password` | independently retained restic repository password |
 | `nas-01` | `/persist/zot/cloudflare-dns-api-token` | narrowly scoped Cloudflare DNS API token for DNS-01 |
@@ -44,7 +44,6 @@ Configure the following protected GitLab variables as file variables:
 | `REGISTRY_RESTIC_PASSWORD_FILE` | independently retained restic password |
 | `REGISTRY_NODE_PASSWORD_FILE` | password for the `node` htpasswd identity |
 | `REGISTRY_SOURCE_AUTH_FILE` | OCI auth file for source registries |
-| `REGISTRY_MIGRATION_AUTH_FILE` | destination OCI auth file for the temporary `migration-importer` identity |
 | `REGISTRY_IMPORTER_AUTH_FILE` | destination OCI auth file for the ongoing `importer` identity |
 | `REGISTRY_MAINTENANCE_AUTH_FILE` | recovery-only destination auth file for the `maintenance` identity |
 
@@ -56,10 +55,10 @@ jq -r '[.adminPolicy.users[], .repositories[].policies[]?.users[]] | unique[]' \
   /tmp/zot-access-control.json
 ```
 
-The generated policy identities are `node`, `importer`, `migration-importer`,
-`maintenance`, and one `publisher-<project>` identity for each first-party
-destination in the lock. Initially create htpasswd entries only for `node`,
-`importer`, `migration-importer`, and `maintenance`. Add a project publisher's
+The generated policy identities are `node`, `importer`, `maintenance`, and one
+`publisher-<project>` identity for each first-party destination in the lock.
+Initially create htpasswd entries only for `node`, `importer`, and
+`maintenance`. Add a project publisher's
 htpasswd entry and protected producer credential only when that producer is
 authorized for cutover. A policy entry without an htpasswd credential is inert.
 Zot chooses the longest matching repository path, so every exact application
@@ -67,13 +66,9 @@ policy explicitly includes both its publisher and the node reader. The CI
 platform job regenerates the same policy from the reviewed lock and installs it
 as a runtime file.
 
-The migration identity can create and update both application and upstream
-repositories but cannot delete. Use it only for the initial `registry_import`.
-Remove its htpasswd entry and rotate its CI auth file after initial content
-acceptance; the remaining inert ACL entry grants nothing without a valid
-credential. After removal, `registry_import` is an archival bootstrap job and
-must fail authentication if replayed. Node rollout instead verifies the full
-lock with the read-only node identity before activation. The ongoing
+The retired migration identity has no policy entry, htpasswd entry, or CI
+credential. The old bootstrap import path is removed. Node rollout verifies the
+full lock with the read-only node identity before activation. The ongoing
 `registry_update_import` job uses the upstream-only `importer` identity.
 
 Zot authorization roles are intentionally separate:

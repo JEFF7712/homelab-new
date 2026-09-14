@@ -334,38 +334,6 @@ deploy_zigbee_gateway:
       'sudo test -e /dev/serial/by-id/usb-SONOFF_SONOFF_Dongle_Lite_MG21_048030cb64a2ef11b809926661ce3355-if00-port0;
       sudo systemctl is-active mosquitto zigbee2mqtt roku-bridge'
 
-registry_import:
-  extends: .registry_ssh
-  stage: registry
-  resource_group: registry-content
-  needs:
-    - registry_lock
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: manual
-  script:
-    - >-
-      test "$(getent ahostsv4 registry.rupan.dev | awk 'NR == 1 { print $1 }')"
-      = 10.0.30.20
-    - >-
-      test "$(nix develop ./flake -c curl --silent --show-error --output /dev/null
-      --write-out '%{http_code}' https://registry.rupan.dev/v2/)" = 401
-    - mkdir -p artifacts/registry
-    - export REGISTRY_DEST_AUTH_FILE="$REGISTRY_MIGRATION_AUTH_FILE"
-    - export REGISTRY_SOURCE_AUTH_FILE
-    - nix develop ./flake -c just registry-copy artifacts/registry/import-report.json
-    - nix develop ./flake -c just registry-verify artifacts/registry/verify-report.json
-    - >-
-      date +%s | ssh $SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes rupan@10.0.30.20
-      'sudo install -m 0644 -o zot -g zot /dev/stdin /persist/zot/status/import-last-success.tmp;
-      sudo sync -f /persist/zot/status/import-last-success.tmp;
-      sudo mv /persist/zot/status/import-last-success.tmp /persist/zot/status/import-last-success;
-      sudo sync -f /persist/zot/status'
-  artifacts:
-    expire_in: 30 days
-    paths:
-      - artifacts/registry/
-
 .deploy_registry_node:
   extends: .registry_ssh
   stage: deploy
