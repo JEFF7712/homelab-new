@@ -448,6 +448,26 @@ opnsense_inventory:
     paths:
       - artifacts/opnsense/
 
+opnsense_ipv6_inventory:
+  stage: opnsense
+  tags:
+    - nas-privileged
+  environment:
+    name: production
+  needs:
+    - job: opnsense_inventory
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - >-
+      nix develop ./flake -c python -c '
+      import json
+      from pathlib import Path
+      data = json.loads(Path("artifacts/opnsense/inventory.json").read_text())
+      print(json.dumps(data["interfaces"], indent=2, sort_keys=True))
+      '
+
 opnsense_plan:
   stage: opnsense
   tags:
