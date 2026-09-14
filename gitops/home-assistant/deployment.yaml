@@ -16,6 +16,7 @@ spec:
         app: home-assistant
       annotations:
         checksum/config: 7ee185f9eddb612974fef0c0b1eb7d1ddd1cbf06d3dae45aed7f65cb1765250b
+        checksum/dependencies: 8eac350ea6f0dc5b311c3b363345bb99229e5efa193aa69111e630103301751e
     spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
@@ -42,6 +43,41 @@ spec:
             - name: bootstrap-config
               mountPath: /bootstrap
               readOnly: true
+            - name: tmp
+              mountPath: /tmp
+        - name: install-hacs
+          image: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616  # yamllint disable-line rule:line-length
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              hacs_version=2.0.5
+              hacs_url=https://github.com/hacs/integration/releases/download/2.0.5/hacs.zip
+              hacs_sha256=97be6b824a4f38e683728cc6dd72367f6b8bad0a43428b1b3b987a3087adf413
+              version_file=/config/.hacs-version
+              if [ -f "$version_file" ] && [ "$(cat "$version_file")" = "$hacs_version" ] \
+                && [ -f /config/custom_components/hacs/manifest.json ]; then
+                exit 0
+              fi
+              workdir=$(mktemp -d)
+              trap 'rm -rf "$workdir"' EXIT
+              wget -q -O "$workdir/hacs.zip" "$hacs_url"
+              printf '%s  %s\n' "$hacs_sha256" "$workdir/hacs.zip" | sha256sum -c -
+              unzip -q "$workdir/hacs.zip" -d "$workdir"
+              test -f "$workdir/custom_components/hacs/manifest.json"
+              mkdir -p /config/custom_components
+              rm -rf /config/custom_components/hacs
+              cp -R "$workdir/custom_components/hacs" /config/custom_components/
+              printf '%s\n' "$hacs_version" > "$version_file"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /config
             - name: tmp
               mountPath: /tmp
       containers:

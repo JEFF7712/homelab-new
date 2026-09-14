@@ -18,6 +18,15 @@ custom_integrations:
     install_path: /config/custom_components/smarthq
     connection: cloud_oauth
     status: installed
+  - domain: hacs
+    name: HACS
+    source: https://github.com/hacs/integration
+    version: "2.0.5"
+    artifact: https://github.com/hacs/integration/releases/download/2.0.5/hacs.zip
+    sha256: 97be6b824a4f38e683728cc6dd72367f6b8bad0a43428b1b3b987a3087adf413
+    install_path: /config/custom_components/hacs
+    connection: github_oauth
+    status: pending_setup
 custom_frontend_cards: []
 blueprints: []
 dependencies_policy:
