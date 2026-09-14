@@ -182,6 +182,15 @@ def reconcile_udp_broadcast_relays(
         raise RuntimeError(
             "UDP broadcast relay verification failed for " + ", ".join(mismatches)
         )
+    for description, row in verified_by_description.items():
+        uuid = row.get("uuid")
+        if not isinstance(uuid, str) or not uuid:
+            raise RuntimeError(f"UDP broadcast relay {description} has no UUID")
+        status = client.get(f"/api/udpbroadcastrelay/service/status/{uuid}")
+        if not isinstance(status, dict) or status.get("result") != "OK":
+            raise RuntimeError(
+                f"UDP broadcast relay {description} is not running: {status}"
+            )
 
 
 def _required_string(item: dict[str, object], key: str) -> str:

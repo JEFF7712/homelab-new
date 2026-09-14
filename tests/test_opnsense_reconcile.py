@@ -49,6 +49,8 @@ class ReconcileInterfaceTests(unittest.TestCase):
 
             def get(self, path: str) -> object:
                 self.calls.append(("GET", path, None))
+                if path.startswith("/api/udpbroadcastrelay/service/status/"):
+                    return {"result": "OK"}
                 return {"rows": self.rows}
 
             def post(self, path: str, payload: object) -> object:
