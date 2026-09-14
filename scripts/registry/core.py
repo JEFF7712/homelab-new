@@ -699,8 +699,10 @@ class OciClient:
                 if result.returncode == 0:
                     return result.stdout
                 if attempt == attempts:
+                    detail = result.stderr.decode(errors="replace").strip()
+                    suffix = f": {detail}" if detail else ""
                     raise RegistryError(
-                        f"{operation} failed with exit code {result.returncode}"
+                        f"{operation} failed with exit code {result.returncode}{suffix}"
                     )
             time.sleep(min(2**attempt, 4))
         raise AssertionError("unreachable")
