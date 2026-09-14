@@ -1,13 +1,15 @@
 id: device_low_battery_alert
 alias: "Devices: Low Battery Alert"
 description: >-
-  Notify phone when any battery device class sensor stays below the Device
-  Low Battery Threshold helper for an hour.
+  Notify phone when any non-phone battery device class sensor stays below the
+  Device Low Battery Threshold helper for an hour.
 triggers:
   - trigger: template
     value_template: >-
+      {% set ignored = ['sensor.rupan_phone_battery_level', 'sensor.sm_s948u1_battery_level'] %}
       {{ states.sensor | selectattr('attributes.device_class', 'defined') |
       selectattr('attributes.device_class', 'eq', 'battery') |
+      rejectattr('entity_id', 'in', ignored) |
       selectattr('state', 'is_number') | map(attribute='state') |
       map('int', 100) | select('lt', states('input_number.device_low_battery_threshold')
       | int(20)) | list | count > 0 }}
@@ -20,10 +22,12 @@ actions:
     data:
       title: "Low Battery"
       message: >-
+        {% set ignored = ['sensor.rupan_phone_battery_level', 'sensor.sm_s948u1_battery_level'] %}
         {% set ns = namespace(devs=[]) %}
         {% set limit = states('input_number.device_low_battery_threshold') | int(20) %}
         {% for s in states.sensor | selectattr('attributes.device_class', 'defined') |
         selectattr('attributes.device_class', 'eq', 'battery') |
+        rejectattr('entity_id', 'in', ignored) |
         selectattr('state', 'is_number') %}
         {% if s.state | int(100) < limit %}{% set ns.devs = ns.devs + [s.name ~ ' (' ~ s.state ~ '%)'] %}{% endif %}
         {% endfor %}
