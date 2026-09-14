@@ -483,6 +483,15 @@ opnsense_plan:
       - tofu/opnsense/refresh-only.tfplan
       - tofu/opnsense/desired.tfplan
 
+opnsense_dataplane:
+  stage: opnsense
+  tags:
+    - nas-privileged
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - nix develop ./flake -c python -m opnsense_reconciler.dataplane --targets opnsense_reconciler/lb-data-plane-targets.json
+
 opnsense_apply:
   stage: opnsense
   tags:
