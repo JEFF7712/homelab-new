@@ -17,12 +17,14 @@ import { execFileSync } from "node:child_process";
 const VALIDATION_COMMAND =
   /(^|\s)(just|nix|tofu|ruff|pyright|yamllint|kubeconform|kubectl|python|bash|gh)\s/;
 
-export function sessionIdentity(sessionID) {
+// NOTE: keep these module-private. OpenCode loads every exported function in
+// this file as a plugin entrypoint, so any extra export breaks startup.
+function sessionIdentity(sessionID) {
   const clean = String(sessionID ?? "unknown").replace(/[^A-Za-z0-9._-]/g, "").slice(0, 64);
   return clean || "unknown";
 }
 
-export function validationFailureRecord(input, output) {
+function validationFailureRecord(input, output) {
   if (!input || input.tool !== "bash") return null;
   const command = input.args?.command;
   const exit = output?.metadata?.exit;

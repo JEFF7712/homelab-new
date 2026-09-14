@@ -257,6 +257,28 @@ class AgentOpencodePluginTest(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_plugin_exports_exactly_one_entrypoint(self) -> None:
+        # OpenCode loads every exported function as a plugin entrypoint, so
+        # helper exports break startup. This pins the single-export contract.
+        node = self.require_node()
+        harness = (
+            "const plugin = await import("
+            + json.dumps(f"file://{self.PLUGIN}")
+            + ");"
+            + "const names = Object.keys(plugin).filter("
+            + " (key) => typeof plugin[key] === 'function');"
+            + "if (names.length !== 1 || typeof plugin.AgentHarness !== 'function') {"
+            + " console.error('unexpected plugin exports: ' + names.join(','));"
+            + " process.exit(1); }"
+        )
+        result = subprocess.run(
+            [node, "--input-type=module", "-e", harness],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_plugin_records_only_failed_validation_commands(self) -> None:
         node = self.require_node()
         with tempfile.TemporaryDirectory(prefix="agent-opencode-") as directory:
