@@ -1053,6 +1053,10 @@ def _copy_one(
     return outcome
 
 
+def _ignore_progress(message: str) -> None:
+    del message
+
+
 def copy_lock(
     client: OciClient,
     lock: Mapping[str, Any],
@@ -1067,9 +1071,7 @@ def copy_lock(
     if image_timeout <= 0:
         raise RegistryError("image timeout must be positive")
     if progress is None:
-
-        def progress(message: str) -> None:
-            del message
+        progress = _ignore_progress
 
     records = [
         record
