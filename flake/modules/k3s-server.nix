@@ -112,6 +112,7 @@ in
           ip saddr 10.42.0.0/16 tcp dport { 6443, 10250 } accept
           ip saddr { 10.0.20.0/24, 10.0.30.0/24, 10.0.40.0/24, 10.42.0.0/16 } tcp dport { 8123, 21063 } accept
           ip saddr 10.0.30.0/24 udp dport 5353 accept
+          ip6 saddr { fd42:20::/64, fd42:30::/64 } udp dport { 5353, 5540 } accept
         '';
       };
     };
@@ -124,6 +125,7 @@ in
           Address = "${cfg.nodeIp}/24";
           DNS = "10.0.30.10";
           Gateway = "10.0.30.1";
+          IPv6AcceptRA = true;
         };
         linkConfig.RequiredForOnline = "routable";
       };
