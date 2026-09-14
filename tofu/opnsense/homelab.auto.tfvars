@@ -240,6 +240,22 @@ firewall_filters = {
       destination = { net = "10.0.20.112/29", port = "88" }
     }
   }
+  infrastructure-allow-matter-bulbs = {
+    description = "Allow Home Assistant Matter traffic to clients VLAN"
+    enabled     = true
+    sequence    = 318
+    interface   = { interface = ["opt3"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet6"
+      protocol    = "TCP/UDP"
+      quick       = true
+      log         = true
+      source      = { net = "fd42:30::/64", port = "" }
+      destination = { net = "fd42:20::/64", port = "5540" }
+    }
+  }
   infrastructure-allow-bambu-mqtt = {
     description = "Allow infrastructure to Bambu Lab A1 MQTT"
     enabled     = true
