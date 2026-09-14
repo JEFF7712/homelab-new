@@ -1,101 +1,138 @@
-"""Parametric constants for Wyse 5070 Extended 10in rack mount.
+"""Dimensions for the Wyse 5070 Extended DeskPi RackMate T1 cradle.
 
-Source of truth for the DeskPi RackMate T1 + Bambu A1 + Dell Wyse 5070
-Extended combination. Pure Python so unit tests run without a CAD kernel.
-
-Coordinate convention (mm):
-  X = across the rack (left to right)
-  Y = vertical (rack U direction)
-  Z = depth (front rails toward rear)
-  Origin = front-left-bottom of the full ear-span envelope.
+Coordinate convention (mm): X is rack width, Y is height, and Z runs from
+the front rail toward the rear of the rack.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-U_MM: float = 44.45
-# 2U default: a 66mm wide device cannot sit in a 66.675mm (1.5U) tray
-# with any floor underneath (4mm floor + 66mm device already exceeds it).
-# Drop to 1.5U only after measuring body-minus-feet under 62mm.
-TARGET_U: float = 2.0
-TARGET_HEIGHT_MM: float = U_MM * TARGET_U  # 88.9
+U_MM = 44.45
+TARGET_U = 2
+PANEL_HEIGHT_MM = 88.0
 
-# Dell Wyse 5070 Extended. Manuals/datasheet say 184 x 66 x 184;
-# Dell shop pages say width 56. 66 is kept as worst case.
-# Mounted flat with front ports forward:
-#   X (across rack) = 184, Y (vertical) = 66, Z (depth) = 184.
-DEVICE_X_MM: float = 184.0
-DEVICE_Y_MM: float = 66.0
-DEVICE_Z_MM: float = 184.0
-DEVICE_WEIGHT_KG: float = 1.47
+# Measured 2022 N12D Extended chassis, mounted flat with its ports forward.
+DEVICE_X_MM = 184.0
+DEVICE_BODY_Y_MM = 55.9
+DEVICE_Y_MM = 59.5
+DEVICE_Z_MM = 184.0
+DEVICE_WEIGHT_KG = 1.47
+FOOT_HEIGHT_MM = DEVICE_Y_MM - DEVICE_BODY_Y_MM
+FOOT_X_MM = 5.8
+FOOT_Z_MM = 20.0
+FOOT_INSET_X_MM = 10.0
+FOOT_INSET_FRONT_MM = 24.8
+FOOT_INSET_REAR_MM = 9.5
+FOOT_ROW_SPACING_Z_MM = 128.7
+FOOT_POCKET_CLEARANCE_MM = 0.4
+FOOT_POCKET_DEPTH_MM = 1.6
 
-# DeskPi RackMate T1 (8U, 10in class).
-RACK_INTERNAL_WIDTH_MM: float = 212.0
-RACK_MAX_DEPTH_MM: float = 200.0
-EAR_SPAN_MM: float = 254.0  # measured from existing 3d-prints/*.stl
-EAR_THICKNESS_MM: float = 5.0
-TRAY_FLOOR_MM: float = 4.0
-WALL_MM: float = 3.0
+# DeskPi RackMate T1 and Bambu Lab A1 constraints.
+RACK_INTERNAL_WIDTH_MM = 212.0
+RACK_MAX_DEPTH_MM = 200.0
+EAR_SPAN_MM = 254.0
+BED_X_MM = 256.0
+BED_Y_MM = 256.0
 
-# Bambu Lab A1 build volume.
-BED_X_MM: float = 256.0
-BED_Y_MM: float = 256.0
-BED_Z_MM: float = 256.0
+# Fit and structure. The device slides in from the rear.
+SIDE_CLEARANCE_MM = 0.6
+TOP_CLEARANCE_MM = 0.8
+PANEL_THICKNESS_MM = 4.0
+WALL_MM = 3.2
+WEB_WALL_MM = 2.6
+RAIL_DEPTH_MM = 190.5
+SUPPORT_RAIL_MM = 18.0
+SUPPORT_THICKNESS_MM = 4.0
+LOWER_AIR_GAP_MM = 10.35
+TOP_LIP_MM = 6.0
+TOP_LIP_THICKNESS_MM = 4.0
+CAPTURE_TAB_COUNT = 3
+CAPTURE_TAB_DEPTH_MM = 32.0
+CAPTURE_TAB_FRONT_MARGIN_MM = 18.0
+CAPTURE_TAB_REAR_MARGIN_MM = 14.0
+SIDE_VENT_COUNT = 8
+SIDE_VENT_DEPTH_MM = 12.0
+SIDE_VENT_FRONT_MARGIN_MM = 16.0
+SIDE_VENT_REAR_MARGIN_MM = 12.0
+SIDE_VENT_BOTTOM_RIB_MM = 10.0
+SIDE_VENT_TOP_RIB_MM = 10.0
+RETAINER_DEPTH_MM = 4.0
+RETAINER_HEIGHT_MM = 12.0
+RETAINER_SCREW_DIA_MM = 3.4
+RETAINER_INSERT_DIA_MM = 4.2
+RETAINER_INSERT_DEPTH_MM = 6.0
+RETAINER_END_PAD_MM = 20.0
+RETAINER_RAIL_HEIGHT_MM = 4.0
+FRONT_STOP_DEPTH_MM = 1.2
+FRONT_STOP_INSET_MM = 2.0
+FRONT_STOP_HEIGHT_MM = 8.0
+FRONT_TOP_BRACE_HEIGHT_MM = 4.0
+DEVICE_FRONT_Z_MM = FRONT_STOP_DEPTH_MM
+ANTI_RATTLE_TAB_COUNT = 2
+ANTI_RATTLE_TAB_HEIGHT_MM = 28.0
+ANTI_RATTLE_TAB_WIDTH_MM = 4.0
+ANTI_RATTLE_TAB_THICKNESS_MM = 1.2
+ANTI_RATTLE_TAB_PROTRUSION_MM = 0.8
+ANTI_RATTLE_TAB_ANCHOR_MM = 4.0
+ANTI_RATTLE_RELIEF_WIDTH_MM = 6.0
+FIT_TEST_DEPTH_MM = 32.0
+FIT_TEST_CONNECTOR_HEIGHT_MM = 3.0
+FIT_TEST_CONNECTOR_DEPTH_MM = 4.0
+FRONT_BRACE_HEIGHT_MM = 6.0
+GUSSET_WIDTH_MM = 18.0
+GUSSET_DEPTH_MM = 32.0
 
-# Fit tuning.
-FIT_CLEARANCE_MM: float = 0.4
-VENT_GAP_MM: float = 6.0  # side vent channel per side
+# DeskPi's 1U panel repeats a pair of vertical slots in every rack unit.
+SLOT_WIDTH_MM = 7.0
+SLOT_HEIGHT_MM = 13.0
+SLOT_EDGE_OFFSET_MM = 10.0
+SLOT_Y_INSET_MM = 7.0
 
-# Ear hole pattern measured from DeskPi's own 1U blank panel 3MF
-# (Model_7_1U_Blank_Panel, 254x43x3mm): mounting slots centered 10mm
-# from each outer edge with 30mm vertical spacing (slot ~13x7mm).
-# We use 5mm holes at slot centers for M4 screws + washers.
-HOLE_DIA_MM: float = 5.0
-HOLES_PER_EAR: int = 2
-HOLE_EDGE_OFFSET_MM: float = 10.0
-HOLE_Y_SPACING_MM: float = 30.0
-
-# Floor vent waffle instead of fitted foot pockets. Dell publishes no
-# foot positions, so the floor is a rib grid: feet catch on ribs
-# anywhere, plus ventilation and less filament (per community feedback
-# on similar mounts asking for non-solid bottoms).
-WAFFLE_CELL_MM: float = 14.0
-WAFFLE_RIB_MM: float = 3.5
-WAFFLE_DEPTH_MM: float = 2.5
-WAFFLE_MARGIN_MM: float = 20.0
+# Slots through each support rail accept a 5 mm zip tie or hook-and-loop tie.
+TIE_SLOT_X_MM = 7.0
+TIE_SLOT_Z_MM = 16.0
+TIE_SLOT_Z_POSITIONS_MM = (58.0, 132.0)
 
 
 @dataclass(frozen=True)
-class TrayEnvelope:
-    outer_x_mm: float
-    outer_y_mm: float
-    outer_z_mm: float
+class CradleEnvelope:
+    body_x_mm: float
+    panel_y_mm: float
+    body_z_mm: float
 
 
-def tray_envelope() -> TrayEnvelope:
-    """Outer envelope of the tray, before ears. Height is fixed to the
-    U target, the pocket must fit inside it (checked by fits_rack)."""
-    outer_x = DEVICE_X_MM + 2 * (WALL_MM + VENT_GAP_MM) + 2 * FIT_CLEARANCE_MM
-    outer_y = TARGET_HEIGHT_MM
-    outer_z = DEVICE_Z_MM + WALL_MM + FIT_CLEARANCE_MM
-    return TrayEnvelope(outer_x_mm=outer_x, outer_y_mm=outer_y, outer_z_mm=outer_z)
+def device_pocket_width_mm() -> float:
+    return DEVICE_X_MM + 2 * SIDE_CLEARANCE_MM
 
 
-def tray_offset_x_mm() -> float:
-    """Left edge of the centered tray inside the ear span."""
-    return (EAR_SPAN_MM - tray_envelope().outer_x_mm) / 2.0
+def body_width_mm() -> float:
+    return device_pocket_width_mm() + 2 * WALL_MM
 
 
-def fits_rack(envelope: TrayEnvelope) -> bool:
-    pocket_y = TRAY_FLOOR_MM + DEVICE_Y_MM + FIT_CLEARANCE_MM
+def body_offset_x_mm() -> float:
+    return (EAR_SPAN_MM - body_width_mm()) / 2
+
+
+def device_floor_y_mm() -> float:
+    return LOWER_AIR_GAP_MM + SUPPORT_THICKNESS_MM
+
+
+def top_lip_y_mm() -> float:
+    return device_floor_y_mm() + DEVICE_Y_MM - FOOT_POCKET_DEPTH_MM + TOP_CLEARANCE_MM
+
+
+def cradle_envelope() -> CradleEnvelope:
+    return CradleEnvelope(body_width_mm(), PANEL_HEIGHT_MM, RAIL_DEPTH_MM)
+
+
+def fits_rack() -> bool:
     return (
-        envelope.outer_x_mm <= RACK_INTERNAL_WIDTH_MM
-        and envelope.outer_z_mm <= RACK_MAX_DEPTH_MM
-        and envelope.outer_y_mm <= TARGET_HEIGHT_MM
-        and pocket_y <= TARGET_HEIGHT_MM
+        body_width_mm() <= RACK_INTERNAL_WIDTH_MM
+        and RAIL_DEPTH_MM <= RACK_MAX_DEPTH_MM
+        and top_lip_y_mm() + TOP_LIP_THICKNESS_MM <= PANEL_HEIGHT_MM
     )
 
 
 def fits_bed() -> bool:
-    return EAR_SPAN_MM <= BED_X_MM and TARGET_HEIGHT_MM <= BED_Z_MM
+    return EAR_SPAN_MM <= BED_X_MM and RAIL_DEPTH_MM <= BED_Y_MM
