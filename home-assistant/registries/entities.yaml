@@ -95,6 +95,30 @@
   entity_id: sensor.0xffffb40e0608faec_power_factor
   labels: []
 - disabled_by: integration
+  entity_id: sensor.govee_integration_api_rate_limit_remaining
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.govee_integration_last_mqtt_received
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.kitchen_light_2_last_command_sent
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.kitchen_light_2_last_mqtt_received
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.kitchen_light_2_last_update_received
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.kitchen_light_last_command_sent
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.kitchen_light_last_mqtt_received
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.kitchen_light_last_update_received
+  labels: []
+- disabled_by: integration
   entity_id: sensor.rupan_phone_audio_output
   labels: []
 - disabled_by: integration
@@ -123,6 +147,24 @@
   labels: []
 - disabled_by: integration
   entity_id: sensor.sm_s948u1_accent_color
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_command_sent
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_command_sent_2
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_mqtt_received
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_mqtt_received_2
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_update_received
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_update_received_2
   labels: []
 - disabled_by: integration
   entity_id: sensor.sm_s948u1_active_calories_burned
@@ -435,6 +477,12 @@
   labels: []
 - disabled_by: integration
   entity_id: sensor.zigbee2mqtt_bridge_network_map
+  labels: []
+- entity_id: switch.govee_cloud_integration_pre_release
+  disabled_by: integration
+  labels: []
+- entity_id: switch.hacs_pre_release
+  disabled_by: integration
   labels: []
 - entity_id: switch.living_room_good_vibes_sign
   labels:

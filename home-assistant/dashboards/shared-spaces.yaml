@@ -50,8 +50,16 @@ views:
       - cards:
           - heading: Kitchen
             type: heading
-          - content: No devices in here yet.
-            type: markdown
+          - entity: light.kitchen_light
+            name: Kitchen Light
+            features:
+              - type: light-brightness
+            type: tile
+          - entity: light.kitchen_light_2
+            name: Kitchen Light 2
+            features:
+              - type: light-brightness
+            type: tile
     subview: true
     type: sections
   - title: Living Room
@@ -63,6 +71,16 @@ views:
           - entity: switch.living_room_good_vibes_sign
             features:
               - type: toggle
+            type: tile
+          - entity: light.living_room_mushroom_lamp
+            name: Mushroom Lamp
+            features:
+              - type: light-brightness
+            type: tile
+          - entity: light.living_room_floor_lamp
+            name: Floor Lamp
+            features:
+              - type: light-brightness
             type: tile
           - entity: climate.living_room_ac_living_room_ac_thermostat
             type: thermostat

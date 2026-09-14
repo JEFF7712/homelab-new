@@ -21,3 +21,13 @@
 - id: fd51f50aa8ed7e5bb256fffaae8c0237
   area_id: bedroom
   name_by_user: Light Strip
+- id: 15f836412b2cf37f53821e0085f776a6
+  area_id: kitchen
+- id: 2fbb8dce9dad8760b4d40e387a536d59
+  area_id: kitchen
+- id: 33a37c90447096c0165be4a62a9f0ca0
+  area_id: living_room
+  name_by_user: Mushroom Lamp
+- id: b38dd4760f140b1976c36873c41339a3
+  area_id: living_room
+  name_by_user: Floor Lamp
