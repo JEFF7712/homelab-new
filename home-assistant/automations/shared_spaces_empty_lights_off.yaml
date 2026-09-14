@@ -23,6 +23,10 @@ triggers:
     entity_id:
       - switch.living_room_good_vibes_sign
       - switch.stairs_light
+      - light.kitchen_light
+      - light.kitchen_light_2
+      - light.living_room_mushroom_lamp
+      - light.living_room_floor_lamp
     to: "on"
     id: "enforced"
   - trigger: homeassistant
@@ -46,6 +50,10 @@ actions:
               snapshot_entities:
                 - switch.living_room_good_vibes_sign
                 - switch.stairs_light
+                - light.kitchen_light
+                - light.kitchen_light_2
+                - light.living_room_mushroom_lamp
+                - light.living_room_floor_lamp
           - action: homeassistant.turn_off
             target:
               label_id: shared_space
@@ -54,6 +62,13 @@ actions:
               entity_id:
                 - switch.living_room_good_vibes_sign
                 - switch.stairs_light
+          - action: light.turn_off
+            target:
+              entity_id:
+                - light.kitchen_light
+                - light.kitchen_light_2
+                - light.living_room_mushroom_lamp
+                - light.living_room_floor_lamp
       - conditions:
           - condition: trigger
             id: "enforced"
@@ -83,6 +98,13 @@ actions:
               entity_id:
                 - switch.living_room_good_vibes_sign
                 - switch.stairs_light
+          - action: light.turn_off
+            target:
+              entity_id:
+                - light.kitchen_light
+                - light.kitchen_light_2
+                - light.living_room_mushroom_lamp
+                - light.living_room_floor_lamp
       - conditions:
           - condition: trigger
             id: "return"

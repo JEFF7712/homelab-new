@@ -11,6 +11,17 @@ data:
     automation: !include automations.yaml
     script: !include scripts.yaml
     scene: !include scenes.yaml
+    light:
+      - platform: group
+        name: Kitchen Lights
+        entities:
+          - light.kitchen_light
+          - light.kitchen_light_2
+      - platform: group
+        name: Living Room Lights
+        entities:
+          - light.living_room_mushroom_lamp
+          - light.living_room_floor_lamp
     homekit:
       - name: Homelab Bridge
         port: 21063

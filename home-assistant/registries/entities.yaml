@@ -487,6 +487,18 @@
 - entity_id: switch.living_room_good_vibes_sign
   labels:
     - shared_space
+- entity_id: light.kitchen_light
+  labels:
+    - shared_space
+- entity_id: light.kitchen_light_2
+  labels:
+    - shared_space
+- entity_id: light.living_room_mushroom_lamp
+  labels:
+    - shared_space
+- entity_id: light.living_room_floor_lamp
+  labels:
+    - shared_space
 - entity_id: switch.stairs_light
   labels:
     - shared_space
