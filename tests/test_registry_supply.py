@@ -377,6 +377,26 @@ class CopyVerifyTest(unittest.TestCase):
         self.assertEqual(second["images"][0]["status"], "reused")
         self.assertEqual(len(client.copies), 2)
 
+    def test_copy_reuses_required_referrers_on_resume(self) -> None:
+        raw = manifest()
+        referrer = manifest([("linux", "amd64")])
+        value = valid_lock(raw)
+        referrer_digest = digest(referrer)
+        value["images"][0]["referrers"] = {
+            "required": [{"digest": referrer_digest}],
+            "source_status": "enumerated",
+        }
+        source = f"docker.io/library/demo@{value['images'][0]['digest']}"
+        referrer_source = f"docker.io/library/demo@{referrer_digest}"
+        client = FakeClient({source: raw, referrer_source: referrer})
+
+        first = copy_lock(client, value)  # type: ignore[arg-type]
+        second = copy_lock(client, value)  # type: ignore[arg-type]
+
+        self.assertEqual(first["status"], "ok")
+        self.assertEqual(second["images"][0]["status"], "reused")
+        self.assertEqual(len(client.copies), 3)
+
     def test_copy_refuses_conflicting_release_tag(self) -> None:
         raw = manifest()
         conflicting = manifest([("linux", "amd64")])

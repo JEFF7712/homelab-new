@@ -143,12 +143,17 @@ All registry deployment and mutation jobs are manual. A repository push does not
 python -m scripts.registry inventory --output registry/images.inventory.json
 python -m scripts.registry resolve --inventory registry/images.inventory.json --output registry/images.lock.candidate.json
 python -m scripts.registry plan --lock registry/images.lock.json
-python -m scripts.registry copy --lock registry/images.lock.json --report artifacts/registry/copy.json
+python -m scripts.registry copy --lock registry/images.lock.json --concurrency 3 --image-timeout 900 --report artifacts/registry/copy.json
 python -m scripts.registry verify --lock registry/images.lock.json --report artifacts/registry/verify.json
 python -m scripts.registry check --lock registry/images.lock.json
 ```
 
 Resolution is network read-only. Copy is an explicit CI mutation. Verification is remote read-only. None of these commands may log credentials. Update desired state only after the destination digest is verified.
+
+Copy imports are incremental and resumable. Each image is copied in its own bounded
+worker, with a per-image timeout and progress messages on stderr. Existing matching
+tags and required referrer tags are reused, and concurrency defaults to 3 (valid
+values are 1 through 8).
 
 For an upstream update, resolve the upstream tag, verify publisher authenticity according to that image's policy, copy the immutable digest and required referrers, verify the destination, then propose the local digest change. A local tag alone is not update discovery.
 

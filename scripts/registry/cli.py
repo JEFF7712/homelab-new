@@ -48,6 +48,8 @@ def _parser() -> argparse.ArgumentParser:
     copy.add_argument("--lock", type=pathlib.Path, required=True)
     copy.add_argument("--report", type=pathlib.Path, required=True)
     copy.add_argument("--kind", choices=("first-party", "upstream"))
+    copy.add_argument("--concurrency", type=int, default=3)
+    copy.add_argument("--image-timeout", type=float, default=900)
     _network_options(copy)
 
     verify = subparsers.add_parser("verify", help="verify locked destination content")
@@ -130,7 +132,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             lock = load_lock(args.lock)
             client = OciClient(timeout=args.timeout, retries=args.retries)
             report = (
-                copy_lock(client, lock, kind=args.kind)
+                copy_lock(
+                    client,
+                    lock,
+                    kind=args.kind,
+                    concurrency=args.concurrency,
+                    image_timeout=args.image_timeout,
+                    progress=lambda message: print(
+                        f"[registry-copy] {message}", file=sys.stderr
+                    ),
+                )
                 if args.command == "copy"
                 else verify_lock(client, lock, kind=args.kind)
             )
@@ -148,8 +159,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 password = args.password_file.read_text(encoding="utf-8")
             except OSError as error:
                 raise RegistryError("cannot read registry password file") from error
-            if password.endswith("\n"):
-                password = password[:-1]
+            password = password.removesuffix("\n")
             payload = render_node_config(lock, args.username, password)
             atomic_write_private(args.output, payload)
             _print(

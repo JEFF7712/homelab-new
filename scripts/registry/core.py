@@ -13,6 +13,7 @@ import subprocess
 import tempfile
 import time
 from collections.abc import Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 SCHEMA_VERSION = 1
@@ -621,7 +622,13 @@ class OciClient:
         )
         self.copy_tool = "skopeo" if shutil.which("skopeo") else None
 
-    def raw_manifest(self, reference: str, *, destination: bool = False) -> bytes:
+    def raw_manifest(
+        self,
+        reference: str,
+        *,
+        destination: bool = False,
+        timeout: float | None = None,
+    ) -> bytes:
         if self.inspect_tool == "skopeo":
             args = ["skopeo", "--registries-conf", "/dev/null", "inspect", "--raw"]
             auth = os.environ.get(
@@ -638,9 +645,9 @@ class OciClient:
             raise RegistryError(
                 "no supported OCI inspection tool found; install skopeo or crane"
             )
-        return self._run(args, operation="manifest inspection")
+        return self._run(args, operation="manifest inspection", timeout=timeout)
 
-    def copy(self, source: str, destination: str) -> None:
+    def copy(self, source: str, destination: str, *, timeout: float | None = None) -> None:
         if self.copy_tool != "skopeo":
             raise RegistryError("digest-preserving copy requires skopeo")
         args = [
@@ -659,24 +666,32 @@ class OciClient:
         if destination_auth:
             args.extend(["--dest-authfile", destination_auth])
         args.extend([f"docker://{source}", f"docker://{destination}"])
-        self._run(args, operation="digest-preserving copy", retries=0)
+        self._run(args, operation="digest-preserving copy", retries=0, timeout=timeout)
 
     def _run(
-        self, args: Sequence[str], *, operation: str, retries: int | None = None
+        self,
+        args: Sequence[str],
+        *,
+        operation: str,
+        retries: int | None = None,
+        timeout: float | None = None,
     ) -> bytes:
         attempts = self.retries if retries is None else retries
+        operation_timeout = self.timeout if timeout is None else timeout
+        if operation_timeout <= 0:
+            raise RegistryError(f"{operation} timed out")
         for attempt in range(attempts + 1):
             try:
                 result = subprocess.run(
                     list(args),
                     capture_output=True,
-                    timeout=self.timeout,
+                    timeout=operation_timeout,
                     check=False,
                 )
             except subprocess.TimeoutExpired as error:
                 if attempt == attempts:
                     raise RegistryError(
-                        f"{operation} timed out after {self.timeout} seconds"
+                        f"{operation} timed out after {operation_timeout:g} seconds"
                     ) from error
             else:
                 if result.returncode == 0:
@@ -830,9 +845,18 @@ def copy_plan(lock: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _inspect_digest(
-    client: OciClient, reference: str, *, destination: bool
+    client: OciClient,
+    reference: str,
+    *,
+    destination: bool,
+    timeout: float | None = None,
 ) -> tuple[str, str, list[str]]:
-    raw = client.raw_manifest(reference, destination=destination)
+    if isinstance(client, OciClient):
+        raw = client.raw_manifest(
+            reference, destination=destination, timeout=timeout
+        )
+    else:
+        raw = client.raw_manifest(reference, destination=destination)
     digest = "sha256:" + hashlib.sha256(raw).hexdigest()
     try:
         manifest = json.loads(raw)
@@ -847,11 +871,15 @@ def _inspect_digest(
 
 
 def verify_record(
-    client: OciClient, lock: Mapping[str, Any], record: Mapping[str, Any]
+    client: OciClient,
+    lock: Mapping[str, Any],
+    record: Mapping[str, Any],
+    *,
+    timeout: float | None = None,
 ) -> dict[str, Any]:
     destination = f"{lock['destination_registry']}/{record['destination_repository']}@{record['digest']}"
     observed, media_type, platforms = _inspect_digest(
-        client, destination, destination=True
+        client, destination, destination=True, timeout=timeout
     )
     errors: list[str] = []
     if observed != record["digest"]:
@@ -874,7 +902,9 @@ def verify_record(
             continue
         ref = f"{lock['destination_registry']}/{record['destination_repository']}@{digest}"
         try:
-            observed_referrer, _, _ = _inspect_digest(client, ref, destination=True)
+            observed_referrer, _, _ = _inspect_digest(
+                client, ref, destination=True, timeout=timeout
+            )
             matched = observed_referrer == digest
         except RegistryError:
             observed_referrer = None
@@ -924,62 +954,133 @@ def verify_lock(
     return operation_report("verify", lock, outcomes)
 
 
-def copy_lock(
-    client: OciClient, lock: Mapping[str, Any], *, kind: str | None = None
+def _copy_with_timeout(
+    client: OciClient, source: str, destination: str, timeout: float
+) -> None:
+    if isinstance(client, OciClient):
+        client.copy(source, destination, timeout=timeout)
+    else:
+        client.copy(source, destination)
+
+
+def _copy_one(
+    client: OciClient,
+    lock: Mapping[str, Any],
+    record: Mapping[str, Any],
+    *,
+    image_timeout: float,
+    progress: Any,
 ) -> dict[str, Any]:
-    outcomes: list[dict[str, Any]] = []
-    for record in sorted(lock["images"], key=lambda item: item["id"]):
-        if kind is not None and record["kind"] != kind:
-            continue
-        destination_base = (
-            f"{lock['destination_registry']}/{record['destination_repository']}"
-        )
-        source = f"{record['source']['registry']}/{record['source']['repository']}@{record['digest']}"
-        status = "copied"
-        errors: list[str] = []
-        try:
-            for tag in record["destination_tags"]:
-                tagged_destination = f"{destination_base}:{tag}"
-                try:
-                    observed, _, _ = _inspect_digest(
-                        client, tagged_destination, destination=True
-                    )
-                except RegistryError:
-                    client.copy(source, tagged_destination)
-                else:
-                    if observed != record["digest"]:
-                        raise RegistryError(
-                            f"refusing to overwrite conflicting destination tag {record['destination_repository']}:{tag}"
-                        )
-                    status = "reused"
-            for descriptor in record["referrers"]["required"]:
-                digest = descriptor["digest"]
-                referrer_tag = f"referrer-{digest.removeprefix('sha256:')[:16]}"
-                client.copy(
-                    f"{record['source']['registry']}/{record['source']['repository']}@{digest}",
-                    f"{destination_base}:{referrer_tag}",
+    started = time.monotonic()
+    destination_base = f"{lock['destination_registry']}/{record['destination_repository']}"
+    source = f"{record['source']['registry']}/{record['source']['repository']}@{record['digest']}"
+    status = "reused"
+    errors: list[str] = []
+
+    def remaining() -> float:
+        value = image_timeout - (time.monotonic() - started)
+        if value <= 0:
+            raise RegistryError(f"image copy timed out after {image_timeout:g} seconds")
+        return value
+
+    try:
+        progress(f"started {record['id']}")
+        for tag in record["destination_tags"]:
+            tagged_destination = f"{destination_base}:{tag}"
+            try:
+                observed, _, _ = _inspect_digest(
+                    client,
+                    tagged_destination,
+                    destination=True,
+                    timeout=remaining(),
                 )
-            verification = verify_record(client, lock, record)
-            if verification["status"] != "verified":
-                errors.extend(verification["errors"])
-        except (RegistryError, KeyError) as error:
-            errors.append(str(error))
-        outcomes.append(
-            {
-                "id": record["id"],
-                "status": "failed" if errors else status,
-                "source": source,
-                "destination": f"{destination_base}@{record['digest']}",
-                "expected_digest": record["digest"],
-                "observed_digest": record["digest"] if not errors else None,
-                "platforms": {
-                    "expected": record["platforms"],
-                    "observed": record["platforms"] if not errors else [],
-                },
-                "referrers": [],
-                "errors": errors,
-            }
-        )
+            except RegistryError:
+                _copy_with_timeout(client, source, tagged_destination, remaining())
+                status = "copied"
+                progress(f"copied {record['id']} tag={tag}")
+            else:
+                if observed != record["digest"]:
+                    raise RegistryError(
+                        f"refusing to overwrite conflicting destination tag {record['destination_repository']}:{tag}"
+                    )
+        for descriptor in record["referrers"]["required"]:
+            digest = descriptor["digest"]
+            referrer_tag = f"referrer-{digest.removeprefix('sha256:')[:16]}"
+            referrer_destination = f"{destination_base}:{referrer_tag}"
+            try:
+                observed, _, _ = _inspect_digest(
+                    client,
+                    referrer_destination,
+                    destination=True,
+                    timeout=remaining(),
+                )
+            except RegistryError:
+                _copy_with_timeout(
+                    client,
+                    f"{record['source']['registry']}/{record['source']['repository']}@{digest}",
+                    referrer_destination,
+                    remaining(),
+                )
+                status = "copied"
+                progress(f"copied {record['id']} referrer={digest}")
+            else:
+                if observed != digest:
+                    raise RegistryError(
+                        f"refusing to overwrite conflicting referrer {record['destination_repository']}:{referrer_tag}"
+                    )
+        verification = verify_record(client, lock, record, timeout=remaining())
+        if verification["status"] != "verified":
+            errors.extend(verification["errors"])
+    except (RegistryError, KeyError, TypeError) as error:
+        errors.append(str(error))
+    outcome = {
+        "id": record["id"],
+        "status": "failed" if errors else status,
+        "source": source,
+        "destination": f"{destination_base}@{record['digest']}",
+        "expected_digest": record["digest"],
+        "observed_digest": record["digest"] if not errors else None,
+        "platforms": {"expected": record["platforms"], "observed": record["platforms"] if not errors else []},
+        "referrers": [],
+        "errors": errors,
+    }
+    progress(f"{'failed' if errors else 'finished'} {record['id']}")
+    return outcome
+
+
+def copy_lock(
+    client: OciClient,
+    lock: Mapping[str, Any],
+    *,
+    kind: str | None = None,
+    concurrency: int = 3,
+    image_timeout: float = 900,
+    progress: Any = None,
+) -> dict[str, Any]:
+    if not 1 <= concurrency <= 8:
+        raise RegistryError("copy concurrency must be between 1 and 8")
+    if image_timeout <= 0:
+        raise RegistryError("image timeout must be positive")
+    if progress is None:
+        progress = lambda message: None
+    records = [
+        record for record in sorted(lock["images"], key=lambda item: item["id"])
+        if kind is None or record["kind"] == kind
+    ]
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = {
+            executor.submit(
+                _copy_one,
+                client,
+                lock,
+                record,
+                image_timeout=image_timeout,
+                progress=progress,
+            ): record
+            for record in records
+        }
+        outcomes = [future.result() for future in as_completed(futures)]
+    outcomes.sort(key=lambda item: item["id"])
     return operation_report("copy", lock, outcomes)
 
 
