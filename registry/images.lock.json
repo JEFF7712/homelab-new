@@ -3151,6 +3151,45 @@
         "repository": "library/docker",
         "tag": "27.5.1-dind"
       }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/home-assistant/deployment.yaml:89"
+      ],
+      "destination_repository": "upstream/ghcr.io/home-assistant-libs/python-matter-server",
+      "destination_tags": [
+        "6.3.0",
+        "retention-deployed-ac6f5cf1649fa6bd"
+      ],
+      "digest": "sha256:ac6f5cf1649fa6bdfde7dce6218e9bc126119cc9b324019ad389872e83f5c093",
+      "id": "upstream-home-assistant-libs-python-matter-server-0bfff075e754",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ac6f5cf1649fa6bdfde7dce6218e9bc126119cc9b324019ad389872e83f5c093",
+        "reference": "ghcr.io/home-assistant-libs/python-matter-server:6.3.0@sha256:ac6f5cf1649fa6bdfde7dce6218e9bc126119cc9b324019ad389872e83f5c093",
+        "registry": "ghcr.io",
+        "repository": "home-assistant-libs/python-matter-server",
+        "tag": "6.3.0"
+      }
     }
   ],
   "kind": "registry-image-lock",
