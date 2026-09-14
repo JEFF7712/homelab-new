@@ -50,6 +50,6 @@ python -m scripts.agent_workspaces \
   --evidence /run/agent-workspace-acceptance/evidence.json
 ```
 
-The HTTPS target must be operator controlled. The runner writes 1 GiB only to each disposable guest's raw data disk, samples the workspace slice and service health throughout the load, and deprovisions both domains before returning. Inspect and remove the preserved disposable disks only after the evidence and domain state agree.
+The HTTPS target must be operator controlled. Acceptance requires at least 90 percent of the requested duration, 1 GiB written and 64 MiB received by each guest, aggregate CPU time of at least 1.5 CPU-seconds per wall second, a verified SSH listener on each peer, and an increased host firewall drop counter in both directions. The runner samples the workspace slice and service health throughout the load. It lowers both taps, destroys both domains, and attempts verified deprovisioning independently of health and evidence-write failures. Inspect and remove the preserved disposable disks only after the evidence and domain state agree.
 
 Emergency isolation stops the workspace domain before removing or changing its deny policy. Preserve its disks and receipt. Never disable the firewall while a guest interface remains active.

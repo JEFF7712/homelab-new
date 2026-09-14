@@ -4,6 +4,7 @@ import concurrent.futures
 import json
 import os
 import pathlib
+import re
 import shlex
 import subprocess
 import time
@@ -16,6 +17,10 @@ from .core import Workspace, WorkspaceError
 from .lifecycle import deprovision_workspace, provision_status
 
 Runner = Callable[..., subprocess.CompletedProcess[str]]
+MIN_CPU_SECONDS_PER_WALL_SECOND = 1.5
+MIN_DISK_BYTES_PER_GUEST = 1024 * 1024 * 1024
+MIN_NETWORK_RX_BYTES_PER_GUEST = 64 * 1024 * 1024
+MIN_DURATION_RATIO = 0.9
 
 
 def _run(
@@ -183,14 +188,131 @@ def _guest_ssh_command(
     ]
 
 
-def _pressure_command(
+def _verify_guest_listeners(
+    workspaces: list[Workspace], ssh_key: pathlib.Path, runner: Runner
+) -> None:
+    for workspace in workspaces:
+        output, _ = _run(
+            runner,
+            _guest_ssh_command(workspace, ssh_key, "ss -H -ltn 'sport = :22'"),
+            timeout=10,
+        )
+        if "LISTEN" not in output:
+            raise WorkspaceError(
+                f"workspace {workspace.id} has no listening SSH target"
+            )
+
+
+def _probe_peer_denial(
     workspace: Workspace,
     peer: Workspace,
+    ssh_key: pathlib.Path,
+    runner: Runner,
+) -> None:
+    peer_address = peer.raw["network"]["address"].split("/", 1)[0]
+    script = (
+        "import socket; "
+        "s=socket.socket(); s.settimeout(3); "
+        f"target=('{peer_address}',22); "
+        "\ntry: s.connect(target)"
+        "\nexcept TimeoutError: print('timeout')"
+        "\nexcept OSError as error: raise SystemExit(f'unexpected socket error: {error.errno}')"
+        "\nelse: raise SystemExit('peer SSH connection succeeded')"
+    )
+    output, _ = _run(
+        runner,
+        _guest_ssh_command(workspace, ssh_key, f"python3 -c {shlex.quote(script)}"),
+        timeout=10,
+    )
+    if output != "timeout":
+        raise WorkspaceError(
+            f"workspace {workspace.id} returned ambiguous peer denial: {output}"
+        )
+
+
+def _direction_drop_counter(
+    workspace: Workspace, peer: Workspace, runner: Runner
+) -> int:
+    output, _ = _run(
+        runner,
+        ["nft", "-a", "list", "chain", "inet", "agent-workspaces", "forward"],
+        timeout=10,
+    )
+    source_bridge = workspace.raw["network"]["bridge"]
+    peer_bridge = peer.raw["network"]["bridge"]
+    counts = [
+        int(match.group(1))
+        for line in output.splitlines()
+        if (f'iifname "{source_bridge}"' in line or f'oifname "{peer_bridge}"' in line)
+        and " drop" in line
+        if (match := re.search(r"counter packets (\d+)", line)) is not None
+    ]
+    if not counts:
+        raise WorkspaceError(
+            f"workspace direction {workspace.id} to {peer.id} has no observable host firewall drop rule"
+        )
+    return sum(counts)
+
+
+def _contain_workspaces(workspaces: list[Workspace], runner: Runner) -> list[str]:
+    errors = []
+    for workspace in workspaces:
+        for command in (
+            ["ip", "link", "set", "dev", workspace.raw["network"]["tap"], "down"],
+            ["virsh", "destroy", workspace.domain_name],
+        ):
+            try:
+                result = runner(
+                    command,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=10,
+                )
+            except (OSError, subprocess.SubprocessError) as error:
+                errors.append(f"{' '.join(command)}: {error}")
+                continue
+            if result.returncode != 0:
+                detail = result.stderr.strip() or result.stdout.strip()
+                if (
+                    "not found" not in detail.lower()
+                    and "not running" not in detail.lower()
+                ):
+                    errors.append(f"{' '.join(command)}: {detail}")
+    return errors
+
+
+def _validate_measured_load(evidence: dict[str, Any]) -> None:
+    duration = evidence["duration_seconds"]
+    pressure = evidence.get("pressure", [])
+    if len(pressure) != 2:
+        raise WorkspaceError("pressure metrics are missing for one or more guests")
+    for metrics in pressure:
+        workspace_id = metrics["workspace_id"]
+        if metrics["seconds"] < duration * MIN_DURATION_RATIO:
+            raise WorkspaceError(f"workspace {workspace_id} pressure ended too early")
+        if metrics["disk_bytes"] < MIN_DISK_BYTES_PER_GUEST:
+            raise WorkspaceError(f"workspace {workspace_id} disk pressure was too low")
+        if metrics["rx_bytes"] < MIN_NETWORK_RX_BYTES_PER_GUEST:
+            raise WorkspaceError(
+                f"workspace {workspace_id} network pressure was too low"
+            )
+    before_cpu = evidence["health"]["before"]["workspace_slice"]["cpu_usage_nsec"]
+    after_cpu = evidence["health"]["after"]["workspace_slice"]["cpu_usage_nsec"]
+    minimum_cpu = int(duration * MIN_CPU_SECONDS_PER_WALL_SECOND * 1_000_000_000)
+    if after_cpu - before_cpu < minimum_cpu:
+        raise WorkspaceError("aggregate workspace CPU pressure was too low")
+    firewall = evidence["isolation"]["firewall_drop_delta"]
+    if any(delta < 1 for delta in firewall.values()):
+        raise WorkspaceError("host firewall did not record both isolation probes")
+
+
+def _pressure_command(
+    workspace: Workspace,
     *,
     duration_seconds: int,
     network_url: str,
 ) -> str:
-    peer_address = peer.raw["network"]["address"].split("/", 1)[0]
     cpu_workers = workspace.raw["resources"]["vcpus"]
     return " ".join(
         [
@@ -204,7 +326,6 @@ def _pressure_command(
             "disk_pid=$!;",
             f"timeout {duration_seconds} sh -c {shlex.quote('while true; do curl --fail --silent --show-error --max-time 10 --output /dev/null ' + shlex.quote(network_url) + '; done')} &",
             "network_pid=$!;",
-            f"python3 -c \"import socket; s=socket.socket(); s.settimeout(2); result=s.connect_ex(('{peer_address}',22)); raise SystemExit(0 if result != 0 else 1)\";",
             "wait $disk_pid;",
             "disk_finished=$(date +%s%N);",
             "wait $network_pid || test $? -eq 124;",
@@ -241,37 +362,53 @@ def run_two_guest_acceptance(
         raise WorkspaceError("network pressure URL must be an absolute HTTPS URL")
     if not ssh_key.is_file() or ssh_key.is_symlink():
         raise WorkspaceError("SSH private key is missing or unsafe")
-    for workspace in workspaces:
-        status = provision_status(workspace, runner)
-        if not status["consistent"] or status["domain_state"] != "running":
-            raise WorkspaceError(
-                f"workspace {workspace.id} is not consistently running"
-            )
-
     evidence: dict[str, Any] = {
         "schema_version": 1,
         "kind": "agent-workspace-two-guest-acceptance",
         "workspace_ids": sorted(workspace.id for workspace in workspaces),
         "duration_seconds": duration_seconds,
         "network_target_host": parsed_url.hostname,
-        "health": {"before": collect_host_health(runner)},
+        "health": {},
         "result": "failed",
     }
+    executor: concurrent.futures.ThreadPoolExecutor | None = None
+    failure: Exception | None = None
+    cleanup_errors: list[str] = []
+    evidence_error: OSError | None = None
     try:
-        commands = [
-            _guest_ssh_command(
-                workspace,
-                ssh_key,
-                _pressure_command(
+        try:
+            for workspace in workspaces:
+                status = provision_status(workspace, runner)
+                if not status["consistent"] or status["domain_state"] != "running":
+                    raise WorkspaceError(
+                        f"workspace {workspace.id} is not consistently running"
+                    )
+            evidence["health"]["before"] = collect_host_health(runner)
+            _verify_guest_listeners(workspaces, ssh_key, runner)
+            firewall_delta = {}
+            for index, workspace in enumerate(workspaces):
+                peer = workspaces[1 - index]
+                drop_before = _direction_drop_counter(workspace, peer, runner)
+                _probe_peer_denial(workspace, peer, ssh_key, runner)
+                drop_after = _direction_drop_counter(workspace, peer, runner)
+                firewall_delta[workspace.id] = drop_after - drop_before
+                if firewall_delta[workspace.id] < 1:
+                    raise WorkspaceError(
+                        f"host firewall did not record isolation probe from {workspace.id}"
+                    )
+            commands = [
+                _guest_ssh_command(
                     workspace,
-                    workspaces[1 - index],
-                    duration_seconds=duration_seconds,
-                    network_url=network_url,
-                ),
-            )
-            for index, workspace in enumerate(workspaces)
-        ]
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                    ssh_key,
+                    _pressure_command(
+                        workspace,
+                        duration_seconds=duration_seconds,
+                        network_url=network_url,
+                    ),
+                )
+                for workspace in workspaces
+            ]
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
             futures = [
                 executor.submit(_run, runner, command, timeout=duration_seconds + 45)
                 for command in commands
@@ -279,51 +416,56 @@ def run_two_guest_acceptance(
             evidence["health"]["during"] = []
             while not all(future.done() for future in futures):
                 time.sleep(min(5, duration_seconds / 2))
-                try:
-                    evidence["health"]["during"].append(collect_host_health(runner))
-                except WorkspaceError:
-                    for workspace in workspaces:
-                        runner(
-                            _guest_ssh_command(
-                                workspace,
-                                ssh_key,
-                                "sudo pkill -x yes || true; sudo pkill -x dd || true; sudo pkill -x curl || true",
-                            ),
-                            capture_output=True,
-                            text=True,
-                            check=False,
-                            timeout=10,
-                        )
-                    raise
+                evidence["health"]["during"].append(collect_host_health(runner))
             pressure = [future.result() for future in futures]
-        evidence["pressure"] = []
-        for workspace, result in zip(workspaces, pressure, strict=True):
-            try:
-                metrics = json.loads(result[0])
-            except json.JSONDecodeError as error:
-                raise WorkspaceError(
-                    f"workspace {workspace.id} returned invalid pressure metrics"
-                ) from error
-            evidence["pressure"].append(
-                {"workspace_id": workspace.id, "seconds": result[1], **metrics}
-            )
-        evidence["health"]["after"] = collect_host_health(runner)
-        evidence["result"] = "accepted"
+            evidence["pressure"] = []
+            for workspace, result in zip(workspaces, pressure, strict=True):
+                try:
+                    metrics = json.loads(result[0])
+                except json.JSONDecodeError as error:
+                    raise WorkspaceError(
+                        f"workspace {workspace.id} returned invalid pressure metrics"
+                    ) from error
+                evidence["pressure"].append(
+                    {"workspace_id": workspace.id, "seconds": result[1], **metrics}
+                )
+            evidence["isolation"] = {
+                "listeners_verified": [workspace.id for workspace in workspaces],
+                "firewall_drop_delta": firewall_delta,
+            }
+            evidence["health"]["after"] = collect_host_health(runner)
+            _validate_measured_load(evidence)
+            evidence["result"] = "accepted"
+        except (WorkspaceError, OSError, subprocess.SubprocessError) as error:
+            failure = error
+            evidence["failure"] = {
+                "type": type(error).__name__,
+                "detail": str(error),
+            }
     finally:
-        evidence_path.parent.mkdir(parents=True, exist_ok=True)
-        evidence_path.write_text(
-            json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-        )
+        if executor is not None:
+            executor.shutdown(wait=False, cancel_futures=True)
+        cleanup_errors.extend(_contain_workspaces(workspaces, runner))
         for workspace in workspaces:
             try:
                 deprovision_workspace(workspace, authorized=True, runner=runner)
-            except WorkspaceError as error:
-                evidence.setdefault("cleanup_errors", []).append(str(error))
-        if evidence.get("cleanup_errors"):
+            except (WorkspaceError, OSError, subprocess.SubprocessError) as error:
+                cleanup_errors.append(str(error))
+        if cleanup_errors:
+            evidence["cleanup_errors"] = cleanup_errors
             evidence["result"] = "failed"
-        evidence_path.write_text(
-            json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-        )
-    if evidence.get("cleanup_errors"):
+        try:
+            evidence_path.parent.mkdir(parents=True, exist_ok=True)
+            evidence_path.write_text(
+                json.dumps(evidence, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        except OSError as error:
+            evidence_error = error
+    if failure is not None:
+        raise failure
+    if cleanup_errors:
         raise WorkspaceError("live acceptance cleanup failed; inspect evidence")
+    if evidence_error is not None:
+        raise WorkspaceError(f"cannot write acceptance evidence: {evidence_error}")
     return evidence

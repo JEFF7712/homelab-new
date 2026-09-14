@@ -8,6 +8,10 @@ import unittest
 from unittest.mock import patch
 
 from scripts.agent_workspaces.acceptance import (
+    _direction_drop_counter,
+    _probe_peer_denial,
+    _validate_measured_load,
+    _verify_guest_listeners,
     collect_host_health,
     run_two_guest_acceptance,
 )
@@ -16,14 +20,22 @@ from tests.test_agent_workspaces import enabled_workspace, test_manifest
 
 
 class HealthRunner:
+    def __init__(self) -> None:
+        self.slice_calls = 0
+        self.nft_calls = 0
+        self.commands: list[list[str]] = []
+
     def __call__(self, command, **kwargs):
         del kwargs
         command = list(command)
+        self.commands.append(command)
         if command[:2] == ["systemctl", "show"]:
+            cpu_usage = self.slice_calls * 20_000_000_000
+            self.slice_calls += 1
             return subprocess.CompletedProcess(
                 command,
                 0,
-                "CPUUsageNSec=123\nMemoryCurrent=1000\nMemoryPeak=2000\nCPUQuotaPerSecUSec=2s\nMemoryHigh=9663676416\nMemoryMax=10737418240\nManagedOOMMemoryPressure=kill\n",
+                f"CPUUsageNSec={cpu_usage}\nMemoryCurrent=1000\nMemoryPeak=2000\nCPUQuotaPerSecUSec=2s\nMemoryHigh=9663676416\nMemoryMax=10737418240\nManagedOOMMemoryPressure=kill\n",
                 "",
             )
         if command[-4:] == ["get", "nodes", "-o", "json"]:
@@ -50,13 +62,31 @@ class HealthRunner:
             return subprocess.CompletedProcess(command, 0, "1\n", "")
         if command[0] == "curl":
             return subprocess.CompletedProcess(command, 0, "200", "")
-        if command[0] == "ssh":
+        if command[0] == "nft":
+            count = self.nft_calls
+            self.nft_calls += 1
             return subprocess.CompletedProcess(
                 command,
                 0,
-                '{"disk_bytes":1073741824,"disk_seconds":1,"rx_bytes":2,"tx_bytes":3}',
+                f'iifname "aw-rupan-br" counter packets {count} bytes 0 drop\n'
+                f'oifname "aw-accept-b-br" counter packets {count} bytes 0 drop\n'
+                f'iifname "aw-accept-b-br" counter packets {count} bytes 0 drop\n'
+                f'oifname "aw-rupan-br" counter packets {count} bytes 0 drop\n',
                 "",
             )
+        if command[0] == "ssh":
+            if command[-1].startswith("ss -H"):
+                return subprocess.CompletedProcess(command, 0, "LISTEN 0 128", "")
+            if command[-1].startswith("python3 -c"):
+                return subprocess.CompletedProcess(command, 0, "timeout", "")
+            return subprocess.CompletedProcess(
+                command,
+                0,
+                '{"disk_bytes":1073741824,"disk_seconds":1,"rx_bytes":70000000,"tx_bytes":3}',
+                "",
+            )
+        if command[0] in {"ip", "virsh"}:
+            return subprocess.CompletedProcess(command, 0, "", "")
         raise AssertionError(command)
 
 
@@ -114,6 +144,7 @@ class AcceptanceTests(unittest.TestCase):
                     "scripts.agent_workspaces.acceptance.deprovision_workspace"
                 ) as deprovision,
                 patch("scripts.agent_workspaces.acceptance.time.sleep"),
+                patch("scripts.agent_workspaces.acceptance._validate_measured_load"),
             ):
                 result = run_two_guest_acceptance(
                     workspaces,
@@ -176,6 +207,7 @@ class AcceptanceTests(unittest.TestCase):
                     side_effect=WorkspaceError("destroy failed"),
                 ),
                 patch("scripts.agent_workspaces.acceptance.time.sleep"),
+                patch("scripts.agent_workspaces.acceptance._validate_measured_load"),
                 self.assertRaisesRegex(WorkspaceError, "cleanup failed"),
             ):
                 run_two_guest_acceptance(
@@ -189,6 +221,176 @@ class AcceptanceTests(unittest.TestCase):
             recorded = json.loads(evidence.read_text())
             self.assertEqual(recorded["result"], "failed")
             self.assertEqual(len(recorded["cleanup_errors"]), 2)
+
+    def test_zero_or_short_load_is_rejected(self) -> None:
+        evidence = {
+            "duration_seconds": 60,
+            "pressure": [
+                {
+                    "workspace_id": workspace_id,
+                    "seconds": 0.1,
+                    "disk_bytes": 0,
+                    "rx_bytes": 0,
+                }
+                for workspace_id in ("acceptance-a", "acceptance-b")
+            ],
+            "health": {
+                "before": {"workspace_slice": {"cpu_usage_nsec": 100}},
+                "after": {"workspace_slice": {"cpu_usage_nsec": 100}},
+            },
+            "isolation": {
+                "firewall_drop_delta": {"acceptance-a": 0, "acceptance-b": 0}
+            },
+        }
+        with self.assertRaisesRegex(WorkspaceError, "ended too early"):
+            _validate_measured_load(evidence)
+
+    def test_isolation_requires_listeners_and_drop_counters_both_directions(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspaces = acceptance_workspaces(directory)
+            key = pathlib.Path(directory) / "id_ed25519"
+            key.write_text("private")
+            runner = HealthRunner()
+            _verify_guest_listeners(workspaces, key, runner)
+            before = {
+                workspaces[0].id: _direction_drop_counter(
+                    workspaces[0], workspaces[1], runner
+                ),
+                workspaces[1].id: _direction_drop_counter(
+                    workspaces[1], workspaces[0], runner
+                ),
+            }
+            after = {
+                workspaces[0].id: _direction_drop_counter(
+                    workspaces[0], workspaces[1], runner
+                ),
+                workspaces[1].id: _direction_drop_counter(
+                    workspaces[1], workspaces[0], runner
+                ),
+            }
+            self.assertTrue(
+                all(after[item.id] > before[item.id] for item in workspaces)
+            )
+
+            class RefusedRunner(HealthRunner):
+                def __call__(self, command, **kwargs):
+                    command = list(command)
+                    if command[0] == "ssh":
+                        return subprocess.CompletedProcess(command, 0, "", "")
+                    return super().__call__(command, **kwargs)
+
+            with self.assertRaisesRegex(WorkspaceError, "no listening SSH target"):
+                _verify_guest_listeners(workspaces, key, RefusedRunner())
+
+            class ConnectionRefusedRunner(HealthRunner):
+                def __call__(self, command, **kwargs):
+                    command = list(command)
+                    if command[0] == "ssh" and command[-1].startswith("python3 -c"):
+                        return subprocess.CompletedProcess(
+                            command, 2, "", "unexpected socket error: 111"
+                        )
+                    return super().__call__(command, **kwargs)
+
+            with self.assertRaisesRegex(WorkspaceError, "socket error: 111"):
+                _probe_peer_denial(
+                    workspaces[0], workspaces[1], key, ConnectionRefusedRunner()
+                )
+
+    def test_health_timeout_and_evidence_failure_still_contain_and_deprovision(
+        self,
+    ) -> None:
+        class TimeoutRunner(HealthRunner):
+            def __call__(self, command, **kwargs):
+                if list(command)[:2] == ["systemctl", "show"] and self.slice_calls:
+                    raise subprocess.TimeoutExpired(list(command), 10)
+                return super().__call__(command, **kwargs)
+
+        with tempfile.TemporaryDirectory() as directory:
+            workspaces = acceptance_workspaces(directory)
+            key = pathlib.Path(directory) / "id_ed25519"
+            key.write_text("private")
+            runner = TimeoutRunner()
+            status = {"consistent": True, "domain_state": "running"}
+            with (
+                patch("scripts.agent_workspaces.acceptance.os.geteuid", return_value=0),
+                patch(
+                    "scripts.agent_workspaces.acceptance.provision_status",
+                    return_value=status,
+                ),
+                patch(
+                    "scripts.agent_workspaces.acceptance.deprovision_workspace"
+                ) as deprovision,
+                patch("scripts.agent_workspaces.acceptance.time.sleep"),
+                patch.object(pathlib.Path, "write_text", side_effect=OSError("full")),
+                self.assertRaises(subprocess.TimeoutExpired),
+            ):
+                run_two_guest_acceptance(
+                    workspaces,
+                    ssh_key=key,
+                    network_url="https://example.test/pressure",
+                    duration_seconds=10,
+                    evidence_path=pathlib.Path(directory) / "evidence.json",
+                    runner=runner,
+                )
+            self.assertEqual(deprovision.call_count, 2)
+            self.assertEqual(
+                len([command for command in runner.commands if command[0] == "ip"]),
+                2,
+            )
+            self.assertEqual(
+                len(
+                    [
+                        command
+                        for command in runner.commands
+                        if command[:2] == ["virsh", "destroy"]
+                    ]
+                ),
+                2,
+            )
+
+    def test_initial_health_timeout_still_contain_and_deprovision(self) -> None:
+        class TimeoutRunner(HealthRunner):
+            def __call__(self, command, **kwargs):
+                if list(command)[:2] == ["systemctl", "show"]:
+                    raise subprocess.TimeoutExpired(list(command), 10)
+                return super().__call__(command, **kwargs)
+
+        with tempfile.TemporaryDirectory() as directory:
+            workspaces = acceptance_workspaces(directory)
+            key = pathlib.Path(directory) / "id_ed25519"
+            key.write_text("private")
+            runner = TimeoutRunner()
+            status = {"consistent": True, "domain_state": "running"}
+            with (
+                patch("scripts.agent_workspaces.acceptance.os.geteuid", return_value=0),
+                patch(
+                    "scripts.agent_workspaces.acceptance.provision_status",
+                    return_value=status,
+                ),
+                patch(
+                    "scripts.agent_workspaces.acceptance.deprovision_workspace"
+                ) as deprovision,
+                self.assertRaises(subprocess.TimeoutExpired),
+            ):
+                run_two_guest_acceptance(
+                    workspaces,
+                    ssh_key=key,
+                    network_url="https://example.test/pressure",
+                    duration_seconds=10,
+                    evidence_path=pathlib.Path(directory) / "evidence.json",
+                    runner=runner,
+                )
+            self.assertEqual(deprovision.call_count, 2)
+            recorded = json.loads(
+                (pathlib.Path(directory) / "evidence.json").read_text()
+            )
+            self.assertEqual(recorded["failure"]["type"], "TimeoutExpired")
+            self.assertEqual(
+                len([command for command in runner.commands if command[0] == "ip"]),
+                2,
+            )
 
 
 if __name__ == "__main__":
