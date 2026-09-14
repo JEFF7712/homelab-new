@@ -3160,13 +3160,13 @@
       "consumers": [
         "gitops/home-assistant/deployment.yaml:89"
       ],
-      "destination_repository": "upstream/ghcr.io/home-assistant-libs/python-matter-server",
+      "destination_repository": "upstream/ghcr.io/matter-js/matterjs-server",
       "destination_tags": [
-        "6.3.0",
-        "retention-deployed-ac6f5cf1649fa6bd"
+        "1.4.0",
+        "retention-deployed-54232d0d3e7dff5a"
       ],
-      "digest": "sha256:ac6f5cf1649fa6bdfde7dce6218e9bc126119cc9b324019ad389872e83f5c093",
-      "id": "upstream-home-assistant-libs-python-matter-server-0bfff075e754",
+      "digest": "sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
+      "id": "upstream-matter-js-matterjs-server-54232d0d3e7",
       "kind": "upstream",
       "media_type": "application/vnd.oci.image.index.v1+json",
       "platforms": [
@@ -3184,11 +3184,11 @@
       },
       "retention_class": "deployed",
       "source": {
-        "digest": "sha256:ac6f5cf1649fa6bdfde7dce6218e9bc126119cc9b324019ad389872e83f5c093",
-        "reference": "ghcr.io/home-assistant-libs/python-matter-server:6.3.0@sha256:ac6f5cf1649fa6bdfde7dce6218e9bc126119cc9b324019ad389872e83f5c093",
+        "digest": "sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
+        "reference": "ghcr.io/matter-js/matterjs-server:1.4.0@sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
         "registry": "ghcr.io",
-        "repository": "home-assistant-libs/python-matter-server",
-        "tag": "6.3.0"
+        "repository": "matter-js/matterjs-server",
+        "tag": "1.4.0"
       }
     }
   ],
