@@ -516,6 +516,7 @@ opnsense_apply:
       --assignments opnsense_reconciler/assignments.json
       --inventory artifacts/opnsense/inventory.json
       --kea-interfaces opnsense_reconciler/kea-interfaces.json
+      --udp-broadcast-relays opnsense_reconciler/udp-broadcast-relays.json
       --bgp-neighbors opnsense_reconciler/bgp-neighbors.json
       --bgp-expected-routes opnsense_reconciler/bgp-expected-routes.json
       --outbound-nat-rules opnsense_reconciler/outbound-nat-rules.json

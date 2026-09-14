@@ -88,6 +88,88 @@ def reconcile_kea_interfaces(client: Client, desired_interfaces: set[str]) -> No
         raise RuntimeError("Kea DHCPv4 service is not running")
 
 
+UDP_RELAY_FIELDS = (
+    "enabled",
+    "interfaces",
+    "multicastaddress",
+    "sourceaddress",
+    "listenport",
+    "InstanceID",
+    "RevertTTL",
+    "description",
+)
+
+
+def reconcile_udp_broadcast_relays(
+    client: Client, desired_relays: list[dict[str, object]]
+) -> None:
+    current = client.get("/api/udpbroadcastrelay/settings/search_relay")
+    rows = current.get("rows") if isinstance(current, dict) else None
+    if not isinstance(rows, list):
+        raise RuntimeError("UDP broadcast relay search returned no rows")
+    live = {
+        row["description"]: row
+        for row in rows
+        if isinstance(row, dict) and isinstance(row.get("description"), str)
+    }
+    desired_by_description = {
+        _required_string(relay, "description"): relay for relay in desired_relays
+    }
+    unexpected = sorted(set(live) - set(desired_by_description))
+    if unexpected:
+        raise RuntimeError(
+            "unexpected UDP broadcast relays require human-directed removal: "
+            + ", ".join(unexpected)
+        )
+    for description, desired in desired_by_description.items():
+        payload = {key: desired[key] for key in UDP_RELAY_FIELDS}
+        existing = live.get(description)
+        if existing is None:
+            result = client.post(
+                "/api/udpbroadcastrelay/settings/add_relay",
+                {"udpbroadcastrelay": payload},
+            )
+        else:
+            uuid = existing.get("uuid")
+            if not isinstance(uuid, str) or not uuid:
+                raise RuntimeError(f"UDP broadcast relay {description} has no UUID")
+            current_values = {key: existing.get(key) for key in UDP_RELAY_FIELDS}
+            if current_values == payload:
+                continue
+            result = client.post(
+                f"/api/udpbroadcastrelay/settings/set_relay/{uuid}",
+                {"udpbroadcastrelay": payload},
+            )
+        _require_stored(result)
+    verified = client.get("/api/udpbroadcastrelay/settings/search_relay")
+    verified_rows = verified.get("rows") if isinstance(verified, dict) else None
+    verified_by_description = {
+        row["description"]: row
+        for row in verified_rows or []
+        if isinstance(row, dict) and isinstance(row.get("description"), str)
+    }
+    mismatches = [
+        description
+        for description, desired in desired_by_description.items()
+        if {
+            key: verified_by_description.get(description, {}).get(key)
+            for key in UDP_RELAY_FIELDS
+        }
+        != {key: desired[key] for key in UDP_RELAY_FIELDS}
+    ]
+    if mismatches:
+        raise RuntimeError(
+            "UDP broadcast relay verification failed for " + ", ".join(mismatches)
+        )
+
+
+def _required_string(item: dict[str, object], key: str) -> str:
+    value = item.get(key)
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"UDP broadcast relay requires {key}")
+    return value
+
+
 def resolve_vlan_devices(
     desired_interfaces: list[dict[str, object]],
     live_vlans: object,
@@ -689,6 +771,9 @@ def main(
         [Client, bool, list[dict[str, object]]], None
     ] = reconcile_interfaces,
     reconcile_kea: Callable[[Client, set[str]], None] = reconcile_kea_interfaces,
+    reconcile_relays: Callable[
+        [Client, list[dict[str, object]]], None
+    ] = reconcile_udp_broadcast_relays,
     reconcile_bgp: Callable[
         [Client, list[dict[str, object]]], dict[str, int]
     ] = reconcile_bgp_neighbors,
@@ -706,6 +791,7 @@ def main(
     parser.add_argument("--assignments", required=True, type=Path)
     parser.add_argument("--inventory", required=True, type=Path)
     parser.add_argument("--kea-interfaces", required=True, type=Path)
+    parser.add_argument("--udp-broadcast-relays", required=True, type=Path)
     parser.add_argument("--bgp-neighbors", required=True, type=Path)
     parser.add_argument("--bgp-expected-routes", required=True, type=Path)
     parser.add_argument("--outbound-nat-rules", required=True, type=Path)
@@ -726,6 +812,9 @@ def main(
     inventory = json.loads(arguments.inventory.read_text())
     desired = json.loads(arguments.assignments.read_text())
     desired_kea_interfaces = json.loads(arguments.kea_interfaces.read_text())
+    desired_udp_broadcast_relays = json.loads(
+        arguments.udp_broadcast_relays.read_text()
+    )
     desired_bgp_neighbors = json.loads(arguments.bgp_neighbors.read_text())
     expected_routes = json.loads(arguments.bgp_expected_routes.read_text())
     desired_outbound_nat = json.loads(arguments.outbound_nat_rules.read_text())
@@ -742,6 +831,10 @@ def main(
         isinstance(item, str) and item for item in desired_kea_interfaces
     ):
         raise ValueError("Kea interfaces must contain a list of interface identifiers")
+    if not isinstance(desired_udp_broadcast_relays, list) or not all(
+        isinstance(item, dict) for item in desired_udp_broadcast_relays
+    ):
+        raise ValueError("UDP broadcast relays must contain a list of objects")
     if not isinstance(desired_bgp_neighbors, list) or not all(
         isinstance(item, dict) for item in desired_bgp_neighbors
     ):
@@ -768,6 +861,7 @@ def main(
     )
     reconcile(client, inventory["assignment_api_available"], desired)
     reconcile_kea(client, set(desired_kea_interfaces))
+    reconcile_relays(client, desired_udp_broadcast_relays)
     expected_peers = reconcile_bgp(client, desired_bgp_neighbors)
     reconcile_outbound(client, desired_outbound_nat)
     reconcile_acls(client, desired_unbound_acls)
@@ -785,6 +879,7 @@ def main(
                 "assignment_count": len(desired),
                 "bgp_peer_count": len(expected_peers),
                 "kea_interface_count": len(desired_kea_interfaces),
+                "udp_broadcast_relay_count": len(desired_udp_broadcast_relays),
                 "outbound_nat_count": len(desired_outbound_nat),
                 "unbound_acl_count": len(desired_unbound_acls),
             },

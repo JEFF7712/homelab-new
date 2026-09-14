@@ -128,6 +128,22 @@ firewall_filters = {
       destination = { net = "10.0.40.0/24", port = "" }
     }
   }
+  clients-allow-govee-responses = {
+    description = "Allow Govee LAN responses to Home Assistant"
+    enabled     = true
+    sequence    = 215
+    interface   = { interface = ["opt1"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet"
+      protocol    = "udp"
+      quick       = true
+      log         = false
+      source      = { net = "10.0.20.0/24", port = "4002" }
+      destination = { net = "10.0.30.0/24", port = "4002" }
+    }
+  }
   clients-block-private = {
     description = "Block clients from other private VLANs"
     enabled     = true
@@ -238,6 +254,22 @@ firewall_filters = {
       log         = true
       source      = { net = "10.0.30.10/32", port = "" }
       destination = { net = "10.0.20.112/29", port = "88" }
+    }
+  }
+  infrastructure-allow-govee-queries = {
+    description = "Allow Home Assistant Govee LAN queries"
+    enabled     = true
+    sequence    = 316
+    interface   = { interface = ["opt3"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet"
+      protocol    = "udp"
+      quick       = true
+      log         = false
+      source      = { net = "10.0.30.0/24", port = "4001" }
+      destination = { net = "10.0.20.0/24", port = "4001" }
     }
   }
   infrastructure-allow-matter-bulbs = {

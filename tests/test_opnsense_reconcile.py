@@ -11,6 +11,7 @@ from opnsense_reconciler.reconcile import (
     reconcile_interfaces,
     reconcile_kea_interfaces,
     reconcile_outbound_nat,
+    reconcile_udp_broadcast_relays,
     reconcile_unbound_acls,
     resolve_vlan_devices,
     verify_bgp,
@@ -29,6 +30,43 @@ class FakeClient:
 
 
 class ReconcileInterfaceTests(unittest.TestCase):
+    def test_reconcile_udp_broadcast_relays_adds_and_verifies_instances(self) -> None:
+        relay = {
+            "InstanceID": "1",
+            "RevertTTL": "0",
+            "description": "Govee LAN discovery",
+            "enabled": "1",
+            "interfaces": "opt1,opt3",
+            "listenport": "4002",
+            "multicastaddress": "239.255.255.250",
+            "sourceaddress": "",
+        }
+
+        class RelayClient:
+            def __init__(self) -> None:
+                self.calls: list[tuple[str, str, object | None]] = []
+                self.rows: list[dict[str, object]] = []
+
+            def get(self, path: str) -> object:
+                self.calls.append(("GET", path, None))
+                return {"rows": self.rows}
+
+            def post(self, path: str, payload: object) -> object:
+                self.calls.append(("POST", path, payload))
+                self.rows = [dict(relay, uuid="relay-1")]
+                return {"result": "saved"}
+
+        client = RelayClient()
+        reconcile_udp_broadcast_relays(client, [relay])
+
+        self.assertEqual(
+            client.calls[1][0:2], ("POST", "/api/udpbroadcastrelay/settings/add_relay")
+        )
+        self.assertEqual(
+            client.calls[2][0:2],
+            ("GET", "/api/udpbroadcastrelay/settings/search_relay"),
+        )
+
     def test_main_loads_protected_environment_and_desired_assignments(self) -> None:
         seen: dict[str, object] = {}
 
@@ -74,6 +112,10 @@ class ReconcileInterfaceTests(unittest.TestCase):
             seen["acl_client"] = client
             seen["acls"] = desired
 
+        def reconcile_relays(client: object, desired: list[dict[str, object]]) -> None:
+            seen["relay_client"] = client
+            seen["relays"] = desired
+
         def prove_bgp(
             client: object, peers: dict[str, int], routes: set[str]
         ) -> object:
@@ -91,6 +133,7 @@ class ReconcileInterfaceTests(unittest.TestCase):
             assignments = root / "assignments.json"
             inventory = root / "inventory.json"
             kea_interfaces = root / "kea-interfaces.json"
+            udp_broadcast_relays = root / "udp-broadcast-relays.json"
             bgp_neighbors = root / "bgp-neighbors.json"
             bgp_expected_routes = root / "bgp-expected-routes.json"
             outbound_nat_rules = root / "outbound-nat-rules.json"
@@ -98,6 +141,7 @@ class ReconcileInterfaceTests(unittest.TestCase):
             assignments.write_text('[{"parent":"igb0","tag":30}]')
             inventory.write_text('{"assignment_api_available":true}')
             kea_interfaces.write_text('["opt1","opt2"]')
+            udp_broadcast_relays.write_text("[]")
             bgp_neighbors.write_text('[{"address":"10.0.30.11","remoteas":"64512"}]')
             bgp_expected_routes.write_text('["10.0.40.10/32"]')
             outbound_nat_rules.write_text("[]")
@@ -111,6 +155,8 @@ class ReconcileInterfaceTests(unittest.TestCase):
                     str(inventory),
                     "--kea-interfaces",
                     str(kea_interfaces),
+                    "--udp-broadcast-relays",
+                    str(udp_broadcast_relays),
                     "--bgp-neighbors",
                     str(bgp_neighbors),
                     "--bgp-expected-routes",
@@ -133,6 +179,7 @@ class ReconcileInterfaceTests(unittest.TestCase):
                 reconcile_bgp=reconcile_bgp,
                 reconcile_outbound=reconcile_outbound,
                 reconcile_acls=reconcile_acls,
+                reconcile_relays=reconcile_relays,
                 prove_bgp=prove_bgp,
             )
 
@@ -147,6 +194,7 @@ class ReconcileInterfaceTests(unittest.TestCase):
         self.assertEqual(seen["proof_routes"], {"10.0.40.10/32"})
         self.assertEqual(seen["outbound_rules"], [])
         self.assertEqual(seen["acls"], [])
+        self.assertEqual(seen["relays"], [])
 
     def test_resolve_vlan_devices_uses_live_parent_and_tag(self) -> None:
         desired = [
