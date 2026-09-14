@@ -253,7 +253,7 @@ firewall_filters = {
       quick       = true
       log         = true
       source      = { net = "fd42:30::/64", port = "" }
-      destination = { net = "fd42:20::/64", port = "5540" }
+      destination = { net = "fd42:20::/64", port = "" }
     }
   }
   infrastructure-allow-bambu-mqtt = {
