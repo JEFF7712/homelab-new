@@ -33,6 +33,12 @@ cache-populate:
       ./flake#nixosConfigurations.homelab-01.config.system.build.toplevel \
       ./flake#nixosConfigurations.homelab-02.config.system.build.toplevel \
       ./flake#nixosConfigurations.homelab-03.config.system.build.toplevel \
+      ./flake#checks.x86_64-linux.repository-contract \
+      ./flake#checks.x86_64-linux.agent-workspace-network \
+      ./flake#checks.x86_64-linux.agent-workspace-packet-flow \
+      ./flake#checks.x86_64-linux.agent-workspace-host-reservations \
+      ./flake#checks.x86_64-linux.agent-workspace-libvirt-normalization \
+      ./flake#checks.x86_64-linux.zot-registry \
       | attic push local:homelab --stdin
 
 deploy-fleet *args:

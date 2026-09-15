@@ -7,58 +7,239 @@ views:
     type: sections
     sections:
       - cards:
-          - type: markdown
-            content: >-
-              ## {{ states('sensor.a1_03900d642327265_task_name') | default('A1', true) }}
-
+          - type: custom:mushroom-title-card
+            title: A1
+            subtitle: '{{ states(''sensor.a1_03900d642327265_task_name'') }}'
+          - type: custom:mushroom-template-card
+            entity: sensor.a1_03900d642327265_print_status
+            primary: '{{ states(''sensor.a1_03900d642327265_task_name'') | default(''A1'', true) }}'
+            secondary: >-
+              {% set stage = states('sensor.a1_03900d642327265_current_stage') %}
+              {% set prog = states('sensor.a1_03900d642327265_print_progress') %}
               {% set raw = states('sensor.a1_03900d642327265_remaining_time') %}
               {% if raw not in ('unknown', 'unavailable', 'none') %}
               {% set mins = (raw | float(0) * 60) | int %}
               {% set h = mins // 60 %}{% set m = mins % 60 %}
-              {{ states('sensor.a1_03900d642327265_current_stage') | capitalize }} ·
-              {{ states('sensor.a1_03900d642327265_print_progress') }}% ·
-              {% if h > 0 %}{{ h }}h {% endif %}{{ m }}m left
+              {{ stage | capitalize }} - {{ prog }}% - {% if h > 0 %}{{ h }}h {% endif %}{{ m }}m left
               {% else %}
-              {{ states('sensor.a1_03900d642327265_current_stage') | capitalize }} ·
-              {{ states('sensor.a1_03900d642327265_print_progress') }}%
+              {{ stage | capitalize }} - {{ prog }}%
               {% endif %}
+            icon: mdi:printer-3d
+            icon_color: >-
+              {% if is_state('binary_sensor.a1_03900d642327265_print_error', 'on') %}
+              red
+              {% elif is_state('sensor.a1_03900d642327265_print_status', 'running') %}
+              green
+              {% elif is_state('sensor.a1_03900d642327265_print_status', 'finish') %}
+              blue
+              {% elif is_state('sensor.a1_03900d642327265_print_status', 'pause') %}
+              orange
+              {% else %}
+              grey
+              {% endif %}
+            multiline_secondary: true
+            tap_action:
+              action: more-info
           - type: picture-entity
             entity: camera.a1_03900d642327265_camera
             name: A1 Camera
             show_state: false
             camera_view: live
-          - type: gauge
-            entity: sensor.a1_03900d642327265_print_progress
-            name: Progress
-            min: 0
-            max: 100
-          - type: horizontal-stack
-            cards:
-              - type: button
-                entity: button.a1_03900d642327265_pause
-                name: Pause
-                icon: mdi:pause
-              - type: button
-                entity: button.a1_03900d642327265_resume
-                name: Resume
-                icon: mdi:play
-              - type: button
-                entity: light.a1_03900d642327265_chamber_light
-                name: Chamber light
-                icon: mdi:lightbulb
+          - type: custom:mushroom-chips-card
+            alignment: center
+            chips:
+              - type: entity
+                entity: sensor.a1_03900d642327265_print_status
+                content_info: state
                 tap_action:
-                  action: toggle
+                  action: more-info
+              - type: entity
+                entity: sensor.a1_03900d642327265_print_progress
+                content_info: state
+                tap_action:
+                  action: more-info
+              - type: entity
+                entity: sensor.a1_03900d642327265_remaining_time
+                content_info: state
+                tap_action:
+                  action: more-info
+              - type: entity
+                entity: binary_sensor.a1_03900d642327265_print_error
+                content_info: state
+                tap_action:
+                  action: more-info
+              - type: entity
+                entity: binary_sensor.a1_03900d642327265_online
+                content_info: state
+                tap_action:
+                  action: more-info
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - type: custom:mushroom-template-card
+                entity: button.a1_03900d642327265_pause
+                primary: Pause
+                icon: mdi:pause
+                icon_color: orange
+                tap_action:
+                  action: call-service
+                  service: button.press
+                  target:
+                    entity_id: button.a1_03900d642327265_pause
+              - type: custom:mushroom-template-card
+                entity: button.a1_03900d642327265_resume
+                primary: Resume
+                icon: mdi:play
+                icon_color: green
+                tap_action:
+                  action: call-service
+                  service: button.press
+                  target:
+                    entity_id: button.a1_03900d642327265_resume
+              - type: custom:mushroom-template-card
+                entity: button.a1_03900d642327265_stop
+                primary: Stop
+                icon: mdi:stop
+                icon_color: red
+                tap_action:
+                  action: call-service
+                  service: button.press
+                  target:
+                    entity_id: button.a1_03900d642327265_stop
+          - type: custom:mushroom-light-card
+            entity: light.a1_03900d642327265_chamber_light
+            name: Chamber light
+            show_brightness_control: false
+            collapsible_controls: true
+          - type: custom:mushroom-fan-card
+            entity: fan.a1_03900d642327265_cooling_fan
+            name: Cooling fan
+            show_percentage_control: true
+            collapsible_controls: true
       - cards:
-          - type: glance
-            entities:
-              - entity: sensor.a1_03900d642327265_print_status
-                name: Status
-              - entity: sensor.a1_03900d642327265_remaining_time
-                name: Remaining
+          - type: custom:mushroom-title-card
+            title: Temperatures
+            subtitle: Nozzle and bed, last 12 hours
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Nozzle and bed temperatures
+              show_states: true
+              colorize_states: true
+            graph_span: 12h
+            span:
+              start: hour
+              offset: -12h
+            yaxis:
+              - min: 0
+                decimals: 0
+            apex_config:
+              chart:
+                height: 260
+              stroke:
+                curve: smooth
+                width: 2
+              legend:
+                show: true
+              tooltip:
+                enabled: true
+              grid:
+                show: true
+            series:
               - entity: sensor.a1_03900d642327265_nozzle_temperature
                 name: Nozzle
+                color: '#ff6b35'
+                stroke_width: 2
+                curve: smooth
+                show:
+                  legend_value: true
               - entity: sensor.a1_03900d642327265_bed_temperature
                 name: Bed
+                color: '#36a2eb'
+                stroke_width: 2
+                curve: smooth
+                show:
+                  legend_value: true
+              - entity: sensor.a1_03900d642327265_nozzle_target_temperature
+                name: Nozzle target
+                color: '#ff6b35'
+                stroke_width: 1
+                curve: stepline
+                opacity: 0.5
+                show:
+                  legend_value: true
+              - entity: sensor.a1_03900d642327265_bed_target_temperature
+                name: Bed target
+                color: '#36a2eb'
+                stroke_width: 1
+                curve: stepline
+                opacity: 0.5
+                show:
+                  legend_value: true
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Progress and fans
+              show_states: true
+              colorize_states: true
+            graph_span: 12h
+            span:
+              start: hour
+              offset: -12h
+            yaxis:
+              - min: 0
+                max: 100
+                decimals: 0
+            apex_config:
+              chart:
+                height: 200
+              stroke:
+                curve: smooth
+                width: 2
+              legend:
+                show: true
+            series:
+              - entity: sensor.a1_03900d642327265_print_progress
+                name: Progress
+                color: '#4caf50'
+                stroke_width: 2
+                curve: smooth
+                show:
+                  legend_value: true
+              - entity: sensor.a1_03900d642327265_cooling_fan_speed
+                name: Cooling fan
+                color: '#9c27b0'
+                stroke_width: 2
+                curve: smooth
+                show:
+                  legend_value: true
+              - entity: sensor.a1_03900d642327265_heatbreak_fan_speed
+                name: Heatbreak fan
+                color: '#ff9800'
+                stroke_width: 2
+                curve: smooth
+                show:
+                  legend_value: true
+          - type: custom:mushroom-title-card
+            title: Controls
+            subtitle: Targets and switches
+          - type: custom:mushroom-number-card
+            entity: number.a1_03900d642327265_nozzle_target_temperature
+            name: Nozzle target
+            display_mode: slider
+          - type: custom:mushroom-number-card
+            entity: number.a1_03900d642327265_bed_target_temperature
+            name: Bed target
+            display_mode: slider
+          - type: custom:mushroom-entity-card
+            entity: sensor.a1_03900d642327265_current_layer
+            name: Current layer
+            icon_color: grey
+          - type: custom:mushroom-entity-card
+            entity: sensor.a1_03900d642327265_wi_fi_signal
+            name: Wi-Fi signal
+            icon_color: blue
           - type: entities
             title: Print details
             entities:
@@ -80,11 +261,3 @@ views:
                 name: Online
               - entity: sensor.a1_03900d642327265_wi_fi_signal
                 name: Wi-Fi signal
-          - type: history-graph
-            entities:
-              - entity: sensor.a1_03900d642327265_nozzle_temperature
-                name: Nozzle
-              - entity: sensor.a1_03900d642327265_bed_temperature
-                name: Bed
-            hours_to_show: 12
-            refresh_interval: 60
