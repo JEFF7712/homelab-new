@@ -23,7 +23,7 @@ Related manifests:
 - `gitops/immich/route.yaml` (`photos.rupan.dev`, inert while `Gateway homelab` is parked)
 - `gitops/immich/server.yaml`
 
-## Ingress order (v70, 2026-09-10)
+## Ingress order (v72, 2026-09-15)
 
 Cloudflare evaluates top to bottom, first match wins. Keep specifics first, catch-all last.
 
@@ -51,15 +51,16 @@ Cloudflare Access public bypass configured.
 17. `ha.rupan.dev -> http://home-assistant.home-assistant:8123`
 18. `rupan.dev -> http://rupan-dev-svc.rupan-dev:80`
 19. `www.rupan.dev -> http://rupan-dev-svc.rupan-dev:80`
-20. `distrojeff.com -> http://distrojeff-site-svc.distrojeff:80`
-21. `apollinestore.com -> http://apolline-svc.apolline:80`
-22. `darkbitapparel.com -> http://darkbit-svc.darkbit:80`
-23. `http_status:404`
+20. `grafana.rupan.dev -> http://kube-prometheus-stack-grafana.observability.svc.cluster.local:80`
+21. `distrojeff.com -> http://distrojeff-site-svc.distrojeff:80`
+22. `apollinestore.com -> http://apolline-svc.apolline:80`
+23. `darkbitapparel.com -> http://darkbit-svc.darkbit:80`
+24. `pulseagent.dev -> http://pulse-svc.pulse:80`
+25. `http_status:404`
 
-Legacy routes removed:
-- `*.rupan.dev -> https://10.0.20.180:443` (defunct Talos Traefik VIP; caused timeouts)
+Removed 2026-09-15 (v72):
+- `*.rupan.dev -> https://10.0.20.180:443` (defunct Talos Traefik VIP; caused grafana outage, then 404s for unmatched hosts after grafana fix)
 - `sandhufiles.site -> https://10.0.20.180:443` (defunct site)
-- `glance.rupan.dev`, `pihole.rupan.dev`, `api.rupan.dev`, `homelab.rupan.dev` (obsolete origins)
 
 ## Add a new-cluster hostname
 
