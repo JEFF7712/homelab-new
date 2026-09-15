@@ -44,6 +44,8 @@ views:
                 name: Remaining
               - entity: switch.stairs_light
                 name: Stairs
+              - entity: switch.kitchen_mushroom_lamp
+                name: Mushroom Lamp
           - type: entities
             title: System
             entities:

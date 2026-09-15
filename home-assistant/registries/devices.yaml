@@ -1,3 +1,10 @@
+- id: 15f836412b2cf37f53821e0085f776a6
+  area_id: kitchen
+- id: 2fbb8dce9dad8760b4d40e387a536d59
+  area_id: kitchen
+- id: 33a37c90447096c0165be4a62a9f0ca0
+  area_id: living_room
+  name_by_user: Floor Lamp
 - id: 3f7e34015a3ad4c9017dafb46d877923
   area_id: stairs
   name_by_user: Stairs Light
@@ -7,6 +14,12 @@
 - id: 6b2e3e97d070d8355272178c9b7bc1ea
   area_id: living_room
   name_by_user: Good Vibes Sign
+- id: a1ba1d50c624f629824c4e9b36cb0035
+  area_id: kitchen
+  name_by_user: Kitchen Mushroom Lamp
+- id: b38dd4760f140b1976c36873c41339a3
+  area_id: living_room
+  name_by_user: Tulip Lamp
 - id: b966252d167f43dcb2b94a6e35194ee3
   area_id: bedroom
   name_by_user: Bedroom Window Light
@@ -21,13 +34,3 @@
 - id: fd51f50aa8ed7e5bb256fffaae8c0237
   area_id: bedroom
   name_by_user: Light Strip
-- id: 15f836412b2cf37f53821e0085f776a6
-  area_id: kitchen
-- id: 2fbb8dce9dad8760b4d40e387a536d59
-  area_id: kitchen
-- id: 33a37c90447096c0165be4a62a9f0ca0
-  area_id: living_room
-  name_by_user: Floor Lamp
-- id: b38dd4760f140b1976c36873c41339a3
-  area_id: living_room
-  name_by_user: Tulip Lamp

@@ -98,6 +98,11 @@ views:
               - type: light-brightness
               - type: light-color-temp
             type: tile
+          - entity: switch.kitchen_mushroom_lamp
+            name: Mushroom Lamp
+            features:
+              - type: toggle
+            type: tile
     subview: true
     type: sections
   - title: Living Room
