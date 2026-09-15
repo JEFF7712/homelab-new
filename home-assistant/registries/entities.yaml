@@ -511,7 +511,7 @@
 - entity_id: light.living_room_mushroom_lamp
   labels:
     - shared_space
-- entity_id: light.living_room_floor_lamp
+- entity_id: light.living_room_tulip_lamp
   labels:
     - shared_space
 - entity_id: switch.stairs_light

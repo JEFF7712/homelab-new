@@ -122,8 +122,8 @@ views:
               - type: light-brightness
               - type: light-color-temp
             type: tile
-          - entity: light.living_room_floor_lamp
-            name: Mushroom Lamp
+          - entity: light.living_room_tulip_lamp
+            name: Tulip Lamp
             features:
               - type: light-brightness
               - type: light-color-temp
