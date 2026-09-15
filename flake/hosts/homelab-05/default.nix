@@ -4,6 +4,7 @@
     ./hardware-configuration.nix
     ../../modules/k3s-server.nix
     ../../modules/nvidia.nix
+    ../../modules/kiosk.nix
   ];
 
   networking.hostName = "homelab-05";
@@ -26,6 +27,12 @@
     nodeIp = "10.0.30.15";
     serverAddress = "https://10.0.30.11:6443";
     tokenFile = "/persist/secrets/k3s-token";
+  };
+
+  homelab.kiosk = {
+    enable = true;
+    url = "http://10.0.40.12/d/e1RXnCbVz/kubernetes-dashboard?kiosk";
+    drmDevice = "/dev/dri/card1";
   };
 
   system.stateVersion = "26.05";
