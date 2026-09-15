@@ -11,51 +11,62 @@ from tests.test_agent_workspaces import enabled_workspace, test_manifest
 
 
 class WorkspaceNetworkModuleTests(unittest.TestCase):
-    def test_evaluated_policy_is_interface_bound_and_fail_closed(self) -> None:
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
         if shutil.which("nix") is None:
-            self.skipTest("nix is unavailable")
+            raise unittest.SkipTest("nix is unavailable")
         root = pathlib.Path(__file__).resolve().parents[1]
-        with tempfile.TemporaryDirectory() as directory:
-            manifest = pathlib.Path(directory) / "workspaces.json"
-            manifest.write_text(
-                json.dumps(test_manifest([enabled_workspace()])),
-                encoding="utf-8",
-            )
-            expression = f"""
-              let
-                f = builtins.getFlake {json.dumps(str(root / "flake"))};
-                evaluated = f.inputs.nixpkgs.lib.nixosSystem {{
-                  system = "x86_64-linux";
-                  modules = [
-                    {root / "flake/modules/agent-workspace-network.nix"}
-                    {{
-                      system.stateVersion = "26.05";
-                      networking.hostName = "homelab-01";
-                      networking.useNetworkd = true;
-                      services.agent-workspace-network = {{
-                        enable = true;
-                        manifestFile = {manifest};
-                      }};
-                    }}
-                  ];
-                }};
-              in {{
-                rules = evaluated.config.networking.nftables.tables.agent-workspaces.content;
-                bridge = evaluated.config.systemd.network.netdevs."40-rupan-dev".netdevConfig;
-                address = evaluated.config.systemd.network.networks."40-rupan-dev".address;
-                requires = evaluated.config.systemd.services.libvirtd.requires;
-                preStop = evaluated.config.systemd.services.nftables.preStop;
-              }}
-            """
-            result = subprocess.run(
-                ["nix", "eval", "--impure", "--json", "--expr", expression],
-                cwd=root,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-        self.assertEqual(result.returncode, 0, result.stderr)
-        value = json.loads(result.stdout)
+        cls._temporary_directory = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls._temporary_directory.cleanup)
+        manifest = pathlib.Path(cls._temporary_directory.name) / "workspaces.json"
+        manifest.write_text(
+            json.dumps(test_manifest([enabled_workspace()])),
+            encoding="utf-8",
+        )
+        expression = f"""
+          let
+            f = builtins.getFlake {json.dumps(str(root / "flake"))};
+            host = f.inputs.nixpkgs.lib.nixosSystem {{
+              system = "x86_64-linux";
+              modules = [
+                {root / "flake/modules/agent-workspace-network.nix"}
+                {root / "flake/modules/agent-workspaces.nix"}
+                {{
+                  system.stateVersion = "26.05";
+                  networking.hostName = "homelab-01";
+                  networking.useNetworkd = true;
+                  services.agent-workspace-network = {{
+                    enable = true;
+                    manifestFile = {manifest};
+                  }};
+                  services.agent-workspaces.enable = true;
+                }}
+              ];
+            }};
+          in {{
+            rules = host.config.networking.nftables.tables.agent-workspaces.content;
+            bridge = host.config.systemd.network.netdevs."40-rupan-dev".netdevConfig;
+            address = host.config.systemd.network.networks."40-rupan-dev".address;
+            requires = host.config.systemd.services.libvirtd.requires;
+            preStop = host.config.systemd.services.nftables.preStop;
+            groups = host.config.users.users.qemu-libvirtd.extraGroups;
+            tmpfiles = host.config.systemd.tmpfiles.rules;
+          }}
+        """
+        result = subprocess.run(
+            ["nix", "eval", "--impure", "--json", "--expr", expression],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr)
+        cls.value = json.loads(result.stdout)
+
+    def test_evaluated_policy_is_interface_bound_and_fail_closed(self) -> None:
+        value = self.value
         rules = value["rules"]
         self.assertEqual(value["bridge"], {"Kind": "bridge", "Name": "aw-rupan-br"})
         self.assertEqual(value["address"], ["192.0.2.1/30"])
@@ -106,36 +117,7 @@ class WorkspaceNetworkModuleTests(unittest.TestCase):
     def test_storage_group_grants_qemu_traversal_without_libvirt_membership(
         self,
     ) -> None:
-        if shutil.which("nix") is None:
-            self.skipTest("nix is unavailable")
-        root = pathlib.Path(__file__).resolve().parents[1]
-        expression = f"""
-          let
-            f = builtins.getFlake {json.dumps(str(root / "flake"))};
-            evaluated = f.inputs.nixpkgs.lib.nixosSystem {{
-              system = "x86_64-linux";
-              modules = [
-                {root / "flake/modules/agent-workspaces.nix"}
-                {{
-                  system.stateVersion = "26.05";
-                  services.agent-workspaces.enable = true;
-                }}
-              ];
-            }};
-          in {{
-            groups = evaluated.config.users.users.qemu-libvirtd.extraGroups;
-            tmpfiles = evaluated.config.systemd.tmpfiles.rules;
-          }}
-        """
-        result = subprocess.run(
-            ["nix", "eval", "--impure", "--json", "--expr", expression],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        self.assertEqual(result.returncode, 0, result.stderr)
-        value = json.loads(result.stdout)
+        value = self.value
         self.assertIn("agent-workspace-storage", value["groups"])
         self.assertNotIn("libvirtd", value["groups"])
         self.assertIn(
