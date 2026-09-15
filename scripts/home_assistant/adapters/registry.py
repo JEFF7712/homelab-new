@@ -114,7 +114,9 @@ class AreaRegistryAdapter(BaseAdapter):
         live = self.export_from_live(client)
         if not live:
             return False
-        return canonical_hash(live[0].desired) == canonical_hash(doc.desired)
+        return canonical_hash(live[0].desired) == canonical_hash(
+            self.canonicalize(doc).desired
+        )
 
     def delete(self, client: HomeAssistantClient, key: str) -> None:
         pass
@@ -197,7 +199,9 @@ class LabelRegistryAdapter(BaseAdapter):
         live = self.export_from_live(client)
         if not live:
             return False
-        return canonical_hash(live[0].desired) == canonical_hash(doc.desired)
+        return canonical_hash(live[0].desired) == canonical_hash(
+            self.canonicalize(doc).desired
+        )
 
     def delete(self, client: HomeAssistantClient, key: str) -> None:
         pass
@@ -254,7 +258,9 @@ class DeviceRegistryAdapter(BaseAdapter):
         live = self.export_from_live(client)
         if not live:
             return False
-        return canonical_hash(live[0].desired) == canonical_hash(doc.desired)
+        return canonical_hash(live[0].desired) == canonical_hash(
+            self.canonicalize(doc).desired
+        )
 
     def delete(self, client: HomeAssistantClient, key: str) -> None:
         pass
@@ -319,7 +325,9 @@ class EntityRegistryAdapter(BaseAdapter):
         live = self.export_from_live(client)
         if not live:
             return False
-        return canonical_hash(live[0].desired) == canonical_hash(doc.desired)
+        return canonical_hash(live[0].desired) == canonical_hash(
+            self.canonicalize(doc).desired
+        )
 
     def delete(self, client: HomeAssistantClient, key: str) -> None:
         pass

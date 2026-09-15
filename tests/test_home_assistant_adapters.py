@@ -282,6 +282,37 @@ class TestHomeAssistantAdapters(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         self.assertNotIn("disabled_by", calls[0])
 
+    def test_collection_verify_ignores_source_list_order(self) -> None:
+        entity_adapter = EntityRegistryAdapter()
+        self.client.entities = [
+            {"entity_id": "light.b_lamp", "labels": ["shared_space"]},
+            {"entity_id": "light.a_lamp", "labels": ["shared_space"]},
+        ]
+        reversed_doc = ResourceDocument(
+            kind="entity",
+            key="collection",
+            desired=[
+                {"entity_id": "light.b_lamp", "labels": ["shared_space"]},
+                {"entity_id": "light.a_lamp", "labels": ["shared_space"]},
+            ],
+        )
+        self.assertTrue(entity_adapter.verify(self.client, reversed_doc))
+
+        device_adapter = DeviceRegistryAdapter()
+        self.client.devices = [
+            {"id": "b", "area_id": "kitchen"},
+            {"id": "a", "area_id": "kitchen"},
+        ]
+        reversed_devices = ResourceDocument(
+            kind="device",
+            key="collection",
+            desired=[
+                {"id": "b", "area_id": "kitchen"},
+                {"id": "a", "area_id": "kitchen"},
+            ],
+        )
+        self.assertTrue(device_adapter.verify(self.client, reversed_devices))
+
 
 if __name__ == "__main__":
     unittest.main()
