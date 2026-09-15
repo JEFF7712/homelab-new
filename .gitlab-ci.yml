@@ -490,7 +490,9 @@ opnsense_dataplane:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
-    - nix develop ./flake -c python -m opnsense_reconciler.dataplane --targets opnsense_reconciler/lb-data-plane-targets.json
+    - >-
+      nix develop ./flake -c python -m opnsense_reconciler.dataplane
+      --targets opnsense_reconciler/lb-data-plane-targets.json
 
 opnsense_apply:
   stage: opnsense
