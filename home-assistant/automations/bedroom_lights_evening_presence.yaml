@@ -2,7 +2,7 @@ id: bedroom_lights_evening_presence
 alias: "Bedroom Lights: Evening Presence"
 description: >-
   Turn on bedroom lights when home after sunset via the shared bedroom
-  scripts; full brightness before 10 PM, dim and warm late at night.
+  scripts. Brightness and color temperature are owned by Adaptive Lighting.
   Turn off when leaving or at sunrise. Skipped while Vacation Mode is on.
 triggers:
   - trigger: sun
@@ -31,31 +31,8 @@ actions:
           - condition: state
             entity_id: input_boolean.vacation_mode
             state: "off"
-          - condition: not
-            conditions:
-              - condition: time
-                after: "22:00:00"
-                before: "08:00:00"
         sequence:
           - action: script.bedroom_lights_on
-            data:
-              dim: false
-      - conditions:
-          - condition: trigger
-            id: "sunset"
-          - condition: state
-            entity_id: person.rupan_sunderapandyan
-            state: "home"
-          - condition: state
-            entity_id: input_boolean.vacation_mode
-            state: "off"
-          - condition: time
-            after: "22:00:00"
-            before: "08:00:00"
-        sequence:
-          - action: script.bedroom_lights_on
-            data:
-              dim: true
       - conditions:
           - condition: trigger
             id: "arrive_home"
@@ -65,31 +42,8 @@ actions:
           - condition: state
             entity_id: input_boolean.vacation_mode
             state: "off"
-          - condition: not
-            conditions:
-              - condition: time
-                after: "22:00:00"
-                before: "08:00:00"
         sequence:
           - action: script.bedroom_lights_on
-            data:
-              dim: false
-      - conditions:
-          - condition: trigger
-            id: "arrive_home"
-          - condition: state
-            entity_id: sun.sun
-            state: "below_horizon"
-          - condition: state
-            entity_id: input_boolean.vacation_mode
-            state: "off"
-          - condition: time
-            after: "22:00:00"
-            before: "08:00:00"
-        sequence:
-          - action: script.bedroom_lights_on
-            data:
-              dim: true
       - conditions:
           - condition: or
             conditions:

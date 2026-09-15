@@ -1,39 +1,17 @@
 alias: "Bedroom: Evening Lights On"
 description: >-
-  Turn on bedroom plugs and lamps. Pass dim true for 20 percent warm light
-  late at night, false (default) for full brightness.
-fields:
-  dim:
-    name: Dim late-night mode
-    description: "True for dim warm light, false for full brightness."
-    required: false
-    default: false
-    selector:
-      boolean:
+  Turn on bedroom plugs and lamps with plain turn_on calls. Brightness and
+  color temperature are owned by Adaptive Lighting.
 sequence:
   - action: switch.turn_on
     target:
       entity_id:
         - switch.bedroom_window_plug
         - switch.bedroom_mushroom_plug
-  - if:
-      - condition: template
-        value_template: "{{ dim | default(false) }}"
-    then:
-      - action: light.turn_on
-        target:
-          entity_id:
-            - light.desk_lamp_desk_lamp
-            - light.floor_lamp_floor_lamp
-            - light.light_strip_light_strip
-        data:
-          brightness_pct: 20
-          color_temp_kelvin: 2700
-    else:
-      - action: light.turn_on
-        target:
-          entity_id:
-            - light.desk_lamp_desk_lamp
-            - light.floor_lamp_floor_lamp
-            - light.light_strip_light_strip
+  - action: light.turn_on
+    target:
+      entity_id:
+        - light.desk_lamp_desk_lamp
+        - light.floor_lamp_floor_lamp
+        - light.light_strip_light_strip
 mode: single
