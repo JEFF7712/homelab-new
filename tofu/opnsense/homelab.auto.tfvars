@@ -77,6 +77,13 @@ dhcpv4_reservations = {
     mac_address = "28:84:85:4d:92:e8"
     subnet_id   = "542fde27-1972-42e1-9376-057b5cae2f5e"
   }
+  feit_switch_01 = {
+    description = "Feit Electric smart switch"
+    hostname    = "feit-switch-01"
+    ip_address  = "10.0.20.178"
+    mac_address = "70:89:76:4d:66:e3"
+    subnet_id   = "542fde27-1972-42e1-9376-057b5cae2f5e"
+  }
 }
 
 firewall_filters = {
@@ -366,6 +373,22 @@ firewall_filters = {
       log         = false
       source      = { net = "10.0.30.0/24", port = "" }
       destination = { net = "10.0.20.124/32", port = "6000" }
+    }
+  }
+  infrastructure-allow-tuya-local = {
+    description = "Allow infrastructure to Feit switch Tuya LAN protocol"
+    enabled     = true
+    sequence    = 318
+    interface   = { interface = ["opt3"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet"
+      protocol    = "TCP"
+      quick       = true
+      log         = false
+      source      = { net = "10.0.30.0/24", port = "" }
+      destination = { net = "10.0.20.178/32", port = "6668" }
     }
   }
   infrastructure-block-private = {
