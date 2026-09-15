@@ -83,9 +83,13 @@ in
       program = kioskBrowser;
     };
 
-    systemd.services."cage-tty1".serviceConfig = {
-      Restart = "always";
-      RestartSec = "3s";
+    systemd.services."cage-tty1" = {
+      wantedBy = [ "multi-user.target" ];
+      restartIfChanged = lib.mkForce true;
+      serviceConfig = {
+        Restart = "always";
+        RestartSec = "3s";
+      };
     };
 
     boot.kernelParams = [ "consoleblank=0" ];
