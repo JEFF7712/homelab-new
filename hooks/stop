@@ -11,7 +11,13 @@ stop_needs() {
   [[ $needs == true ]]
 }
 stop_remind() {
-  jq -n --arg value "$1" '{followup_message:$value,hookSpecificOutput:{additionalContext:$value}}' || echo '{}'
+  local message="$1" event
+  event=$(hook_event 2>/dev/null) || event=""
+  if [[ ${event,,} == stop ]] && jq -e 'has("stop_hook_active") or has("transcript_path") or has("session_id")' >/dev/null 2>&1 <<<"$HOOK_INPUT"; then
+    jq -n --arg reason "$message" '{decision:"block",reason:$reason}' || echo '{}'
+  else
+    jq -n --arg value "$message" '{followup_message:$value}' || echo '{}'
+  fi
   exit 0
 }
 if [[ -n ${AGENT_TASK_ID:-} ]]; then

@@ -226,6 +226,36 @@ class AgentStopHookTest(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertIn("stop-scan", payload["followup_message"])
 
+    def test_codex_stop_reminds_with_block_decision(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = self.make_repo(directory)
+            self.create_task(repository, "stop-codex")
+            (repository / "untracked.txt").write_text("drift\n", encoding="utf-8")
+            environment = {**os.environ, "PYTHONPATH": str(ROOT)}
+            environment.pop("AGENT_HOOK_ACTIVE", None)
+            environment["AGENT_TASK_ID"] = "stop-codex"
+            result = subprocess.run(
+                ["bash", str(repository / "hooks" / "stop")],
+                cwd=repository,
+                env=environment,
+                input=json.dumps(
+                    {
+                        "session_id": "fixture",
+                        "hook_event_name": "Stop",
+                        "stop_hook_active": False,
+                    }
+                ),
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["decision"], "block")
+        self.assertIn("stop-codex", payload["reason"])
+        self.assertNotIn("hookSpecificOutput", payload)
+        self.assertNotIn("followup_message", payload)
+
     def test_clean_checkout_is_silent(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = self.make_repo(directory)
