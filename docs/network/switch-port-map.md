@@ -2,8 +2,8 @@
 
 OPNsense is the only inter-VLAN router, DHCP server, DNS provider, and inter-VLAN firewall. A host may route only its explicitly isolated per-VM workspace segments under `flake/modules/agent-workspace-network.nix`; those segments are not VLANs and do not extend onto the physical switches.
 The wall run is an 802.1Q transit link: VLAN 99 carries the ISP handoff to the
-OPNsense WAN NIC, while VLANs 10 and 20 provide downstairs management and
-trusted-client access. VLAN 99 never reaches the OPNsense LAN trunk.
+OPNsense WAN NIC, while VLANs 10, 20, and 30 provide downstairs management,
+trusted-client, and cluster worker access. VLAN 99 never reaches the OPNsense LAN trunk.
 
 ## Upstairs TL-SG108E
 
@@ -13,7 +13,7 @@ Management: `10.0.10.2/24`, gateway `10.0.10.1`.
 |---|---|---:|---|---:|
 | 1 | OPNsense WAN NIC | 99 | | 99 |
 | 2 | OPNsense LAN NIC | | 10, 20, 30, 40, 50, 60 | 1 |
-| 3 | Downstairs wall trunk | | 10, 20, 99 | 1 |
+| 3 | Downstairs wall trunk | | 10, 20, 30, 99 | 1 |
 | 4 | Unmanaged cluster access switch | 30 | | 30 |
 | 5 | NAS (`nas-01`) | 30 | | 30 |
 | 6 | AdGuard and NetBird appliance | 30 | 60 | 30 |
@@ -34,14 +34,20 @@ Management: `10.0.10.3/24`, gateway `10.0.10.1`.
 | Port | Role | Untagged VLAN | Tagged VLANs | PVID |
 |---|---|---:|---|---:|
 | 1 | ISP/modem handoff | 99 | | 99 |
-| 2 | Upstairs wall trunk | | 10, 20, 99 | 1 |
+| 2 | Upstairs wall trunk | | 10, 20, 30, 99 | 1 |
 | 3 | Downstairs AP/router in AP mode | 20 | | 20 |
-| 4 | Management access | 10 | | 10 |
+| 4 | Living room cluster switch drop | 30 | | 30 |
 | 5 | Trusted-client spare | 20 | | 20 |
 
 VLAN 99 is Layer-2 WAN transit only. Do not connect a client or AP to port 1,
 and do not connect the downstairs switch to the upstairs switch by any path
 other than the wall trunk on port 2.
+
+Port 4 connects to a living room wall drop feeding a secondary NETGEAR R6400v2
+used temporarily as an unmanaged switch for two k3s cluster PCs. The uplink
+from the wall and both PCs must use the router's LAN ports (never the WAN
+port). DHCP and all Wi-Fi radios must be disabled on this router so wireless
+clients cannot bridge into the VLAN 30 infrastructure network.
 
 ## Access points
 

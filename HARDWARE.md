@@ -59,6 +59,28 @@
 - NIC: onboard 1 GbE
 - MAC: b4:96:91:13:56:06
 
+## Dell Precision 3460 SFF (Unit 1, `homelab-04`)
+
+- Role: k3s GPU worker (`10.0.30.14`)
+- CPU: Intel Core i5-13600 (14C/20T, 6P + 8E, up to 5.0 GHz)
+- iGPU: Intel UHD Graphics 770 (Quick Sync)
+- GPU: NVIDIA T1000 4 GB (Turing TU117, low-profile)
+- RAM: 32 GB DDR5-4800 (2× 16 GB)
+- Storage: 1 TB NVMe SSD (WD PC SN810, `nvme-PC_SN810_NVMe_WDC_1024GB_230907801780`)
+- NIC: Intel I219-LM 1 GbE onboard (`enp0s31f6`)
+- MAC: c4:5a:b1:e6:ee:91
+
+## Dell Precision 3450 / 3460 SFF (Unit 2, `homelab-05`)
+
+- Role: k3s GPU worker (`10.0.30.15`)
+- CPU: Intel Core i5-11600 (6C/12T, up to 4.8 GHz)
+- iGPU: Intel UHD Graphics 750
+- GPU: NVIDIA T600 4 GB (Turing TU117, low-profile)
+- RAM: 32 GB DDR4/DDR5
+- Storage: 1 TB NVMe SSD (KIOXIA XG7, `nvme-KXG70ZNV1T02_NVMe_KIOXIA_1024GB_42MFC3FQFTC5`)
+- NIC: Intel I219-LM 1 GbE onboard (`enp0s31f6`)
+- MAC: b0:4f:13:11:5d:21
+
 ## GeeekPi 8U 10" cabinet — $147.76
 
 - Cabinet: GeeekPi 8U, 10 inch, DeskPi RackMate T1, 7.87" depth — $127.99

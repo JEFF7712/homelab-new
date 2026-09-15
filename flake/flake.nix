@@ -61,6 +61,22 @@
           ./hosts/homelab-03
         ];
       };
+      nixosConfigurations.homelab-04 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          impermanence.nixosModules.impermanence
+          ./hosts/homelab-04
+        ];
+      };
+      nixosConfigurations.homelab-05 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          impermanence.nixosModules.impermanence
+          ./hosts/homelab-05
+        ];
+      };
       nixosConfigurations.homelab-01-registry = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
@@ -85,6 +101,24 @@
           disko.nixosModules.disko
           impermanence.nixosModules.impermanence
           ./hosts/homelab-03
+          ./modules/k3s-registry-client.nix
+        ];
+      };
+      nixosConfigurations.homelab-04-registry = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          impermanence.nixosModules.impermanence
+          ./hosts/homelab-04
+          ./modules/k3s-registry-client.nix
+        ];
+      };
+      nixosConfigurations.homelab-05-registry = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          impermanence.nixosModules.impermanence
+          ./hosts/homelab-05
           ./modules/k3s-registry-client.nix
         ];
       };

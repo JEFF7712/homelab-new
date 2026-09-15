@@ -16,6 +16,15 @@ in
       description = "Physical interface attached to infrastructure VLAN 30.";
     };
 
+    role = lib.mkOption {
+      type = lib.types.enum [
+        "server"
+        "agent"
+      ];
+      default = "server";
+      description = "Run k3s in server or agent (worker) mode.";
+    };
+
     nodeIp = lib.mkOption {
       type = lib.types.str;
       description = "Stable VLAN 30 address used by this k3s server.";
@@ -77,8 +86,12 @@ in
         message = "The k3s cluster-init server must not join another server.";
       }
       {
-        assertion = !cfg.bootstrapCilium || cfg.clusterInit;
+        assertion = !cfg.bootstrapCilium || (cfg.role == "server" && cfg.clusterInit);
         message = "Cilium bootstrap must run only on the cluster-init server.";
+      }
+      {
+        assertion = !(cfg.role == "agent" && cfg.clusterInit);
+        message = "An agent node cannot initialize a cluster.";
       }
       {
         assertion = !cfg.registry.enforceLocalImages || cfg.registry.enable;
@@ -100,7 +113,20 @@ in
     networking = {
       useDHCP = false;
       useNetworkd = true;
-      nftables.enable = true;
+      nftables = {
+        enable = true;
+        tables = lib.mkIf (cfg.role == "agent") {
+          k3s-agent-proxy = {
+            family = "ip";
+            content = ''
+              chain output {
+                type nat hook output priority -100; policy accept;
+                ip daddr 127.0.0.1 tcp dport 6443 redirect to :6444
+              }
+            '';
+          };
+        };
+      };
       firewall = {
         enable = true;
         extraReversePathFilterRules = "ip saddr 10.42.0.0/16 accept";
@@ -173,22 +199,31 @@ in
 
     services.k3s = {
       enable = true;
-      role = "server";
-      inherit (cfg) clusterInit tokenFile;
+      role = cfg.role;
+      clusterInit = if cfg.role == "server" then cfg.clusterInit else false;
+      inherit (cfg) tokenFile;
       serverAddr = lib.mkIf (cfg.serverAddress != null) cfg.serverAddress;
-      extraFlags = [
-        "--node-ip=${cfg.nodeIp}"
-        "--advertise-address=${cfg.nodeIp}"
-        "--flannel-backend=none"
-        "--disable-network-policy"
-        "--cluster-cidr=10.42.0.0/16"
-        "--service-cidr=10.43.0.0/16"
-        "--disable-kube-proxy"
-        "--disable=servicelb"
-        "--disable=traefik"
-        "--disable=local-storage"
-      ]
-      ++ lib.optional cfg.registry.enforceLocalImages "--disable-default-registry-endpoint";
+      extraFlags =
+        (
+          if cfg.role == "server" then
+            [
+              "--node-ip=${cfg.nodeIp}"
+              "--advertise-address=${cfg.nodeIp}"
+              "--flannel-backend=none"
+              "--disable-network-policy"
+              "--cluster-cidr=10.42.0.0/16"
+              "--service-cidr=10.43.0.0/16"
+              "--disable-kube-proxy"
+              "--disable=servicelb"
+              "--disable=traefik"
+              "--disable=local-storage"
+            ]
+          else
+            [
+              "--node-ip=${cfg.nodeIp}"
+            ]
+        )
+        ++ lib.optional cfg.registry.enforceLocalImages "--disable-default-registry-endpoint";
     };
 
     systemd.services.k3s = {
@@ -202,7 +237,7 @@ in
       '';
     };
 
-    services.k3s.manifests = lib.mkIf cfg.bootstrapCilium {
+    services.k3s.manifests = lib.mkIf (cfg.role == "server" && cfg.bootstrapCilium) {
       cilium.content = {
         apiVersion = "helm.cattle.io/v1";
         kind = "HelmChart";
@@ -384,6 +419,7 @@ in
     environment.persistence."/persist" = {
       hideMounts = true;
       directories = [
+        "/etc/rancher/node"
         "/var/lib/nixos"
         "/var/lib/rancher/k3s"
         "/var/lib/systemd"
