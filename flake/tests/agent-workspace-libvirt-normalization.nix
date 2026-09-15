@@ -58,6 +58,18 @@ let
       ];
     }
   );
+  workspaceSources = pkgs.lib.cleanSourceWith {
+    src = ../../.;
+    filter =
+      path: _type:
+      let
+        rel = pkgs.lib.removePrefix (toString ../../. + "/") (toString path);
+        base = baseNameOf (toString path);
+      in
+      base != "__pycache__"
+      && !(pkgs.lib.hasSuffix ".pyc" base)
+      && (rel == "" || rel == "scripts" || pkgs.lib.hasPrefix "scripts/" rel);
+  };
   verify = pkgs.writeText "verify-libvirt-normalization.py" ''
     import pathlib
     import subprocess
@@ -104,6 +116,6 @@ pkgs.testers.nixosTest {
     machine.succeed("mkdir -p /persist/agent-workspaces/libvirt-test/{disks,control}")
     machine.succeed("touch /persist/agent-workspaces/libvirt-test/disks/{system,data}.qcow2")
     machine.succeed("touch /persist/agent-workspaces/libvirt-test/control/seed.iso")
-    machine.succeed("PYTHONPATH=${../../.} python ${verify}")
+    machine.succeed("PYTHONPATH=${workspaceSources} python ${verify}")
   '';
 }
