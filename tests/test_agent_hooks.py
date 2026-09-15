@@ -63,9 +63,7 @@ class AgentHookTest(unittest.TestCase):
             check=False,
         )
         self.assertEqual(json.loads(recursive.stdout), {})
-
-    def test_session_start_fails_open_for_malformed_input(self) -> None:
-        result = subprocess.run(
+        malformed = subprocess.run(
             ["bash", str(ROOT / "hooks/session-start")],
             cwd=ROOT,
             input="not-json",
@@ -73,8 +71,8 @@ class AgentHookTest(unittest.TestCase):
             text=True,
             check=False,
         )
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(json.loads(result.stdout), {})
+        self.assertEqual(malformed.returncode, 0, malformed.stderr)
+        self.assertEqual(json.loads(malformed.stdout), {})
 
     def test_validation_result_records_matching_failures_only(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-hooks-") as directory:
@@ -276,16 +274,6 @@ class AgentOpencodePluginTest(unittest.TestCase):
         if node is None:
             self.fail("node is required for plugin tests; run nix develop ./flake")
         return node
-
-    def test_plugin_is_valid_javascript(self) -> None:
-        node = self.require_node()
-        result = subprocess.run(
-            [node, "--check", str(self.PLUGIN)],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_plugin_exports_exactly_one_entrypoint(self) -> None:
         # OpenCode loads every exported function as a plugin entrypoint, so

@@ -62,6 +62,11 @@ class AgentCliTest(unittest.TestCase):
 
             result = run_agent("context", "--json", cwd=repository)
 
+            subprocess.run(
+                ["git", "checkout", "--detach", "-q"], cwd=repository, check=True
+            )
+            detached = run_agent("context", "--json", cwd=repository)
+
         self.assertEqual(result.returncode, 0, result.stderr)
         payload = json.loads(result.stdout)
         self.assertEqual(payload["schema_version"], 1)
@@ -74,22 +79,10 @@ class AgentCliTest(unittest.TestCase):
         self.assertEqual(payload["repository"]["dirty_summary"]["unstaged"], 1)
         self.assertEqual(payload["repository"]["dirty_summary"]["untracked"], 1)
         self.assertIn("new file.txt", payload["repository"]["dirty_summary"]["files"])
-
-    def test_context_json_reports_detached_head(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="agent-detached-") as directory:
-            repository = make_repository(Path(directory))
-            (repository / "tracked.txt").write_text("tracked\n", encoding="utf-8")
-            commit(repository, "initial")
-            subprocess.run(
-                ["git", "checkout", "--detach", "-q"], cwd=repository, check=True
-            )
-
-            result = run_agent("context", "--json", cwd=repository)
-
-        self.assertEqual(result.returncode, 0, result.stderr)
-        payload = json.loads(result.stdout)
-        self.assertIsNone(payload["repository"]["branch"])
-        self.assertTrue(payload["repository"]["detached"])
+        self.assertEqual(detached.returncode, 0, detached.stderr)
+        detached_payload = json.loads(detached.stdout)
+        self.assertIsNone(detached_payload["repository"]["branch"])
+        self.assertTrue(detached_payload["repository"]["detached"])
 
     def test_task_new_template_prints_valid_creation_document(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

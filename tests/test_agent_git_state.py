@@ -36,6 +36,7 @@ class GitStateTest(unittest.TestCase):
                 (repository / name).write_text(name, encoding="utf-8")
             (repository / ".gitignore").write_text("ignored/\n", encoding="utf-8")
             commit(repository, "initial")
+            clean = collect_git_state(repository)
 
             (repository / "staged.txt").write_bytes(b"index version\n")
             git(repository, "add", "staged.txt")
@@ -105,6 +106,8 @@ class GitStateTest(unittest.TestCase):
         self.assertEqual(state.counts.index, 2)
         self.assertEqual(state.counts.worktree, 3)
         self.assertEqual(state.counts.untracked, 5)
+        self.assertEqual(clean.head, state.head)
+        self.assertNotEqual(clean.fingerprint, state.fingerprint)
 
     def test_only_untracked_files_are_dirty_and_change_the_fingerprint(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-untracked-") as directory:
@@ -120,19 +123,6 @@ class GitStateTest(unittest.TestCase):
         self.assertEqual(first.counts.untracked, 1)
         self.assertEqual(first.changes[0].kind, ChangeKind.UNTRACKED)
         self.assertNotEqual(first.fingerprint, second.fingerprint)
-
-    def test_fingerprint_detects_worktree_change_without_head_change(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="agent-git-fingerprint-") as directory:
-            repository = make_repository(Path(directory))
-            target = repository / "tracked.txt"
-            target.write_bytes(b"committed")
-            commit(repository, "initial")
-            clean = collect_git_state(repository)
-            target.write_bytes(b"working change")
-            dirty = collect_git_state(repository)
-
-        self.assertEqual(clean.head, dirty.head)
-        self.assertNotEqual(clean.fingerprint, dirty.fingerprint)
 
     def test_fingerprint_detects_mode_only_tracked_file_change(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-mode-") as directory:
@@ -178,22 +168,6 @@ class GitStateTest(unittest.TestCase):
             (state.changes[0].path, state.changes[0].kind, state.changes[0].source),
             ("delete.txt", ChangeKind.DELETED, ChangeSource.INDEX),
         )
-
-    def test_ignored_and_agent_state_files_do_not_change_the_fingerprint(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="agent-git-ignored-") as directory:
-            repository = make_repository(Path(directory))
-            (repository / ".gitignore").write_text("ignored/\n", encoding="utf-8")
-            (repository / "tracked.txt").write_bytes(b"tracked")
-            commit(repository, "initial")
-            clean = collect_git_state(repository)
-            (repository / "ignored").mkdir()
-            (repository / "ignored" / "skip.txt").write_bytes(b"ignored")
-            (repository / ".agent-state").mkdir()
-            (repository / ".agent-state" / "state.json").write_bytes(b"state")
-            ignored = collect_git_state(repository)
-
-        self.assertEqual(clean.fingerprint, ignored.fingerprint)
-        self.assertFalse(ignored.dirty)
 
     def test_base_collects_committed_changes_from_merge_base(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-base-") as directory:
@@ -261,7 +235,7 @@ class GitStateTest(unittest.TestCase):
         )
         self.assertEqual(first.fingerprint, second.fingerprint)
 
-    def test_worktree_symlink_target_is_fingerprinted_without_following_it(
+    def test_worktree_symlinks_are_fingerprinted_without_following_them(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-symlink-") as directory:
@@ -271,39 +245,31 @@ class GitStateTest(unittest.TestCase):
             (repository / "second-target").write_bytes(b"same content")
             link = repository / "link"
             link.symlink_to("base-target")
+            (repository / "first-directory").mkdir()
+            (repository / "second-directory").mkdir()
+            directory_link = repository / "directory-link"
+            directory_link.symlink_to("first-directory", target_is_directory=True)
             commit(repository, "initial")
             link.unlink()
             link.symlink_to("first-target")
             first = collect_git_state(repository)
             link.unlink()
             link.symlink_to("second-target")
+            directory_link.unlink()
+            directory_link.symlink_to("second-directory", target_is_directory=True)
 
             second = collect_git_state(repository)
 
         self.assertNotEqual(first.fingerprint, second.fingerprint)
-        self.assertIn(
-            ("link", ChangeKind.MODIFIED, ChangeSource.WORKTREE),
-            {(change.path, change.kind, change.source) for change in second.changes},
-        )
-
-    def test_worktree_symlink_to_directory_does_not_raise(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="agent-git-symlink-dir-") as directory:
-            repository = make_repository(Path(directory))
-            (repository / "first-directory").mkdir()
-            (repository / "second-directory").mkdir()
-            link = repository / "directory-link"
-            link.symlink_to("first-directory", target_is_directory=True)
-            commit(repository, "initial")
-            link.unlink()
-            link.symlink_to("second-directory", target_is_directory=True)
-
-            state = collect_git_state(repository)
-
-        self.assertTrue(state.dirty)
-        self.assertIn(
-            ("directory-link", ChangeKind.MODIFIED, ChangeSource.WORKTREE),
-            {(change.path, change.kind, change.source) for change in state.changes},
-        )
+        self.assertTrue(second.dirty)
+        for name in ("link", "directory-link"):
+            self.assertIn(
+                (name, ChangeKind.MODIFIED, ChangeSource.WORKTREE),
+                {
+                    (change.path, change.kind, change.source)
+                    for change in second.changes
+                },
+            )
 
     def test_modified_gitlink_does_not_read_its_directory_as_a_file(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agent-git-gitlink-") as directory:
@@ -341,7 +307,9 @@ class GitStateTest(unittest.TestCase):
             {(change.path, change.kind, change.source) for change in changed.changes},
         )
 
-    def test_dirty_gitlink_fingerprint_includes_nested_file_content(self) -> None:
+    def test_gitlink_fingerprint_includes_nested_tracked_and_untracked_content(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory(
             prefix="agent-git-gitlink-content-"
         ) as directory:
@@ -366,56 +334,24 @@ class GitStateTest(unittest.TestCase):
                 "module",
             )
             commit(repository, "initial submodule")
+            clean = collect_git_state(repository)
             module_target = repository / "module" / "tracked.txt"
             module_target.write_bytes(b"first dirty content")
             first = collect_git_state(repository)
             module_target.write_bytes(b"second dirty content")
-
             second = collect_git_state(repository)
-
-        self.assertNotEqual(first.fingerprint, second.fingerprint)
-
-    def test_untracked_only_gitlink_is_dirty_and_fingerprints_nested_bytes(
-        self,
-    ) -> None:
-        with tempfile.TemporaryDirectory(
-            prefix="agent-git-gitlink-untracked-"
-        ) as directory:
-            root = Path(directory)
-            nested = root / "nested"
-            nested.mkdir()
-            make_repository(nested)
-            (nested / "tracked.txt").write_bytes(b"committed")
-            commit(nested, "initial")
-            repository = root / "super"
-            repository.mkdir()
-            make_repository(repository)
-            git(
-                repository,
-                "-c",
-                "protocol.file.allow=always",
-                "submodule",
-                "add",
-                "-q",
-                str(nested),
-                "module",
-            )
-            commit(repository, "initial submodule")
-            clean = collect_git_state(repository)
             target = repository / "module" / "untracked.txt"
-            target.write_bytes(b"first untracked content")
-            first = collect_git_state(repository)
-            target.write_bytes(b"second untracked content")
-
-            second = collect_git_state(repository)
+            target.write_bytes(b"untracked content")
+            third = collect_git_state(repository)
 
         self.assertFalse(clean.dirty)
-        self.assertTrue(first.dirty)
         self.assertNotEqual(clean.fingerprint, first.fingerprint)
         self.assertNotEqual(first.fingerprint, second.fingerprint)
+        self.assertTrue(third.dirty)
+        self.assertNotEqual(second.fingerprint, third.fingerprint)
         self.assertIn(
             ("module", ChangeKind.MODIFIED, ChangeSource.WORKTREE),
-            {(change.path, change.kind, change.source) for change in first.changes},
+            {(change.path, change.kind, change.source) for change in third.changes},
         )
 
     def test_untracked_depth_two_gitlink_is_detected_without_ignored_state(

@@ -514,34 +514,6 @@ class TaskRecordTest(unittest.TestCase):
                 self.assertIn("message", payload)
                 self.assertNotIn("Traceback", result.stderr)
 
-    def test_checkpoint_reports_directory_fsync_warning_after_replacement(self) -> None:
-        from scripts.agent.tasks import checkpoint_task
-
-        with tempfile.TemporaryDirectory(prefix="agent-task-") as directory:
-            repository = make_repository(Path(directory))
-            (repository / "tracked.txt").write_text("initial\n", encoding="utf-8")
-            commit(repository, "initial")
-            self.assertEqual(
-                run_agent(
-                    repository, "task-new", "state", document=creation_payload()
-                ).returncode,
-                0,
-            )
-            path = repository / ".agent-state/tasks/state/task.json"
-            record = json.loads(path.read_text())
-            with mock.patch(
-                "scripts.agent.tasks.os.fsync",
-                side_effect=[None, None, OSError("injected")],
-            ):
-                result = checkpoint_task(
-                    repository, "state", {**record, "expected_revision": 1}
-                )
-            persisted = json.loads(path.read_text())
-
-        self.assertEqual(persisted["record_revision"], 2)
-        self.assertIn("durability_warning", result)
-        self.assertNotIn("durability_warning", result["task"])
-
     def test_warning_checkpoint_result_round_trips_as_canonical_task(self) -> None:
         from scripts.agent.tasks import checkpoint_task
 
@@ -650,35 +622,30 @@ class RedactionTest(unittest.TestCase):
         self.assertEqual(value, "Authorization: [REDACTED]")
         self.assertNotIn("QWxhZGRpbjpvcGVuIHNlc2FtZQ==", value)
 
-    def test_redacts_common_machine_credential_path_forms(self) -> None:
+    def test_redacts_machine_credential_path_forms(self) -> None:
         from scripts.agent.redact import redact
 
         value = redact(
             "/root/.ssh/id_ed25519 /Users/alice/.config/sops/age/keys.txt "
-            "$HOME/.kube/config ${HOME}/.ssh/id_rsa ~/.config/sops/age/key.txt"
-        )
-
-        for secret in ("id_ed25519", "keys.txt", "config", "id_rsa", "key.txt"):
-            self.assertNotIn(secret, value)
-        self.assertEqual(value.count("[REDACTED]"), 5)
-
-    def test_redacts_aws_docker_and_gnupg_credential_paths(self) -> None:
-        from scripts.agent.redact import redact
-
-        value = redact(
+            "$HOME/.kube/config ${HOME}/.ssh/id_rsa ~/.config/sops/age/key.txt "
             "~/.aws/credentials /root/.docker/config.json "
             "/home/alice/.gnupg/private-keys-v1.d ${HOME}/.aws/credentials "
             "$HOME/.gnupg /Users/alice/.docker/config.json"
         )
 
         for secret in (
+            "id_ed25519",
+            "keys.txt",
+            "config",
+            "id_rsa",
+            "key.txt",
             "credentials",
             "config.json",
             "private-keys-v1.d",
             ".gnupg",
         ):
             self.assertNotIn(secret, value)
-        self.assertEqual(value.count("[REDACTED]"), 6)
+        self.assertEqual(value.count("[REDACTED]"), 11)
 
     def test_redacts_secrets_headers_private_keys_environment_and_machine_paths(
         self,

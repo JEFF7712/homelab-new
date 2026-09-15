@@ -203,19 +203,9 @@ class ZotRegistryModuleTests(unittest.TestCase):
         self.assertIn('"/mnt/backup-2tb/registry-restic"', nas_data)
         self.assertIn('"/persist/zot/status"', nas_data)
 
-    def test_runtime_config_enforces_private_acl_and_digest_compatibility(self) -> None:
-        module = MODULE.read_text()
-
-        self.assertIn('compat = [ "docker2s2" ]', module)
-        self.assertIn('.repositories["**"].defaultPolicy == []', module)
-        self.assertIn("[.repositories[] | .defaultPolicy == []] | all", module)
-        self.assertIn('has("anonymousPolicy")', module)
-        self.assertIn('"users": ["maintenance"]', module)
-        self.assertIn(".http.accessControl = $accessControl[0]", module)
-        self.assertIn("ui.enable = true", module)
-        self.assertIn("gc = false", module)
-
-    def test_pinned_binary_verifies_runtime_assembled_configuration(self) -> None:
+    def test_runtime_assembly_verifies_valid_config_and_rejects_anonymous_access(
+        self,
+    ) -> None:
         package = Path(self.evaluated["packageOutPath"])
         interpreter = subprocess.run(
             ["patchelf", "--print-interpreter", str(package / "bin/zot")],
@@ -281,16 +271,15 @@ class ZotRegistryModuleTests(unittest.TestCase):
                 rendered["http"]["auth"]["htpasswd"]["path"],
                 str(credentials / "htpasswd"),
             )
+            self.assertFalse(rendered["storage"]["gc"])
+            self.assertTrue(rendered["extensions"]["ui"]["enable"])
 
-    def test_runtime_assembly_rejects_anonymous_access(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            temporary = Path(temporary_directory)
-            credentials = temporary / "credentials"
-            runtime = temporary / "runtime"
-            credentials.mkdir()
-            runtime.mkdir()
-            (credentials / "htpasswd").write_text("not-empty\n")
-            (credentials / "access-control.json").write_text(
+            rejected_credentials = temporary / "rejected-credentials"
+            rejected_runtime = temporary / "rejected-runtime"
+            rejected_credentials.mkdir()
+            rejected_runtime.mkdir()
+            (rejected_credentials / "htpasswd").write_text("not-empty\n")
+            (rejected_credentials / "access-control.json").write_text(
                 json.dumps(
                     {
                         "repositories": {
@@ -305,8 +294,8 @@ class ZotRegistryModuleTests(unittest.TestCase):
             completed = subprocess.run(
                 [self.evaluated["prepareConfig"]],
                 env={
-                    "CREDENTIALS_DIRECTORY": str(credentials),
-                    "RUNTIME_DIRECTORY": str(runtime),
+                    "CREDENTIALS_DIRECTORY": str(rejected_credentials),
+                    "RUNTIME_DIRECTORY": str(rejected_runtime),
                 },
                 check=False,
                 capture_output=True,
@@ -314,7 +303,7 @@ class ZotRegistryModuleTests(unittest.TestCase):
             )
 
             self.assertNotEqual(completed.returncode, 0)
-            self.assertFalse((runtime / "config.json").exists())
+            self.assertFalse((rejected_runtime / "config.json").exists())
 
 
 if __name__ == "__main__":

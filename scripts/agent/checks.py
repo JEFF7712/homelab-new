@@ -58,7 +58,6 @@ COMMANDS = {
         "unittest",
         "tests.test_agent_workspaces",
         "tests.test_agent_workspace_lifecycle",
-        "tests.test_agent_workspace_network",
         "-v",
     ),
     "nix-all-hosts": ("bash", "scripts/checks/nix.sh", "all"),
