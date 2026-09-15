@@ -484,6 +484,21 @@
 - entity_id: switch.hacs_pre_release
   disabled_by: integration
   labels: []
+- entity_id: switch.adaptive_lighting_pre_release
+  disabled_by: integration
+  labels: []
+- entity_id: switch.apexcharts_card_pre_release
+  disabled_by: integration
+  labels: []
+- entity_id: switch.auto_entities_pre_release
+  disabled_by: integration
+  labels: []
+- entity_id: switch.mushroom_pre_release
+  disabled_by: integration
+  labels: []
+- entity_id: switch.spook_your_homie_pre_release
+  disabled_by: integration
+  labels: []
 - entity_id: switch.living_room_good_vibes_sign
   labels:
     - shared_space

@@ -26,8 +26,50 @@ custom_integrations:
     sha256: 97be6b824a4f38e683728cc6dd72367f6b8bad0a43428b1b3b987a3087adf413
     install_path: /config/custom_components/hacs
     connection: github_oauth
-    status: pending_setup
-custom_frontend_cards: []
+    status: installed
+  - domain: adaptive_lighting
+    name: Adaptive Lighting
+    source: https://github.com/basnijholt/adaptive-lighting
+    version: v1.32.0
+    artifact: https://github.com/basnijholt/adaptive-lighting/archive/refs/tags/v1.32.0.zip
+    sha256: 31275cd1e208f2db8a0ced9b9bc0900ee0699909cc6d2c2ddc7ee4c34d6ea7e7
+    install_path: /config/custom_components/adaptive_lighting
+    connection: local
+    status: installed
+  - domain: spook
+    name: Spook
+    source: https://github.com/frenck/spook
+    version: v5.4.0
+    artifact: https://github.com/frenck/spook/releases/download/v5.4.0/spook.zip
+    sha256: 5c69e58cf14ce67b87299c1eb13c30c37a4f1e75a3e924d51c04be4e5e456a4a
+    install_path: /config/custom_components/spook
+    connection: local
+    status: installed
+custom_frontend_cards:
+  - name: Mushroom
+    source: https://github.com/piitaya/lovelace-mushroom
+    version: v5.2.3
+    artifact: https://github.com/piitaya/lovelace-mushroom/releases/download/v5.2.3/mushroom.js
+    sha256: 631668268e474d5357e0f17f161322499ea5c93a910431477e112653d7aa456b
+    install_path: /config/www/community/lovelace-mushroom/mushroom.js
+    resource_url: /hacsfiles/lovelace-mushroom/mushroom.js
+    status: installed
+  - name: Auto Entities
+    source: https://github.com/thomasloven/lovelace-auto-entities
+    version: v1.16.1
+    artifact: https://raw.githubusercontent.com/thomasloven/lovelace-auto-entities/v1.16.1/auto-entities.js
+    sha256: b7327b2fcd39f1fb859b60b53c869760d1d762ab4d4e4617b748971f528bd407
+    install_path: /config/www/community/lovelace-auto-entities/auto-entities.js
+    resource_url: /hacsfiles/lovelace-auto-entities/auto-entities.js
+    status: installed
+  - name: ApexCharts Card
+    source: https://github.com/RomRider/apexcharts-card
+    version: v2.2.3
+    artifact: https://github.com/RomRider/apexcharts-card/releases/download/v2.2.3/apexcharts-card.js
+    sha256: 346780707773fb90c45e9eeaf8acb010d16a8089e86563a242cc4e1d8995f718
+    install_path: /config/www/community/apexcharts-card/apexcharts-card.js
+    resource_url: /hacsfiles/apexcharts-card/apexcharts-card.js
+    status: installed
 blueprints: []
 dependencies_policy:
   auto_download: false
