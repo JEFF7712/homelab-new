@@ -45,6 +45,15 @@ custom_integrations:
     install_path: /config/custom_components/spook
     connection: local
     status: installed
+  - domain: tuya_local
+    name: Tuya Local
+    source: https://github.com/make-all/tuya-local
+    version: 2026.9.1
+    artifact: https://github.com/make-all/tuya-local/archive/refs/tags/2026.9.1.zip
+    sha256: efb58757f1b33eec8a9656b94274745a7244984c394e8485094c76af85d9ac00
+    install_path: /config/custom_components/tuya_local
+    connection: local
+    status: installed
 custom_frontend_cards:
   - name: Mushroom
     source: https://github.com/piitaya/lovelace-mushroom
