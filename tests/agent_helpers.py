@@ -15,8 +15,11 @@ def git(repository: Path, *arguments: str) -> bytes:
 
 def make_repository(path: Path) -> Path:
     git(path, "init", "-q", "-b", "main")
-    git(path, "config", "user.name", "Agent Test")
-    git(path, "config", "user.email", "agent-test@example.invalid")
+    config = path / ".git" / "config"
+    with config.open("a", encoding="utf-8") as handle:
+        handle.write(
+            "[user]\n\tname = Agent Test\n\temail = agent-test@example.invalid\n"
+        )
     return path
 
 
