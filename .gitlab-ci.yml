@@ -660,7 +660,7 @@ deploy_home_assistant:
       nix develop ./flake -c python -m scripts.home_assistant plan --instance homelab-01 --json > plan.json;
       rc=$?; cat plan.json; test $rc -eq 0
     - >-
-      plan_file=$(python3 -c 'import json; print(json.load(open("plan.json"))["plan_file"])')
+      plan_file=$(nix develop ./flake -c python3 -c 'import json; print(json.load(open("plan.json"))["plan_file"])')
     - nix develop ./flake -c python -m scripts.home_assistant apply --instance homelab-01 --plan-file "$plan_file" --yes
     - nix develop ./flake -c python -m scripts.home_assistant verify --instance homelab-01
 
