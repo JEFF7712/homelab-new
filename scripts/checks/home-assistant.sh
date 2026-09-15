@@ -9,9 +9,11 @@ for tool in ruff pyright python yamllint; do
   }
 done
 
-ruff format --check scripts/home_assistant tests/test_home_assistant_*.py
-ruff check --select E,F,I,UP --ignore E501 scripts/home_assistant tests/test_home_assistant_*.py
-pyright scripts/home_assistant
+if [[ "${CHECK_FROM_ALL:-0}" != "1" ]]; then
+  ruff format --check scripts/home_assistant tests/test_home_assistant_*.py
+  ruff check --select E,F,I,UP --ignore E501 scripts/home_assistant tests/test_home_assistant_*.py
+  pyright scripts/home_assistant
+fi
 if [[ "${SKIP_TESTS:-0}" != "1" ]]; then
   python -m unittest discover -s tests -p 'test_home_assistant_*.py' -v
 fi

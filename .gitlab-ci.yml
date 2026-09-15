@@ -67,7 +67,7 @@ nix_format_feature:
   stage: test
   needs: []
   script:
-    - nix develop ./flake -c bash -c 'just provision-check-deps && just check'
+    - nix develop ./flake -c bash -c 'just provision-check-deps && SKIP_FLAKE_CHECK=1 just check'
 
 repository_tests:
   extends:
@@ -78,6 +78,22 @@ repository_tests_feature:
   extends:
     - .shared_feature
     - .repository_tests
+
+.flake_check:
+  stage: test
+  needs: []
+  script:
+    - nix develop ./flake -c nix flake check 'path:.?dir=flake' --no-write-lock-file
+
+flake_check:
+  extends:
+    - .nas_ci
+    - .flake_check
+
+flake_check_feature:
+  extends:
+    - .shared_feature
+    - .flake_check
 
 .yaml_schema:
   stage: test
@@ -121,6 +137,7 @@ nix_cache:
     - .nix_cache
   needs:
     - repository_tests
+    - flake_check
 
 .secret_scan:
   stage: security
@@ -265,6 +282,7 @@ deploy_registry_platform:
   resource_group: registry-platform
   needs:
     - repository_tests
+    - flake_check
     - registry_lock
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -330,6 +348,7 @@ deploy_zigbee_gateway:
   resource_group: zigbee-gateway
   needs:
     - repository_tests
+    - flake_check
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
@@ -439,6 +458,7 @@ opnsense_inventory:
     name: production
   needs:
     - repository_tests
+    - flake_check
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
@@ -613,6 +633,7 @@ deploy_agent_workspace_host:
     name: production
   needs:
     - repository_tests
+    - flake_check
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
@@ -674,6 +695,7 @@ sync_to_github:
     - if: '$CI_COMMIT_BRANCH == "main"'
   needs:
     - repository_tests
+    - flake_check
     - nix_format
     - yaml_schema
     - secret_scan
