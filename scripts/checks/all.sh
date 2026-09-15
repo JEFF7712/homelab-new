@@ -3,6 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 export SKIP_TESTS=1
 export SKIP_NIX_EVAL=1
+export CHECK_FROM_ALL=1
 bash scripts/checks/agent-workflows.sh
 bash scripts/checks/python.sh
 bash scripts/checks/registry.sh
@@ -13,4 +14,6 @@ bash scripts/checks/home-assistant.sh
 python scripts/checks/docs.py
 python scripts/checks/whitespace.py
 gitleaks detect --source . --redact
-nix flake check 'path:.?dir=flake' --no-write-lock-file
+if [[ "${SKIP_FLAKE_CHECK:-0}" != "1" ]]; then
+  nix flake check 'path:.?dir=flake' --no-write-lock-file
+fi
