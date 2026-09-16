@@ -1,0 +1,47 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gpu-health
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: gpu.rules
+      rules:
+        - alert: NvidiaGpuHighTemperature
+          expr: nvidia_smi_gpu_temp_celsius > 82
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "GPU {{ $labels.gpu }} ({{ $labels.name }}) on {{ $labels.instance }} temp above 82°C"
+            description: "GPU has maintained a temperature above 82°C for 5 minutes."
+
+        - alert: NvidiaGpuCriticalTemperature
+          expr: nvidia_smi_gpu_temp_celsius > 88
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "GPU {{ $labels.gpu }} ({{ $labels.name }}) on {{ $labels.instance }} temp above 88°C"
+            description: "GPU temperature has exceeded 88°C for 2 minutes."
+
+        - alert: NvidiaGpuMemoryPressure
+          expr: nvidia_smi_utilization_memory_ratio > 0.95
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "GPU {{ $labels.gpu }} memory usage above 95%"
+            description: "GPU memory utilization on {{ $labels.instance }} has exceeded 95% for 15 minutes."
+
+        - alert: NvidiaGpuExporterDown
+          expr: up{job="nvidia-gpu"} == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "NVIDIA GPU metrics exporter unavailable"
+            description: >-
+              Prometheus has been unable to scrape the GPU exporter at {{ $labels.instance }} for 10 minutes.

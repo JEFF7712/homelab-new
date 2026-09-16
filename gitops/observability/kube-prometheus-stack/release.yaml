@@ -87,6 +87,14 @@ spec:
               resources:
                 requests:
                   storage: 10Gi
+    kubeControllerManager:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    kubeEtcd:
+      enabled: false
     alertmanager:
       alertmanagerSpec:
         image:
@@ -96,6 +104,8 @@ spec:
           sha: 51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286
         replicas: 1
         configSecret: alertmanager-kube-prometheus-stack-alertmanager
+        secrets:
+          - alertmanager-ntfy-token
         resources:
           requests:
             cpu: 100m
@@ -107,13 +117,28 @@ spec:
           resolve_timeout: 5m
         route:
           receiver: ntfy
+          group_by:
+            - alertname
+            - namespace
           group_wait: 30s
           group_interval: 5m
           repeat_interval: 4h
+          routes:
+            - matchers:
+                - alertname = "Watchdog"
+              receiver: "null"
+            - matchers:
+                - alertname = "InfoInhibitor"
+              receiver: "null"
         receivers:
           - name: ntfy
             webhook_configs:
-              - url: http://ntfy-ntfy.observability.svc.cluster.local/homelab-alerts
+              - url: http://ntfy-ntfy.observability.svc.cluster.local/homelab-alerts?template=alertmanager
+                send_resolved: true
+                http_config:
+                  authorization:
+                    type: Bearer
+                    credentials_file: /etc/alertmanager/secrets/alertmanager-ntfy-token/token
           - name: "null"
     grafana:
       replicas: 1

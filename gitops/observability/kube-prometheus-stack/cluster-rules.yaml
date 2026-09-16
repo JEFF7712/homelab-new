@@ -1,0 +1,97 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cluster-health
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: cluster.rules
+      rules:
+        - alert: NodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.node }} is not ready"
+            description: "Node {{ $labels.node }} has been in a non-ready state for more than 5 minutes."
+
+        - alert: NodeHighCpuUsage
+          expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node CPU utilization is above 90%"
+            description: "Node {{ $labels.instance }} has had sustained CPU usage above 90% for 15 minutes."
+
+        - alert: NodeHighMemoryUsage
+          expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 90
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node memory usage is above 90%"
+            description: "Node {{ $labels.instance }} has less than 10% memory available for 15 minutes."
+
+        - alert: NodeRootFilesystemLowSpace
+          expr: ((node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100) < 15
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node root filesystem is below 15% free"
+            description: "Root filesystem on {{ $labels.instance }} has less than 15% disk space remaining."
+
+        - alert: NodeRootFilesystemCriticallyLowSpace
+          expr: ((node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100) < 5
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node root filesystem is below 5% free"
+            description: "Root filesystem on {{ $labels.instance }} has less than 5% disk space remaining."
+
+        - alert: KubePodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total[15m]) * 60 > 0.2
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} in {{ $labels.namespace }} is crash looping"
+            description: >-
+              Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }}
+              has restarted frequently over the last 15 minutes.
+
+        - alert: KubePodStuckPending
+          expr: kube_pod_status_phase{phase="Pending"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} in {{ $labels.namespace }} is stuck pending"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in Pending state for > 15m."
+
+        - alert: KubeDeploymentReplicasMismatch
+          expr: kube_deployment_status_replicas_available != kube_deployment_spec_replicas
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Deployment {{ $labels.deployment }} in {{ $labels.namespace }} has unavailable replicas"
+            description: >-
+              Deployment {{ $labels.namespace }}/{{ $labels.deployment }}
+              has not had all desired replicas ready for 15 minutes.
+
+        - alert: KubePersistentVolumeFillingUp
+          expr: (kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes) * 100 < 15
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} is below 15% free"
+            description: >-
+              Persistent volume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }}
+              has less than 15% space remaining.

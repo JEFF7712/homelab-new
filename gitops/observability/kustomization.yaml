@@ -2,8 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - kube-prometheus-stack/repository.yaml
+  - kube-prometheus-stack/secret.yaml
   - kube-prometheus-stack/release.yaml
   - kube-prometheus-stack/registry-rules.yaml
+  - kube-prometheus-stack/cluster-rules.yaml
+  - kube-prometheus-stack/gpu-rules.yaml
   - loki/repository.yaml
   - loki/release.yaml
   - alloy/release.yaml
