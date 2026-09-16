@@ -43,6 +43,12 @@ spec:
               value: --data-checksums
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              memory: 1Gi
           startupProbe:
             exec:
               command:

@@ -27,6 +27,13 @@ spec:
           ports:
             - name: http
               containerPort: 80
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
           volumeMounts:
             - name: nginx-cache
               mountPath: /var/cache/nginx

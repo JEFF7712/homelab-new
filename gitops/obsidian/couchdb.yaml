@@ -29,6 +29,13 @@ spec:
             - sh
             - -c
             - cp /tmp/config/10-couchdb.ini /opt/couchdb/etc/local.d/10-couchdb.ini
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -55,6 +62,12 @@ spec:
           ports:
             - name: http
               containerPort: 5984
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              memory: 1Gi
           volumeMounts:
             - name: data
               mountPath: /opt/couchdb/data
