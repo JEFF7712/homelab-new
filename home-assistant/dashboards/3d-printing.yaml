@@ -163,7 +163,7 @@ views:
                   legend_value: true
               - entity: sensor.a1_03900d642327265_nozzle_target_temperature
                 name: Nozzle target
-                color: '#ff6b35'
+                color: '#ffb07a'
                 stroke_width: 1
                 curve: stepline
                 opacity: 0.5
@@ -171,7 +171,7 @@ views:
                   legend_value: true
               - entity: sensor.a1_03900d642327265_bed_target_temperature
                 name: Bed target
-                color: '#36a2eb'
+                color: '#90caf9'
                 stroke_width: 1
                 curve: stepline
                 opacity: 0.5
