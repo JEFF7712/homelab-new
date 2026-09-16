@@ -2,6 +2,31 @@ title: 3D Printing
 icon: mdi:printer-3d
 require_admin: false
 show_in_sidebar: true
+button_card_templates:
+  mobile_nav_button:
+    show_name: false
+    size: 22px
+    styles:
+      card:
+        - background: |
+            [[[
+              return window.location.pathname.includes(variables.path)
+                ? 'rgba(255, 183, 77, 0.95)'
+                : 'transparent';
+            ]]]
+        - border-radius: 50%
+        - width: 46px
+        - height: 46px
+        - box-shadow: none
+        - border: none
+        - margin: 0 auto
+      icon:
+        - color: |
+            [[[
+              return window.location.pathname.includes(variables.path)
+                ? 'rgba(20, 20, 20, 0.95)'
+                : 'rgba(255, 255, 255, 0.7)';
+            ]]]
 views:
   - title: A1
     type: sections
@@ -261,3 +286,72 @@ views:
                 name: Online
               - entity: sensor.a1_03900d642327265_wi_fi_signal
                 name: Wi-Fi signal
+      - cards:
+          - type: horizontal-stack
+            visibility:
+              - condition: screen
+                media_query: "(max-width: 768px)"
+            card_mod:
+              style: |
+                :host {
+                  position: fixed !important;
+                  bottom: max(12px, env(safe-area-inset-bottom)) !important;
+                  left: 50% !important;
+                  transform: translateX(-50%) !important;
+                  width: min(400px, calc(100vw - 32px)) !important;
+                  z-index: 20 !important;
+                  background: rgba(22, 22, 26, 0.88) !important;
+                  backdrop-filter: blur(16px) saturate(1.3);
+                  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+                  border-radius: 999px !important;
+                  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+                  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5) !important;
+                  padding: 6px 8px !important;
+                }
+                ha-card {
+                  background: transparent !important;
+                  border: none !important;
+                  box-shadow: none !important;
+                  padding: 0 !important;
+                }
+            cards:
+              - type: custom:button-card
+                template: mobile_nav_button
+                variables:
+                  path: home-overview
+                icon: mdi:home
+                tap_action:
+                  action: navigate
+                  navigation_path: /home-overview
+              - type: custom:button-card
+                template: mobile_nav_button
+                variables:
+                  path: bedroom-lights
+                icon: mdi:bed
+                tap_action:
+                  action: navigate
+                  navigation_path: /bedroom-lights
+              - type: custom:button-card
+                template: mobile_nav_button
+                variables:
+                  path: shared-spaces
+                icon: mdi:sofa
+                tap_action:
+                  action: navigate
+                  navigation_path: /shared-spaces
+              - type: custom:button-card
+                template: mobile_nav_button
+                variables:
+                  path: 3d-printing
+                icon: mdi:printer-3d
+                tap_action:
+                  action: navigate
+                  navigation_path: /3d-printing
+              - type: custom:button-card
+                template: mobile_nav_button
+                variables:
+                  path: map
+                icon: mdi:map
+                tap_action:
+                  action: navigate
+                  navigation_path: /map
