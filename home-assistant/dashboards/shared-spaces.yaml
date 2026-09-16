@@ -72,6 +72,11 @@ views:
             show_color_temp_control: true
             show_color_control: true
             collapsible_controls: true
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/living-room-lights
+            hold_action:
+              action: more-info
           - type: horizontal-stack
             cards:
               - type: button
@@ -129,6 +134,11 @@ views:
             features:
               - type: toggle
             type: tile
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/stairs-light
+            hold_action:
+              action: more-info
     subview: true
     type: sections
   - title: Kitchen
@@ -145,6 +155,11 @@ views:
             show_color_temp_control: true
             show_color_control: true
             collapsible_controls: true
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/kitchen-lights
+            hold_action:
+              action: more-info
           - entity: light.kitchen_light
             name: Kitchen Light
             fill_container: true
@@ -153,6 +168,11 @@ views:
             show_color_temp_control: true
             show_color_control: true
             collapsible_controls: true
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/kitchen-light
+            hold_action:
+              action: more-info
           - entity: light.kitchen_light_2
             name: Kitchen Light 2
             fill_container: true
@@ -161,11 +181,21 @@ views:
             show_color_temp_control: true
             show_color_control: true
             collapsible_controls: true
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/kitchen-light-2
+            hold_action:
+              action: more-info
           - entity: switch.kitchen_mushroom_lamp
             name: Mushroom Lamp
             features:
               - type: toggle
             type: tile
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/kitchen-mushroom-lamp
+            hold_action:
+              action: more-info
       - cards:
           - heading: Scenes
             type: heading
@@ -199,6 +229,11 @@ views:
             features:
               - type: toggle
             type: tile
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/living-room-sign
+            hold_action:
+              action: more-info
             card_mod:
               style: |
                 :host {
@@ -215,6 +250,11 @@ views:
             show_color_temp_control: true
             show_color_control: true
             collapsible_controls: true
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/living-room-lights
+            hold_action:
+              action: more-info
             card_mod:
               style:
                 mushroom-shape-icon$: |
@@ -231,6 +271,11 @@ views:
             show_color_temp_control: true
             show_color_control: true
             collapsible_controls: true
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/living-room-floor-lamp
+            hold_action:
+              action: more-info
             card_mod:
               style:
                 mushroom-shape-icon$: |
@@ -247,6 +292,11 @@ views:
             show_color_temp_control: true
             show_color_control: true
             collapsible_controls: true
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/living-room-tulip-lamp
+            hold_action:
+              action: more-info
             card_mod:
               style:
                 mushroom-shape-icon$: |
@@ -267,6 +317,11 @@ views:
               - auto
               - fan_only
               - dry
+            tap_action:
+              action: navigate
+              navigation_path: /shared-spaces/living-room-ac
+            hold_action:
+              action: more-info
       - cards:
           - heading: Scenes
             type: heading
@@ -295,5 +350,216 @@ views:
               - entity: climate.living_room_ac_living_room_ac_thermostat
                 attribute: temperature
                 name: Target
+    subview: true
+    type: sections
+  - title: Kitchen Lights Detail
+    path: kitchen-lights
+    sections:
+      - cards:
+          - heading: All Kitchen Lights
+            type: heading
+          - entity: light.kitchen_lights
+            name: All Kitchen Lights
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+          - type: history-graph
+            title: Last 24 hours
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: light.kitchen_lights
+    subview: true
+    type: sections
+  - title: Kitchen Light Detail
+    path: kitchen-light
+    sections:
+      - cards:
+          - heading: Kitchen Light
+            type: heading
+          - entity: light.kitchen_light
+            name: Kitchen Light
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+          - type: history-graph
+            title: Last 24 hours
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: light.kitchen_light
+    subview: true
+    type: sections
+  - title: Kitchen Light 2 Detail
+    path: kitchen-light-2
+    sections:
+      - cards:
+          - heading: Kitchen Light 2
+            type: heading
+          - entity: light.kitchen_light_2
+            name: Kitchen Light 2
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+          - type: history-graph
+            title: Last 24 hours
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: light.kitchen_light_2
+    subview: true
+    type: sections
+  - title: Mushroom Lamp Detail
+    path: kitchen-mushroom-lamp
+    sections:
+      - cards:
+          - heading: Mushroom Lamp
+            type: heading
+          - entity: switch.kitchen_mushroom_lamp
+            name: Mushroom Lamp
+            features:
+              - type: toggle
+            type: tile
+          - type: history-graph
+            title: Last 24 hours
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: switch.kitchen_mushroom_lamp
+    subview: true
+    type: sections
+  - title: Living Room Lights Detail
+    path: living-room-lights
+    sections:
+      - cards:
+          - heading: All Living Room Lights
+            type: heading
+          - entity: light.living_room_lights
+            name: All Living Room Lights
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+          - type: history-graph
+            title: Last 24 hours
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: light.living_room_lights
+    subview: true
+    type: sections
+  - title: Floor Lamp Detail
+    path: living-room-floor-lamp
+    sections:
+      - cards:
+          - heading: Floor Lamp
+            type: heading
+          - entity: light.living_room_mushroom_lamp
+            name: Floor Lamp
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+          - type: history-graph
+            title: Last 24 hours
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: light.living_room_mushroom_lamp
+    subview: true
+    type: sections
+  - title: Tulip Lamp Detail
+    path: living-room-tulip-lamp
+    sections:
+      - cards:
+          - heading: Tulip Lamp
+            type: heading
+          - entity: light.living_room_tulip_lamp
+            name: Tulip Lamp
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+          - type: history-graph
+            title: Last 24 hours
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: light.living_room_tulip_lamp
+    subview: true
+    type: sections
+  - title: Good Vibes Sign Detail
+    path: living-room-sign
+    sections:
+      - cards:
+          - heading: Good Vibes Sign
+            type: heading
+          - entity: switch.living_room_good_vibes_sign
+            features:
+              - type: toggle
+            type: tile
+          - type: history-graph
+            title: Last 24 hours
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: switch.living_room_good_vibes_sign
+    subview: true
+    type: sections
+  - title: Living Room AC Detail
+    path: living-room-ac
+    sections:
+      - cards:
+          - heading: Living Room AC
+            type: heading
+          - entity: climate.living_room_ac_living_room_ac_thermostat
+            fill_container: true
+            type: custom:mushroom-climate-card
+            hvac_modes:
+              - "off"
+              - cool
+              - auto
+              - fan_only
+              - dry
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Temperature (7 days)
+            graph_span: 7d
+            series:
+              - entity: climate.living_room_ac_living_room_ac_thermostat
+                attribute: current_temperature
+                name: Current
+              - entity: climate.living_room_ac_living_room_ac_thermostat
+                attribute: temperature
+                name: Target
+    subview: true
+    type: sections
+  - title: Stairs Light Detail
+    path: stairs-light
+    sections:
+      - cards:
+          - heading: Stairs Light
+            type: heading
+          - name: Stairs Light
+            entity: switch.stairs_light
+            features:
+              - type: toggle
+            type: tile
+          - type: history-graph
+            title: Last 24 hours
+            hours_to_show: 24
+            refresh_interval: 60
+            entities:
+              - entity: switch.stairs_light
     subview: true
     type: sections
