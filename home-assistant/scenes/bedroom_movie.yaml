@@ -1,0 +1,20 @@
+id: bedroom_movie
+name: "Bedroom Movie"
+icon: mdi:movie
+entities:
+  light.desk_lamp_desk_lamp:
+    state: "on"
+    brightness: 25
+    color_temp_kelvin: 2000
+  light.floor_lamp_floor_lamp:
+    state: "on"
+    brightness: 25
+    color_temp_kelvin: 2000
+  light.light_strip_light_strip:
+    state: "on"
+    brightness: 13
+    color_temp_kelvin: 2000
+  switch.bedroom_window_plug:
+    state: "on"
+  switch.bedroom_mushroom_plug:
+    state: "on"

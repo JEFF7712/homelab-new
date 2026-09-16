@@ -337,3 +337,27 @@ views:
                   perform_action: scene.turn_on
                   target:
                     entity_id: scene.bedroom_night
+              - type: action
+                name: Movie
+                icon: mdi:movie
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.bedroom_movie
+              - type: action
+                name: Party
+                icon: mdi:party-popper
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.bedroom_party
+              - type: action
+                name: Night Light
+                icon: mdi:lightbulb-night
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.bedroom_night_light
