@@ -31,6 +31,16 @@ resource "opnsense_kea_dhcpv4_reservation" "managed" {
   subnet_id   = each.value.subnet_id
 }
 
+resource "opnsense_firewall_alias" "managed" {
+  for_each = var.firewall_aliases
+
+  name        = each.value.name
+  type        = each.value.type
+  content     = each.value.content
+  description = each.value.description
+  enabled     = each.value.enabled
+}
+
 resource "opnsense_firewall_filter" "managed" {
   for_each = var.firewall_filters
 
@@ -39,6 +49,8 @@ resource "opnsense_firewall_filter" "managed" {
   filter      = each.value.filter
   interface   = each.value.interface
   sequence    = each.value.sequence
+
+  depends_on = [opnsense_firewall_alias.managed]
 }
 
 resource "opnsense_unbound_settings" "managed" {

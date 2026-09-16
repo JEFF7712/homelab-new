@@ -34,8 +34,42 @@ variable "dhcpv4_reservations" {
   default = {}
 }
 
+variable "firewall_aliases" {
+  type = map(object({
+    name        = string
+    type        = string
+    content     = set(string)
+    description = string
+    enabled     = bool
+  }))
+  default = {}
+}
+
 variable "firewall_filters" {
-  type    = map(any)
+  type = map(object({
+    description = string
+    enabled     = bool
+    sequence    = number
+    interface = object({
+      interface = list(string)
+    })
+    filter = object({
+      action      = string
+      direction   = string
+      ip_protocol = string
+      protocol    = string
+      quick       = bool
+      log         = bool
+      source = object({
+        net  = string
+        port = string
+      })
+      destination = object({
+        net  = string
+        port = string
+      })
+    })
+  }))
   default = {}
 }
 

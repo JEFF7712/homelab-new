@@ -86,6 +86,37 @@ dhcpv4_reservations = {
   }
 }
 
+firewall_aliases = {
+  iot_bambu_a1 = {
+    name        = "iot_bambu_a1"
+    type        = "host"
+    content     = ["10.0.20.124"]
+    description = "Bambu Lab A1 reserved LAN address"
+    enabled     = true
+  }
+  iot_tuya_sw01 = {
+    name        = "iot_tuya_sw01"
+    type        = "host"
+    content     = ["10.0.20.178"]
+    description = "Feit smart switch reserved LAN address"
+    enabled     = true
+  }
+  iot_bambu_ports = {
+    name        = "iot_bambu_ports"
+    type        = "port"
+    content     = ["8883", "990", "2024-2025", "6000"]
+    description = "Bambu Lab LAN mode service ports"
+    enabled     = true
+  }
+  roku_bulbs_lo = {
+    name        = "roku_bulbs_lo"
+    type        = "network"
+    content     = ["10.0.20.112/29"]
+    description = "Roku bulb local API segment"
+    enabled     = true
+  }
+}
+
 firewall_filters = {
   management-allow-any = {
     description = "Allow management VLAN to all destinations"
@@ -234,7 +265,7 @@ firewall_filters = {
   infrastructure-allow-bgp = {
     description = "Allow infrastructure BGP to OPNsense"
     enabled     = true
-    sequence    = 315
+    sequence    = 311
     interface   = { interface = ["opt3"] }
     filter = {
       action      = "pass"
@@ -250,7 +281,7 @@ firewall_filters = {
   infrastructure-allow-roku-bulbs = {
     description = "Allow roku-bridge to Roku bulbs local API"
     enabled     = true
-    sequence    = 317
+    sequence    = 314
     interface   = { interface = ["opt3"] }
     filter = {
       action      = "pass"
@@ -260,13 +291,13 @@ firewall_filters = {
       quick       = true
       log         = true
       source      = { net = "10.0.30.10/32", port = "" }
-      destination = { net = "10.0.20.112/29", port = "88" }
+      destination = { net = "roku_bulbs_lo", port = "88" }
     }
   }
   infrastructure-allow-govee-queries = {
     description = "Allow Home Assistant Govee LAN queries"
     enabled     = true
-    sequence    = 314
+    sequence    = 312
     interface   = { interface = ["opt3"] }
     filter = {
       action      = "pass"
@@ -282,7 +313,7 @@ firewall_filters = {
   infrastructure-allow-govee-multicast = {
     description = "Allow Home Assistant Govee multicast discovery"
     enabled     = true
-    sequence    = 315
+    sequence    = 313
     interface   = { interface = ["opt3"] }
     filter = {
       action      = "pass"
@@ -298,7 +329,7 @@ firewall_filters = {
   infrastructure-allow-matter-bulbs = {
     description = "Allow Home Assistant Matter traffic to clients VLAN"
     enabled     = true
-    sequence    = 318
+    sequence    = 317
     interface   = { interface = ["opt3"] }
     filter = {
       action      = "pass"
@@ -311,10 +342,10 @@ firewall_filters = {
       destination = { net = "fd42:20::/64", port = "" }
     }
   }
-  infrastructure-allow-bambu-mqtt = {
-    description = "Allow infrastructure to Bambu Lab A1 MQTT"
+  infrastructure-allow-bambu-lan = {
+    description = "Allow infrastructure to Bambu Lab A1 LAN mode services"
     enabled     = true
-    sequence    = 318
+    sequence    = 315
     interface   = { interface = ["opt3"] }
     filter = {
       action      = "pass"
@@ -324,27 +355,11 @@ firewall_filters = {
       quick       = true
       log         = false
       source      = { net = "10.0.30.0/24", port = "" }
-      destination = { net = "10.0.20.124/32", port = "8883" }
+      destination = { net = "iot_bambu_a1", port = "iot_bambu_ports" }
     }
   }
-  infrastructure-allow-bambu-ftps = {
-    description = "Allow infrastructure to Bambu Lab A1 FTPS"
-    enabled     = true
-    sequence    = 319
-    interface   = { interface = ["opt3"] }
-    filter = {
-      action      = "pass"
-      direction   = "in"
-      ip_protocol = "inet"
-      protocol    = "TCP"
-      quick       = true
-      log         = false
-      source      = { net = "10.0.30.0/24", port = "" }
-      destination = { net = "10.0.20.124/32", port = "990" }
-    }
-  }
-  infrastructure-allow-bambu-ftp-data = {
-    description = "Allow infrastructure to Bambu Lab A1 FTP passive data ports"
+  infrastructure-allow-tuya-local = {
+    description = "Allow infrastructure to Feit switch Tuya LAN protocol"
     enabled     = true
     sequence    = 316
     interface   = { interface = ["opt3"] }
@@ -356,45 +371,13 @@ firewall_filters = {
       quick       = true
       log         = false
       source      = { net = "10.0.30.0/24", port = "" }
-      destination = { net = "10.0.20.124/32", port = "2024-2025" }
-    }
-  }
-  infrastructure-allow-bambu-camera = {
-    description = "Allow infrastructure to Bambu Lab A1 chamber image stream"
-    enabled     = true
-    sequence    = 320
-    interface   = { interface = ["opt3"] }
-    filter = {
-      action      = "pass"
-      direction   = "in"
-      ip_protocol = "inet"
-      protocol    = "TCP"
-      quick       = true
-      log         = false
-      source      = { net = "10.0.30.0/24", port = "" }
-      destination = { net = "10.0.20.124/32", port = "6000" }
-    }
-  }
-  infrastructure-allow-tuya-local = {
-    description = "Allow infrastructure to Feit switch Tuya LAN protocol"
-    enabled     = true
-    sequence    = 318
-    interface   = { interface = ["opt3"] }
-    filter = {
-      action      = "pass"
-      direction   = "in"
-      ip_protocol = "inet"
-      protocol    = "TCP"
-      quick       = true
-      log         = false
-      source      = { net = "10.0.30.0/24", port = "" }
-      destination = { net = "10.0.20.178/32", port = "6668" }
+      destination = { net = "iot_tuya_sw01", port = "6668" }
     }
   }
   infrastructure-block-private = {
     description = "Block infrastructure from initiating to other private VLANs"
     enabled     = true
-    sequence    = 321
+    sequence    = 318
     interface   = { interface = ["opt3"] }
     filter = {
       action      = "block"
