@@ -51,7 +51,7 @@ views:
             - padding: 10px
             - margin-bottom: 8px
             - height: 66px
-            - width: min-content
+            - width: 310px
             - overflow: visible
             - --mdc-ripple-color: transparent
           grid:
