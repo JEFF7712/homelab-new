@@ -270,6 +270,7 @@ views:
                 entity_id: scene.movie_low_living_room
           - type: custom:apexcharts-card
             header:
+              show: true
               title: Living Room Temperature
             graph_span: 24h
             series:
