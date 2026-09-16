@@ -315,7 +315,7 @@ views:
             chips:
               - type: action
                 name: Relax
-                icon: mdi:armchair
+                icon: mdi:sofa
                 tap_action:
                   action: perform-action
                   perform_action: scene.turn_on

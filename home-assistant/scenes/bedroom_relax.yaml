@@ -1,6 +1,6 @@
 id: bedroom_relax
 name: "Bedroom Relax"
-icon: mdi:armchair
+icon: mdi:sofa
 entities:
   light.desk_lamp_desk_lamp:
     state: "on"
