@@ -55,7 +55,8 @@ let
         rootDirectory = cfg.storagePath;
         commit = true;
         dedupe = true;
-        gc = false;
+        gc = true;
+        gcInterval = "24h";
       };
       http = {
         address = "127.0.0.1";

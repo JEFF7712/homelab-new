@@ -202,6 +202,13 @@ class ZotRegistryModuleTests(unittest.TestCase):
 
         self.assertIn('"/mnt/backup-2tb/registry-restic"', nas_data)
         self.assertIn('"/persist/zot/status"', nas_data)
+        self.assertIn("restic forget --prune", nas_data)
+
+    def test_background_gc_reclaims_blobs_daily(self) -> None:
+        module = MODULE.read_text()
+
+        self.assertIn("gc = true;", module)
+        self.assertIn('gcInterval = "24h";', module)
 
     def test_runtime_assembly_verifies_valid_config_and_rejects_anonymous_access(
         self,
@@ -271,7 +278,7 @@ class ZotRegistryModuleTests(unittest.TestCase):
                 rendered["http"]["auth"]["htpasswd"]["path"],
                 str(credentials / "htpasswd"),
             )
-            self.assertFalse(rendered["storage"]["gc"])
+            self.assertTrue(rendered["storage"]["gc"])
             self.assertTrue(rendered["extensions"]["ui"]["enable"])
 
             rejected_credentials = temporary / "rejected-credentials"
