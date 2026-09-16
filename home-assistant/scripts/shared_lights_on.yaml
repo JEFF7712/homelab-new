@@ -1,15 +1,22 @@
 alias: "Shared: Lights On"
 description: >-
   Restore the snapshot taken by "Shared: Lights Off" so the lights and plugs
-  return to their exact prior brightness and color. The restored lights are
-  marked manually controlled so Adaptive Lighting (including sleep mode)
-  leaves them alone until the next off/on cycle. Falls back to turning on
-  everything in the shared_space label when no snapshot exists yet, e.g.
-  after a restart.
+  return to their exact prior brightness and color, but only when everything
+  in the shared_space label is currently off. When anything is already on
+  (e.g. a scene was just activated) the stale snapshot is skipped and
+  everything in the label is simply turned on, so All On never turns lights
+  off. The restored lights are marked manually controlled so Adaptive
+  Lighting (including sleep mode) leaves them alone until the next off/on
+  cycle. Falls back to turning on everything in the shared_space label when
+  no snapshot exists yet, e.g. after a restart.
 sequence:
   - if:
       - condition: template
         value_template: "{{ state_attr('scene.shared_last_state', 'entity_id') is not none }}"
+      - condition: template
+        value_template: >-
+          {{ expand(label_entities('shared_space'))
+          | selectattr('state', 'eq', 'on') | list | count == 0 }}
     then:
       - action: adaptive_lighting.set_manual_control
         data:

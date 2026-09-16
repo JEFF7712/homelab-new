@@ -1,21 +1,40 @@
 alias: "Shared: Lights Off"
 description: >-
   Snapshot current shared space light and plug state, then turn everything
-  off. "Shared: Lights On" restores this snapshot. Snapshot covers the
-  entities in the shared_space label; keep both lists in sync.
+  off and release Adaptive Lighting manual control so the next turn-on is
+  adapted again. "Shared: Lights On" restores this snapshot. Snapshot covers
+  every entity in the shared_space label; keep both lists in sync. The
+  snapshot is only taken when something in the label is on, so pressing Off
+  twice (or an automation firing while already off) cannot overwrite a good
+  snapshot with an all-off one that would make the next All On do nothing.
 sequence:
-  - action: scene.create
+  - if:
+      - condition: template
+        value_template: >-
+          {{ expand(label_entities('shared_space'))
+          | selectattr('state', 'eq', 'on') | list | count > 0 }}
+    then:
+      - action: scene.create
+        data:
+          scene_id: shared_last_state
+          snapshot_entities:
+            - light.kitchen_light
+            - light.kitchen_light_2
+            - light.living_room_mushroom_lamp
+            - light.living_room_tulip_lamp
+            - switch.kitchen_mushroom_lamp
+            - switch.living_room_good_vibes_sign
+            - switch.stairs_light
+  - action: homeassistant.turn_off
+    target:
+      label_id: shared_space
+  - action: adaptive_lighting.set_manual_control
     data:
-      scene_id: shared_last_state
-      snapshot_entities:
+      entity_id: switch.adaptive_lighting_all_dimmable_lights
+      lights:
         - light.kitchen_light
         - light.kitchen_light_2
         - light.living_room_mushroom_lamp
         - light.living_room_tulip_lamp
-        - switch.kitchen_mushroom_lamp
-        - switch.living_room_good_vibes_sign
-        - switch.stairs_light
-  - action: homeassistant.turn_off
-    target:
-      label_id: shared_space
+      manual_control: false
 mode: single
