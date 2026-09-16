@@ -886,6 +886,215 @@
           "fieldConfig": {
             "defaults": {
               "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "mappings": [],
+              "max": 1,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 0.8
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 8,
+            "x": 0,
+            "y": 12
+          },
+          "id": 50,
+          "options": {
+            "displayMode": "lcd",
+            "minVizHeight": 10,
+            "minVizWidth": 0,
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "9.1.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "nvidia_smi_utilization_gpu_ratio",
+              "legendFormat": "{{node}} ({{gpu_model}})",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "GPU Utilization",
+          "type": "bargauge"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "mappings": [],
+              "max": 1,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 0.7
+                  },
+                  {
+                    "color": "red",
+                    "value": 0.85
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 8,
+            "x": 8,
+            "y": 12
+          },
+          "id": 51,
+          "options": {
+            "displayMode": "lcd",
+            "minVizHeight": 10,
+            "minVizWidth": 0,
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "9.1.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "nvidia_smi_memory_used_bytes / nvidia_smi_memory_total_bytes",
+              "legendFormat": "{{node}} ({{gpu_model}})",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "GPU VRAM Usage",
+          "type": "bargauge"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 65
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 8,
+            "x": 16,
+            "y": 12
+          },
+          "id": 52,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "value"
+          },
+          "pluginVersion": "9.1.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "nvidia_smi_gpu_temp_celsius",
+              "legendFormat": "{{node}} ({{gpu_model}})",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "GPU Temperature",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
                 "mode": "palette-classic"
               },
               "custom": {
@@ -941,7 +1150,7 @@
             "h": 9,
             "w": 12,
             "x": 0,
-            "y": 12
+            "y": 17
           },
           "id": 18,
           "options": {
@@ -1052,7 +1261,7 @@
             "h": 9,
             "w": 12,
             "x": 12,
-            "y": 12
+            "y": 17
           },
           "id": 20,
           "options": {
@@ -1101,7 +1310,7 @@
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 21
+            "y": 26
           },
           "id": 6,
           "panels": [],
@@ -1170,7 +1379,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 22
+            "y": 27
           },
           "id": 16,
           "options": {
@@ -1269,7 +1478,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 22
+            "y": 27
           },
           "id": 22,
           "options": {
@@ -1367,7 +1576,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 30
+            "y": 35
           },
           "id": 45,
           "options": {
@@ -1461,7 +1670,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 30
+            "y": 35
           },
           "id": 48,
           "options": {
@@ -1556,7 +1765,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 38
+            "y": 43
           },
           "id": 26,
           "options": {
@@ -1651,7 +1860,7 @@
             "h": 11,
             "w": 24,
             "x": 0,
-            "y": 48
+            "y": 53
           },
           "id": 27,
           "options": {
@@ -1745,7 +1954,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 59
+            "y": 64
           },
           "id": 29,
           "options": {
@@ -1844,7 +2053,7 @@
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 67
+            "y": 72
           },
           "id": 30,
           "options": {
@@ -1941,7 +2150,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 76
+            "y": 81
           },
           "id": 32,
           "options": {
@@ -2068,7 +2277,7 @@
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 84
+            "y": 89
           },
           "id": 33,
           "options": {

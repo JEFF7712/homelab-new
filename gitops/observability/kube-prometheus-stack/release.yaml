@@ -61,6 +61,18 @@ spec:
                   - 10.0.30.20:9100
                 labels:
                   host: nas-01
+          - job_name: nvidia-gpu
+            static_configs:
+              - targets:
+                  - 10.0.30.14:9835
+                labels:
+                  node: homelab-04
+                  gpu_model: "NVIDIA T1000"
+              - targets:
+                  - 10.0.30.15:9835
+                labels:
+                  node: homelab-05
+                  gpu_model: "NVIDIA T600"
         resources:
           requests:
             cpu: 250m
