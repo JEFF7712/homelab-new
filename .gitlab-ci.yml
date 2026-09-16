@@ -21,7 +21,10 @@ stages:
   - deploy
 
 variables:
-  NIX_CONFIG: "experimental-features = nix-command flakes"
+  NIX_CONFIG: |-
+    experimental-features = nix-command flakes
+    extra-substituters = http://10.0.30.20:8080/homelab
+    extra-trusted-public-keys = homelab:J+OVQOCG2sNT2KoVbWGPikoWcIbBanHnY2NOcMF3vwk=
   TF_PLUGIN_CACHE_DIR: "/tmp/tofu-plugin-cache"
   TF_STATE_NAME: opnsense-production
   TF_HTTP_ADDRESS: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${TF_STATE_NAME}"
