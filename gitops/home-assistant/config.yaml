@@ -37,6 +37,9 @@ data:
       - platform: switch
         name: Bedroom Mushroom Plug
         entity_id: switch.bedroom_mushroom_plug
+      - platform: switch
+        name: Living Room Good Vibes Sign
+        entity_id: switch.living_room_good_vibes_sign
     homekit:
       - name: Homelab Bridge
         port: 21063

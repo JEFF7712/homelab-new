@@ -535,11 +535,10 @@ views:
       - cards:
           - heading: Lights
             type: heading
-          - entity: switch.living_room_good_vibes_sign
-            color: amber
-            features:
-              - type: toggle
-            type: tile
+          - name: Good Vibes Sign
+            fill_container: true
+            type: custom:mushroom-light-card
+            entity: light.living_room_good_vibes_sign
             tap_action:
               action: toggle
             hold_action:
