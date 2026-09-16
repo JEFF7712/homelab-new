@@ -10,10 +10,12 @@ views:
             type: heading
           - entity: light.all_govee_lights
             name: All Govee Lights
-            features:
-              - type: light-brightness
-              - type: light-color-temp
-            type: tile
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
       - cards:
           - heading: All Devices
             type: heading
@@ -141,22 +143,28 @@ views:
             type: heading
           - entity: light.kitchen_lights
             name: All Kitchen Lights
-            features:
-              - type: light-brightness
-              - type: light-color-temp
-            type: tile
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
           - entity: light.kitchen_light
             name: Kitchen Light
-            features:
-              - type: light-brightness
-              - type: light-color-temp
-            type: tile
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
           - entity: light.kitchen_light_2
             name: Kitchen Light 2
-            features:
-              - type: light-brightness
-              - type: light-color-temp
-            type: tile
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
           - entity: switch.kitchen_mushroom_lamp
             name: Mushroom Lamp
             features:
@@ -204,6 +212,10 @@ views:
             name: All Living Room Lights
             fill_container: true
             type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
             card_mod:
               style:
                 mushroom-shape-icon$: |
@@ -216,6 +228,10 @@ views:
             name: Floor Lamp
             fill_container: true
             type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
             card_mod:
               style:
                 mushroom-shape-icon$: |
@@ -228,6 +244,10 @@ views:
             name: Tulip Lamp
             fill_container: true
             type: custom:mushroom-light-card
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
             card_mod:
               style:
                 mushroom-shape-icon$: |

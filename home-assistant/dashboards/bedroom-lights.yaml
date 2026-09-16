@@ -9,24 +9,30 @@ views:
       - cards:
           - type: heading
             heading: Lights
-          - type: tile
+          - type: custom:mushroom-light-card
             entity: light.desk_lamp_desk_lamp
             name: Desk Lamp
-            features:
-              - type: light-brightness
-              - type: light-color-temp
-          - type: tile
+            fill_container: true
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
+          - type: custom:mushroom-light-card
             entity: light.floor_lamp_floor_lamp
             name: Floor Lamp
-            features:
-              - type: light-brightness
-              - type: light-color-temp
-          - type: tile
+            fill_container: true
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
+          - type: custom:mushroom-light-card
             entity: light.light_strip_light_strip
             name: Light Strip
-            features:
-              - type: light-brightness
-              - type: light-color-temp
+            fill_container: true
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
       - cards:
           - type: heading
             heading: Plugs
