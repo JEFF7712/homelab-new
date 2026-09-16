@@ -28,13 +28,13 @@ actions:
       content:
         type: entities
         entities:
-          - entity: scene.cooking_bright_kitchen
+          - entity: scene.shared_cooking
             name: Cooking
             icon: mdi:stove
-          - entity: scene.dinner_warm_dim
+          - entity: scene.shared_dinner
             name: Dinner
             icon: mdi:food-fork-drink
-          - entity: scene.movie_low_living_room
+          - entity: scene.living_room_movie
             name: Movie
             icon: mdi:movie
           - entity: switch.living_room_good_vibes_sign

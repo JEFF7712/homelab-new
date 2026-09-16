@@ -5,23 +5,26 @@ show_in_sidebar: true
 button_card_templates:
   mobile_nav_button:
     show_name: false
+    show_state: false
     size: 22px
     aspect_ratio: 1/1
     styles:
       card:
+        - height: 40px
+        - width: 40px
+        - margin: 0
+        - padding: 10px
+        - overflow: visible
+        - border-radius: 500px
         - background: |
             [[[
               return window.location.pathname.includes(variables.path)
                 ? 'rgba(255, 183, 77, 0.95)'
                 : 'transparent';
             ]]]
-        - border-radius: 50%
-        - width: 46px
-        - height: 46px
-        - box-shadow: none
-        - border: none
-        - margin: 0 auto
       icon:
+        - height: 100%
+        - width: 100%
         - color: |
             [[[
               return window.location.pathname.includes(variables.path)
@@ -30,6 +33,7 @@ button_card_templates:
             ]]]
 views:
   - title: Shared Spaces
+    type: sections
     footer:
       max_width: 400
       card:
@@ -80,163 +84,53 @@ views:
           b1:
             card:
               type: custom:button-card
+              template: mobile_nav_button
+              variables:
+                path: home-overview
               icon: mdi:home
-              show_name: false
-              show_state: false
               tap_action:
                 action: navigate
                 navigation_path: /home-overview
-              styles:
-                card:
-                  - height: 40px
-                  - width: 40px
-                  - margin: 0
-                  - padding: 10px
-                  - overflow: visible
-                  - border-radius: 500px
-                  - background: |
-                      [[[
-                        return window.location.pathname.includes('home-overview')
-                          ? 'rgba(255, 183, 77, 0.95)'
-                          : 'transparent';
-                      ]]]
-                icon:
-                  - height: 100%
-                  - width: 100%
-                  - color: |
-                      [[[
-                        return window.location.pathname.includes('home-overview')
-                          ? 'rgba(20, 20, 20, 0.95)'
-                          : 'var(--secondary-text-color)';
-                      ]]]
           b2:
             card:
               type: custom:button-card
+              template: mobile_nav_button
+              variables:
+                path: bedroom-lights
               icon: mdi:bed
-              show_name: false
-              show_state: false
               tap_action:
                 action: navigate
                 navigation_path: /bedroom-lights
-              styles:
-                card:
-                  - height: 40px
-                  - width: 40px
-                  - margin: 0
-                  - padding: 10px
-                  - overflow: visible
-                  - border-radius: 500px
-                  - background: |
-                      [[[
-                        return window.location.pathname.includes('bedroom-lights')
-                          ? 'rgba(255, 183, 77, 0.95)'
-                          : 'transparent';
-                      ]]]
-                icon:
-                  - height: 100%
-                  - width: 100%
-                  - color: |
-                      [[[
-                        return window.location.pathname.includes('bedroom-lights')
-                          ? 'rgba(20, 20, 20, 0.95)'
-                          : 'var(--secondary-text-color)';
-                      ]]]
           b3:
             card:
               type: custom:button-card
+              template: mobile_nav_button
+              variables:
+                path: shared-spaces
               icon: mdi:sofa
-              show_name: false
-              show_state: false
               tap_action:
                 action: navigate
                 navigation_path: /shared-spaces
-              styles:
-                card:
-                  - height: 40px
-                  - width: 40px
-                  - margin: 0
-                  - padding: 10px
-                  - overflow: visible
-                  - border-radius: 500px
-                  - background: |
-                      [[[
-                        return window.location.pathname.includes('shared-spaces')
-                          ? 'rgba(255, 183, 77, 0.95)'
-                          : 'transparent';
-                      ]]]
-                icon:
-                  - height: 100%
-                  - width: 100%
-                  - color: |
-                      [[[
-                        return window.location.pathname.includes('shared-spaces')
-                          ? 'rgba(20, 20, 20, 0.95)'
-                          : 'var(--secondary-text-color)';
-                      ]]]
           b4:
             card:
               type: custom:button-card
+              template: mobile_nav_button
+              variables:
+                path: 3d-printing
               icon: mdi:printer-3d
-              show_name: false
-              show_state: false
               tap_action:
                 action: navigate
                 navigation_path: /3d-printing
-              styles:
-                card:
-                  - height: 40px
-                  - width: 40px
-                  - margin: 0
-                  - padding: 10px
-                  - overflow: visible
-                  - border-radius: 500px
-                  - background: |
-                      [[[
-                        return window.location.pathname.includes('3d-printing')
-                          ? 'rgba(255, 183, 77, 0.95)'
-                          : 'transparent';
-                      ]]]
-                icon:
-                  - height: 100%
-                  - width: 100%
-                  - color: |
-                      [[[
-                        return window.location.pathname.includes('3d-printing')
-                          ? 'rgba(20, 20, 20, 0.95)'
-                          : 'var(--secondary-text-color)';
-                      ]]]
           b5:
             card:
               type: custom:button-card
+              template: mobile_nav_button
+              variables:
+                path: map
               icon: mdi:map
-              show_name: false
-              show_state: false
               tap_action:
                 action: navigate
                 navigation_path: /map
-              styles:
-                card:
-                  - height: 40px
-                  - width: 40px
-                  - margin: 0
-                  - padding: 10px
-                  - overflow: visible
-                  - border-radius: 500px
-                  - background: |
-                      [[[
-                        return window.location.pathname.includes('map')
-                          ? 'rgba(255, 183, 77, 0.95)'
-                          : 'transparent';
-                      ]]]
-                icon:
-                  - height: 100%
-                  - width: 100%
-                  - color: |
-                      [[[
-                        return window.location.pathname.includes('map')
-                          ? 'rgba(20, 20, 20, 0.95)'
-                          : 'var(--secondary-text-color)';
-                      ]]]
     sections:
       - cards:
           - type: markdown
@@ -259,10 +153,6 @@ views:
                 entity: sensor.sun_next_setting
                 name: Sunset
                 icon: mdi:weather-sunset-down
-          - type: weather-forecast
-            entity: weather.forecast_home
-            show_forecast: true
-            forecast_type: daily
       - cards:
           - heading: Family
             type: heading
@@ -283,7 +173,7 @@ views:
                   action: perform-action
                   perform_action: scene.turn_on
                   target:
-                    entity_id: scene.cooking_bright_kitchen
+                    entity_id: scene.shared_cooking
               - type: action
                 name: Dinner
                 icon: mdi:food-fork-drink
@@ -291,7 +181,7 @@ views:
                   action: perform-action
                   perform_action: scene.turn_on
                   target:
-                    entity_id: scene.dinner_warm_dim
+                    entity_id: scene.shared_dinner
               - type: action
                 name: Movie
                 icon: mdi:movie
@@ -299,7 +189,7 @@ views:
                   action: perform-action
                   perform_action: scene.turn_on
                   target:
-                    entity_id: scene.movie_low_living_room
+                    entity_id: scene.living_room_movie
               - type: action
                 name: Party
                 icon: mdi:party-popper
@@ -437,7 +327,6 @@ views:
             features:
               - type: toggle
             type: tile
-    type: sections
   - title: Stairs
     path: stairs
     sections:
