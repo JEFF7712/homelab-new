@@ -408,17 +408,17 @@ views:
                 icon: mdi:power
                 tap_action:
                   action: perform-action
-                  perform_action: homeassistant.turn_on
+                  perform_action: script.turn_on
                   target:
-                    label_id: shared_space
+                    entity_id: script.shared_lights_on
               - type: button
                 name: All Off
                 icon: mdi:power-off
                 tap_action:
                   action: perform-action
-                  perform_action: homeassistant.turn_off
+                  perform_action: script.turn_on
                   target:
-                    label_id: shared_space
+                    entity_id: script.shared_lights_off
       - cards:
           - heading: Adaptive Lighting
             type: heading

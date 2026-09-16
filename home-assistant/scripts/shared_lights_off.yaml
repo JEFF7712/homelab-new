@@ -1,0 +1,21 @@
+alias: "Shared: Lights Off"
+description: >-
+  Snapshot current shared space light and plug state, then turn everything
+  off. "Shared: Lights On" restores this snapshot. Snapshot covers the
+  entities in the shared_space label; keep both lists in sync.
+sequence:
+  - action: scene.create
+    data:
+      scene_id: shared_last_state
+      snapshot_entities:
+        - light.kitchen_light
+        - light.kitchen_light_2
+        - light.living_room_mushroom_lamp
+        - light.living_room_tulip_lamp
+        - switch.kitchen_mushroom_lamp
+        - switch.living_room_good_vibes_sign
+        - switch.stairs_light
+  - action: homeassistant.turn_off
+    target:
+      label_id: shared_space
+mode: single

@@ -1,0 +1,19 @@
+alias: "Shared: Lights On"
+description: >-
+  Restore the snapshot taken by "Shared: Lights Off" so the lights and plugs
+  return to their exact prior brightness and color. Falls back to turning on
+  everything in the shared_space label when no snapshot exists yet, e.g.
+  after a restart.
+sequence:
+  - if:
+      - condition: template
+        value_template: "{{ states('scene.shared_last_state') not in ['unknown', 'unavailable', 'none'] }}"
+    then:
+      - action: scene.turn_on
+        target:
+          entity_id: scene.shared_last_state
+    else:
+      - action: homeassistant.turn_on
+        target:
+          label_id: shared_space
+mode: single
