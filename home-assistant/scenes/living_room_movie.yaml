@@ -1,5 +1,5 @@
 id: living_room_movie
-name: "Living Room Movie"
+name: "Movie (Low Living Room)"
 icon: mdi:movie
 entities:
   light.living_room_mushroom_lamp:

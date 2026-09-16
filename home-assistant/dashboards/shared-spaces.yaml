@@ -47,7 +47,7 @@ views:
                   action: perform-action
                   perform_action: scene.turn_on
                   target:
-                    entity_id: scene.shared_cooking
+                    entity_id: scene.cooking_bright_kitchen
               - type: button
                 name: Dinner
                 icon: mdi:food-fork-drink
@@ -55,7 +55,7 @@ views:
                   action: perform-action
                   perform_action: scene.turn_on
                   target:
-                    entity_id: scene.shared_dinner
+                    entity_id: scene.dinner_warm_dim
               - type: button
                 name: Movie
                 icon: mdi:movie
@@ -63,7 +63,7 @@ views:
                   action: perform-action
                   perform_action: scene.turn_on
                   target:
-                    entity_id: scene.living_room_movie
+                    entity_id: scene.movie_low_living_room
       - cards:
           - heading: Adaptive Lighting
             type: heading
@@ -162,7 +162,7 @@ views:
             features:
               - type: toggle
             type: tile
-          - entity: scene.shared_cooking
+          - entity: scene.cooking_bright_kitchen
             name: Cooking Scene
             icon: mdi:stove
             type: tile
@@ -170,8 +170,8 @@ views:
               action: perform-action
               perform_action: scene.turn_on
               target:
-                entity_id: scene.shared_cooking
-          - entity: scene.shared_dinner
+                entity_id: scene.cooking_bright_kitchen
+          - entity: scene.dinner_warm_dim
             name: Dinner Scene
             icon: mdi:food-fork-drink
             type: tile
@@ -179,7 +179,7 @@ views:
               action: perform-action
               perform_action: scene.turn_on
               target:
-                entity_id: scene.shared_dinner
+                entity_id: scene.dinner_warm_dim
     subview: true
     type: sections
   - title: Living Room
@@ -239,7 +239,7 @@ views:
           - entity: climate.living_room_ac_living_room_ac_thermostat
             fill_container: true
             type: custom:mushroom-climate-card
-          - entity: scene.living_room_movie
+          - entity: scene.movie_low_living_room
             name: Movie Scene
             icon: mdi:movie
             type: tile
@@ -247,7 +247,7 @@ views:
               action: perform-action
               perform_action: scene.turn_on
               target:
-                entity_id: scene.living_room_movie
+                entity_id: scene.movie_low_living_room
           - type: custom:apexcharts-card
             header:
               title: Living Room Temperature
