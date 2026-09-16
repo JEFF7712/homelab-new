@@ -31,7 +31,7 @@
 
   homelab.kiosk = {
     enable = true;
-    url = "http://10.0.40.12/d/e1RXnCbVz/kubernetes-dashboard?kiosk";
+    url = "http://10.0.40.12/d/e1RXnCbVz/kubernetes-dashboard?kiosk&refresh=30s&theme=dark";
     drmDevice = "/dev/dri/card1";
   };
 

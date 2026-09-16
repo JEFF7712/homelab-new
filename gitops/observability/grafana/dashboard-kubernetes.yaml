@@ -2100,7 +2100,7 @@
           "type": "timeseries"
         }
       ],
-      "refresh": "5m",
+      "refresh": "30s",
       "schemaVersion": 37,
       "style": "dark",
       "tags": [
