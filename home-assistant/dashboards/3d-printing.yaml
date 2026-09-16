@@ -54,6 +54,11 @@ views:
             - width: 310px
             - overflow: visible
             - --mdc-ripple-color: transparent
+            - position: fixed
+            - bottom: max(12px, env(safe-area-inset-bottom))
+            - left: 50%
+            - transform: translateX(-50%)
+            - z-index: 20
           grid:
             - display: grid
             - grid-template-areas: '"b1 b2 b3 b4 b5"'
