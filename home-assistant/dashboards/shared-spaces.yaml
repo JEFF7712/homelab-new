@@ -47,14 +47,19 @@ views:
             - border-radius: 999px
             - border: 1px solid rgba(255, 255, 255, 0.09)
             - box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5)
-            - padding: 6px 8px
+            - padding: 10px
             - margin-bottom: 8px
-            - height: 62px
+            - height: 66px
+            - width: min-content
+            - overflow: visible
+            - --mdc-ripple-color: transparent
           grid:
             - grid-template-areas: '"b1 b2 b3 b4 b5"'
             - grid-template-columns: 1fr 1fr 1fr 1fr 1fr
             - grid-template-rows: 1fr
             - align-items: center
+            - column-gap: 14px
+            - justify-content: center
           custom_fields:
             b1:
               - justify-self: center
