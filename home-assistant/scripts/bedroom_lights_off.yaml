@@ -1,6 +1,17 @@
 alias: "Bedroom: Lights Off"
-description: "Turn off all bedroom plugs and lamps."
+description: >-
+  Snapshot current bedroom plug and lamp state, then turn everything off.
+  "Bedroom: Evening Lights On" restores this snapshot.
 sequence:
+  - action: scene.create
+    data:
+      scene_id: bedroom_last_state
+      snapshot_entities:
+        - light.desk_lamp_desk_lamp
+        - light.floor_lamp_floor_lamp
+        - light.light_strip_light_strip
+        - switch.bedroom_window_plug
+        - switch.bedroom_mushroom_plug
   - action: switch.turn_off
     target:
       entity_id:

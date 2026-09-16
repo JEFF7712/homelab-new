@@ -1,17 +1,27 @@
 alias: "Bedroom: Evening Lights On"
 description: >-
-  Turn on bedroom plugs and lamps with plain turn_on calls. Brightness and
-  color temperature are owned by Adaptive Lighting.
+  Restore the snapshot taken by "Bedroom: Lights Off" so the lamps and plugs
+  return to their exact prior brightness and color. Falls back to plain
+  turn_on (brightness and color temperature owned by Adaptive Lighting) when
+  no snapshot exists yet, e.g. after a restart.
 sequence:
-  - action: switch.turn_on
-    target:
-      entity_id:
-        - switch.bedroom_window_plug
-        - switch.bedroom_mushroom_plug
-  - action: light.turn_on
-    target:
-      entity_id:
-        - light.desk_lamp_desk_lamp
-        - light.floor_lamp_floor_lamp
-        - light.light_strip_light_strip
+  - if:
+      - condition: template
+        value_template: "{{ states('scene.bedroom_last_state') not in ['unknown', 'unavailable', 'none'] }}"
+    then:
+      - action: scene.turn_on
+        target:
+          entity_id: scene.bedroom_last_state
+    else:
+      - action: switch.turn_on
+        target:
+          entity_id:
+            - switch.bedroom_window_plug
+            - switch.bedroom_mushroom_plug
+      - action: light.turn_on
+        target:
+          entity_id:
+            - light.desk_lamp_desk_lamp
+            - light.floor_lamp_floor_lamp
+            - light.light_strip_light_strip
 mode: single
