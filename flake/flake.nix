@@ -1,6 +1,11 @@
 {
   description = "NixOS homelab development and validation tools";
 
+  nixConfig = {
+    extra-substituters = [ "http://10.0.30.20:8080/homelab" ];
+    extra-trusted-public-keys = [ "homelab:J+OVQOCG2sNT2KoVbWGPikoWcIbBanHnY2NOcMF3vwk=" ];
+  };
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
