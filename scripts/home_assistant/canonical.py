@@ -98,9 +98,7 @@ def _include_constructor(loader: yaml.BaseLoader, node: yaml.Node) -> IncludeTag
     return IncludeTag(str(scalar))
 
 
-def _include_dir_constructor(
-    loader: yaml.BaseLoader, node: yaml.Node
-) -> IncludeDirTag:
+def _include_dir_constructor(loader: yaml.BaseLoader, node: yaml.Node) -> IncludeDirTag:
     scalar = loader.construct_scalar(node)  # type: ignore[arg-type]
     return IncludeDirTag(str(scalar))
 
