@@ -129,7 +129,7 @@ custom_frontend_cards:
     sha256: 5d6e9c6afca01e8014653fa56bb5d6aa9248d832c34fb944a7f2c36329bc22d1
     install_path: /config/www/community/button-card/button-card.js
     resource_url: /hacsfiles/button-card/button-card.js
-    status: planned
+    status: installed
 custom_themes:
   - name: Frosted Glass Theme
     source: https://github.com/wessamlauf/homeassistant-frosted-glass-themes
