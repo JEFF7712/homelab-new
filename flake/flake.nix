@@ -193,6 +193,18 @@
               inherit nixpkgs system;
             };
 
+        checks.kiosk-tty1 =
+          let
+            host = self.nixosConfigurations.homelab-05.config;
+          in
+          assert !host.systemd.units."getty@tty1.service".enable;
+          assert !host.systemd.units."autovt@tty1.service".enable;
+          assert builtins.elem "multi-user.target" host.systemd.services.cage-tty1.wantedBy;
+          assert host.systemd.services.cage-tty1.serviceConfig.Restart == "always";
+          pkgs.runCommand "kiosk-tty1-evaluation" { } ''
+            touch $out
+          '';
+
         checks.zot-registry = self.nixosConfigurations.nas-01.config.services.homelab-zot-registry.package;
       }
     );
