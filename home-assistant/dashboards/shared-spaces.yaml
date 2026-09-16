@@ -36,6 +36,65 @@ views:
                   target:
                     label_id: shared_space
       - cards:
+          - heading: Scenes
+            type: heading
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: Cooking
+                icon: mdi:stove
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.shared_cooking
+              - type: button
+                name: Dinner
+                icon: mdi:food-fork-drink
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.shared_dinner
+              - type: button
+                name: Movie
+                icon: mdi:movie
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.living_room_movie
+      - cards:
+          - heading: Adaptive Lighting
+            type: heading
+          - entity: switch.adaptive_lighting_all_dimmable_lights_sleep_mode
+            name: Sleep Mode
+            features:
+              - type: toggle
+            type: tile
+          - entity: switch.adaptive_lighting_all_dimmable_lights_adapt_brightness
+            name: Adapt Brightness
+            features:
+              - type: toggle
+            type: tile
+          - entity: switch.adaptive_lighting_all_dimmable_lights_adapt_color
+            name: Adapt Color
+            features:
+              - type: toggle
+            type: tile
+      - cards:
+          - heading: All Shared Devices (auto)
+            type: heading
+          - type: custom:auto-entities
+            card:
+              type: entities
+            filter:
+              include:
+                - label: shared_space
+                  domain: light
+                - label: shared_space
+                  domain: switch
+      - cards:
           - heading: Rooms
             type: heading
           - name: Stairs
@@ -103,6 +162,24 @@ views:
             features:
               - type: toggle
             type: tile
+          - entity: scene.shared_cooking
+            name: Cooking Scene
+            icon: mdi:stove
+            type: tile
+            tap_action:
+              action: perform-action
+              perform_action: scene.turn_on
+              target:
+                entity_id: scene.shared_cooking
+          - entity: scene.shared_dinner
+            name: Dinner Scene
+            icon: mdi:food-fork-drink
+            type: tile
+            tap_action:
+              action: perform-action
+              perform_action: scene.turn_on
+              target:
+                entity_id: scene.shared_dinner
     subview: true
     type: sections
   - title: Living Room
@@ -117,23 +194,38 @@ views:
             type: tile
           - entity: light.living_room_lights
             name: All Living Room Lights
-            features:
-              - type: light-brightness
-              - type: light-color-temp
-            type: tile
+            fill_container: true
+            type: custom:mushroom-light-card
           - entity: light.living_room_mushroom_lamp
             name: Floor Lamp
-            features:
-              - type: light-brightness
-              - type: light-color-temp
-            type: tile
+            fill_container: true
+            type: custom:mushroom-light-card
           - entity: light.living_room_tulip_lamp
             name: Tulip Lamp
-            features:
-              - type: light-brightness
-              - type: light-color-temp
-            type: tile
+            fill_container: true
+            type: custom:mushroom-light-card
           - entity: climate.living_room_ac_living_room_ac_thermostat
-            type: thermostat
+            fill_container: true
+            type: custom:mushroom-climate-card
+          - entity: scene.living_room_movie
+            name: Movie Scene
+            icon: mdi:movie
+            type: tile
+            tap_action:
+              action: perform-action
+              perform_action: scene.turn_on
+              target:
+                entity_id: scene.living_room_movie
+          - type: custom:apexcharts-card
+            header:
+              title: Living Room Temperature
+            graph_span: 24h
+            series:
+              - entity: climate.living_room_ac_living_room_ac_thermostat
+                attribute: current_temperature
+                name: Current
+              - entity: climate.living_room_ac_living_room_ac_thermostat
+                attribute: temperature
+                name: Target
     subview: true
     type: sections

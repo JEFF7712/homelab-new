@@ -1,14 +1,18 @@
 id: living_room_sign_by_presence
 alias: "Living Room: Good Vibes Sign by Presence"
-description: "Turn on the Good Vibes sign when arriving home during evening hours; off when away or at sunrise."
+description: "Turn on the Good Vibes sign when anyone arrives home during evening hours; off when empty or at sunrise."
 triggers:
   - trigger: state
-    entity_id: person.rupan_sunderapandyan
+    entity_id:
+      - person.rupan_sunderapandyan
+      - person.sam
     to: "home"
     id: "arrive"
   - trigger: state
-    entity_id: person.rupan_sunderapandyan
-    from: "home"
+    entity_id:
+      - person.rupan_sunderapandyan
+      - person.sam
+    to: "not_home"
     id: "leave"
   - trigger: sun
     event: sunset
@@ -22,6 +26,8 @@ actions:
       - conditions:
           - condition: trigger
             id: "leave"
+          - condition: template
+            value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
         sequence:
           - action: switch.turn_off
             target:
@@ -33,9 +39,8 @@ actions:
                 id: "arrive"
               - condition: trigger
                 id: "sunset"
-          - condition: state
-            entity_id: person.rupan_sunderapandyan
-            state: "home"
+          - condition: template
+            value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count > 0 }}"
           - condition: state
             entity_id: sun.sun
             state: "below_horizon"

@@ -1,0 +1,85 @@
+id: living_room_ac_away_setback
+alias: "Living Room: AC Away Setback"
+description: >-
+  Snapshot and switch the living room AC off when the last person leaves,
+  keep it off while nobody is home, restore the snapshot on daytime return.
+  Dark returns leave it off unless it was running before leaving. Skipped
+  while Guest Mode is on, mirroring Shared Spaces: Lights Off When Empty.
+triggers:
+  - trigger: state
+    entity_id:
+      - person.rupan_sunderapandyan
+      - person.sam
+    to: "not_home"
+    id: "left_empty"
+  - trigger: state
+    entity_id:
+      - person.rupan_sunderapandyan
+      - person.sam
+    to: "home"
+    id: "return"
+  - trigger: state
+    entity_id: climate.living_room_ac_living_room_ac_thermostat
+    to:
+      - "cool"
+      - "auto"
+      - "fan_only"
+      - "dry"
+    id: "enforced"
+  - trigger: homeassistant
+    event: start
+    id: "restart"
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "left_empty"
+          - condition: template
+            value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
+          - condition: state
+            entity_id: input_boolean.guest_mode
+            state: "off"
+        sequence:
+          - action: scene.create
+            data:
+              scene_id: pre_away_climate
+              snapshot_entities:
+                - climate.living_room_ac_living_room_ac_thermostat
+          - action: climate.turn_off
+            target:
+              entity_id: climate.living_room_ac_living_room_ac_thermostat
+      - conditions:
+          - condition: trigger
+            id: "enforced"
+          - condition: template
+            value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
+          - condition: state
+            entity_id: input_boolean.guest_mode
+            state: "off"
+        sequence:
+          - action: climate.turn_off
+            target:
+              entity_id: climate.living_room_ac_living_room_ac_thermostat
+      - conditions:
+          - condition: trigger
+            id: "restart"
+          - condition: template
+            value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count == 0 }}"
+          - condition: state
+            entity_id: input_boolean.guest_mode
+            state: "off"
+        sequence:
+          - action: climate.turn_off
+            target:
+              entity_id: climate.living_room_ac_living_room_ac_thermostat
+      - conditions:
+          - condition: trigger
+            id: "return"
+          - condition: template
+            value_template: "{{ states('scene.pre_away_climate') not in ('unknown', 'unavailable') }}"
+        sequence:
+          - action: scene.turn_on
+            target:
+              entity_id: scene.pre_away_climate
+mode: queued

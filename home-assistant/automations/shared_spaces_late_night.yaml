@@ -1,0 +1,38 @@
+id: shared_spaces_late_night
+alias: "Shared Spaces: Late Night Wind-Down"
+description: >-
+  Put Adaptive Lighting into sleep mode at 22:30 so kitchen and living room
+  lights drop warm and dim for wind-down, and restore normal adapting at
+  sunrise. Skipped while Guest Mode is on so guests keep normal lighting.
+  Only runs when someone is home; an empty house is already dark via
+  Shared Spaces: Lights Off When Empty.
+triggers:
+  - trigger: time
+    at: "22:30:00"
+    id: "late"
+  - trigger: sun
+    event: sunrise
+    id: "morning"
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "late"
+          - condition: template
+            value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count > 0 }}"
+          - condition: state
+            entity_id: input_boolean.guest_mode
+            state: "off"
+        sequence:
+          - action: switch.turn_on
+            target:
+              entity_id: switch.adaptive_lighting_all_dimmable_lights_sleep_mode
+      - conditions:
+          - condition: trigger
+            id: "morning"
+        sequence:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.adaptive_lighting_all_dimmable_lights_sleep_mode
+mode: single

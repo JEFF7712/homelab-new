@@ -1,0 +1,16 @@
+id: living_room_movie
+name: "Movie (Low Living Room)"
+icon: mdi:movie
+entities:
+  light.living_room_mushroom_lamp:
+    state: "off"
+  light.living_room_tulip_lamp:
+    state: "on"
+    brightness: 40
+    color_temp_kelvin: 2000
+  light.kitchen_lights:
+    state: "off"
+  switch.kitchen_mushroom_lamp:
+    state: "off"
+  switch.living_room_good_vibes_sign:
+    state: "on"
