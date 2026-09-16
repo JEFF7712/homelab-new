@@ -24,6 +24,12 @@ light:
       - light.kitchen_light_2
       - light.living_room_mushroom_lamp
       - light.living_room_tulip_lamp
+  - platform: group
+    name: Bedroom Roku Lights
+    entities:
+      - light.desk_lamp_desk_lamp
+      - light.floor_lamp_floor_lamp
+      - light.light_strip_light_strip
   - platform: switch
     name: Bedroom Window Plug
     entity_id: switch.bedroom_window_plug

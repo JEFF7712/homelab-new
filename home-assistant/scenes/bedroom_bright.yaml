@@ -1,0 +1,20 @@
+id: bedroom_bright
+name: "Bedroom Bright"
+icon: mdi:brightness-5
+entities:
+  light.desk_lamp_desk_lamp:
+    state: "on"
+    brightness: 255
+    color_temp_kelvin: 4000
+  light.floor_lamp_floor_lamp:
+    state: "on"
+    brightness: 255
+    color_temp_kelvin: 4000
+  light.light_strip_light_strip:
+    state: "on"
+    brightness: 255
+    color_temp_kelvin: 4000
+  switch.bedroom_window_plug:
+    state: "on"
+  switch.bedroom_mushroom_plug:
+    state: "on"

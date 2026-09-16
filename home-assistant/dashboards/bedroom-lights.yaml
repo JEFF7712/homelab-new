@@ -242,6 +242,32 @@ views:
       - cards:
           - type: heading
             heading: Lights
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: All On
+                icon: mdi:power
+                tap_action:
+                  action: perform-action
+                  perform_action: script.turn_on
+                  target:
+                    entity_id: script.bedroom_lights_on
+              - type: button
+                name: All Off
+                icon: mdi:power-off
+                tap_action:
+                  action: perform-action
+                  perform_action: script.turn_on
+                  target:
+                    entity_id: script.bedroom_lights_off
+          - type: custom:mushroom-light-card
+            entity: light.bedroom_roku_lights
+            name: All Roku Lights
+            fill_container: true
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            collapsible_controls: true
           - type: custom:mushroom-light-card
             entity: light.desk_lamp_desk_lamp
             name: Desk Lamp
@@ -282,3 +308,32 @@ views:
               action: toggle
             hold_action:
               action: more-info
+      - cards:
+          - type: heading
+            heading: Scenes
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: action
+                name: Relax
+                icon: mdi:armchair
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.bedroom_relax
+              - type: action
+                name: Bright
+                icon: mdi:brightness-5
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.bedroom_bright
+              - type: action
+                name: Night
+                icon: mdi:weather-night
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.bedroom_night
