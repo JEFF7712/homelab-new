@@ -6,7 +6,63 @@ views:
   - title: Shared Spaces
     sections:
       - cards:
-          - heading: All Lights
+          - heading: Rooms
+            type: heading
+          - type: horizontal-stack
+            cards:
+              - name: Stairs
+                icon: mdi:stairs
+                entity: switch.stairs_light
+                hold_action:
+                  action: toggle
+                show_state: true
+                tap_action:
+                  action: navigate
+                  navigation_path: /shared-spaces/stairs
+                type: button
+              - name: Kitchen
+                icon: mdi:stove
+                tap_action:
+                  action: navigate
+                  navigation_path: /shared-spaces/kitchen
+                type: button
+              - name: Living Room
+                icon: mdi:sofa
+                tap_action:
+                  action: navigate
+                  navigation_path: /shared-spaces/living-room
+                type: button
+      - cards:
+          - heading: Scenes
+            type: heading
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: action
+                name: Cooking
+                icon: mdi:stove
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.cooking_bright_kitchen
+              - type: action
+                name: Dinner
+                icon: mdi:food-fork-drink
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.dinner_warm_dim
+              - type: action
+                name: Movie
+                icon: mdi:movie
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.movie_low_living_room
+      - cards:
+          - heading: Lights
             type: heading
           - entity: light.all_govee_lights
             name: All Govee Lights
@@ -16,9 +72,6 @@ views:
             show_color_temp_control: true
             show_color_control: true
             collapsible_controls: true
-      - cards:
-          - heading: All Devices
-            type: heading
           - type: horizontal-stack
             cards:
               - type: button
@@ -38,34 +91,14 @@ views:
                   target:
                     label_id: shared_space
       - cards:
-          - heading: Scenes
+          - heading: Home
             type: heading
-          - type: horizontal-stack
-            cards:
-              - type: button
-                name: Cooking
-                icon: mdi:stove
-                tap_action:
-                  action: perform-action
-                  perform_action: scene.turn_on
-                  target:
-                    entity_id: scene.cooking_bright_kitchen
-              - type: button
-                name: Dinner
-                icon: mdi:food-fork-drink
-                tap_action:
-                  action: perform-action
-                  perform_action: scene.turn_on
-                  target:
-                    entity_id: scene.dinner_warm_dim
-              - type: button
-                name: Movie
-                icon: mdi:movie
-                tap_action:
-                  action: perform-action
-                  perform_action: scene.turn_on
-                  target:
-                    entity_id: scene.movie_low_living_room
+          - type: custom:mushroom-person-card
+            entity: person.rupan_sunderapandyan
+            fill_container: true
+          - type: custom:mushroom-person-card
+            entity: person.sam
+            fill_container: true
       - cards:
           - heading: Adaptive Lighting
             type: heading
@@ -84,43 +117,6 @@ views:
             features:
               - type: toggle
             type: tile
-      - cards:
-          - heading: All Shared Devices (auto)
-            type: heading
-          - type: custom:auto-entities
-            card:
-              type: entities
-            filter:
-              include:
-                - label: shared_space
-                  domain: light
-                - label: shared_space
-                  domain: switch
-      - cards:
-          - heading: Rooms
-            type: heading
-          - name: Stairs
-            icon: mdi:stairs
-            entity: switch.stairs_light
-            hold_action:
-              action: toggle
-            show_state: true
-            tap_action:
-              action: navigate
-              navigation_path: /shared-spaces/stairs
-            type: button
-          - name: Kitchen
-            icon: mdi:stove
-            tap_action:
-              action: navigate
-              navigation_path: /shared-spaces/kitchen
-            type: button
-          - name: Living Room
-            icon: mdi:sofa
-            tap_action:
-              action: navigate
-              navigation_path: /shared-spaces/living-room
-            type: button
     type: sections
   - title: Stairs
     path: stairs
@@ -139,7 +135,7 @@ views:
     path: kitchen
     sections:
       - cards:
-          - heading: Kitchen
+          - heading: Lights
             type: heading
           - entity: light.kitchen_lights
             name: All Kitchen Lights
@@ -170,31 +166,34 @@ views:
             features:
               - type: toggle
             type: tile
-          - entity: scene.cooking_bright_kitchen
-            name: Cooking Scene
-            icon: mdi:stove
-            type: tile
-            tap_action:
-              action: perform-action
-              perform_action: scene.turn_on
-              target:
-                entity_id: scene.cooking_bright_kitchen
-          - entity: scene.dinner_warm_dim
-            name: Dinner Scene
-            icon: mdi:food-fork-drink
-            type: tile
-            tap_action:
-              action: perform-action
-              perform_action: scene.turn_on
-              target:
-                entity_id: scene.dinner_warm_dim
+      - cards:
+          - heading: Scenes
+            type: heading
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: action
+                name: Cooking
+                icon: mdi:stove
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.cooking_bright_kitchen
+              - type: action
+                name: Dinner
+                icon: mdi:food-fork-drink
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.dinner_warm_dim
     subview: true
     type: sections
   - title: Living Room
     path: living-room
     sections:
       - cards:
-          - heading: Living Room
+          - heading: Lights
             type: heading
           - entity: switch.living_room_good_vibes_sign
             features:
@@ -256,18 +255,34 @@ views:
                     --shape-color: rgba(255, 193, 7, 0.25) !important;
                     {% endif %}
                   }
+      - cards:
+          - heading: Climate
+            type: heading
           - entity: climate.living_room_ac_living_room_ac_thermostat
             fill_container: true
             type: custom:mushroom-climate-card
-          - entity: scene.movie_low_living_room
-            name: Movie Scene
-            icon: mdi:movie
-            type: tile
-            tap_action:
-              action: perform-action
-              perform_action: scene.turn_on
-              target:
-                entity_id: scene.movie_low_living_room
+            hvac_modes:
+              - "off"
+              - cool
+              - auto
+              - fan_only
+              - dry
+      - cards:
+          - heading: Scenes
+            type: heading
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: action
+                name: Movie
+                icon: mdi:movie
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.movie_low_living_room
+      - cards:
+          - heading: History
+            type: heading
           - type: custom:apexcharts-card
             header:
               show: true
