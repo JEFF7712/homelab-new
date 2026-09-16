@@ -56,23 +56,35 @@ FLEET_HOSTS: dict[str, HostConfig] = {
         host_type="k3s-worker",
         order=2,
     ),
+    "homelab-04": HostConfig(
+        name="homelab-04",
+        ip="10.0.30.14",
+        host_type="k3s-worker",
+        order=3,
+    ),
+    "homelab-05": HostConfig(
+        name="homelab-05",
+        ip="10.0.30.15",
+        host_type="k3s-worker",
+        order=4,
+    ),
     "homelab-01": HostConfig(
         name="homelab-01",
         ip="10.0.30.11",
         host_type="k3s-stateful",
-        order=3,
+        order=5,
     ),
     "adguard-netbird-01": HostConfig(
         name="adguard-netbird-01",
         ip="10.0.30.10",
         host_type="appliance-dns",
-        order=4,
+        order=6,
     ),
     "nas-01": HostConfig(
         name="nas-01",
         ip="10.0.30.20",
         host_type="appliance-nas",
-        order=5,
+        order=7,
     ),
 }
 
@@ -281,7 +293,13 @@ def verify_k3s_nodes_ready(
     if not items:
         return False, "No nodes returned by kubectl"
 
-    expected_k3s = {"homelab-01", "homelab-02", "homelab-03"}
+    expected_k3s = {
+        "homelab-01",
+        "homelab-02",
+        "homelab-03",
+        "homelab-04",
+        "homelab-05",
+    }
     found_nodes = set()
 
     for item in items:

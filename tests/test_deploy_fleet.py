@@ -27,7 +27,15 @@ class DeployFleetTest(unittest.TestCase):
         names = [t.name for t in targets]
         self.assertEqual(
             names,
-            ["homelab-02", "homelab-03", "homelab-01", "adguard-netbird-01", "nas-01"],
+            [
+                "homelab-02",
+                "homelab-03",
+                "homelab-04",
+                "homelab-05",
+                "homelab-01",
+                "adguard-netbird-01",
+                "nas-01",
+            ],
         )
 
     def test_parse_targets_subset_preserves_canonical_order(self) -> None:
@@ -140,6 +148,14 @@ class DeployFleetTest(unittest.TestCase):
                     "metadata": {"name": "homelab-03"},
                     "status": {"conditions": [{"type": "Ready", "status": "True"}]},
                 },
+                {
+                    "metadata": {"name": "homelab-04"},
+                    "status": {"conditions": [{"type": "Ready", "status": "True"}]},
+                },
+                {
+                    "metadata": {"name": "homelab-05"},
+                    "status": {"conditions": [{"type": "Ready", "status": "True"}]},
+                },
             ]
         }
 
@@ -166,6 +182,14 @@ class DeployFleetTest(unittest.TestCase):
                 },
                 {
                     "metadata": {"name": "homelab-03"},
+                    "status": {"conditions": [{"type": "Ready", "status": "True"}]},
+                },
+                {
+                    "metadata": {"name": "homelab-04"},
+                    "status": {"conditions": [{"type": "Ready", "status": "True"}]},
+                },
+                {
+                    "metadata": {"name": "homelab-05"},
                     "status": {"conditions": [{"type": "Ready", "status": "True"}]},
                 },
             ]
@@ -203,7 +227,9 @@ class DeployFleetTest(unittest.TestCase):
 
         ready, msg = verify_k3s_nodes_ready(runner=runner)
         self.assertFalse(ready)
-        self.assertIn("Cluster missing expected nodes: homelab-03", msg)
+        self.assertIn(
+            "Cluster missing expected nodes: homelab-03, homelab-04, homelab-05", msg
+        )
 
     def test_verify_bgp_peer_success(self) -> None:
         def runner(
