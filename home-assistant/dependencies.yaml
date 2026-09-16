@@ -122,6 +122,31 @@ custom_frontend_cards:
     install_path: /config/www/community/scheduler-card/scheduler-card.js
     resource_url: /hacsfiles/scheduler-card/scheduler-card.js
     status: planned
+custom_themes:
+  - name: Frosted Glass Theme
+    source: https://github.com/wessamlauf/homeassistant-frosted-glass-themes
+    version: v1.3
+    artifact: https://github.com/wessamlauf/homeassistant-frosted-glass-themes/archive/refs/tags/v1.3.zip
+    sha256: af86c6ec1f0bcdcfda1eb9b923621d5874a8a95050d11989618258556a5e6bc1
+    install_path: /config/themes/
+    connection: local
+    status: installed
+  - name: iOS Themes Dark Mode and Light Mode
+    source: https://github.com/basnijholt/lovelace-ios-themes
+    version: v3.0.3
+    artifact: https://github.com/basnijholt/lovelace-ios-themes/archive/refs/tags/v3.0.3.zip
+    sha256: 1098d8b8b9e43695339b4d991f9be3335267f97c245a8997e9ebe6b9a4e2d7d5
+    install_path: /config/themes/
+    connection: local
+    status: installed
+  - name: Button Card
+    source: https://github.com/custom-cards/button-card
+    version: v7.0.1
+    artifact: https://github.com/custom-cards/button-card/releases/download/v7.0.1/button-card.js
+    sha256: 5d6e9c6afca01e8014653fa56bb5d6aa9248d832c34fb944a7f2c36329bc22d1
+    install_path: /config/www/community/button-card/button-card.js
+    resource_url: /hacsfiles/button-card/button-card.js
+    status: planned
 blueprints: []
 dependencies_policy:
   auto_download: false
