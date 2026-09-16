@@ -93,6 +93,7 @@ in
     };
 
     systemd.services."getty@tty1".enable = false;
+    systemd.services."autovt@tty1".enable = false;
 
     boot.kernelParams = [ "consoleblank=0" ];
   };
