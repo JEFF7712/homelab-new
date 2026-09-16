@@ -6,6 +6,7 @@ button_card_templates:
   mobile_nav_button:
     show_name: false
     size: 22px
+    aspect_ratio: 1/1
     styles:
       card:
         - background: |
@@ -78,7 +79,9 @@ views:
                 tap_action:
                   action: toggle
       - cards:
-          - type: horizontal-stack
+          - type: grid
+            columns: 5
+            square: false
             visibility:
               - condition: screen
                 media_query: "(max-width: 768px)"
