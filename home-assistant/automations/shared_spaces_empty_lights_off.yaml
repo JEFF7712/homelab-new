@@ -109,7 +109,7 @@ actions:
           - condition: trigger
             id: "return"
           - condition: template
-            value_template: "{{ states('scene.pre_away_shared') not in ('unknown', 'unavailable') }}"
+            value_template: "{{ state_attr('scene.pre_away_shared', 'entity_id') is not none }}"
           - condition: state
             entity_id: sun.sun
             state: "above_horizon"

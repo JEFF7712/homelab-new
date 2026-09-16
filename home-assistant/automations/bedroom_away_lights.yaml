@@ -57,7 +57,7 @@ actions:
           - condition: trigger
             id: "return"
           - condition: template
-            value_template: "{{ states('scene.pre_away_bedroom') not in ('unknown', 'unavailable') }}"
+            value_template: "{{ state_attr('scene.pre_away_bedroom', 'entity_id') is not none }}"
         sequence:
           - action: scene.turn_on
             target:

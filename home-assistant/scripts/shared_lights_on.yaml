@@ -7,7 +7,7 @@ description: >-
 sequence:
   - if:
       - condition: template
-        value_template: "{{ states('scene.shared_last_state') not in ['unknown', 'unavailable', 'none'] }}"
+        value_template: "{{ state_attr('scene.shared_last_state', 'entity_id') is not none }}"
     then:
       - action: scene.turn_on
         target:
