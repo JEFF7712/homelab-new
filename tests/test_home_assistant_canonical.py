@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from scripts.home_assistant.canonical import (
+    IncludeDirTag,
     IncludeTag,
     SecretTag,
     canonical_hash,
@@ -31,6 +32,15 @@ class TestHomeAssistantCanonical(unittest.TestCase):
         dumped = dump_yaml(parsed)
         self.assertIn("!secret recorder_db_url", dumped)
         self.assertIn("!include automations.yaml", dumped)
+
+    def test_parse_and_dump_include_dir_merge_named_tag(self) -> None:
+        raw_yaml = "frontend:\n  themes: !include_dir_merge_named themes\n"
+        parsed = parse_yaml(raw_yaml)
+        self.assertIsInstance(parsed["frontend"]["themes"], IncludeDirTag)
+        self.assertEqual(parsed["frontend"]["themes"].value, "themes")
+
+        dumped = dump_yaml(parsed)
+        self.assertIn("!include_dir_merge_named themes", dumped)
 
     def test_rejects_duplicate_yaml_keys(self) -> None:
         raw_yaml = "alias: Test\nalias: Duplicate\n"

@@ -44,6 +44,24 @@ class IncludeTag:
         return hash(("!include", self.value))
 
 
+class IncludeDirTag:
+    """Represents a Home Assistant !include_dir_merge_named reference."""
+
+    def __init__(self, value: str) -> None:
+        self.value = str(value)
+
+    def __repr__(self) -> str:
+        return f"IncludeDirTag({self.value!r})"
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, IncludeDirTag):
+            return self.value == other.value
+        return False
+
+    def __hash__(self) -> int:
+        return hash(("!include_dir_merge_named", self.value))
+
+
 class DuplicateKeySafeLoader(yaml.SafeLoader):
     """YAML safe loader that strictly rejects duplicate keys in mappings."""
 
@@ -80,8 +98,18 @@ def _include_constructor(loader: yaml.BaseLoader, node: yaml.Node) -> IncludeTag
     return IncludeTag(str(scalar))
 
 
+def _include_dir_constructor(
+    loader: yaml.BaseLoader, node: yaml.Node
+) -> IncludeDirTag:
+    scalar = loader.construct_scalar(node)  # type: ignore[arg-type]
+    return IncludeDirTag(str(scalar))
+
+
 DuplicateKeySafeLoader.add_constructor("!secret", _secret_constructor)
 DuplicateKeySafeLoader.add_constructor("!include", _include_constructor)
+DuplicateKeySafeLoader.add_constructor(
+    "!include_dir_merge_named", _include_dir_constructor
+)
 
 
 class CanonicalSafeDumper(yaml.SafeDumper):
@@ -89,7 +117,7 @@ class CanonicalSafeDumper(yaml.SafeDumper):
 
     def choose_scalar_style(self) -> str:
         tag = getattr(self.event, "tag", None)
-        if tag in ("!secret", "!include"):
+        if tag in ("!secret", "!include", "!include_dir_merge_named"):
             return ""
         return super().choose_scalar_style()
 
@@ -105,6 +133,12 @@ def _include_representer(dumper: yaml.SafeDumper, data: IncludeTag) -> yaml.Scal
     return dumper.represent_scalar("!include", data.value)
 
 
+def _include_dir_representer(
+    dumper: yaml.SafeDumper, data: IncludeDirTag
+) -> yaml.ScalarNode:
+    return dumper.represent_scalar("!include_dir_merge_named", data.value)
+
+
 def _str_representer(dumper: yaml.SafeDumper, data: str) -> yaml.ScalarNode:
     if "\n" in data:
         return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
@@ -113,6 +147,7 @@ def _str_representer(dumper: yaml.SafeDumper, data: str) -> yaml.ScalarNode:
 
 CanonicalSafeDumper.add_representer(SecretTag, _secret_representer)
 CanonicalSafeDumper.add_representer(IncludeTag, _include_representer)
+CanonicalSafeDumper.add_representer(IncludeDirTag, _include_dir_representer)
 CanonicalSafeDumper.add_representer(str, _str_representer)
 
 
@@ -211,6 +246,8 @@ def to_json_compatible(obj: Any) -> Any:
         return {"!secret": obj.value}
     if isinstance(obj, IncludeTag):
         return {"!include": obj.value}
+    if isinstance(obj, IncludeDirTag):
+        return {"!include_dir_merge_named": obj.value}
     if isinstance(obj, dict):
         return {
             k: to_json_compatible(v)
@@ -228,6 +265,8 @@ def from_json_compatible(obj: Any) -> Any:
             return SecretTag(str(obj["!secret"]))
         if len(obj) == 1 and "!include" in obj:
             return IncludeTag(str(obj["!include"]))
+        if len(obj) == 1 and "!include_dir_merge_named" in obj:
+            return IncludeDirTag(str(obj["!include_dir_merge_named"]))
         return {k: from_json_compatible(v) for k, v in obj.items()}
     if isinstance(obj, list):
         return [from_json_compatible(item) for item in obj]

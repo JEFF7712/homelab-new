@@ -15,7 +15,7 @@ spec:
       labels:
         app: home-assistant
       annotations:
-        checksum/config: e90cece7971f8bd0d6edc67bf7f136393092563610d3198bc326950b53cb9426
+        checksum/config: 35cc53b402141cc6b7312e2a625558bd9160be503e95574c5f1ef77dbe55e487
         checksum/dependencies: 8eac350ea6f0dc5b311c3b363345bb99229e5efa193aa69111e630103301751e
     spec:
       hostNetwork: true
