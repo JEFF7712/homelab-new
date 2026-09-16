@@ -60,7 +60,7 @@ HA's MQTT JSON light integration drifted from `rgb_color: [r, g, b]` (flat list)
 ssh adguard "sudo journalctl -u roku-bridge -f"
 
 # MQTT traffic — must run on the appliance itself; mosquitto only accepts
-# 10.0.30.11/12/13 on port 1883 (per the firewall rules in
+# 10.0.30.11-15 on port 1883 (k3s nodes, per the firewall rules in
 # flake/modules/adguard-netbird-appliance.nix). Auth as the roku-bridge user.
 ssh adguard
 sudo /nix/store/0vggxw22b2c0ph8jf1iyfd9h6jgmkfpc-python3-3.14.7-env/bin/python3 -c '
