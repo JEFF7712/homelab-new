@@ -28,7 +28,17 @@ spec:
             description: "Node {{ $labels.instance }} has had sustained CPU usage above 90% for 15 minutes."
 
         - alert: NodeHighMemoryUsage
-          expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 90
+          expr: |
+            (
+              ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+                / node_memory_MemTotal_bytes) * 100 > 90
+              unless on(instance) node_zfs_arc_size
+            )
+            or
+            (
+              ((node_memory_MemTotal_bytes - (node_memory_MemAvailable_bytes + node_zfs_arc_size))
+                / node_memory_MemTotal_bytes) * 100 > 90
+            )
           for: 15m
           labels:
             severity: warning

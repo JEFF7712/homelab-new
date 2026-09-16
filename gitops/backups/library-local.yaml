@@ -45,9 +45,10 @@ spec:
                 - -c
                 - |
                   set -eu
+                  restic unlock || true
                   restic snapshots >/dev/null 2>&1 || restic init
-                  restic backup /library
-                  restic forget --keep-last 7 --prune
+                  restic backup /library --host immich --exclude '/library/.storage'
+                  restic forget --host immich --keep-last 7 --prune
               volumeMounts:
                 - name: library
                   mountPath: /library

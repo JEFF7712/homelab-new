@@ -23,6 +23,9 @@
     };
     supportedFilesystems = [ "zfs" ];
     zfs.forceImportRoot = false;
+    extraModprobeConfig = ''
+      options zfs zfs_arc_max=10737418240
+    '';
   };
 
   networking.hostId = "31eabe12";

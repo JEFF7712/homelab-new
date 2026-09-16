@@ -19,7 +19,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-rupanism
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -160,7 +168,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-apolline
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -301,7 +317,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-darkbit
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -442,7 +466,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-distrojeff
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -583,7 +615,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-nix-agent
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -724,7 +764,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-pulse
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -865,7 +913,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-soluble
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -1006,7 +1062,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-spatia
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -1147,7 +1211,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-quartz
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -1288,7 +1360,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-majorfinder
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -1429,7 +1509,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-photography
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -1570,7 +1658,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-ism
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -1711,7 +1807,15 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: github-runner-rupan-dev
+        app.kubernetes.io/component: runner
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: runner
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
