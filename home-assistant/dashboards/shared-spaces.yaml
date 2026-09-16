@@ -39,32 +39,6 @@ views:
           - type: custom:mushroom-person-card
             entity: person.sam
             fill_container: true
-          - type: custom:mushroom-chips-card
-            chips:
-              - type: entity
-                entity: sensor.rupan_phone_battery_level
-                name: Battery
-                icon: mdi:battery
-              - type: entity
-                entity: sensor.rupan_phone_battery_state
-                name: Charging
-                icon: mdi:battery-charging
-              - type: entity
-                entity: sensor.sm_s948u1_battery_level
-                name: Battery
-                icon: mdi:battery
-              - type: entity
-                entity: sensor.sm_s948u1_battery_state
-                name: Charging
-                icon: mdi:battery-charging
-              - type: entity
-                entity: sensor.rupan_phone_ssid
-                name: Wi-Fi
-                icon: mdi:wifi
-              - type: entity
-                entity: sensor.rupan_phone_steps
-                name: Steps
-                icon: mdi:shoe-print
           - heading: Scenes
             type: heading
           - type: custom:mushroom-chips-card
