@@ -536,6 +536,7 @@ views:
           - heading: Lights
             type: heading
           - entity: switch.living_room_good_vibes_sign
+            color: amber
             features:
               - type: toggle
             type: tile
@@ -543,14 +544,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-            card_mod:
-              style: |
-                :host {
-                  {% if is_state('switch.living_room_good_vibes_sign', 'on') %}
-                  --tile-color: var(--amber-color);
-                  box-shadow: 0 0 14px rgba(255, 193, 7, 0.45);
-                  {% endif %}
-                }
           - entity: light.living_room_lights
             name: All Living Room Lights
             fill_container: true
@@ -563,14 +556,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-            card_mod:
-              style:
-                mushroom-shape-icon$: |
-                  .shape {
-                    {% if is_state('light.living_room_lights', 'on') %}
-                    --shape-color: rgba(255, 193, 7, 0.25) !important;
-                    {% endif %}
-                  }
           - entity: light.living_room_mushroom_lamp
             name: Floor Lamp
             fill_container: true
@@ -583,14 +568,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-            card_mod:
-              style:
-                mushroom-shape-icon$: |
-                  .shape {
-                    {% if is_state('light.living_room_mushroom_lamp', 'on') %}
-                    --shape-color: rgba(255, 193, 7, 0.25) !important;
-                    {% endif %}
-                  }
           - entity: light.living_room_tulip_lamp
             name: Tulip Lamp
             fill_container: true
@@ -603,14 +580,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-            card_mod:
-              style:
-                mushroom-shape-icon$: |
-                  .shape {
-                    {% if is_state('light.living_room_tulip_lamp', 'on') %}
-                    --shape-color: rgba(255, 193, 7, 0.25) !important;
-                    {% endif %}
-                  }
       - cards:
           - heading: Climate
             type: heading

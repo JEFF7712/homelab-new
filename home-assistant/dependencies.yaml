@@ -107,6 +107,10 @@ custom_frontend_cards:
     resource_url: /hacsfiles/apexcharts-card/apexcharts-card.js
     status: installed
   - name: card-mod
+    # NOTE: card-mod <=4.2.1 is broken on HA >=2026.8 (upstream issue
+    # thomasloven/lovelace-card-mod#606, developer-tools rename). No fixed
+    # release exists yet, so dashboards must not rely on card_mod styles
+    # until this is resolved upstream.
     source: https://github.com/thomasloven/lovelace-card-mod
     version: v4.2.1
     artifact: https://raw.githubusercontent.com/thomasloven/lovelace-card-mod/v4.2.1/card-mod.js
