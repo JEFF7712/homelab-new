@@ -266,22 +266,19 @@ views:
             show_color_temp_control: true
             show_color_control: true
             collapsible_controls: true
-      - cards:
-          - type: heading
-            heading: Plugs
-          - type: horizontal-stack
-            cards:
-              - type: button
-                entity: switch.bedroom_window_plug
-                name: Window Plug
-                icon: mdi:power-plug
-                show_state: true
-                tap_action:
-                  action: toggle
-              - type: button
-                entity: switch.bedroom_mushroom_plug
-                name: Mushroom Plug
-                icon: mdi:power-plug
-                show_state: true
-                tap_action:
-                  action: toggle
+          - type: custom:mushroom-light-card
+            entity: light.bedroom_window_plug
+            name: Window Plug
+            fill_container: true
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+          - type: custom:mushroom-light-card
+            entity: light.bedroom_mushroom_plug
+            name: Mushroom Plug
+            fill_container: true
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
