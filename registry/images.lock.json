@@ -1,6 +1,6 @@
 {
   "destination_registry": "registry.rupan.dev",
-  "generated_at": "2026-09-09T14:35:00+00:00",
+  "generated_at": "2026-09-16T02:07:03+00:00",
   "images": [
     {
       "authenticity": {
@@ -673,6 +673,53 @@
         "registry": "ghcr.io",
         "repository": "jeff7712/spatia-site",
         "tag": "0.0.27"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/automation/github-runner/deployment.yaml:1102",
+        "gitops/automation/github-runner/deployment.yaml:185",
+        "gitops/automation/github-runner/deployment.yaml:316",
+        "gitops/automation/github-runner/deployment.yaml:447",
+        "gitops/automation/github-runner/deployment.yaml:54",
+        "gitops/automation/github-runner/deployment.yaml:578",
+        "gitops/automation/github-runner/deployment.yaml:709",
+        "gitops/automation/github-runner/deployment.yaml:840",
+        "gitops/automation/github-runner/deployment.yaml:971"
+      ],
+      "destination_repository": "upstream/ghcr.io/actions/actions-runner",
+      "destination_tags": [
+        "2.337.0",
+        "retention-deployed-e5496277be5d09bc"
+      ],
+      "digest": "sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
+      "id": "upstream-actions-actions-runner-1fd06dba0828",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
+        "reference": "ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
+        "registry": "ghcr.io",
+        "repository": "actions/actions-runner",
+        "tag": "2.337.0"
       }
     },
     {
@@ -2036,6 +2083,55 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/automation/github-runner/deployment.yaml:1073",
+        "gitops/automation/github-runner/deployment.yaml:156",
+        "gitops/automation/github-runner/deployment.yaml:25",
+        "gitops/automation/github-runner/deployment.yaml:287",
+        "gitops/automation/github-runner/deployment.yaml:418",
+        "gitops/automation/github-runner/deployment.yaml:549",
+        "gitops/automation/github-runner/deployment.yaml:680",
+        "gitops/automation/github-runner/deployment.yaml:811",
+        "gitops/automation/github-runner/deployment.yaml:942"
+      ],
+      "destination_repository": "upstream/docker.io/library/docker",
+      "destination_tags": [
+        "27.5.1-dind",
+        "retention-deployed-aa3df78ecf320f5f"
+      ],
+      "digest": "sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
+      "id": "upstream-library-docker-5edcd7943944",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm/v6",
+        "linux/arm/v7",
+        "linux/arm64/v8",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
+        "reference": "docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
+        "registry": "docker.io",
+        "repository": "library/docker",
+        "tag": "27.5.1-dind"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "observed:observability/loki-chunks-cache-0/memcached",
         "observed:observability/loki-results-cache-0/memcached"
       ],
@@ -2176,6 +2272,42 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/backups/home-assistant-db-dump.yaml:23",
+        "gitops/home-assistant/postgres.yaml:25",
+        "observed:home-assistant/home-assistant-postgres-85ccd74787-47sh9/postgres"
+      ],
+      "destination_repository": "upstream/docker.io/library/postgres",
+      "destination_tags": [
+        "retention-deployed-747d5ed1fdeeb124"
+      ],
+      "digest": "sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+      "id": "upstream-library-postgres-335fe9d7d741",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.manifest.v1+json",
+      "platforms": [],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+        "reference": "docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+        "registry": "docker.io",
+        "repository": "library/postgres",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "gitops/backups/db-dump.yaml:23"
       ],
       "destination_repository": "upstream/docker.io/library/postgres",
@@ -2213,42 +2345,6 @@
         "registry": "docker.io",
         "repository": "library/postgres",
         "tag": "16-alpine"
-      }
-    },
-    {
-      "authenticity": {
-        "reason": "no source verification policy is declared for this inventory record",
-        "status": "unsupported"
-      },
-      "consumers": [
-        "gitops/backups/home-assistant-db-dump.yaml:23",
-        "gitops/home-assistant/postgres.yaml:25",
-        "observed:home-assistant/home-assistant-postgres-85ccd74787-47sh9/postgres"
-      ],
-      "destination_repository": "upstream/docker.io/library/postgres",
-      "destination_tags": [
-        "retention-deployed-747d5ed1fdeeb124"
-      ],
-      "digest": "sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
-      "id": "upstream-library-postgres-335fe9d7d741",
-      "kind": "upstream",
-      "media_type": "application/vnd.oci.image.manifest.v1+json",
-      "platforms": [],
-      "producer": null,
-      "referrers": {
-        "required": [],
-        "source_status": "not-enumerated"
-      },
-      "resolution": {
-        "status": "source-registry-verified"
-      },
-      "retention_class": "deployed",
-      "source": {
-        "digest": "sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
-        "reference": "docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
-        "registry": "docker.io",
-        "repository": "library/postgres",
-        "tag": null
       }
     },
     {
@@ -2296,6 +2392,45 @@
         "registry": "docker.io",
         "repository": "library/python",
         "tag": "3.14-alpine"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/home-assistant/deployment.yaml:89"
+      ],
+      "destination_repository": "upstream/ghcr.io/matter-js/matterjs-server",
+      "destination_tags": [
+        "1.4.0",
+        "retention-deployed-54232d0d3e7dff5a"
+      ],
+      "digest": "sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
+      "id": "upstream-matter-js-matterjs-server-54232d0d3e7",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
+        "reference": "ghcr.io/matter-js/matterjs-server:1.4.0@sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
+        "registry": "ghcr.io",
+        "repository": "matter-js/matterjs-server",
+        "tag": "1.4.0"
       }
     },
     {
@@ -2524,11 +2659,11 @@
       ],
       "destination_repository": "upstream/quay.io/prometheus-operator/prometheus-config-reloader",
       "destination_tags": [
-        "retention-deployed-7d9e4eea5f1139e6",
-        "v0.91.0"
+        "retention-deployed-142a1f11df8dd165",
+        "v0.94.0"
       ],
-      "digest": "sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1",
-      "id": "upstream-prometheus-operator-prometheus-config-reloader-25eaa5c00a50",
+      "digest": "sha256:142a1f11df8dd165f00375b0b1826aecb9c9adeb05c39855893138d7c7575ff7",
+      "id": "upstream-prometheus-operator-prometheus-config-reloader-41d74eabe256",
       "kind": "upstream",
       "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
       "platforms": [
@@ -2548,11 +2683,11 @@
       },
       "retention_class": "deployed",
       "source": {
-        "digest": "sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1",
-        "reference": "quay.io/prometheus-operator/prometheus-config-reloader:v0.91.0@sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1",
+        "digest": "sha256:142a1f11df8dd165f00375b0b1826aecb9c9adeb05c39855893138d7c7575ff7",
+        "reference": "quay.io/prometheus-operator/prometheus-config-reloader:v0.94.0@sha256:142a1f11df8dd165f00375b0b1826aecb9c9adeb05c39855893138d7c7575ff7",
         "registry": "quay.io",
         "repository": "prometheus-operator/prometheus-config-reloader",
-        "tag": "v0.91.0"
+        "tag": "v0.94.0"
       }
     },
     {
@@ -2565,11 +2700,11 @@
       ],
       "destination_repository": "upstream/quay.io/prometheus-operator/prometheus-operator",
       "destination_tags": [
-        "retention-deployed-9e53e13139218aca",
-        "v0.91.0"
+        "retention-deployed-cf153f64d6c38113",
+        "v0.94.0"
       ],
-      "digest": "sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d",
-      "id": "upstream-prometheus-operator-prometheus-operator-7cad961a3360",
+      "digest": "sha256:cf153f64d6c38113fceb2cda7642365ea887f71edd7888f054e43e54cf177e55",
+      "id": "upstream-prometheus-operator-prometheus-operator-44e7ba4e4513",
       "kind": "upstream",
       "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
       "platforms": [
@@ -2589,11 +2724,11 @@
       },
       "retention_class": "deployed",
       "source": {
-        "digest": "sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d",
-        "reference": "quay.io/prometheus-operator/prometheus-operator:v0.91.0@sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d",
+        "digest": "sha256:cf153f64d6c38113fceb2cda7642365ea887f71edd7888f054e43e54cf177e55",
+        "reference": "quay.io/prometheus-operator/prometheus-operator:v0.94.0@sha256:cf153f64d6c38113fceb2cda7642365ea887f71edd7888f054e43e54cf177e55",
         "registry": "quay.io",
         "repository": "prometheus-operator/prometheus-operator",
-        "tag": "v0.91.0"
+        "tag": "v0.94.0"
       }
     },
     {
@@ -2854,46 +2989,6 @@
         "status": "unsupported"
       },
       "consumers": [
-        "observed:flux-system/reloader-fd8c56848-hkwz7/reloader"
-      ],
-      "destination_repository": "upstream/ghcr.io/stakater/reloader",
-      "destination_tags": [
-        "v1.4.22",
-        "retention-deployed-def2480040adc164"
-      ],
-      "digest": "sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c",
-      "id": "upstream-stakater-reloader-b0109bf8dfb1",
-      "kind": "upstream",
-      "media_type": "application/vnd.oci.image.index.v1+json",
-      "platforms": [
-        "linux/amd64",
-        "linux/arm/v7",
-        "linux/arm64",
-        "unknown/unknown"
-      ],
-      "producer": null,
-      "referrers": {
-        "required": [],
-        "source_status": "not-enumerated"
-      },
-      "resolution": {
-        "status": "source-registry-verified"
-      },
-      "retention_class": "deployed",
-      "source": {
-        "digest": "sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c",
-        "reference": "ghcr.io/stakater/reloader:v1.4.22@sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c",
-        "registry": "ghcr.io",
-        "repository": "stakater/reloader",
-        "tag": "v1.4.22"
-      }
-    },
-    {
-      "authenticity": {
-        "reason": "no source verification policy is declared for this inventory record",
-        "status": "unsupported"
-      },
-      "consumers": [
         "gitops/backups/dumps-to-r2.yaml:23",
         "gitops/backups/library-local.yaml:23",
         "observed:backups/dumps-to-r2-29811360-v2g8k/restic",
@@ -2983,6 +3078,46 @@
         "status": "unsupported"
       },
       "consumers": [
+        "observed:flux-system/reloader-fd8c56848-hkwz7/reloader"
+      ],
+      "destination_repository": "upstream/ghcr.io/stakater/reloader",
+      "destination_tags": [
+        "v1.4.22",
+        "retention-deployed-def2480040adc164"
+      ],
+      "digest": "sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c",
+      "id": "upstream-stakater-reloader-b0109bf8dfb1",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm/v7",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c",
+        "reference": "ghcr.io/stakater/reloader:v1.4.22@sha256:def2480040adc164b3a57340e77674eadfd88fb7f0593df25e93297f29c7fd7c",
+        "registry": "ghcr.io",
+        "repository": "stakater/reloader",
+        "tag": "v1.4.22"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "observed:immich/immich-valkey-58bc4b8d86-6hlxt/valkey"
       ],
       "destination_repository": "upstream/docker.io/valkey/valkey",
@@ -3055,147 +3190,12 @@
         "repository": "valkey/valkey",
         "tag": "9.1.2"
       }
-    },
-    {
-      "authenticity": {
-        "reason": "no source verification policy is declared for this inventory record",
-        "status": "unsupported"
-      },
-      "consumers": [
-        "gitops/automation/github-runner/deployment.yaml:1102",
-        "gitops/automation/github-runner/deployment.yaml:185",
-        "gitops/automation/github-runner/deployment.yaml:316",
-        "gitops/automation/github-runner/deployment.yaml:447",
-        "gitops/automation/github-runner/deployment.yaml:54",
-        "gitops/automation/github-runner/deployment.yaml:578",
-        "gitops/automation/github-runner/deployment.yaml:709",
-        "gitops/automation/github-runner/deployment.yaml:840",
-        "gitops/automation/github-runner/deployment.yaml:971"
-      ],
-      "destination_repository": "upstream/ghcr.io/actions/actions-runner",
-      "destination_tags": [
-        "2.337.0",
-        "retention-deployed-e5496277be5d09bc"
-      ],
-      "digest": "sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
-      "id": "upstream-actions-actions-runner-1fd06dba0828",
-      "kind": "upstream",
-      "media_type": "application/vnd.oci.image.index.v1+json",
-      "platforms": [
-        "linux/amd64",
-        "linux/arm64",
-        "unknown/unknown"
-      ],
-      "producer": null,
-      "referrers": {
-        "required": [],
-        "source_status": "not-enumerated"
-      },
-      "resolution": {
-        "status": "source-registry-verified"
-      },
-      "retention_class": "deployed",
-      "source": {
-        "digest": "sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
-        "reference": "ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
-        "registry": "ghcr.io",
-        "repository": "actions/actions-runner",
-        "tag": "2.337.0"
-      }
-    },
-    {
-      "authenticity": {
-        "reason": "no source verification policy is declared for this inventory record",
-        "status": "unsupported"
-      },
-      "consumers": [
-        "gitops/automation/github-runner/deployment.yaml:1073",
-        "gitops/automation/github-runner/deployment.yaml:156",
-        "gitops/automation/github-runner/deployment.yaml:25",
-        "gitops/automation/github-runner/deployment.yaml:287",
-        "gitops/automation/github-runner/deployment.yaml:418",
-        "gitops/automation/github-runner/deployment.yaml:549",
-        "gitops/automation/github-runner/deployment.yaml:680",
-        "gitops/automation/github-runner/deployment.yaml:811",
-        "gitops/automation/github-runner/deployment.yaml:942"
-      ],
-      "destination_repository": "upstream/docker.io/library/docker",
-      "destination_tags": [
-        "27.5.1-dind",
-        "retention-deployed-aa3df78ecf320f5f"
-      ],
-      "digest": "sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
-      "id": "upstream-library-docker-5edcd7943944",
-      "kind": "upstream",
-      "media_type": "application/vnd.oci.image.index.v1+json",
-      "platforms": [
-        "linux/amd64",
-        "linux/arm/v6",
-        "linux/arm/v7",
-        "linux/arm64/v8",
-        "unknown/unknown"
-      ],
-      "producer": null,
-      "referrers": {
-        "required": [],
-        "source_status": "not-enumerated"
-      },
-      "resolution": {
-        "status": "source-registry-verified"
-      },
-      "retention_class": "deployed",
-      "source": {
-        "digest": "sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
-        "reference": "docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
-        "registry": "docker.io",
-        "repository": "library/docker",
-        "tag": "27.5.1-dind"
-      }
-    },
-    {
-      "authenticity": {
-        "reason": "no source verification policy is declared for this inventory record",
-        "status": "unsupported"
-      },
-      "consumers": [
-        "gitops/home-assistant/deployment.yaml:89"
-      ],
-      "destination_repository": "upstream/ghcr.io/matter-js/matterjs-server",
-      "destination_tags": [
-        "1.4.0",
-        "retention-deployed-54232d0d3e7dff5a"
-      ],
-      "digest": "sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
-      "id": "upstream-matter-js-matterjs-server-54232d0d3e7",
-      "kind": "upstream",
-      "media_type": "application/vnd.oci.image.index.v1+json",
-      "platforms": [
-        "linux/amd64",
-        "linux/arm64",
-        "unknown/unknown"
-      ],
-      "producer": null,
-      "referrers": {
-        "required": [],
-        "source_status": "not-enumerated"
-      },
-      "resolution": {
-        "status": "source-registry-verified"
-      },
-      "retention_class": "deployed",
-      "source": {
-        "digest": "sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
-        "reference": "ghcr.io/matter-js/matterjs-server:1.4.0@sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
-        "registry": "ghcr.io",
-        "repository": "matter-js/matterjs-server",
-        "tag": "1.4.0"
-      }
     }
   ],
   "kind": "registry-image-lock",
   "mirror_exceptions": [],
   "schema_version": 1,
-  "source_revision": "ae03214e56d83db1a68fc41bc120be9f1c62f7e3",
+  "source_revision": "19c46aebc58baf84cf9b8de9b4ad34a405e93264",
   "unresolved_inputs": [
     {
       "blocking": false,

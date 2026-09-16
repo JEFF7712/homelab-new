@@ -27,10 +27,10 @@ spec:
             digest: sha256:694950d736c8b532eba4006527ccbdac98fefc9f30b3346ba2de50b6cad91c94
           - name: quay.io/prometheus-operator/prometheus-config-reloader
             newName: registry.rupan.dev/upstream/quay.io/prometheus-operator/prometheus-config-reloader  # yamllint disable-line rule:line-length
-            digest: sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1
+            digest: sha256:142a1f11df8dd165f00375b0b1826aecb9c9adeb05c39855893138d7c7575ff7
           - name: quay.io/prometheus-operator/prometheus-operator
             newName: registry.rupan.dev/upstream/quay.io/prometheus-operator/prometheus-operator  # yamllint disable-line rule:line-length
-            digest: sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d
+            digest: sha256:cf153f64d6c38113fceb2cda7642365ea887f71edd7888f054e43e54cf177e55
           - name: quay.io/prometheus/alertmanager
             newName: registry.rupan.dev/upstream/quay.io/prometheus/alertmanager  # yamllint disable-line rule:line-length
             digest: sha256:51a825c2a40acc3e338fdd00d622e01ec090f72be2b3ea46be0839cd47a4d286
@@ -142,5 +142,5 @@ spec:
         image:
           registry: registry.rupan.dev
           repository: upstream/quay.io/prometheus-operator/prometheus-config-reloader
-          tag: v0.91.0
-          sha: 7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1
+          tag: v0.94.0
+          sha: 142a1f11df8dd165f00375b0b1826aecb9c9adeb05c39855893138d7c7575ff7
