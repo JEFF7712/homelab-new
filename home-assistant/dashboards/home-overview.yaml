@@ -43,11 +43,12 @@ views:
           action: none
         styles:
           card:
-            - background: color-mix(in srgb, var(--card-background-color) 82%, transparent)
-            - backdrop-filter: blur(16px) saturate(1.3)
+            - background: var(--ha-card-background)
+            - backdrop-filter: var(--ha-card-backdrop-filter)
+            - -webkit-backdrop-filter: var(--ha-card-backdrop-filter)
             - border-radius: 40px
-            - border: 1px solid var(--divider-color)
-            - box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5)
+            - border: var(--ha-card-border-width) solid var(--ha-card-border-color)
+            - box-shadow: var(--ha-card-box-shadow), var(--ha-card-glass-inset-shadow)
             - padding: 10px
             - margin: 0 auto 4px auto
             - height: 60px
