@@ -51,18 +51,59 @@ data:
         port: 21063
         advertise_ip: 10.0.40.13
         filter:
-          include_domains:
-            - light
           include_entities:
-            - switch.bedroom_window_plug
-            - switch.bedroom_mushroom_plug
-            - switch.living_room_good_vibes_sign
+            - light.kitchen_lights
+            - light.living_room_lights
+            - light.bedroom_roku_lights
+            - light.kitchen_light
+            - light.kitchen_light_2
+            - light.living_room_mushroom_lamp
+            - light.living_room_tulip_lamp
+            - light.desk_lamp_desk_lamp
+            - light.floor_lamp_floor_lamp
+            - light.light_strip_light_strip
+            - light.bedroom_window_plug
+            - light.bedroom_mushroom_plug
+            - light.living_room_good_vibes_sign
             - switch.stairs_light
             - climate.living_room_ac_living_room_ac_thermostat
-          exclude_entities:
-            - light.a1_03900d642327265_chamber_light
     recorder:
       db_url: !secret recorder_db_url
+      purge_keep_days: 10
+      commit_interval: 5
+      auto_purge: true
+      auto_repack: true
+      exclude:
+        entity_globs:
+          - sensor.sm_s948u1_app_*
+          - sensor.sm_s948u1_volume_*
+          - sensor.rupan_phone_app_*
+          - sensor.*_rx_gb
+          - sensor.*_tx_gb
+          - sensor.*_last_*
+          - sensor.*_linkquality
+          - sensor.*_power_factor
+          - sensor.sun_solar_*
+          - sensor.ha_latest_version
+        entities:
+          - sensor.ha_latest_version
+        event_types:
+          - call_service
+    history:
+      exclude:
+        entity_globs:
+          - sensor.sm_s948u1_app_*
+          - sensor.sm_s948u1_volume_*
+          - sensor.rupan_phone_app_*
+          - sensor.*_rx_gb
+          - sensor.*_tx_gb
+          - sensor.*_last_*
+          - sensor.*_linkquality
+    logbook:
+      exclude:
+        entity_globs:
+          - sensor.sm_s948u1_app_*
+          - sensor.*_linkquality
     rest:
       - resource: https://version.home-assistant.io/stable.json
         scan_interval: 21600

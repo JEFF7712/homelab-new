@@ -1,0 +1,3 @@
+name: Bedroom Lights Auto On
+icon: mdi:lightbulb-auto
+entity_id: input_boolean.bedroom_lights_auto_on
