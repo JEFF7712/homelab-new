@@ -45,21 +45,19 @@ views:
           card:
             - background: rgba(22, 22, 26, 0.88)
             - backdrop-filter: blur(16px) saturate(1.3)
-            - border-radius: 999px
+            - border-radius: 40px
             - border: 1px solid rgba(255, 255, 255, 0.09)
             - box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5)
             - padding: 10px
             - margin-bottom: 8px
-            - height: 66px
-            - width: min-content
+            - height: 60px
+            - width: 310px
             - overflow: visible
             - --mdc-ripple-color: transparent
           grid:
             - display: grid
             - grid-template-areas: '"b1 b2 b3 b4 b5"'
-            - grid-template-columns: repeat(5, auto)
-            - grid-template-rows: 1fr
-            - align-items: center
+            - grid-template-columns: 1fr 1fr 1fr 1fr 1fr
             - column-gap: 14px
             - justify-content: center
           custom_fields:
@@ -77,53 +75,163 @@ views:
           b1:
             card:
               type: custom:button-card
-              template: mobile_nav_button
-              variables:
-                path: home-overview
               icon: mdi:home
+              show_name: false
+              show_state: false
               tap_action:
                 action: navigate
                 navigation_path: /home-overview
+              styles:
+                card:
+                  - height: 40px
+                  - width: 40px
+                  - margin: 0
+                  - padding: 10px
+                  - overflow: visible
+                  - border-radius: 500px
+                  - background: |
+                      [[[
+                        return window.location.pathname.includes('home-overview')
+                          ? 'rgba(255, 183, 77, 0.95)'
+                          : 'transparent';
+                      ]]]
+                icon:
+                  - height: 100%
+                  - width: 100%
+                  - color: |
+                      [[[
+                        return window.location.pathname.includes('home-overview')
+                          ? 'rgba(20, 20, 20, 0.95)'
+                          : 'rgba(255, 255, 255, 0.7)';
+                      ]]]
           b2:
             card:
               type: custom:button-card
-              template: mobile_nav_button
-              variables:
-                path: bedroom-lights
               icon: mdi:bed
+              show_name: false
+              show_state: false
               tap_action:
                 action: navigate
                 navigation_path: /bedroom-lights
+              styles:
+                card:
+                  - height: 40px
+                  - width: 40px
+                  - margin: 0
+                  - padding: 10px
+                  - overflow: visible
+                  - border-radius: 500px
+                  - background: |
+                      [[[
+                        return window.location.pathname.includes('bedroom-lights')
+                          ? 'rgba(255, 183, 77, 0.95)'
+                          : 'transparent';
+                      ]]]
+                icon:
+                  - height: 100%
+                  - width: 100%
+                  - color: |
+                      [[[
+                        return window.location.pathname.includes('bedroom-lights')
+                          ? 'rgba(20, 20, 20, 0.95)'
+                          : 'rgba(255, 255, 255, 0.7)';
+                      ]]]
           b3:
             card:
               type: custom:button-card
-              template: mobile_nav_button
-              variables:
-                path: shared-spaces
               icon: mdi:sofa
+              show_name: false
+              show_state: false
               tap_action:
                 action: navigate
                 navigation_path: /shared-spaces
+              styles:
+                card:
+                  - height: 40px
+                  - width: 40px
+                  - margin: 0
+                  - padding: 10px
+                  - overflow: visible
+                  - border-radius: 500px
+                  - background: |
+                      [[[
+                        return window.location.pathname.includes('shared-spaces')
+                          ? 'rgba(255, 183, 77, 0.95)'
+                          : 'transparent';
+                      ]]]
+                icon:
+                  - height: 100%
+                  - width: 100%
+                  - color: |
+                      [[[
+                        return window.location.pathname.includes('shared-spaces')
+                          ? 'rgba(20, 20, 20, 0.95)'
+                          : 'rgba(255, 255, 255, 0.7)';
+                      ]]]
           b4:
             card:
               type: custom:button-card
-              template: mobile_nav_button
-              variables:
-                path: 3d-printing
               icon: mdi:printer-3d
+              show_name: false
+              show_state: false
               tap_action:
                 action: navigate
                 navigation_path: /3d-printing
+              styles:
+                card:
+                  - height: 40px
+                  - width: 40px
+                  - margin: 0
+                  - padding: 10px
+                  - overflow: visible
+                  - border-radius: 500px
+                  - background: |
+                      [[[
+                        return window.location.pathname.includes('3d-printing')
+                          ? 'rgba(255, 183, 77, 0.95)'
+                          : 'transparent';
+                      ]]]
+                icon:
+                  - height: 100%
+                  - width: 100%
+                  - color: |
+                      [[[
+                        return window.location.pathname.includes('3d-printing')
+                          ? 'rgba(20, 20, 20, 0.95)'
+                          : 'rgba(255, 255, 255, 0.7)';
+                      ]]]
           b5:
             card:
               type: custom:button-card
-              template: mobile_nav_button
-              variables:
-                path: map
               icon: mdi:map
+              show_name: false
+              show_state: false
               tap_action:
                 action: navigate
                 navigation_path: /map
+              styles:
+                card:
+                  - height: 40px
+                  - width: 40px
+                  - margin: 0
+                  - padding: 10px
+                  - overflow: visible
+                  - border-radius: 500px
+                  - background: |
+                      [[[
+                        return window.location.pathname.includes('map')
+                          ? 'rgba(255, 183, 77, 0.95)'
+                          : 'transparent';
+                      ]]]
+                icon:
+                  - height: 100%
+                  - width: 100%
+                  - color: |
+                      [[[
+                        return window.location.pathname.includes('map')
+                          ? 'rgba(20, 20, 20, 0.95)'
+                          : 'rgba(255, 255, 255, 0.7)';
+                      ]]]
     sections:
       - cards:
           - type: heading
