@@ -1150,7 +1150,7 @@
             "h": 9,
             "w": 12,
             "x": 0,
-            "y": 17
+            "y": 26
           },
           "id": 18,
           "options": {
@@ -1310,7 +1310,7 @@
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 26
+            "y": 35
           },
           "id": 6,
           "panels": [],
@@ -1379,7 +1379,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 27
+            "y": 36
           },
           "id": 16,
           "options": {
@@ -1478,7 +1478,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 27
+            "y": 36
           },
           "id": 22,
           "options": {
@@ -1576,7 +1576,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 35
+            "y": 44
           },
           "id": 45,
           "options": {
@@ -1670,7 +1670,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 35
+            "y": 44
           },
           "id": 48,
           "options": {
@@ -1765,7 +1765,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 43
+            "y": 52
           },
           "id": 26,
           "options": {
@@ -1860,7 +1860,7 @@
             "h": 11,
             "w": 24,
             "x": 0,
-            "y": 53
+            "y": 62
           },
           "id": 27,
           "options": {
@@ -1954,7 +1954,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 64
+            "y": 73
           },
           "id": 29,
           "options": {
@@ -2053,7 +2053,7 @@
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 72
+            "y": 81
           },
           "id": 30,
           "options": {
@@ -2150,7 +2150,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 81
+            "y": 90
           },
           "id": 32,
           "options": {
@@ -2277,7 +2277,7 @@
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 89
+            "y": 98
           },
           "id": 33,
           "options": {
@@ -2307,6 +2307,23 @@
           ],
           "title": "Pod Memory Requests",
           "type": "timeseries"
+        },
+        {
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 17
+          },
+          "id": 999,
+          "options": {
+            "content": "<div style=\"position: fixed; bottom: 30px; left: 30px; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; width: 100%; background: rgba(13, 17, 23, 0.95); border: 4px solid #ff3366; border-radius: 16px; box-shadow: 0 0 50px rgba(255, 51, 102, 0.8); padding: 20px; box-sizing: border-box;\">\n  <div style=\"color: #ff3366; font-size: 84px; font-weight: 900; line-height: 1.1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-shadow: 0 0 30px rgba(255, 51, 102, 0.9); text-align: center; text-transform: uppercase;\">\n    fuck you<br>soup &lt;3\n  </div>\n</div>",
+            "mode": "markdown"
+          },
+          "pluginVersion": "9.1.0",
+          "title": "",
+          "type": "text",
+          "transparent": true
         }
       ],
       "refresh": "30s",
