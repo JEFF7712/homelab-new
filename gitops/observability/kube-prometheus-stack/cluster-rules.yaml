@@ -95,3 +95,63 @@ spec:
             description: >-
               Persistent volume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }}
               has less than 15% space remaining.
+
+        - alert: AdguardNetbirdApplianceDown
+          expr: up{job="adguard-netbird-01-node"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "adguard-netbird-01 appliance is down"
+            description: "Prometheus has been unable to scrape adguard-netbird-01:9100 for 5 minutes."
+
+        - alert: ApplianceServiceFailed
+          expr: |
+            node_systemd_unit_state{
+              job="adguard-netbird-01-node",
+              name=~"(adguardhome|netbird|roku-bridge|mosquitto)\\.service",
+              state="active"
+            } != 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Appliance service {{ $labels.name }} failed or inactive"
+            description: "Service {{ $labels.name }} on adguard-netbird-01 is not active."
+
+        - alert: ZfsPoolDegraded
+          expr: node_zfs_zpool_state{job="nas-01-node",state!="online"} > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "ZFS pool {{ $labels.zpool }} is degraded or faulted"
+            description: "ZFS pool {{ $labels.zpool }} on nas-01 state is {{ $labels.state }}."
+
+        - alert: ZfsPoolSpaceWarning
+          expr: |
+            (
+              node_zfs_zpool_alloc_bytes{job="nas-01-node"}
+              /
+              (node_zfs_zpool_alloc_bytes{job="nas-01-node"} + node_zfs_zpool_free_bytes{job="nas-01-node"})
+            ) * 100 > 80
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ZFS pool {{ $labels.zpool }} is above 80% capacity"
+            description: "ZFS pool {{ $labels.zpool }} on nas-01 has exceeded 80% allocated capacity."
+
+        - alert: ZfsPoolSpaceCritical
+          expr: |
+            (
+              node_zfs_zpool_alloc_bytes{job="nas-01-node"}
+              /
+              (node_zfs_zpool_alloc_bytes{job="nas-01-node"} + node_zfs_zpool_free_bytes{job="nas-01-node"})
+            ) * 100 > 90
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "ZFS pool {{ $labels.zpool }} is above 90% capacity"
+            description: "ZFS pool {{ $labels.zpool }} on nas-01 has exceeded 90% allocated capacity."

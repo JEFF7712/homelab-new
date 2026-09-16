@@ -342,6 +342,7 @@ in
         "filesystem"
         "systemd"
         "textfile"
+        "zfs"
       ];
       extraFlags = [
         "--collector.systemd.unit-include=(zot|nginx|acme-${cfg.hostName}|zot-platform-metrics)\\.(service|timer)"

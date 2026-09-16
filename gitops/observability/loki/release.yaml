@@ -63,8 +63,27 @@ spec:
         filesystem:
           chunks_directory: /var/loki/chunks
           rules_directory: /var/loki/rules
+      rulerConfig:
+        enable_api: true
+        enable_alertmanager_v2: true
+        alertmanager_url: http://kube-prometheus-stack-alertmanager.observability.svc.cluster.local:9093
+        storage:
+          type: local
+          local:
+            directory: /var/loki/rules
+        rule_path: /tmp/scratch
+        ring:
+          kvstore:
+            store: inmemory
     singleBinary:
       replicas: 1
+      extraVolumes:
+        - name: loki-rules
+          configMap:
+            name: loki-alerting-rules
+      extraVolumeMounts:
+        - name: loki-rules
+          mountPath: /var/loki/rules/fake
       persistence:
         storageClass: nfs-cluster
         size: 20Gi

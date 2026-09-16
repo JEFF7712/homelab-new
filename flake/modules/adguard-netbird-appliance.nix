@@ -201,6 +201,7 @@ in
         ip saddr 10.0.30.0/24 tcp dport 53 accept
         ip saddr 10.0.30.0/24 udp dport 53 accept
         ip saddr { 10.0.30.11, 10.0.30.12, 10.0.30.13, 10.0.30.14, 10.0.30.15 } tcp dport 1883 accept
+        ip saddr 10.0.30.0/24 tcp dport 9100 accept
         iifname "wt0" tcp dport { 22, 53, 3000 } accept
         iifname "wt0" udp dport 53 accept
       '';
@@ -475,4 +476,18 @@ in
     ethtool
     tcpdump
   ];
+
+  services.prometheus.exporters.node = {
+    enable = true;
+    port = 9100;
+    listenAddress = "0.0.0.0";
+    openFirewall = false;
+    enabledCollectors = [
+      "filesystem"
+      "systemd"
+    ];
+    extraFlags = [
+      "--collector.systemd.unit-include=(adguardhome|netbird|roku-bridge|mosquitto)\\.(service|timer)"
+    ];
+  };
 }
