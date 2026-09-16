@@ -1,30 +1,42 @@
 id: watchman_missing_report
 alias: "Maintenance: Watchman Missing Entities Report"
 description: >-
-  Notify each morning when Watchman finds configuration references to
-  missing entities or actions, so drift gets fixed instead of rotting.
-  Press button.watchman_create_report_file in the UI for the full detail file.
+  Run Watchman each morning and notify only about genuinely new breakage.
+  Known-benign items are filtered: the pre_away_* snapshot scenes that
+  only exist while away, and anything merely unavailable or never
+  activated (idle-printer buttons, unactivated scenes, backup sensors
+  awaiting Sunday's run).
 triggers:
   - trigger: time
     at: "09:00:00"
     id: "daily"
-conditions:
-  - condition: or
-    conditions:
-      - condition: numeric_state
-        entity_id: sensor.watchman_missing_entities
-        above: 0
-      - condition: numeric_state
-        entity_id: sensor.watchman_missing_actions
-        above: 0
+conditions: []
 actions:
+  - action: watchman.report
+    data:
+      create_file: false
+    response_variable: wm_report
+  - variables:
+      wm_known_missing:
+        - scene.pre_away_bedroom
+        - scene.pre_away_shared
+        - scene.pre_away_climate
+  - condition: template
+    value_template: >-
+      {% set r = wm_report.response if wm_report.response is defined else wm_report %}
+      {% set bad = r.missing_entities | selectattr('state', 'eq', 'missing')
+        | rejectattr('id', 'in', wm_known_missing) | list %}
+      {{ bad | count > 0 }}
   - action: notify.send_message
     target:
       entity_id: notify.rupan_phone
     data:
-      title: "Watchman: Configuration Drift"
+      title: "Watchman: New Configuration Drift"
       message: >-
-        Watchman found {{ states('sensor.watchman_missing_entities') }}
-        missing entities and {{ states('sensor.watchman_missing_actions') }}
-        missing actions in configuration. Check the Watchman report for details.
+        {% set r = wm_report.response if wm_report.response is defined else wm_report %}
+        {% set bad = r.missing_entities | selectattr('state', 'eq', 'missing')
+          | rejectattr('id', 'in', wm_known_missing) | list %}
+        Watchman found {{ bad | count }} new missing
+        {{ 'entity' if bad | count == 1 else 'entities' }}:
+        {{ bad | map(attribute='id') | join(', ') }}.
 mode: single
