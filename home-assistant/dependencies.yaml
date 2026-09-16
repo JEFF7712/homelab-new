@@ -54,6 +54,33 @@ custom_integrations:
     install_path: /config/custom_components/tuya_local
     connection: local
     status: installed
+  - domain: browser_mod
+    name: Browser Mod
+    source: https://github.com/thomasloven/hass-browser_mod
+    version: v3.2.3
+    artifact: https://github.com/thomasloven/hass-browser_mod/archive/refs/tags/v3.2.3.zip
+    sha256: 1ad554aa2dbda5d7a0bcf148979f7c2a33cf9b2f7bdc4b25a07467fa3b3e143d
+    install_path: /config/custom_components/browser_mod
+    connection: local
+    status: planned
+  - domain: scheduler
+    name: Scheduler Component
+    source: https://github.com/nielsfaber/scheduler-component
+    version: v3.3.8
+    artifact: https://github.com/nielsfaber/scheduler-component/releases/download/v3.3.8/scheduler.zip
+    sha256: 126fddb6496c08c36b86056dfdf5cdd0a68852543026672c8bde286d0ca6a474
+    install_path: /config/custom_components/scheduler
+    connection: local
+    status: planned
+  - domain: watchman
+    name: Watchman
+    source: https://github.com/dummylabs/thewatchman
+    version: v0.8.4
+    artifact: https://github.com/dummylabs/thewatchman/releases/download/v0.8.4/watchman.zip
+    sha256: 50358b59fdf5d3173b1690cedb812651c17df2b62592329a0e72955c5445f5c2
+    install_path: /config/custom_components/watchman
+    connection: local
+    status: planned
 custom_frontend_cards:
   - name: Mushroom
     source: https://github.com/piitaya/lovelace-mushroom
@@ -79,6 +106,22 @@ custom_frontend_cards:
     install_path: /config/www/community/apexcharts-card/apexcharts-card.js
     resource_url: /hacsfiles/apexcharts-card/apexcharts-card.js
     status: installed
+  - name: card-mod
+    source: https://github.com/thomasloven/lovelace-card-mod
+    version: v4.2.1
+    artifact: https://raw.githubusercontent.com/thomasloven/lovelace-card-mod/v4.2.1/card-mod.js
+    sha256: 5e7e71ad61796f59070f8c4621e69fa8e71a9864d0be0922bc4dbc72f990cd35
+    install_path: /config/www/community/lovelace-card-mod/card-mod.js
+    resource_url: /hacsfiles/lovelace-card-mod/card-mod.js
+    status: planned
+  - name: Scheduler Card
+    source: https://github.com/nielsfaber/scheduler-card
+    version: v4.0.19
+    artifact: https://github.com/nielsfaber/scheduler-card/releases/download/v4.0.19/scheduler-card.js
+    sha256: 5033ab8b17765e7de5a372b929bf4cd60760602673e797a32440a0d85acc173b
+    install_path: /config/www/community/scheduler-card/scheduler-card.js
+    resource_url: /hacsfiles/scheduler-card/scheduler-card.js
+    status: planned
 blueprints: []
 dependencies_policy:
   auto_download: false
