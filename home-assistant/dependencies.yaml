@@ -62,7 +62,7 @@ custom_integrations:
     sha256: 1ad554aa2dbda5d7a0bcf148979f7c2a33cf9b2f7bdc4b25a07467fa3b3e143d
     install_path: /config/custom_components/browser_mod
     connection: local
-    status: planned
+    status: installed
   - domain: scheduler
     name: Scheduler Component
     source: https://github.com/nielsfaber/scheduler-component
@@ -80,7 +80,7 @@ custom_integrations:
     sha256: 50358b59fdf5d3173b1690cedb812651c17df2b62592329a0e72955c5445f5c2
     install_path: /config/custom_components/watchman
     connection: local
-    status: planned
+    status: installed
 custom_frontend_cards:
   - name: Mushroom
     source: https://github.com/piitaya/lovelace-mushroom
@@ -113,7 +113,7 @@ custom_frontend_cards:
     sha256: 5e7e71ad61796f59070f8c4621e69fa8e71a9864d0be0922bc4dbc72f990cd35
     install_path: /config/www/community/lovelace-card-mod/card-mod.js
     resource_url: /hacsfiles/lovelace-card-mod/card-mod.js
-    status: planned
+    status: installed
   - name: Scheduler Card
     source: https://github.com/nielsfaber/scheduler-card
     version: v4.0.19
