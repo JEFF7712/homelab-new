@@ -6,33 +6,65 @@ views:
   - title: Shared Spaces
     sections:
       - cards:
-          - heading: Rooms
-            type: heading
-          - type: horizontal-stack
-            cards:
-              - name: Stairs
-                icon: mdi:stairs
-                entity: switch.stairs_light
-                hold_action:
-                  action: toggle
-                show_state: true
-                tap_action:
-                  action: navigate
-                  navigation_path: /shared-spaces/stairs
-                type: button
-              - name: Kitchen
-                icon: mdi:stove
-                tap_action:
-                  action: navigate
-                  navigation_path: /shared-spaces/kitchen
-                type: button
-              - name: Living Room
-                icon: mdi:sofa
-                tap_action:
-                  action: navigate
-                  navigation_path: /shared-spaces/living-room
-                type: button
+          - type: markdown
+            content: |
+              ## Shared Spaces
+              {{ states.light | selectattr('state', 'eq', 'on') | list | count }} lights are on right now
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: weather
+                entity: weather.forecast_home
+                show_temperature: true
+                show_conditions: true
+              - type: entity
+                entity: sun.sun
+              - type: entity
+                entity: sensor.sun_next_rising
+                name: Sunrise
+                icon: mdi:weather-sunset-up
+              - type: entity
+                entity: sensor.sun_next_setting
+                name: Sunset
+                icon: mdi:weather-sunset-down
+          - type: weather-forecast
+            entity: weather.forecast_home
+            show_forecast: true
+            forecast_type: daily
       - cards:
+          - heading: Family
+            type: heading
+          - type: custom:mushroom-person-card
+            entity: person.rupan_sunderapandyan
+            fill_container: true
+          - type: custom:mushroom-person-card
+            entity: person.sam
+            fill_container: true
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.rupan_phone_battery_level
+                name: Battery
+                icon: mdi:battery
+              - type: entity
+                entity: sensor.rupan_phone_battery_state
+                name: Charging
+                icon: mdi:battery-charging
+              - type: entity
+                entity: sensor.sm_s948u1_battery_level
+                name: Battery
+                icon: mdi:battery
+              - type: entity
+                entity: sensor.sm_s948u1_battery_state
+                name: Charging
+                icon: mdi:battery-charging
+              - type: entity
+                entity: sensor.rupan_phone_ssid
+                name: Wi-Fi
+                icon: mdi:wifi
+              - type: entity
+                entity: sensor.rupan_phone_steps
+                name: Steps
+                icon: mdi:shoe-print
           - heading: Scenes
             type: heading
           - type: custom:mushroom-chips-card
@@ -62,8 +94,39 @@ views:
                   target:
                     entity_id: scene.movie_low_living_room
       - cards:
-          - heading: Lights
+          - heading: Rooms
             type: heading
+          - type: horizontal-stack
+            cards:
+              - name: Stairs
+                icon: mdi:stairs
+                entity: switch.stairs_light
+                hold_action:
+                  action: toggle
+                show_state: true
+                tap_action:
+                  action: navigate
+                  navigation_path: /shared-spaces/stairs
+                type: button
+              - name: Kitchen
+                icon: mdi:stove
+                tap_action:
+                  action: navigate
+                  navigation_path: /shared-spaces/kitchen
+                type: button
+              - name: Living Room
+                icon: mdi:sofa
+                tap_action:
+                  action: navigate
+                  navigation_path: /shared-spaces/living-room
+                type: button
+          - heading: All Lights
+            type: heading
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: template
+                content: "Currently {{ states.light | selectattr('state', 'eq', 'on') | list | count }} lights are on!"
+                icon: mdi:lightbulb-group
           - entity: light.all_govee_lights
             name: All Govee Lights
             fill_container: true
@@ -72,6 +135,42 @@ views:
             show_color_temp_control: true
             show_color_control: true
             collapsible_controls: true
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+          - entity: light.kitchen_light
+            name: Kitchen
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+          - entity: light.kitchen_light_2
+            name: Kitchen 2
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+          - entity: light.living_room_mushroom_lamp
+            name: Floor Lamp
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+          - entity: light.living_room_tulip_lamp
+            name: Tulip Lamp
+            fill_container: true
+            type: custom:mushroom-light-card
+            show_brightness_control: true
             tap_action:
               action: toggle
             hold_action:
@@ -94,15 +193,6 @@ views:
                   perform_action: homeassistant.turn_off
                   target:
                     label_id: shared_space
-      - cards:
-          - heading: Home
-            type: heading
-          - type: custom:mushroom-person-card
-            entity: person.rupan_sunderapandyan
-            fill_container: true
-          - type: custom:mushroom-person-card
-            entity: person.sam
-            fill_container: true
       - cards:
           - heading: Adaptive Lighting
             type: heading
