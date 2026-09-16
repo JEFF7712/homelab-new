@@ -1,0 +1,134 @@
+id: lighting_director
+alias: "Lighting: Director"
+description: >-
+  Single owner for dusk/dawn and arrival/departure lighting across shared
+  spaces, bedroom, stairs, and the Good Vibes sign. Replaces four
+  single-purpose automations. Snapshot, enforce-while-away, and restore stay
+  with the away automations; this director only turns lights on and off.
+  Guest Mode gates the sign and stairs; Vacation Mode gates the bedroom.
+  Sunrise turns the bedroom off only when the auto-on flag says the lights
+  went on via automation, never when they were turned on by hand.
+triggers:
+  - trigger: sun
+    event: sunset
+    id: "sunset"
+  - trigger: sun
+    event: sunrise
+    id: "sunrise"
+  - trigger: state
+    entity_id:
+      - person.rupan_sunderapandyan
+      - person.sam
+    to: "home"
+    id: "arrive"
+  - trigger: state
+    entity_id:
+      - person.rupan_sunderapandyan
+      - person.sam
+    to: "not_home"
+    id: "leave"
+conditions: []
+actions:
+  - variables:
+      anyone_home: >-
+        {{ states.person | selectattr('state', 'eq', 'home') | list | count > 0 }}
+      rupan_home: "{{ is_state('person.rupan_sunderapandyan', 'home') }}"
+      guest_off: "{{ is_state('input_boolean.guest_mode', 'off') }}"
+      vacation_off: "{{ is_state('input_boolean.vacation_mode', 'off') }}"
+      dark: "{{ is_state('sun.sun', 'below_horizon') }}"
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "sunrise"
+        sequence:
+          - action: light.turn_off
+            target:
+              entity_id:
+                - light.kitchen_lights
+                - light.living_room_lights
+          - if:
+              - condition: state
+                entity_id: input_boolean.bedroom_lights_auto_on
+                state: "on"
+            then:
+              - action: script.bedroom_lights_off
+          - action: switch.turn_off
+            target:
+              entity_id:
+                - switch.living_room_good_vibes_sign
+                - switch.stairs_light
+      - conditions:
+          - condition: trigger
+            id: "sunset"
+        sequence:
+          - if:
+              - condition: template
+                value_template: "{{ anyone_home }}"
+            then:
+              - action: light.turn_on
+                target:
+                  entity_id:
+                    - light.kitchen_lights
+                    - light.living_room_lights
+          - if:
+              - condition: template
+                value_template: "{{ rupan_home and vacation_off }}"
+            then:
+              - action: script.bedroom_lights_on
+          - if:
+              - condition: template
+                value_template: "{{ anyone_home and guest_off }}"
+            then:
+              - action: switch.turn_on
+                target:
+                  entity_id: switch.living_room_good_vibes_sign
+          - if:
+              - condition: template
+                value_template: "{{ anyone_home or not guest_off }}"
+            then:
+              - action: switch.turn_on
+                target:
+                  entity_id: switch.stairs_light
+      - conditions:
+          - condition: trigger
+            id: "arrive"
+          - condition: template
+            value_template: "{{ dark }}"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id:
+                - light.kitchen_lights
+                - light.living_room_lights
+          - if:
+              - condition: template
+                value_template: "{{ rupan_home and vacation_off }}"
+            then:
+              - action: script.bedroom_lights_on
+          - if:
+              - condition: template
+                value_template: "{{ guest_off }}"
+            then:
+              - action: switch.turn_on
+                target:
+                  entity_id: switch.living_room_good_vibes_sign
+          - action: switch.turn_on
+            target:
+              entity_id: switch.stairs_light
+      - conditions:
+          - condition: trigger
+            id: "leave"
+        sequence:
+          - if:
+              - condition: template
+                value_template: "{{ trigger.entity_id == 'person.rupan_sunderapandyan' }}"
+            then:
+              - action: script.bedroom_lights_off
+          - if:
+              - condition: template
+                value_template: "{{ not anyone_home }}"
+            then:
+              - action: switch.turn_off
+                target:
+                  entity_id: switch.living_room_good_vibes_sign
+mode: queued

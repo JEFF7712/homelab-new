@@ -27,6 +27,7 @@ triggers:
       - light.kitchen_light_2
       - light.living_room_mushroom_lamp
       - light.living_room_tulip_lamp
+    from: "off"
     to: "on"
     id: "enforced"
   - trigger: homeassistant
@@ -50,6 +51,7 @@ actions:
               snapshot_entities:
                 - switch.living_room_good_vibes_sign
                 - switch.stairs_light
+                - switch.kitchen_mushroom_lamp
                 - light.kitchen_light
                 - light.kitchen_light_2
                 - light.living_room_mushroom_lamp
@@ -62,6 +64,7 @@ actions:
               entity_id:
                 - switch.living_room_good_vibes_sign
                 - switch.stairs_light
+                - switch.kitchen_mushroom_lamp
           - action: light.turn_off
             target:
               entity_id:
@@ -98,6 +101,7 @@ actions:
               entity_id:
                 - switch.living_room_good_vibes_sign
                 - switch.stairs_light
+                - switch.kitchen_mushroom_lamp
           - action: light.turn_off
             target:
               entity_id:

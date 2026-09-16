@@ -8,8 +8,12 @@ description: >-
   manually controlled so Adaptive Lighting (including sleep mode) leaves them
   alone until the next off/on cycle. Falls back to plain turn_on (brightness
   and color temperature owned by Adaptive Lighting) when no snapshot exists
-  yet, e.g. after a restart.
+  yet, e.g. after a restart. Sets the auto-on flag so the lighting
+  director knows sunrise may turn these off again.
 sequence:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.bedroom_lights_auto_on
   - if:
       - condition: template
         value_template: "{{ state_attr('scene.bedroom_last_state', 'entity_id') is not none }}"

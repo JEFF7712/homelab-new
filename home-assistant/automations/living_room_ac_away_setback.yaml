@@ -20,6 +20,7 @@ triggers:
     id: "return"
   - trigger: state
     entity_id: climate.living_room_ac_living_room_ac_thermostat
+    from: "off"
     to:
       - "cool"
       - "auto"
