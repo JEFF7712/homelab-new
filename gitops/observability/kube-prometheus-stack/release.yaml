@@ -61,6 +61,12 @@ spec:
                   - 10.0.30.20:9100
                 labels:
                   host: nas-01
+          - job_name: nas-01-smartctl
+            static_configs:
+              - targets:
+                  - 10.0.30.20:9633
+                labels:
+                  host: nas-01
           - job_name: adguard-netbird-01-node
             static_configs:
               - targets:
@@ -129,6 +135,7 @@ spec:
             - host
             - node
             - pool
+            - device
           group_wait: 30s
           group_interval: 5m
           repeat_interval: 4h
@@ -172,6 +179,12 @@ spec:
               - alertname = "ZfsPoolCapacityWarning"
             equal:
               - pool
+          - source_matchers:
+              - alertname = "SmartDeviceTemperatureCritical"
+            target_matchers:
+              - alertname = "SmartDeviceTemperatureHigh"
+            equal:
+              - device
           - source_matchers:
               - alertname = "AdguardNetbirdApplianceDown"
             target_matchers:

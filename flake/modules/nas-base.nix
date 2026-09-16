@@ -35,9 +35,23 @@
         ip saddr 10.0.10.0/24 tcp dport 22 accept
         ip saddr 10.0.30.0/24 tcp dport 22 accept
         ip saddr 100.64.0.0/10 tcp dport 22 accept
+        ip saddr 10.0.10.0/24 tcp dport 9633 accept
+        ip saddr 10.0.30.0/24 tcp dport 9633 accept
+        ip saddr 10.42.0.0/16 tcp dport 9633 accept
       '';
     };
   };
+
+  services.prometheus.exporters.smartctl = {
+    enable = true;
+    port = 9633;
+    listenAddress = "0.0.0.0";
+    maxInterval = "60s";
+  };
+
+  services.udev.extraRules = ''
+    SUBSYSTEM=="nvme", KERNEL=="nvme[0-9]*", GROUP="disk", MODE="0660"
+  '';
 
   systemd.network = {
     enable = true;
