@@ -57,8 +57,8 @@ let
       util-linux
     ];
     serviceOverrides = {
-      MemoryMax = "8G";
-      CPUQuota = "300%";
+      MemoryMax = "12G";
+      CPUQuota = "800%";
     };
   };
 in

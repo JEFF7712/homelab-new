@@ -3,7 +3,6 @@
     ./disk-config.nix
     ./hardware-configuration.nix
     ./tank-config.nix
-    ../../modules/github-runner-nixos.nix
     ../../modules/nas-base.nix
     ../../modules/nas-data.nix
     ../../modules/zot-registry.nix

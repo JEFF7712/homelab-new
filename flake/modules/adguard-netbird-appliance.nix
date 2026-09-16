@@ -203,7 +203,7 @@ in
         ip saddr 10.0.10.0/24 tcp dport { 22, 3000 } accept
         ip saddr 10.0.10.0/24 tcp dport 53 accept
         ip saddr 10.0.10.0/24 udp dport 53 accept
-        ip saddr 10.0.30.20 tcp dport 22 accept
+        ip saddr { 10.0.30.14, 10.0.30.20 } tcp dport 22 accept
         ip saddr 10.0.30.0/24 tcp dport 53 accept
         ip saddr 10.0.30.0/24 udp dport 53 accept
         ip saddr { 10.0.30.11, 10.0.30.12, 10.0.30.13 } tcp dport 1883 accept

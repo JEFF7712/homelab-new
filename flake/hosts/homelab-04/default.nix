@@ -4,6 +4,8 @@
     ./hardware-configuration.nix
     ../../modules/k3s-server.nix
     ../../modules/nvidia.nix
+    ../../modules/github-runner-nixos.nix
+    ../../modules/gitlab-runner.nix
   ];
 
   networking.hostName = "homelab-04";
