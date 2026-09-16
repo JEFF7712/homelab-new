@@ -51,12 +51,13 @@ views:
             - padding: 10px
             - margin-bottom: 8px
             - height: 66px
-            - width: 310px
+            - width: min-content
             - overflow: visible
             - --mdc-ripple-color: transparent
           grid:
+            - display: grid
             - grid-template-areas: '"b1 b2 b3 b4 b5"'
-            - grid-template-columns: 1fr 1fr 1fr 1fr 1fr
+            - grid-template-columns: repeat(5, auto)
             - grid-template-rows: 1fr
             - align-items: center
             - column-gap: 14px
