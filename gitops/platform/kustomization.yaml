@@ -6,3 +6,5 @@ resources:
   - external-secrets/release.yaml
   - reloader/repository.yaml
   - reloader/release.yaml
+  - nvidia-device-plugin/runtimeclass.yaml
+  - nvidia-device-plugin/daemonset.yaml

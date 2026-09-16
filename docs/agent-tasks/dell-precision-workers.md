@@ -1,18 +1,18 @@
 # Agent Task: dell-precision-workers
 
-Status: `active`
+Status: `complete`
 
 Base commit: `c2d779f1046d19751659b08c657e55c55afcd023`
 
-Checkpoint HEAD: `c2d779f1046d19751659b08c657e55c55afcd023`
+Checkpoint HEAD: `5d07101f73fcd5c39979ed5094d115828ceff456`
 
 Owner: `antigravity`
 
 Session: `dell-precision-workers`
 
-Exported at: `2026-09-15T22:29:48.308120+00:00`
+Exported at: `2026-09-16T01:27:20.664335+00:00`
 
-Current HEAD at export: `c2d779f1046d19751659b08c657e55c55afcd023`
+Current HEAD at export: `5d07101f73fcd5c39979ed5094d115828ceff456`
 
 ## Objective
 
@@ -38,6 +38,10 @@ Add Dell Precision 3460 SFF workstations (homelab-04 and homelab-05) as k3s GPU 
 - `flake/hosts/homelab-05/hardware-configuration.nix`
 - `scripts/checks/nix.sh`
 - `HARDWARE.md`
+- `gitops/platform/kustomization.yaml`
+- `gitops/platform/nvidia-device-plugin/runtimeclass.yaml`
+- `gitops/platform/nvidia-device-plugin/daemonset.yaml`
+- `gitops/immich/machine-learning.yaml`
 
 ## Remaining work
 
@@ -49,7 +53,7 @@ Add Dell Precision 3460 SFF workstations (homelab-04 and homelab-05) as k3s GPU 
 
 ## Next action
 
-Ready for user review
+Work complete and verified. Ready for review.
 
 ## Uncommitted work
 
