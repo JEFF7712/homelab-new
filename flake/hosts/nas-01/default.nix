@@ -3,6 +3,7 @@
     ./disk-config.nix
     ./hardware-configuration.nix
     ./tank-config.nix
+    ../../modules/common-base.nix
     ../../modules/nas-base.nix
     ../../modules/nas-data.nix
     ../../modules/zot-registry.nix
@@ -15,17 +16,5 @@
     acmeEmail = "rupanpandyan@gmail.com";
   };
 
-  fileSystems."/" = {
-    device = "none";
-    fsType = "tmpfs";
-    options = [
-      "defaults"
-      "mode=755"
-      "size=4G"
-    ];
-  };
-  fileSystems."/persist".neededForBoot = true;
   fileSystems."/var/log".neededForBoot = true;
-
-  system.stateVersion = "26.05";
 }

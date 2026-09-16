@@ -2,6 +2,7 @@
   imports = [
     ./disk-config.nix
     ./hardware-configuration.nix
+    ../../modules/common-base.nix
     ../../modules/k3s-server.nix
     ../../modules/nvidia.nix
     ../../modules/github-runner-nixos.nix
@@ -9,17 +10,6 @@
   ];
 
   networking.hostName = "homelab-04";
-
-  fileSystems."/" = {
-    device = "none";
-    fsType = "tmpfs";
-    options = [
-      "defaults"
-      "mode=755"
-      "size=4G"
-    ];
-  };
-  fileSystems."/persist".neededForBoot = true;
 
   homelab.k3s = {
     enable = true;
@@ -29,6 +19,4 @@
     serverAddress = "https://10.0.30.11:6443";
     tokenFile = "/persist/secrets/k3s-token";
   };
-
-  system.stateVersion = "26.05";
 }

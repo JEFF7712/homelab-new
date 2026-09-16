@@ -182,20 +182,14 @@ let
 in
 {
   boot = {
-    initrd.systemd.enable = true;
     loader = {
       efi.canTouchEfiVariables = true;
       systemd-boot.enable = true;
     };
   };
 
-  hardware.enableRedistributableFirmware = true;
-  time.timeZone = "America/Chicago";
-
   networking = {
     useDHCP = false;
-    useNetworkd = true;
-    nftables.enable = true;
     firewall = {
       enable = true;
       allowedUDPPorts = [ 51820 ];
@@ -238,43 +232,7 @@ in
     };
   };
 
-  services.openssh = {
-    enable = true;
-    openFirewall = false;
-    hostKeys = [
-      {
-        path = "/persist/etc/ssh/ssh_host_ed25519_key";
-        type = "ed25519";
-      }
-      {
-        bits = 4096;
-        path = "/persist/etc/ssh/ssh_host_rsa_key";
-        type = "rsa";
-      }
-    ];
-    settings = {
-      KbdInteractiveAuthentication = false;
-      PasswordAuthentication = false;
-      PermitRootLogin = "no";
-    };
-  };
-
-  users = {
-    mutableUsers = false;
-    users.rupan = {
-      isNormalUser = true;
-      extraGroups = [
-        "netbird"
-        "wheel"
-      ];
-      openssh.authorizedKeys.keys = [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILW7MVmIGzW4Eq1NJm4+gsGwQ+iL44bIfyAa/wdQ1srQ"
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFTXsL6q+O1d29vTd3TtK2F0MYPggS5KSHryvlIFBS1K"
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFWt07ttKX2X+E5CbwL4To1AuwuwuIaKWUePIrAwGrK0 homelab-nas-deploy"
-      ];
-    };
-  };
-  security.sudo.wheelNeedsPassword = false;
+  users.users.rupan.extraGroups = [ "netbird" ];
 
   services.adguardhome = {
     enable = true;
@@ -517,26 +475,4 @@ in
     ethtool
     tcpdump
   ];
-
-  nix = {
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
-    };
-    settings = {
-      auto-optimise-store = true;
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      extra-substituters = [ "http://10.0.30.20:8080/homelab" ];
-      extra-trusted-public-keys = [ "homelab:J+OVQOCG2sNT2KoVbWGPikoWcIbBanHnY2NOcMF3vwk=" ];
-    };
-  };
-
-  zramSwap = {
-    enable = true;
-    memoryPercent = 25;
-  };
 }

@@ -2,23 +2,13 @@
   imports = [
     ./disk-config.nix
     ./hardware-configuration.nix
+    ../../modules/common-base.nix
     ../../modules/k3s-server.nix
     ../../modules/nvidia.nix
     ../../modules/kiosk.nix
   ];
 
   networking.hostName = "homelab-05";
-
-  fileSystems."/" = {
-    device = "none";
-    fsType = "tmpfs";
-    options = [
-      "defaults"
-      "mode=755"
-      "size=4G"
-    ];
-  };
-  fileSystems."/persist".neededForBoot = true;
 
   homelab.k3s = {
     enable = true;
@@ -34,6 +24,4 @@
     url = "http://10.0.40.12/d/e1RXnCbVz/kubernetes-dashboard?kiosk&refresh=30s&theme=dark";
     drmDevice = "/dev/dri/card1";
   };
-
-  system.stateVersion = "26.05";
 }

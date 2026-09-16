@@ -2,23 +2,13 @@
   imports = [
     ./disk-config.nix
     ./hardware-configuration.nix
+    ../../modules/common-base.nix
     ../../modules/k3s-server.nix
     ../../modules/agent-workspaces.nix
     ../../modules/agent-workspace-network.nix
   ];
 
   networking.hostName = "homelab-01";
-
-  fileSystems."/" = {
-    device = "none";
-    fsType = "tmpfs";
-    options = [
-      "defaults"
-      "mode=755"
-      "size=4G"
-    ];
-  };
-  fileSystems."/persist".neededForBoot = true;
 
   homelab.k3s = {
     enable = true;
@@ -34,6 +24,4 @@
 
   services.agent-workspaces.enable = true;
   services.agent-workspace-network.enable = true;
-
-  system.stateVersion = "26.05";
 }

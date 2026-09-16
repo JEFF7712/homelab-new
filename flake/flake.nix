@@ -21,107 +21,47 @@
       ...
     }:
     {
-      nixosConfigurations.adguard-netbird-01 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/adguard-netbird-01
-        ];
-      };
-      nixosConfigurations.nas-01 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/nas-01
-        ];
-      };
-      nixosConfigurations.homelab-01 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/homelab-01
-        ];
-      };
-      nixosConfigurations.homelab-02 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/homelab-02
-        ];
-      };
-      nixosConfigurations.homelab-03 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/homelab-03
-        ];
-      };
-      nixosConfigurations.homelab-04 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/homelab-04
-        ];
-      };
-      nixosConfigurations.homelab-05 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/homelab-05
-        ];
-      };
-      nixosConfigurations.homelab-01-registry = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/homelab-01
-          ./modules/k3s-registry-client.nix
-        ];
-      };
-      nixosConfigurations.homelab-02-registry = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/homelab-02
-          ./modules/k3s-registry-client.nix
-        ];
-      };
-      nixosConfigurations.homelab-03-registry = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/homelab-03
-          ./modules/k3s-registry-client.nix
-        ];
-      };
-      nixosConfigurations.homelab-04-registry = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/homelab-04
-          ./modules/k3s-registry-client.nix
-        ];
-      };
-      nixosConfigurations.homelab-05-registry = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ./hosts/homelab-05
-          ./modules/k3s-registry-client.nix
-        ];
-      };
+      nixosConfigurations =
+        let
+          mkHost =
+            hostName: extraModules:
+            nixpkgs.lib.nixosSystem {
+              system = "x86_64-linux";
+              modules = [
+                disko.nixosModules.disko
+                impermanence.nixosModules.impermanence
+                (./hosts + "/${hostName}")
+              ]
+              ++ extraModules;
+            };
+          baseHosts = [
+            "adguard-netbird-01"
+            "nas-01"
+            "homelab-01"
+            "homelab-02"
+            "homelab-03"
+            "homelab-04"
+            "homelab-05"
+          ];
+          registryHosts = [
+            "homelab-01"
+            "homelab-02"
+            "homelab-03"
+            "homelab-04"
+            "homelab-05"
+          ];
+        in
+        builtins.listToAttrs (
+          map (hostName: nixpkgs.lib.nameValuePair hostName (mkHost hostName [ ])) baseHosts
+        )
+        // builtins.listToAttrs (
+          map (
+            hostName:
+            nixpkgs.lib.nameValuePair "${hostName}-registry" (
+              mkHost hostName [ ./modules/k3s-registry-client.nix ]
+            )
+          ) registryHosts
+        );
     }
     // flake-utils.lib.eachDefaultSystem (
       system:
