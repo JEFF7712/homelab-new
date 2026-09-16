@@ -67,6 +67,30 @@ views:
                   perform_action: scene.turn_on
                   target:
                     entity_id: scene.movie_low_living_room
+              - type: action
+                name: Party
+                icon: mdi:party-popper
+                tap_action:
+                  action: perform-action
+                  perform_action: script.turn_on
+                  target:
+                    entity_id: script.effects_party_mode
+              - type: action
+                name: Candlelight
+                icon: mdi:candle
+                tap_action:
+                  action: perform-action
+                  perform_action: script.turn_on
+                  target:
+                    entity_id: script.effects_candlelight_dinner
+              - type: action
+                name: Night
+                icon: mdi:weather-night
+                tap_action:
+                  action: perform-action
+                  perform_action: script.turn_on
+                  target:
+                    entity_id: script.effects_night_light
       - cards:
           - heading: Rooms
             type: heading

@@ -689,3 +689,18 @@
   name: Kitchen Mushroom Lamp
   labels:
     - shared_space
+- disabled_by: integration
+  entity_id: switch.browser_mod_pre_release
+  labels: []
+- disabled_by: integration
+  entity_id: switch.card_mod_pre_release
+  labels: []
+- disabled_by: integration
+  entity_id: switch.frosted_glass_theme_pre_release
+  labels: []
+- disabled_by: integration
+  entity_id: switch.ios_themes_dark_mode_and_light_mode_pre_release
+  labels: []
+- disabled_by: integration
+  entity_id: switch.watchman_pre_release
+  labels: []
