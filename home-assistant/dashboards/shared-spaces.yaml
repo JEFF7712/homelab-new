@@ -76,28 +76,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: All Govee Lights
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - entity: light.all_govee_lights
-                      name: All Govee Lights
-                      fill_container: true
-                      type: custom:mushroom-light-card
-                      show_brightness_control: true
-                      show_color_temp_control: true
-                      show_color_control: true
-                    - type: history-graph
-                      title: Last 24 hours
-                      hours_to_show: 24
-                      refresh_interval: 60
-                      entities:
-                        - entity: light.all_govee_lights
           - type: horizontal-stack
             cards:
               - type: button
@@ -159,26 +137,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: Stairs Light
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - name: Stairs Light
-                      entity: switch.stairs_light
-                      features:
-                        - type: toggle
-                      type: tile
-                    - type: history-graph
-                      title: Last 24 hours
-                      hours_to_show: 24
-                      refresh_interval: 60
-                      entities:
-                        - entity: switch.stairs_light
     subview: true
     type: sections
   - title: Kitchen
@@ -199,28 +157,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: All Kitchen Lights
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - entity: light.kitchen_lights
-                      name: All Kitchen Lights
-                      fill_container: true
-                      type: custom:mushroom-light-card
-                      show_brightness_control: true
-                      show_color_temp_control: true
-                      show_color_control: true
-                    - type: history-graph
-                      title: Last 24 hours
-                      hours_to_show: 24
-                      refresh_interval: 60
-                      entities:
-                        - entity: light.kitchen_lights
           - entity: light.kitchen_light
             name: Kitchen Light
             fill_container: true
@@ -233,28 +169,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: Kitchen Light
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - entity: light.kitchen_light
-                      name: Kitchen Light
-                      fill_container: true
-                      type: custom:mushroom-light-card
-                      show_brightness_control: true
-                      show_color_temp_control: true
-                      show_color_control: true
-                    - type: history-graph
-                      title: Last 24 hours
-                      hours_to_show: 24
-                      refresh_interval: 60
-                      entities:
-                        - entity: light.kitchen_light
           - entity: light.kitchen_light_2
             name: Kitchen Light 2
             fill_container: true
@@ -267,28 +181,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: Kitchen Light 2
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - entity: light.kitchen_light_2
-                      name: Kitchen Light 2
-                      fill_container: true
-                      type: custom:mushroom-light-card
-                      show_brightness_control: true
-                      show_color_temp_control: true
-                      show_color_control: true
-                    - type: history-graph
-                      title: Last 24 hours
-                      hours_to_show: 24
-                      refresh_interval: 60
-                      entities:
-                        - entity: light.kitchen_light_2
           - entity: switch.kitchen_mushroom_lamp
             name: Mushroom Lamp
             features:
@@ -298,26 +190,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: Mushroom Lamp
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - entity: switch.kitchen_mushroom_lamp
-                      name: Mushroom Lamp
-                      features:
-                        - type: toggle
-                      type: tile
-                    - type: history-graph
-                      title: Last 24 hours
-                      hours_to_show: 24
-                      refresh_interval: 60
-                      entities:
-                        - entity: switch.kitchen_mushroom_lamp
       - cards:
           - heading: Scenes
             type: heading
@@ -355,25 +227,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: Good Vibes Sign
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - entity: switch.living_room_good_vibes_sign
-                      features:
-                        - type: toggle
-                      type: tile
-                    - type: history-graph
-                      title: Last 24 hours
-                      hours_to_show: 24
-                      refresh_interval: 60
-                      entities:
-                        - entity: switch.living_room_good_vibes_sign
             card_mod:
               style: |
                 :host {
@@ -394,28 +247,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: All Living Room Lights
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - entity: light.living_room_lights
-                      name: All Living Room Lights
-                      fill_container: true
-                      type: custom:mushroom-light-card
-                      show_brightness_control: true
-                      show_color_temp_control: true
-                      show_color_control: true
-                    - type: history-graph
-                      title: Last 24 hours
-                      hours_to_show: 24
-                      refresh_interval: 60
-                      entities:
-                        - entity: light.living_room_lights
             card_mod:
               style:
                 mushroom-shape-icon$: |
@@ -436,28 +267,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: Floor Lamp
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - entity: light.living_room_mushroom_lamp
-                      name: Floor Lamp
-                      fill_container: true
-                      type: custom:mushroom-light-card
-                      show_brightness_control: true
-                      show_color_temp_control: true
-                      show_color_control: true
-                    - type: history-graph
-                      title: Last 24 hours
-                      hours_to_show: 24
-                      refresh_interval: 60
-                      entities:
-                        - entity: light.living_room_mushroom_lamp
             card_mod:
               style:
                 mushroom-shape-icon$: |
@@ -478,28 +287,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: Tulip Lamp
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - entity: light.living_room_tulip_lamp
-                      name: Tulip Lamp
-                      fill_container: true
-                      type: custom:mushroom-light-card
-                      show_brightness_control: true
-                      show_color_temp_control: true
-                      show_color_control: true
-                    - type: history-graph
-                      title: Last 24 hours
-                      hours_to_show: 24
-                      refresh_interval: 60
-                      entities:
-                        - entity: light.living_room_tulip_lamp
             card_mod:
               style:
                 mushroom-shape-icon$: |
@@ -524,36 +311,6 @@ views:
               action: toggle
             hold_action:
               action: more-info
-              data:
-                user_id:
-                  - person.rupan_sunderapandyan
-                  - person.sam
-                title: Living Room AC
-                dismissable: true
-                content:
-                  type: vertical-stack
-                  cards:
-                    - entity: climate.living_room_ac_living_room_ac_thermostat
-                      fill_container: true
-                      type: custom:mushroom-climate-card
-                      hvac_modes:
-                        - "off"
-                        - cool
-                        - auto
-                        - fan_only
-                        - dry
-                    - type: custom:apexcharts-card
-                      header:
-                        show: true
-                        title: Temperature (7 days)
-                      graph_span: 7d
-                      series:
-                        - entity: climate.living_room_ac_living_room_ac_thermostat
-                          attribute: current_temperature
-                          name: Current
-                        - entity: climate.living_room_ac_living_room_ac_thermostat
-                          attribute: temperature
-                          name: Target
       - cards:
           - heading: Scenes
             type: heading
