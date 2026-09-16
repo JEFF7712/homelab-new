@@ -122,10 +122,13 @@ spec:
         global:
           resolve_timeout: 5m
         route:
-          receiver: ntfy
+          receiver: ntfy-default
           group_by:
             - alertname
             - namespace
+            - host
+            - node
+            - pool
           group_wait: 30s
           group_interval: 5m
           repeat_interval: 4h
@@ -136,10 +139,65 @@ spec:
             - matchers:
                 - alertname = "InfoInhibitor"
               receiver: "null"
+            - matchers:
+                - severity = "critical"
+              receiver: ntfy-critical
+              group_wait: 10s
+              group_interval: 2m
+              repeat_interval: 1h
+        inhibit_rules:
+          - source_matchers:
+              - severity = "critical"
+            target_matchers:
+              - severity = "warning"
+            equal:
+              - alertname
+              - namespace
+          - source_matchers:
+              - severity = "critical"
+            target_matchers:
+              - severity = "warning"
+            equal:
+              - alertname
+              - instance
+          - source_matchers:
+              - alertname = "NodeRootFilesystemCriticallyLowSpace"
+            target_matchers:
+              - alertname = "NodeRootFilesystemLowSpace"
+            equal:
+              - instance
+          - source_matchers:
+              - alertname = "ZfsPoolCapacityCritical"
+            target_matchers:
+              - alertname = "ZfsPoolCapacityWarning"
+            equal:
+              - pool
+          - source_matchers:
+              - alertname = "AdguardNetbirdApplianceDown"
+            target_matchers:
+              - alertname = "ApplianceServiceFailed"
+            equal:
+              - host
+          - source_matchers:
+              - alertname =~ "NodeNotReady|KubeNodeNotReady"
+            target_matchers:
+              - alertname =~ "KubePodCrashLooping|KubePodStuckPending"
+            equal:
+              - node
         receivers:
-          - name: ntfy
+          - name: ntfy-critical
             webhook_configs:
-              - url: http://ntfy-ntfy.observability.svc.cluster.local/homelab-alerts?template=alertmanager
+              # yamllint disable-line rule:line-length
+              - url: http://ntfy-ntfy.observability.svc.cluster.local/homelab-alerts?template=alertmanager&priority=urgent&tags=rotating_light,fire
+                send_resolved: true
+                http_config:
+                  authorization:
+                    type: Bearer
+                    credentials_file: /etc/alertmanager/secrets/alertmanager-ntfy-token/token
+          - name: ntfy-default
+            webhook_configs:
+              # yamllint disable-line rule:line-length
+              - url: http://ntfy-ntfy.observability.svc.cluster.local/homelab-alerts?template=alertmanager&priority=default&tags=warning
                 send_resolved: true
                 http_config:
                   authorization:
