@@ -1,5 +1,5 @@
 id: shared_cooking
-name: "Cooking (Bright Kitchen)"
+name: "Shared Cooking"
 icon: mdi:stove
 entities:
   light.kitchen_lights:

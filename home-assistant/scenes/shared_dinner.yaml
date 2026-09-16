@@ -1,5 +1,5 @@
 id: shared_dinner
-name: "Dinner (Warm Dim)"
+name: "Shared Dinner"
 icon: mdi:food-fork-drink
 entities:
   light.kitchen_lights:

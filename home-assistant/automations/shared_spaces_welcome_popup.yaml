@@ -1,0 +1,42 @@
+id: shared_spaces_welcome_popup
+alias: "Shared Spaces: Welcome Home Scene Popup"
+description: >-
+  Pop a scene picker on the arriving person's browsers when anyone gets
+  home after dark, so Cooking / Dinner / Movie is one tap away. Targets
+  the arriving person, auto-closes after a minute, skipped in Guest Mode.
+triggers:
+  - trigger: state
+    entity_id:
+      - person.rupan_sunderapandyan
+      - person.sam
+    to: "home"
+    id: "arrive"
+conditions:
+  - condition: state
+    entity_id: sun.sun
+    state: "below_horizon"
+  - condition: state
+    entity_id: input_boolean.guest_mode
+    state: "off"
+actions:
+  - action: browser_mod.popup
+    data:
+      user_id: "{{ trigger.entity_id }}"
+      title: "Welcome home, pick a scene"
+      dismissable: true
+      timeout: 60000
+      content:
+        type: entities
+        entities:
+          - entity: scene.shared_cooking
+            name: Cooking
+            icon: mdi:stove
+          - entity: scene.shared_dinner
+            name: Dinner
+            icon: mdi:food-fork-drink
+          - entity: scene.living_room_movie
+            name: Movie
+            icon: mdi:movie
+          - entity: switch.living_room_good_vibes_sign
+            name: Good Vibes Sign
+mode: single
