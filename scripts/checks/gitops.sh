@@ -8,20 +8,27 @@ if [[ ! -d "$schema_root" ]]; then
   echo 'missing pinned repository CRD schemas under schemas/kubernetes' >&2
   exit 69
 fi
-while IFS= read -r -d '' file; do
+check_kustomization() {
+  local file="$1"
   case "$file" in
-    gitops/secrets/*) continue ;;
+    gitops/secrets/*) return 0 ;;
   esac
+  local output
   output=$(kubectl kustomize "$(dirname "$file")" | kubeconform -strict -summary -ignore-missing-schemas -skip CustomResourceDefinition -schema-location default -schema-location "$schema_root/{{.ResourceKind}}{{.KindSuffix}}.json" 2>&1)
   printf '%s\n' "$output"
-  allow_skipped=false
+  local allow_skipped=false
   case "$file" in
     gitops/clusters/homelab-01/kustomization.yaml | \
       gitops/clusters/homelab-01/flux-system/kustomization.yaml | \
       gitops/ingress/crds/kustomization.yaml) allow_skipped=true ;;
   esac
   if grep -Eq 'Skipped: [1-9]' <<<"$output" && [[ $allow_skipped == false ]]; then
-    echo 'missing Kubernetes schemas; refresh and commit the required CRD schemas' >&2
-    exit 69
+    echo "missing Kubernetes schemas in $file; refresh and commit the required CRD schemas" >&2
+    return 69
   fi
-done < <(find gitops -name kustomization.yaml -print0 | sort -z)
+}
+export -f check_kustomization
+export schema_root
+
+# shellcheck disable=SC2016
+find gitops -name kustomization.yaml -print0 | sort -z | xargs -0 -n 1 -P "${CHECK_JOBS:-8}" bash -c 'check_kustomization "$1"' _
