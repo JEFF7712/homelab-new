@@ -20,6 +20,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-rupanism
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -151,6 +161,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-apolline
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -282,6 +302,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-darkbit
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -413,6 +443,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-distrojeff
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -544,6 +584,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-nix-agent
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -675,6 +725,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-pulse
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -806,6 +866,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-soluble
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -937,6 +1007,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-spatia
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -1068,6 +1148,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-quartz
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -1199,6 +1289,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-majorfinder
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -1330,6 +1430,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-photography
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -1461,6 +1571,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-ism
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
@@ -1592,6 +1712,16 @@ spec:
       labels:
         app.kubernetes.io/name: github-runner-rupan-dev
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - homelab-04
+                      - homelab-05
       containers:
         - name: dind
           image: registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce
