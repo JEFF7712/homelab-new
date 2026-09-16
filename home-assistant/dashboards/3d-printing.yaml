@@ -26,7 +26,7 @@ button_card_templates:
             [[[
               return window.location.pathname.includes(variables.path)
                 ? 'rgba(20, 20, 20, 0.95)'
-                : 'rgba(255, 255, 255, 0.7)';
+                : 'var(--secondary-text-color)';
             ]]]
 views:
   - title: A1
@@ -43,10 +43,10 @@ views:
           action: none
         styles:
           card:
-            - background: rgba(22, 22, 26, 0.88)
+            - background: color-mix(in srgb, var(--card-background-color) 82%, transparent)
             - backdrop-filter: blur(16px) saturate(1.3)
             - border-radius: 40px
-            - border: 1px solid rgba(255, 255, 255, 0.09)
+            - border: 1px solid var(--divider-color)
             - box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5)
             - padding: 10px
             - margin-bottom: 8px
@@ -102,7 +102,7 @@ views:
                       [[[
                         return window.location.pathname.includes('home-overview')
                           ? 'rgba(20, 20, 20, 0.95)'
-                          : 'rgba(255, 255, 255, 0.7)';
+                          : 'var(--secondary-text-color)';
                       ]]]
           b2:
             card:
@@ -134,7 +134,7 @@ views:
                       [[[
                         return window.location.pathname.includes('bedroom-lights')
                           ? 'rgba(20, 20, 20, 0.95)'
-                          : 'rgba(255, 255, 255, 0.7)';
+                          : 'var(--secondary-text-color)';
                       ]]]
           b3:
             card:
@@ -166,7 +166,7 @@ views:
                       [[[
                         return window.location.pathname.includes('shared-spaces')
                           ? 'rgba(20, 20, 20, 0.95)'
-                          : 'rgba(255, 255, 255, 0.7)';
+                          : 'var(--secondary-text-color)';
                       ]]]
           b4:
             card:
@@ -198,7 +198,7 @@ views:
                       [[[
                         return window.location.pathname.includes('3d-printing')
                           ? 'rgba(20, 20, 20, 0.95)'
-                          : 'rgba(255, 255, 255, 0.7)';
+                          : 'var(--secondary-text-color)';
                       ]]]
           b5:
             card:
@@ -230,7 +230,7 @@ views:
                       [[[
                         return window.location.pathname.includes('map')
                           ? 'rgba(20, 20, 20, 0.95)'
-                          : 'rgba(255, 255, 255, 0.7)';
+                          : 'var(--secondary-text-color)';
                       ]]]
     sections:
       - cards:
