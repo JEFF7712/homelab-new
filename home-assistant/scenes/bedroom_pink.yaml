@@ -1,20 +1,20 @@
-id: bedroom_night
-name: "Bedroom Night"
-icon: mdi:weather-night
+id: bedroom_pink
+name: "Bedroom Pink"
+icon: mdi:heart
 entities:
   light.desk_lamp_desk_lamp:
     state: "on"
-    brightness: 20
-    color_temp_kelvin: 1800
+    brightness: 200
+    rgb_color: [255, 105, 180]
   light.floor_lamp_floor_lamp:
     state: "on"
-    brightness: 20
-    color_temp_kelvin: 1800
+    brightness: 200
+    rgb_color: [255, 105, 180]
   light.light_strip_light_strip:
     state: "on"
-    brightness: 20
-    color_temp_kelvin: 1800
+    brightness: 200
+    rgb_color: [255, 105, 180]
   switch.bedroom_window_plug:
-    state: "off"
+    state: "on"
   switch.bedroom_mushroom_plug:
     state: "on"
