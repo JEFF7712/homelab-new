@@ -90,4 +90,25 @@
     "L+ /usr/bin/nvidia-ctk - - - - ${lib.getExe' config.hardware.nvidia-container-toolkit.package "nvidia-ctk"}"
     "L+ /usr/bin/nvidia-container-runtime - - - - ${pkgs.nvidia-container-toolkit.tools}/bin/nvidia-container-runtime"
   ];
+
+  systemd.services.nvidia-gpu-exporter = {
+    description = "NVIDIA GPU Prometheus Exporter";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network.target" ];
+    path = [
+      config.boot.kernelPackages.nvidiaPackages.stable
+      pkgs.coreutils
+    ];
+    serviceConfig = {
+      ExecStart = "${pkgs.python3}/bin/python3 ${./nvidia_gpu_exporter.py}";
+      Restart = "always";
+      RestartSec = "5s";
+      DynamicUser = true;
+      SupplementaryGroups = [ "video" ];
+    };
+  };
+
+  networking.firewall.extraInputRules = ''
+    ip saddr { 10.0.0.0/16, 10.42.0.0/16, 100.64.0.0/10 } tcp dport 9835 accept
+  '';
 }
