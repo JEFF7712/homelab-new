@@ -96,11 +96,6 @@ views:
                 type: button
           - heading: All Lights
             type: heading
-          - type: custom:mushroom-chips-card
-            chips:
-              - type: template
-                content: "Currently {{ states.light | selectattr('state', 'eq', 'on') | list | count }} lights are on!"
-                icon: mdi:lightbulb-group
           - entity: light.all_govee_lights
             name: All Govee Lights
             fill_container: true
