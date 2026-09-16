@@ -10,6 +10,7 @@ triggers:
   - trigger: state
     entity_id: sensor.rupan_phone_battery_state
     to: "Charging"
+    for: "00:02:00"
 conditions:
   - condition: time
     after: "22:00:00"

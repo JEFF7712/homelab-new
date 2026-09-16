@@ -16,27 +16,41 @@ actions:
     data:
       create_file: false
     response_variable: wm_report
+    continue_on_error: true
   - variables:
       wm_known_missing:
         - scene.pre_away_bedroom
         - scene.pre_away_shared
         - scene.pre_away_climate
-  - condition: template
-    value_template: >-
-      {% set r = wm_report.response if wm_report.response is defined else wm_report %}
-      {% set bad = r.missing_entities | selectattr('state', 'eq', 'missing')
+      wm_bad_count: >-
+        {% set r = wm_report.response
+        if wm_report is defined and wm_report.response is defined
+        else (wm_report if wm_report is defined else {}) %}
+        {% set items = r.missing_entities
+        if r is mapping and r.missing_entities is defined else [] %}
+        {% set bad = items | selectattr('state', 'defined')
+        | selectattr('state', 'eq', 'missing')
         | rejectattr('id', 'in', wm_known_missing) | list %}
-      {{ bad | count > 0 }}
+        {{ bad | count }}
+      wm_bad_ids: >-
+        {% set r = wm_report.response
+        if wm_report is defined and wm_report.response is defined
+        else (wm_report if wm_report is defined else {}) %}
+        {% set items = r.missing_entities
+        if r is mapping and r.missing_entities is defined else [] %}
+        {% set bad = items | selectattr('state', 'defined')
+        | selectattr('state', 'eq', 'missing')
+        | rejectattr('id', 'in', wm_known_missing) | list %}
+        {{ bad | map(attribute='id') | join(', ') }}
+  - condition: template
+    value_template: "{{ wm_bad_count | int(0) > 0 }}"
   - action: notify.send_message
     target:
       entity_id: notify.rupan_phone
     data:
       title: "Watchman: New Configuration Drift"
       message: >-
-        {% set r = wm_report.response if wm_report.response is defined else wm_report %}
-        {% set bad = r.missing_entities | selectattr('state', 'eq', 'missing')
-          | rejectattr('id', 'in', wm_known_missing) | list %}
-        Watchman found {{ bad | count }} new missing
-        {{ 'entity' if bad | count == 1 else 'entities' }}:
-        {{ bad | map(attribute='id') | join(', ') }}.
+        Watchman found {{ wm_bad_count }} new missing
+        {{ 'entity' if wm_bad_count | int(0) == 1 else 'entities' }}:
+        {{ wm_bad_ids }}.
 mode: single

@@ -14,7 +14,9 @@ triggers:
     id: "fade_tick"
   - trigger: template
     value_template: >-
-      {% set wake_ts = as_timestamp(today_at(states('input_datetime.bedroom_wake_time')), none) %}
+      {% set wake = states('input_datetime.bedroom_wake_time') %}
+      {% set wake_ts = as_timestamp(today_at(wake), none)
+      if wake not in ('unknown', 'unavailable', '') else none %}
       {% set alarm_ts = as_timestamp(states('sensor.sm_s948u1_next_alarm'), none) %}
       {% set cands = [wake_ts, alarm_ts] | select('ne', none) | list %}
       {% set target_ts = cands | min if cands | count > 0 else none %}
@@ -28,6 +30,16 @@ conditions:
     entity_id: input_boolean.vacation_mode
     state: "off"
 actions:
+  - variables:
+      wake_raw: "{{ states('input_datetime.bedroom_wake_time') }}"
+      wake_ts: >-
+        {{ as_timestamp(today_at(wake_raw), none)
+        if wake_raw not in ('unknown', 'unavailable', '') else none }}
+      alarm_ts: "{{ as_timestamp(states('sensor.sm_s948u1_next_alarm'), none) }}"
+      target_ts: >-
+        {% set cands = [wake_ts | float(none), alarm_ts | float(none)]
+        | select('ne', none) | list %}
+        {{ cands | min if cands | count > 0 else 0 }}
   - choose:
       - conditions:
           - condition: trigger
@@ -39,11 +51,8 @@ actions:
       - conditions:
           - condition: template
             value_template: >-
-              {% set wake_ts = as_timestamp(today_at(states('input_datetime.bedroom_wake_time')), none) %}
-              {% set alarm_ts = as_timestamp(states('sensor.sm_s948u1_next_alarm'), none) %}
-              {% set cands = [wake_ts, alarm_ts] | select('ne', none) | list %}
-              {% set target_ts = cands | min if cands | count > 0 else none %}
-              {{ target_ts is not none and (target_ts - 1200) <= as_timestamp(now()) <= target_ts }}
+              {% set t = target_ts | float(0) %}
+              {{ t > 0 and (t - 1200) <= as_timestamp(now()) <= t }}
         sequence:
           - action: switch.turn_off
             target:
@@ -61,11 +70,8 @@ actions:
                 - light.light_strip_light_strip
             data:
               brightness_pct: >-
-                {% set wake_ts = as_timestamp(today_at(states('input_datetime.bedroom_wake_time')), none) %}
-                {% set alarm_ts = as_timestamp(states('sensor.sm_s948u1_next_alarm'), none) %}
-                {% set cands = [wake_ts, alarm_ts] | select('ne', none) | list %}
-                {% set target_ts = cands | min if cands | count > 0 else none %}
-                {{ (((as_timestamp(now()) - (target_ts - 1200)) / 1200 * 30)
+                {% set t = target_ts | float(0) %}
+                {{ (((as_timestamp(now()) - (t - 1200)) / 1200 * 30)
                 | int | max(1)) | min(100) }}
               color_temp_kelvin: 2700
 mode: single

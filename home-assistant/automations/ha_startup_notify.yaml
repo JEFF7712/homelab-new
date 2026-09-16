@@ -1,13 +1,21 @@
 id: ha_startup_notify
 alias: "System: Startup Notification"
-description: "Send a phone notification when Home Assistant finishes starting."
+description: >-
+  Send a phone notification when Home Assistant finishes starting. Waits up
+  to 2 minutes for the version sensor to settle instead of a fixed delay,
+  then notifies with continue_on_error so a not-yet-ready notify service
+  cannot fail the run.
 triggers:
   - trigger: homeassistant
     event: start
 conditions: []
 actions:
-  - delay:
-      seconds: 15
+  - wait_for_trigger:
+      - trigger: template
+        value_template: "{{ states('sensor.ha_latest_version') not in ('unknown', 'unavailable', '') }}"
+    timeout:
+      minutes: 2
+    continue_on_timeout: true
   - action: notify.send_message
     target:
       entity_id: notify.rupan_phone
@@ -17,4 +25,5 @@ actions:
         Home Assistant is back online. Current version installed;
         latest available is {{ states('sensor.ha_latest_version')
         | default('unknown', true) }}.
+    continue_on_error: true
 mode: single
