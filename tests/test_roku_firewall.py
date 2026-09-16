@@ -72,7 +72,8 @@ class RokuBulbFirewallTests(unittest.TestCase):
 
 
 class IotAliasConsolidationTests(unittest.TestCase):
-    BAMBU_PORTS = {"8883", "990", "2024-2025", "6000"}
+    # OPNsense port aliases reject ranges, so 2024-2025 is stored expanded.
+    BAMBU_PORTS = {"8883", "990", "2024", "2025", "6000"}
 
     def test_no_duplicate_sequences_per_interface(self) -> None:
         text = TFVARS.read_text()

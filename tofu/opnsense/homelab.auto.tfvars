@@ -104,7 +104,7 @@ firewall_aliases = {
   iot_bambu_ports = {
     name        = "iot_bambu_ports"
     type        = "port"
-    content     = ["8883", "990", "2024-2025", "6000"]
+    content     = ["8883", "990", "2024", "2025", "6000"]
     description = "Bambu Lab LAN mode service ports"
     enabled     = true
   }
