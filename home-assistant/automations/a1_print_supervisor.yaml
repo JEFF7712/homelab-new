@@ -1,0 +1,245 @@
+id: a1_print_supervisor
+alias: "A1: Print Supervisor"
+description: >-
+  Single owner for all A1 print notifications: started, finished, error,
+  progress milestones, stall detection, and idle reminders. Replaces six
+  single-purpose automations. Parallel mode isolates the stall timer from
+  immediate notifies; the stall branch snapshots progress before waiting so
+  a back-to-back print cannot trigger a stale alert.
+triggers:
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    to: running
+    id: "started"
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    from: running
+    to: finish
+    id: "finished"
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    to: finish
+    for: "01:00:00"
+    id: "idle"
+  - trigger: state
+    entity_id: binary_sensor.a1_03900d642327265_print_error
+    from: "off"
+    to: "on"
+    id: "error"
+  - trigger: state
+    entity_id: binary_sensor.a1_03900d642327265_hms_errors
+    from: "off"
+    to: "on"
+    id: "error"
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    to: failed
+    id: "error"
+  - trigger: numeric_state
+    entity_id: sensor.a1_03900d642327265_print_progress
+    above: 24
+    id: "p25"
+  - trigger: numeric_state
+    entity_id: sensor.a1_03900d642327265_print_progress
+    above: 49
+    id: "p50"
+  - trigger: numeric_state
+    entity_id: sensor.a1_03900d642327265_print_progress
+    above: 74
+    id: "p75"
+  - trigger: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    to: running
+    id: "stall_watch"
+conditions: []
+actions:
+  - variables:
+      task_name: "{{ states('sensor.a1_03900d642327265_task_name') }}"
+      eta_raw: "{{ states('sensor.a1_03900d642327265_end_time') }}"
+      eta_str: >-
+        {{ (eta_raw | as_datetime | as_local).strftime('%H:%M')
+        if eta_raw not in ('unknown', 'unavailable', '') else '' }}
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "started"
+          - condition: template
+            value_template: >-
+              {{ trigger.from_state is not none
+              and trigger.from_state.state in ('idle', 'finish', 'failed') }}
+        sequence:
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "A1 Print Started"
+              message: >-
+                {{ task_name | default('Print', true) }} started
+                {%- if eta_str %}, ETA {{ eta_str }}{% endif %}.
+      - conditions:
+          - condition: trigger
+            id: "finished"
+        sequence:
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "A1 Print Finished"
+              message: >-
+                {{ task_name | default('Print', true) }} finished.
+                {{ states('sensor.a1_03900d642327265_print_weight')
+                | default('?', true) }}g of filament used.
+      - conditions:
+          - condition: trigger
+            id: "idle"
+        sequence:
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "A1 Print Still Sitting"
+              message: >-
+                {{ task_name | default('Print', true) }}
+                finished over an hour ago and the printer is still occupied.
+      - conditions:
+          - condition: trigger
+            id: "error"
+          - condition: template
+            value_template: >-
+              {{ trigger.from_state is not none and trigger.from_state.state
+              not in ('unknown', 'unavailable', 'none', '') }}
+        sequence:
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "A1 Print Error"
+              message: >-
+                {{ task_name | default('Print', true) }} reported an error
+                at {{ states('sensor.a1_03900d642327265_print_progress')
+                | default('?', true) }}%
+                (layer {{ states('sensor.a1_03900d642327265_current_layer')
+                | default('?', true) }}/{{ states('sensor.a1_03900d642327265_total_layer_count')
+                | default('?', true) }}).
+                Nozzle {{ states('sensor.a1_03900d642327265_nozzle_temperature')
+                | default('?', true) }}C,
+                bed {{ states('sensor.a1_03900d642327265_bed_temperature')
+                | default('?', true) }}C.
+                Check the camera.
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "A1 Camera"
+              message: "Snapshot from the A1 camera."
+              image: /api/camera_proxy/camera.a1_03900d642327265_camera
+            continue_on_error: true
+      - conditions:
+          - condition: trigger
+            id: "p25"
+          - condition: state
+            entity_id: sensor.a1_03900d642327265_print_status
+            state: running
+          - condition: template
+            value_template: >-
+              {{ trigger.from_state is not none and trigger.from_state.state
+              not in ('unknown', 'unavailable', 'none', '') }}
+        sequence:
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "A1 Print Progress"
+              message: >-
+                {{ task_name | default('Print', true) }} is
+                at {{ states('sensor.a1_03900d642327265_print_progress') }}%
+                {%- if eta_str %}, ETA {{ eta_str }}{% endif %}.
+      - conditions:
+          - condition: trigger
+            id: "p50"
+          - condition: state
+            entity_id: sensor.a1_03900d642327265_print_status
+            state: running
+          - condition: template
+            value_template: >-
+              {{ trigger.from_state is not none and trigger.from_state.state
+              not in ('unknown', 'unavailable', 'none', '') }}
+        sequence:
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "A1 Print Progress"
+              message: >-
+                {{ task_name | default('Print', true) }} is
+                at {{ states('sensor.a1_03900d642327265_print_progress') }}%
+                {%- if eta_str %}, ETA {{ eta_str }}{% endif %}.
+      - conditions:
+          - condition: trigger
+            id: "p75"
+          - condition: state
+            entity_id: sensor.a1_03900d642327265_print_status
+            state: running
+          - condition: template
+            value_template: >-
+              {{ trigger.from_state is not none and trigger.from_state.state
+              not in ('unknown', 'unavailable', 'none', '') }}
+        sequence:
+          - action: notify.send_message
+            target:
+              entity_id: notify.rupan_phone
+            data:
+              title: "A1 Print Progress"
+              message: >-
+                {{ task_name | default('Print', true) }} is
+                at {{ states('sensor.a1_03900d642327265_print_progress') }}%
+                {%- if eta_str %}, ETA {{ eta_str }}{% endif %}.
+      - conditions:
+          - condition: trigger
+            id: "stall_watch"
+          - condition: template
+            value_template: >-
+              {{ trigger.from_state is not none and trigger.from_state.state
+              not in ('unknown', 'unavailable', 'none', '') }}
+        sequence:
+          - variables:
+              stall_from: "{{ states('sensor.a1_03900d642327265_print_progress') }}"
+          - wait_for_trigger:
+              - trigger: template
+                value_template: >-
+                  {{ states('sensor.a1_03900d642327265_print_progress')
+                  not in ('unknown', 'unavailable', 'none', '')
+                  and trigger is defined and trigger.from_state is not none
+                  and trigger.to_state.state != trigger.from_state.state }}
+              - trigger: state
+                entity_id: sensor.a1_03900d642327265_print_status
+                to: finish
+              - trigger: state
+                entity_id: sensor.a1_03900d642327265_print_status
+                to: failed
+            timeout:
+              minutes: 15
+            continue_on_timeout: true
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ not wait.completed }}"
+                  - condition: state
+                    entity_id: sensor.a1_03900d642327265_print_status
+                    state: running
+                  - condition: template
+                    value_template: >-
+                      {{ states('sensor.a1_03900d642327265_print_progress')
+                      == stall_from }}
+                sequence:
+                  - action: notify.send_message
+                    target:
+                      entity_id: notify.rupan_phone
+                    data:
+                      title: "A1 Print Possibly Stalled"
+                      message: >-
+                        {{ task_name | default('Print', true) }}
+                        has been at {{ states('sensor.a1_03900d642327265_print_progress') }}%
+                        for 15 minutes without progress. Check the printer.
+mode: parallel
+max: 10

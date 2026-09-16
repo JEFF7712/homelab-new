@@ -1,18 +1,22 @@
 id: a1_chamber_light_auto_off
 alias: "A1: Chamber Light Auto-Off"
 description: >-
-  Turn off the A1 chamber light 5 minutes after a print finishes.
-  Restart mode so a back-to-back finish re-arms the timer. A HA restart
-  during the delay still cancels the run; the light then stays on until
-  the next finish event.
+  Turn off the A1 chamber light 5 minutes after a print finishes, but only
+  if no new print started meanwhile. Restart mode so a back-to-back finish
+  re-arms the timer. A HA restart during the delay still cancels the run;
+  the light then stays on until the next finish event.
 triggers:
   - trigger: state
     entity_id: sensor.a1_03900d642327265_print_status
     from: running
     to: finish
+conditions: []
 actions:
   - delay:
       minutes: 5
+  - condition: state
+    entity_id: sensor.a1_03900d642327265_print_status
+    state: finish
   - action: light.turn_off
     target:
       entity_id: light.a1_03900d642327265_chamber_light
