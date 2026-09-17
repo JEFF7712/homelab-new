@@ -1,0 +1,7 @@
+title: Homelab 05 Satellite
+disabled_by: null
+domain: esphome
+entry_id: 01M2PABRBFT1FA70X7ZQKE5RR4
+pref_disable_new_entities: false
+pref_disable_polling: false
+source: zeroconf
