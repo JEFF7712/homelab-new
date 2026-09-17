@@ -61,17 +61,26 @@ spec:
               cpu: "2"
               memory: 1Gi
           startupProbe:
-            tcpSocket:
-              port: satellite
+            exec:
+              command:
+                - pgrep
+                - -f
+                - linux_voice_assistant
             failureThreshold: 30
             periodSeconds: 10
           readinessProbe:
-            tcpSocket:
-              port: satellite
+            exec:
+              command:
+                - pgrep
+                - -f
+                - linux_voice_assistant
             periodSeconds: 10
           livenessProbe:
-            tcpSocket:
-              port: satellite
+            exec:
+              command:
+                - pgrep
+                - -f
+                - linux_voice_assistant
             periodSeconds: 30
           volumeMounts:
             - name: sound-device
