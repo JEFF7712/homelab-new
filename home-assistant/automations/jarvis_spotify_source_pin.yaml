@@ -1,11 +1,10 @@
 id: jarvis_spotify_source_pin
 alias: Pin Spotify output to Jarvis satellite
 description: >-
-  Whenever the Spotify integration goes to a known state, force-select the player named in
-  `input_select.jarvis_music_output` as the playback target. This pins Spotify playback to
-  the Music Assistant speaker group so audio routes to the Jarvis satellite and the
-  soundbar. Catches the cold-start case where Spotify boots with no source and silently
-  drops HA-initiated playback.
+  Whenever the Spotify integration becomes active or returns to idle, force-select
+  the Music Assistant speaker group as the playback target so audio routes to
+  the Jarvis satellite and the soundbar. Catches the cold-start case where
+  Spotify boots with no source and silently drops HA-initiated playback.
 mode: single
 trigger:
   - platform: state
@@ -15,14 +14,10 @@ trigger:
   - platform: state
     entity_id: media_player.spotify_rupan
     to: "playing"
-condition:
-  - condition: template
-    value_template: >-
-      {{ states('input_select.jarvis_music_output') not in ['unknown', 'unavailable', ''] }}
 action:
   - action: media_player.select_source
     target:
       entity_id: media_player.spotify_rupan
     data:
-      source: "{{ states('input_select.jarvis_music_output') }}"
+      source: Homelab 05 Satellite Media Player | Music Assistant
     continue_on_error: true
