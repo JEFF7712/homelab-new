@@ -18,5 +18,4 @@ resources:
   - platform.yaml
   - secrets.yaml
   - storage.yaml
-  - voice.yaml
   - websites.yaml
