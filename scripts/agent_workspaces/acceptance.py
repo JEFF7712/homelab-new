@@ -7,6 +7,7 @@ import pathlib
 import re
 import shlex
 import subprocess
+import tempfile
 import time
 import urllib.parse
 from collections.abc import Callable, Sequence
@@ -462,6 +463,266 @@ def run_two_guest_acceptance(
             )
         except OSError as error:
             evidence_error = error
+    if failure is not None:
+        raise failure
+    if cleanup_errors:
+        raise WorkspaceError("live acceptance cleanup failed; inspect evidence")
+    if evidence_error is not None:
+        raise WorkspaceError(f"cannot write acceptance evidence: {evidence_error}")
+    return evidence
+
+
+def _probe_tcp_port(
+    host: str,
+    port: int,
+    runner: Runner,
+    *,
+    timeout: float = 5.0,
+) -> bool:
+    code = (
+        f"import socket, sys; s = socket.socket(); s.settimeout({timeout}); "
+        f"r = s.connect_ex(('{host}', {port})); sys.exit(0 if r == 0 else 1)"
+    )
+    result = runner(
+        ["python3", "-c", code],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=timeout + 5,
+    )
+    return result.returncode == 0
+
+
+def _probe_ssh_auth(
+    workspace: Workspace,
+    ssh_key: pathlib.Path | None,
+    runner: Runner,
+    *,
+    auth_method: str = "publickey",
+    timeout: float = 10.0,
+) -> tuple[bool, str]:
+    address = workspace.raw["network"]["address"].split("/", 1)[0]
+    command = [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "StrictHostKeyChecking=no",
+        "-o",
+        "UserKnownHostsFile=/dev/null",
+        "-o",
+        "ConnectTimeout=5",
+    ]
+    if ssh_key is not None:
+        command.extend(["-i", str(ssh_key)])
+    if auth_method == "password":
+        command.extend(
+            [
+                "-o",
+                "PreferredAuthentications=password",
+                "-o",
+                "PubkeyAuthentication=no",
+            ]
+        )
+    command.extend(
+        [
+            f"{workspace.raw['guest_username']}@{address}",
+            "echo auth_ok",
+        ]
+    )
+    result = runner(
+        command,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=timeout,
+    )
+    output = (result.stdout + "\n" + result.stderr).strip()
+    return (result.returncode == 0 and "auth_ok" in result.stdout, output)
+
+
+def run_real_access_acceptance(
+    workspaces: list[Workspace],
+    *,
+    primary_ssh_key: pathlib.Path,
+    evidence_path: pathlib.Path,
+    network_url: str = "https://1.1.1.1",
+    cleanup: bool = False,
+    runner: Runner = subprocess.run,
+) -> dict[str, Any]:
+    if len(workspaces) != 2 or any(not ws.raw["enabled"] for ws in workspaces):
+        raise WorkspaceError(
+            "real access acceptance requires exactly two enabled workspaces"
+        )
+    if os.geteuid() != 0:
+        raise WorkspaceError(
+            "real access acceptance must run as root on the workspace host"
+        )
+    if not primary_ssh_key.is_file() or primary_ssh_key.is_symlink():
+        raise WorkspaceError("primary SSH private key is missing or unsafe")
+    parsed_url = urllib.parse.urlparse(network_url)
+    if parsed_url.scheme != "https" or not parsed_url.hostname:
+        raise WorkspaceError("network URL must be an absolute HTTPS URL")
+
+    pubkey_path = primary_ssh_key.with_name(primary_ssh_key.name + ".pub")
+    primary_pub_content = ""
+    if pubkey_path.is_file():
+        parts = pubkey_path.read_text(encoding="utf-8").strip().split()
+        if len(parts) >= 2:
+            primary_pub_content = parts[1]
+
+    primary_ws: Workspace | None = None
+    if primary_pub_content:
+        for candidate in workspaces:
+            if any(
+                primary_pub_content in key
+                for key in candidate.raw["ssh_authorized_keys"]
+            ):
+                primary_ws = candidate
+                break
+    if primary_ws is None:
+        primary_ws = workspaces[0]
+        peer_ws = workspaces[1]
+    else:
+        peer_ws = workspaces[1] if primary_ws == workspaces[0] else workspaces[0]
+
+    evidence: dict[str, Any] = {
+        "schema_version": 1,
+        "kind": "agent-workspace-real-access-acceptance",
+        "primary_workspace": primary_ws.id,
+        "peer_workspace": peer_ws.id,
+        "health": {},
+        "auth": {},
+        "isolation": {},
+        "egress": {},
+        "result": "failed",
+    }
+    failure: Exception | None = None
+    cleanup_errors: list[str] = []
+    evidence_error: OSError | None = None
+
+    try:
+        try:
+            for ws in (primary_ws, peer_ws):
+                status = provision_status(ws, runner)
+                if not status["consistent"] or status["domain_state"] != "running":
+                    raise WorkspaceError(
+                        f"workspace {ws.id} is not consistently running"
+                    )
+
+            evidence["health"]["before"] = collect_host_health(runner)
+
+            peer_address = peer_ws.raw["network"]["address"].split("/", 1)[0]
+            if not _probe_tcp_port(peer_address, 22, runner):
+                raise WorkspaceError(
+                    f"workspace {peer_ws.id} has no listening SSH port"
+                )
+
+            ok, out = _probe_ssh_auth(primary_ws, primary_ssh_key, runner)
+            if not ok:
+                raise WorkspaceError(
+                    f"primary SSH key failed to authenticate on {primary_ws.id}: {out}"
+                )
+            evidence["auth"]["primary_to_own"] = "accepted"
+
+            ok, out = _probe_ssh_auth(peer_ws, primary_ssh_key, runner)
+            if ok:
+                raise WorkspaceError(
+                    f"primary SSH key unexpectedly authenticated on peer {peer_ws.id}"
+                )
+            if "permission denied" not in out.lower() and "denied" not in out.lower():
+                raise WorkspaceError(
+                    f"peer {peer_ws.id} returned ambiguous SSH denial: {out}"
+                )
+            evidence["auth"]["primary_to_peer"] = "denied_publickey"
+
+            with tempfile.TemporaryDirectory() as temp_dir:
+                dummy_key = pathlib.Path(temp_dir) / "id_dummy"
+                keygen_cmd = [
+                    "ssh-keygen",
+                    "-q",
+                    "-t",
+                    "ed25519",
+                    "-N",
+                    "",
+                    "-f",
+                    str(dummy_key),
+                ]
+                _run(runner, keygen_cmd, timeout=10)
+
+                for ws, label in (
+                    (primary_ws, "unauthorized_to_own"),
+                    (peer_ws, "unauthorized_to_peer"),
+                ):
+                    ok, out = _probe_ssh_auth(ws, dummy_key, runner)
+                    if ok:
+                        raise WorkspaceError(
+                            f"unauthorized key unexpectedly authenticated on {ws.id}"
+                        )
+                    evidence["auth"][label] = "denied_publickey"
+
+            for ws, label in (
+                (primary_ws, "password_auth_to_own"),
+                (peer_ws, "password_auth_to_peer"),
+            ):
+                ok, out = _probe_ssh_auth(ws, None, runner, auth_method="password")
+                if ok:
+                    raise WorkspaceError(
+                        f"password authentication unexpectedly succeeded on {ws.id}"
+                    )
+                evidence["auth"][label] = "denied_password"
+
+            drop_before = _direction_drop_counter(primary_ws, peer_ws, runner)
+            _probe_peer_denial(primary_ws, peer_ws, primary_ssh_key, runner)
+            drop_after = _direction_drop_counter(primary_ws, peer_ws, runner)
+            drop_delta = drop_after - drop_before
+            if drop_delta < 1:
+                raise WorkspaceError(
+                    f"host firewall did not record isolation probe from {primary_ws.id} to {peer_ws.id}"
+                )
+            evidence["isolation"] = {
+                "peer_denial": "timeout",
+                "firewall_drop_delta": {primary_ws.id: drop_delta},
+            }
+
+            curl_cmd = f"curl --fail --silent --show-error --max-time 10 --output /dev/null {shlex.quote(network_url)}"
+            _run(
+                runner,
+                _guest_ssh_command(primary_ws, primary_ssh_key, curl_cmd),
+                timeout=15,
+            )
+            evidence["egress"]["network_url"] = network_url
+            evidence["egress"]["status"] = "verified"
+
+            evidence["health"]["after"] = collect_host_health(runner)
+            evidence["result"] = "accepted"
+
+        except (WorkspaceError, OSError, subprocess.SubprocessError) as error:
+            failure = error
+            evidence["failure"] = {
+                "type": type(error).__name__,
+                "detail": str(error),
+            }
+    finally:
+        if cleanup:
+            cleanup_errors.extend(_contain_workspaces([primary_ws, peer_ws], runner))
+            for ws in (primary_ws, peer_ws):
+                try:
+                    deprovision_workspace(ws, authorized=True, runner=runner)
+                except (WorkspaceError, OSError, subprocess.SubprocessError) as error:
+                    cleanup_errors.append(str(error))
+            if cleanup_errors:
+                evidence["cleanup_errors"] = cleanup_errors
+                evidence["result"] = "failed"
+        try:
+            evidence_path.parent.mkdir(parents=True, exist_ok=True)
+            evidence_path.write_text(
+                json.dumps(evidence, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        except OSError as error:
+            evidence_error = error
+
     if failure is not None:
         raise failure
     if cleanup_errors:

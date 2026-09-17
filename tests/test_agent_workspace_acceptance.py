@@ -13,6 +13,7 @@ from scripts.agent_workspaces.acceptance import (
     _validate_measured_load,
     _verify_guest_listeners,
     collect_host_health,
+    run_real_access_acceptance,
     run_two_guest_acceptance,
 )
 from scripts.agent_workspaces.core import WorkspaceError, load_manifest
@@ -62,6 +63,11 @@ class HealthRunner:
             return subprocess.CompletedProcess(command, 0, "1\n", "")
         if command[0] == "curl":
             return subprocess.CompletedProcess(command, 0, "200", "")
+        if command[0] == "python3":
+            return subprocess.CompletedProcess(command, 0, "", "")
+        if command[0] == "ssh-keygen":
+            pathlib.Path(command[-1]).write_text("dummy_key")
+            return subprocess.CompletedProcess(command, 0, "", "")
         if command[0] == "nft":
             count = self.nft_calls
             self.nft_calls += 1
@@ -79,6 +85,24 @@ class HealthRunner:
                 return subprocess.CompletedProcess(command, 0, "LISTEN 0 128", "")
             if command[-1].startswith("python3 -c"):
                 return subprocess.CompletedProcess(command, 0, "timeout", "")
+            if command[-1].startswith("curl"):
+                return subprocess.CompletedProcess(command, 0, "", "")
+            if command[-1] == "echo auth_ok":
+                target = command[-2]
+                is_primary_target = "192.0.2.2" in target or "rupan" in target
+                has_primary_key = (
+                    "-i" in command
+                    and "id_dummy" not in command[command.index("-i") + 1]
+                    and "id_ed25519" in command[command.index("-i") + 1]
+                )
+                has_password_auth = (
+                    "-o" in command and "PreferredAuthentications=password" in command
+                )
+                if is_primary_target and has_primary_key and not has_password_auth:
+                    return subprocess.CompletedProcess(command, 0, "auth_ok\n", "")
+                return subprocess.CompletedProcess(
+                    command, 255, "", "Permission denied (publickey).\n"
+                )
             return subprocess.CompletedProcess(
                 command,
                 0,
@@ -391,6 +415,126 @@ class AcceptanceTests(unittest.TestCase):
                 len([command for command in runner.commands if command[0] == "ip"]),
                 2,
             )
+
+
+class RealAccessAcceptanceTests(unittest.TestCase):
+    def test_real_access_acceptance_success(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspaces = acceptance_workspaces(directory)
+            key = pathlib.Path(directory) / "id_ed25519"
+            key.write_text("private")
+            pub = pathlib.Path(directory) / "id_ed25519.pub"
+            pub.write_text(
+                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAITest enrolled@example.test"
+            )
+            evidence = pathlib.Path(directory) / "evidence.json"
+            status = {"consistent": True, "domain_state": "running"}
+            with (
+                patch("scripts.agent_workspaces.acceptance.os.geteuid", return_value=0),
+                patch(
+                    "scripts.agent_workspaces.acceptance.provision_status",
+                    return_value=status,
+                ),
+            ):
+                result = run_real_access_acceptance(
+                    workspaces,
+                    primary_ssh_key=key,
+                    evidence_path=evidence,
+                    network_url="https://example.test/health",
+                    cleanup=False,
+                    runner=HealthRunner(),
+                )
+            self.assertEqual(result["result"], "accepted")
+            self.assertEqual(result["auth"]["primary_to_own"], "accepted")
+            self.assertEqual(result["auth"]["primary_to_peer"], "denied_publickey")
+            self.assertEqual(result["auth"]["unauthorized_to_own"], "denied_publickey")
+            self.assertEqual(result["auth"]["unauthorized_to_peer"], "denied_publickey")
+            self.assertEqual(result["auth"]["password_auth_to_own"], "denied_password")
+            self.assertEqual(result["auth"]["password_auth_to_peer"], "denied_password")
+            self.assertEqual(result["isolation"]["peer_denial"], "timeout")
+            self.assertEqual(result["egress"]["status"], "verified")
+            self.assertTrue(evidence.is_file())
+            recorded = json.loads(evidence.read_text())
+            self.assertEqual(recorded["result"], "accepted")
+
+    def test_real_access_acceptance_requires_two_enabled_workspaces(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspaces = acceptance_workspaces(directory)
+            key = pathlib.Path(directory) / "id_ed25519"
+            key.write_text("private")
+            evidence = pathlib.Path(directory) / "evidence.json"
+            workspaces[0].raw["enabled"] = False
+            with (
+                patch("scripts.agent_workspaces.acceptance.os.geteuid", return_value=0),
+                self.assertRaisesRegex(
+                    WorkspaceError, "exactly two enabled workspaces"
+                ),
+            ):
+                run_real_access_acceptance(
+                    workspaces,
+                    primary_ssh_key=key,
+                    evidence_path=evidence,
+                    runner=HealthRunner(),
+                )
+
+    def test_real_access_acceptance_requires_root_and_safe_key(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspaces = acceptance_workspaces(directory)
+            key = pathlib.Path(directory) / "id_ed25519"
+            evidence = pathlib.Path(directory) / "evidence.json"
+            with (
+                patch(
+                    "scripts.agent_workspaces.acceptance.os.geteuid", return_value=1000
+                ),
+                self.assertRaisesRegex(WorkspaceError, "must run as root"),
+            ):
+                run_real_access_acceptance(
+                    workspaces,
+                    primary_ssh_key=key,
+                    evidence_path=evidence,
+                    runner=HealthRunner(),
+                )
+            with (
+                patch("scripts.agent_workspaces.acceptance.os.geteuid", return_value=0),
+                self.assertRaisesRegex(WorkspaceError, "missing or unsafe"),
+            ):
+                run_real_access_acceptance(
+                    workspaces,
+                    primary_ssh_key=key,
+                    evidence_path=evidence,
+                    runner=HealthRunner(),
+                )
+
+    def test_real_access_acceptance_fails_if_peer_allows_primary_key(self) -> None:
+        class InsecurePeerRunner(HealthRunner):
+            def __call__(self, command, **kwargs):
+                cmd = list(command)
+                if cmd and cmd[0] == "ssh" and cmd[-1] == "echo auth_ok":
+                    return subprocess.CompletedProcess(cmd, 0, "auth_ok\n", "")
+                return super().__call__(command, **kwargs)
+
+        with tempfile.TemporaryDirectory() as directory:
+            workspaces = acceptance_workspaces(directory)
+            key = pathlib.Path(directory) / "id_ed25519"
+            key.write_text("private")
+            evidence = pathlib.Path(directory) / "evidence.json"
+            status = {"consistent": True, "domain_state": "running"}
+            with (
+                patch("scripts.agent_workspaces.acceptance.os.geteuid", return_value=0),
+                patch(
+                    "scripts.agent_workspaces.acceptance.provision_status",
+                    return_value=status,
+                ),
+                self.assertRaisesRegex(
+                    WorkspaceError, "unexpectedly authenticated on peer"
+                ),
+            ):
+                run_real_access_acceptance(
+                    workspaces,
+                    primary_ssh_key=key,
+                    evidence_path=evidence,
+                    runner=InsecurePeerRunner(),
+                )
 
 
 if __name__ == "__main__":

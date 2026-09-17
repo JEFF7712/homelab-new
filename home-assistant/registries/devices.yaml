@@ -14,6 +14,9 @@
 - id: 6b2e3e97d070d8355272178c9b7bc1ea
   area_id: living_room
   name_by_user: Good Vibes Sign
+- id: 7e312943737102071dcfa3e9c891699d
+  area_id: living_room
+  name_by_user: Homelab 05 Satellite
 - id: a1ba1d50c624f629824c4e9b36cb0035
   area_id: kitchen
   name_by_user: Kitchen Mushroom Lamp

@@ -46,6 +46,14 @@ data:
           - light.desk_lamp_desk_lamp
           - light.floor_lamp_floor_lamp
           - light.light_strip_light_strip
+      - platform: group
+        name: Downstairs Lights
+        entities:
+          - light.kitchen_light
+          - light.kitchen_light_2
+          - light.kitchen_mushroom_lamp
+          - light.living_room_mushroom_lamp
+          - light.living_room_tulip_lamp
       - platform: switch
         name: Bedroom Window Plug
         entity_id: switch.bedroom_window_plug

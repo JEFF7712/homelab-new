@@ -5,7 +5,7 @@ import json
 import pathlib
 import sys
 
-from .acceptance import run_two_guest_acceptance
+from .acceptance import run_real_access_acceptance, run_two_guest_acceptance
 from .core import WorkspaceError, load_manifest, render_plan
 from .lifecycle import deprovision_workspace, provision_status, provision_workspace
 
@@ -45,6 +45,16 @@ def build_parser() -> argparse.ArgumentParser:
     acceptance.add_argument("--network-url", required=True)
     acceptance.add_argument("--duration", type=int, default=60)
     acceptance.add_argument("--evidence", required=True, type=pathlib.Path)
+
+    real_access = subparsers.add_parser(
+        "acceptance-real-access",
+        help="run real access and cross-user isolation acceptance on two workspaces",
+    )
+    real_access.add_argument("--authorized", action="store_true")
+    real_access.add_argument("--ssh-key", required=True, type=pathlib.Path)
+    real_access.add_argument("--network-url", default="https://1.1.1.1")
+    real_access.add_argument("--evidence", required=True, type=pathlib.Path)
+    real_access.add_argument("--cleanup", action="store_true")
     return parser
 
 
@@ -76,6 +86,19 @@ def main(argv: list[str] | None = None) -> int:
                 network_url=args.network_url,
                 duration_seconds=args.duration,
                 evidence_path=args.evidence,
+            )
+            print(json.dumps(result, indent=2, sort_keys=True))
+        elif args.command == "acceptance-real-access":
+            if not args.authorized:
+                raise WorkspaceError(
+                    "live acceptance requires the explicit --authorized flag"
+                )
+            result = run_real_access_acceptance(
+                workspaces,
+                primary_ssh_key=args.ssh_key,
+                network_url=args.network_url,
+                evidence_path=args.evidence,
+                cleanup=args.cleanup,
             )
             print(json.dumps(result, indent=2, sort_keys=True))
         else:

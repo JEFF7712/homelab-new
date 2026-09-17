@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <title>JARVIS</title>
+  <link rel="stylesheet" href="style.css?v=2">
+  <style>
+    /* Token Prompt Modal (only if token missing) */
+    #token-prompt {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .token-box {
+      width: 90%;
+      max-width: 420px;
+      padding: 28px;
+      background: #090d16;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 12px;
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.2);
+      text-align: center;
+    }
+    .token-title {
+      font-size: 16px;
+      letter-spacing: 0.25em;
+      color: #00f0ff;
+      margin-bottom: 8px;
+      font-family: monospace;
+    }
+    .token-subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 20px;
+      line-height: 1.4;
+      font-family: sans-serif;
+    }
+    .token-input {
+      width: 100%;
+      padding: 12px 14px;
+      background: #030712;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 6px;
+      color: #ffffff;
+      font-family: monospace;
+      font-size: 13px;
+      outline: none;
+      margin-bottom: 16px;
+    }
+    .token-input:focus {
+      border-color: #00f0ff;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+    .token-btn {
+      width: 100%;
+      padding: 12px;
+      background: #00f0ff;
+      color: #000000;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      cursor: pointer;
+    }
+    .token-error {
+      color: #ef4444;
+      font-size: 11px;
+      margin-top: 10px;
+      display: none;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="state-idle">
+    <div id="connection-badge">LINK LOST // RECONNECTING</div>
+    <div id="status-bar"><span id="status-text">JARVIS // IDLE</span></div>
+    <!-- Centered Minimalist Face: Literally Just 2 Big Rectangles and a Mouth -->
+    <div class="face-container">
+      <!-- 2 Big Rectangle Eyes -->
+      <div class="eyes-container" id="eyes">
+        <div class="eye" id="eye-left"></div>
+        <div class="eye" id="eye-right"></div>
+      </div>
+
+      <!-- Reactive Mouth -->
+      <div class="mouth-container" id="mouth">
+        <div class="mouth-bar"></div>
+        <div class="mouth-wave">
+          <div class="wave-col"></div>
+          <div class="wave-col"></div>
+          <div class="wave-col"></div>
+          <div class="wave-col"></div>
+          <div class="wave-col"></div>
+          <div class="wave-col"></div>
+          <div class="wave-col"></div>
+          <div class="wave-col"></div>
+          <div class="wave-col"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Token Entry Dialog (if needed) -->
+    <div id="token-prompt">
+      <div class="token-box">
+        <div class="token-title">JARVIS CORE</div>
+        <div class="token-subtitle">Paste your Home Assistant Long-Lived Access Token to authenticate this display.</div>
+        <input type="password" id="token-input" class="token-input" placeholder="Paste access token here">
+        <button id="token-submit" class="token-btn">CONNECT SATELLITE</button>
+        <div id="token-error" class="token-error"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=2"></script>
+</body>
+</html>

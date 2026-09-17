@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: voice
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      runtimeClassName: nvidia
+      nodeSelector:
+        kubernetes.io/hostname: homelab-04
+        nvidia.com/gpu.present: "true"
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: ollama
+          # Pinned upstream tag: 0.34.1
+          image: docker.io/ollama/ollama@sha256:0c0a83210471fb50226bcdc2d6611d20ab13ae87e024cc304c94a6a5765c5e65  # yamllint disable-line rule:line-length
+          env:
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: compute,utility
+            - name: OLLAMA_HOST
+              value: "0.0.0.0:11434"
+            - name: OLLAMA_KEEP_ALIVE
+              value: "-1"
+          ports:
+            - containerPort: 11434
+              name: http
+          startupProbe:
+            httpGet:
+              path: /api/version
+              port: http
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/version
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/version
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "1"
+              memory: 4Gi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: "6"
+              memory: 8Gi
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: models
+              mountPath: /root/.ollama
+      volumes:
+        - name: models
+          hostPath:
+            path: /persist/voice-models/ollama
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  namespace: voice
+spec:
+  selector:
+    app: ollama
+  ports:
+    - name: http
+      port: 11434
+      targetPort: 11434
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ollama-qwen2-5-3b-ready
+  namespace: voice
+spec:
+  backoffLimit: 12
+  template:
+    metadata:
+      labels:
+        app: ollama-model-ready
+    spec:
+      restartPolicy: OnFailure
+      nodeSelector:
+        kubernetes.io/hostname: homelab-04
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: pull
+          # Pinned upstream tag: 0.34.1
+          image: docker.io/ollama/ollama@sha256:0c0a83210471fb50226bcdc2d6611d20ab13ae87e024cc304c94a6a5765c5e65  # yamllint disable-line rule:line-length
+          env:
+            - name: OLLAMA_HOST
+              value: "http://ollama.voice:11434"
+          args:
+            - "pull"
+            - "qwen2.5:3b"
+      containers:
+        - name: warmup
+          # Pinned upstream tag: 0.34.1
+          image: docker.io/ollama/ollama@sha256:0c0a83210471fb50226bcdc2d6611d20ab13ae87e024cc304c94a6a5765c5e65  # yamllint disable-line rule:line-length
+          env:
+            - name: OLLAMA_HOST
+              value: "http://ollama.voice:11434"
+          args:
+            - "run"
+            - "qwen2.5:3b"
+            - "Reply with the word OK."
