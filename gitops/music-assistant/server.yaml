@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: music-assistant
+  namespace: music-assistant
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: music-assistant
+  template:
+    metadata:
+      labels:
+        app: music-assistant
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: homelab-05
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: server
+          image: ghcr.io/music-assistant/server:2.10.3@sha256:885872224fa541c0faefc936625c939ba705a00e89c180f89e877f58448ea5d5  # yamllint disable-line rule:line-length
+          env:
+            - name: TZ
+              value: America/Chicago
+            - name: LOG_LEVEL
+              value: info
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: music-assistant-data
