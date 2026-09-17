@@ -1,9 +1,10 @@
 alias: Jarvis — play media via Spotify
 description: >-
-  Routes voice requests from the Jarvis conversation agent to the Spotify media_player.
-  Pass a free-text artist/track query, a Spotify URI, or a Spotify URL. The
-  `jarvis_spotify_source_pin` automation forces the output to the Music Assistant
-  speaker group so audio reaches the Jarvis satellite/soundbar.
+  Plays music, songs, artists, albums, or playlists on the Jarvis satellite
+  speaker via Music Assistant / Spotify. Call this script whenever the user
+  asks to play music, a song, an artist, a playlist, or an album. Pass
+  media_content_type='music' and media_content_id set to the search query
+  or artist name.
 fields:
   media_content_type:
     description: >-
@@ -30,7 +31,13 @@ fields:
 sequence:
   - action: media_player.play_media
     target:
-      entity_id: media_player.spotify_rupan
+      entity_id: media_player.homelab_05_satellite_media_player_2
     data:
       media_content_type: "{{ media_content_type }}"
       media_content_id: "{{ media_content_id }}"
+  - variables:
+      playback_result:
+        media: "{{ media_content_id }}"
+        status: playing
+  - stop: Playback started
+    response_variable: playback_result
