@@ -182,6 +182,22 @@ firewall_filters = {
       destination = { net = "10.0.30.0/24", port = "4002" }
     }
   }
+  clients-allow-spotify-connect = {
+    description = "Allow clients to Jarvis satellite Spotify Connect"
+    enabled     = true
+    sequence    = 216
+    interface   = { interface = ["opt1"] }
+    filter = {
+      action      = "pass"
+      direction   = "in"
+      ip_protocol = "inet"
+      protocol    = "TCP"
+      quick       = true
+      log         = false
+      source      = { net = "10.0.20.0/24", port = "" }
+      destination = { net = "10.0.30.15", port = "38801" }
+    }
+  }
   clients-block-private = {
     description = "Block clients from other private VLANs"
     enabled     = true

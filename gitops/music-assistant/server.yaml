@@ -30,6 +30,23 @@ spec:
               value: America/Chicago
             - name: LOG_LEVEL
               value: info
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    if [ ! -f /usr/local/bin/go-librespot.orig ]; then
+                      mv /usr/local/bin/go-librespot /usr/local/bin/go-librespot.orig
+                      printf '%s\n' \
+                        '#!/bin/sh' \
+                        'exec /usr/local/bin/go-librespot.orig \' \
+                        '  -c zeroconf_port=38801 \' \
+                        '  -c zeroconf_interfaces_to_advertise=enp0s31f6 \' \
+                        '  "$@"' > /usr/local/bin/go-librespot
+                      chmod +x /usr/local/bin/go-librespot
+                    fi
           resources:
             requests:
               cpu: 250m
