@@ -156,20 +156,23 @@
   targets: [switch.stairs_light]
   response: Done.
 - id: music-play-artist
-  say: Play Young Thug.
-  path: llm
-  tool: script.jarvis_play_media
-  notes: Spotify default. Reply is exactly Done.
+  say: Play some MF DOOM.
+  path: local
+  intent: MusicArtist
+  targets: [script.jarvis_play_media]
+  response: Done.
 - id: music-play-artist-polite
   say: Put on The Weeknd.
-  path: llm
-  tool: script.jarvis_play_media
-  notes: Spotify default. Reply is exactly Done.
+  path: local
+  intent: MusicArtist
+  targets: [script.jarvis_play_media]
+  response: Done.
 - id: music-playlist
   say: Play my workout playlist.
-  path: llm
-  tool: script.jarvis_play_media
-  notes: media_content_type playlist. Reply is exactly Done.
+  path: local
+  intent: MusicPlaylist
+  targets: [script.jarvis_play_media]
+  response: Done.
 - id: music-explicit-platform
   say: Play Coldplay on YouTube Music.
   path: llm

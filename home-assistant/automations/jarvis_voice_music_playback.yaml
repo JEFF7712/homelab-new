@@ -1,0 +1,40 @@
+id: jarvis_voice_music_playback
+alias: "Jarvis: Voice Music Playback"
+description: >-
+  Deterministically plays music on the Jarvis satellite speaker via Music
+  Assistant. Bare artist requests ("play some MF DOOM") play the artist's
+  top tracks; song, album, and playlist requests keep their narrower
+  lookup. The media type rides the trigger id into script.jarvis_play_media.
+mode: restart
+triggers:
+  - trigger: conversation
+    id: artist
+    command:
+      - "play some {query}"
+      - "put on [some] {query}"
+      - "play the artist {query}"
+      - "listen to [some] {query}"
+      - "play [some] music by {query}"
+  - trigger: conversation
+    id: track
+    command:
+      - "play the song {query}"
+      - "play {query}"
+  - trigger: conversation
+    id: album
+    command:
+      - "play the album {query}"
+  - trigger: conversation
+    id: playlist
+    command:
+      - "play the playlist {query}"
+      - "play [my] {query} playlist"
+conditions: []
+actions:
+  - set_conversation_response: "Done."
+  - action: script.jarvis_play_media
+    data:
+      media_content_type: >-
+        {{ {'artist': 'artist', 'track': 'music', 'album': 'album',
+            'playlist': 'playlist'}[trigger.id] }}
+      media_content_id: "{{ trigger.slots.query }}"

@@ -126,6 +126,10 @@ automation referencing them.
      of speech immediately.
 7. Music playback (Music Assistant & providers):
    - `script.jarvis_play_media` is exposed to Assist to handle music requests.
+   - `home-assistant/automations/jarvis_voice_music_playback.yaml` catches
+     play commands before the LLM and routes by trigger id: artist phrasings
+     ("play some X", "put on X") play top tracks via an artist search;
+     song, album, and playlist phrasings keep narrower lookups.
    - Platform parameter supports `spotify` (default) and `youtube_music` (`ytmusic`).
    - Music Assistant runs on `homelab-05` host network
      (`gitops/music-assistant/server.yaml`) and routes audio to the satellite speaker.
@@ -203,8 +207,11 @@ MUSIC
 
 For music, artist, album, song, or playlist requests, use
 `script.jarvis_play_media`. Spotify is the default platform unless the user
-explicitly requests another available platform. After successful playback
-begins, say: Done.
+explicitly requests another available platform. A bare artist name or "play
+some X" means the artist: pass media_content_type='artist' and the script
+plays their top tracks. Never ask which album or song; just play. Specific
+songs use 'music', albums 'album', playlists 'playlist'. After successful
+playback begins, say: Done.
 
 CONTEXT
 

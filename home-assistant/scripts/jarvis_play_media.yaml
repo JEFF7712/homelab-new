@@ -5,8 +5,11 @@ description: >-
   script whenever the user asks to play music, a song, an artist, a playlist,
   or an album. If the user specifies the music platform ('spotify' or
   'youtube_music'), pass it in the platform parameter. If the user does not
-  specify a platform, default to 'spotify'. Pass media_content_type='music'
-  and media_content_id set to the search query or artist name.
+  specify a platform, default to 'spotify'. A bare artist name or "play
+  some X" means the artist: pass media_content_type='artist' with the
+  artist name and the script plays their top tracks. Never ask which album
+  or song; just play. Specific songs use 'music', albums 'album',
+  playlists 'playlist'.
 fields:
   media_content_type:
     description: >-
@@ -46,6 +49,32 @@ sequence:
   - variables:
       target_platform: "{{ platform | default('spotify') }}"
   - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ media_content_type == 'artist' }}"
+        sequence:
+          - action: music_assistant.search
+            data:
+              config_entry_id: 01M2PW1ZWNQ31HTTG69TBVKSV3
+              name: "{{ media_content_id }}"
+              media_type: artist
+              limit: 5
+            response_variable: mass_search
+            continue_on_error: true
+          - variables:
+              artist_uris: "{{ mass_search.artists | default([]) | map(attribute='uri') | list }}"
+              artist_uri: >-
+                {% if target_platform in ['youtube_music', 'youtube', 'ytmusic'] %}
+                  {{ (artist_uris | select('search', '^ytmusic:') | list + artist_uris + [media_content_id]) | first }}
+                {% else %}
+                  {{ (artist_uris | select('search', '^spotify:') | list + artist_uris + [media_content_id]) | first }}
+                {% endif %}
+          - action: media_player.play_media
+            target:
+              entity_id: media_player.homelab_05_satellite_media_player_2
+            data:
+              media_content_type: artist
+              media_content_id: "{{ artist_uri }}"
       - conditions:
           - condition: template
             value_template: "{{ target_platform in ['youtube_music', 'youtube', 'ytmusic'] }}"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import unittest
 from pathlib import Path
 
@@ -17,9 +18,24 @@ COLORS_FILE = (
 
 LOCAL_INTENTS = {"HassTurnOn", "HassTurnOff", "HassToggle", "HassLightSet"}
 SIGNATURE_INTENT = "JarvisSignatureColor"
+MUSIC_AUTOMATION = (
+    REPO_ROOT / "home-assistant" / "automations" / "jarvis_voice_music_playback.yaml"
+)
+MUSIC_INTENTS = {"MusicArtist": "artist", "MusicPlaylist": "playlist"}
 NEON_PINK_RGB = [255, 16, 240]
 MIN_CASES = 30
 MAX_CASES = 50
+
+
+def sentence_matches(template: str, say: str) -> bool:
+    """Match an utterance against a hassil-style sentence template."""
+    pattern = re.escape(template)
+    pattern = pattern.replace(r"\{query\}", ".+?")
+    pattern = re.sub(r"\\\[([^\\]+?)\\\]\\ ", r"(?:\1 )?", pattern)
+    pattern = re.sub(r"\\\[([^\\]+?)\\\]", r"(?:\1)?", pattern)
+    pattern = pattern.replace(r"\(", "(?:").replace(r"\)", ")")
+    pattern = pattern.replace(r"\|", "|")
+    return re.fullmatch(pattern, say, re.IGNORECASE) is not None
 
 
 def ha_loader() -> type[yaml.SafeLoader]:
@@ -75,7 +91,9 @@ class EvalCorpusTest(unittest.TestCase):
             self.assertTrue(case["say"].strip().rstrip(".").strip(), case["id"])
             if case["path"] == "local":
                 self.assertIn(
-                    case["intent"], LOCAL_INTENTS | {SIGNATURE_INTENT}, case["id"]
+                    case["intent"],
+                    LOCAL_INTENTS | {SIGNATURE_INTENT} | set(MUSIC_INTENTS),
+                    case["id"],
                 )
                 self.assertTrue(case["targets"], case["id"])
                 self.assertTrue(case["response"].strip(), case["id"])
@@ -92,7 +110,11 @@ class EvalCorpusTest(unittest.TestCase):
     def test_local_intents_have_terse_override(self) -> None:
         overrides = self.terse.get("responses", {}).get("intents", {})
         for case in self.cases:
-            if case["path"] != "local" or case["intent"] == SIGNATURE_INTENT:
+            if (
+                case["path"] != "local"
+                or case["intent"] == SIGNATURE_INTENT
+                or case["intent"] in MUSIC_INTENTS
+            ):
                 continue
             self.assertIn(case["intent"], overrides, case["id"])
             self.assertEqual(
@@ -132,6 +154,38 @@ class EvalCorpusTest(unittest.TestCase):
 
     def test_language_is_english(self) -> None:
         self.assertEqual(self.terse.get("language"), "en")
+
+    def test_music_cases_match_trigger_sentences(self) -> None:
+        automation = yaml.safe_load(MUSIC_AUTOMATION.read_text(encoding="utf-8"))
+        by_id = {
+            t.get("id"): t.get("command", []) for t in automation.get("triggers", [])
+        }
+        actions = automation.get("actions", [])
+        response = next(
+            a["set_conversation_response"]
+            for a in actions
+            if "set_conversation_response" in a
+        )
+        self.assertEqual(response, "Done.")
+        script_call = next(
+            a for a in actions if a.get("action") == "script.jarvis_play_media"
+        )
+        self.assertIn("trigger.id", script_call["data"]["media_content_type"])
+        for trigger_id in MUSIC_INTENTS.values():
+            self.assertTrue(by_id.get(trigger_id), trigger_id)
+        for case in self.cases:
+            if case.get("intent") not in MUSIC_INTENTS:
+                continue
+            trigger_id = MUSIC_INTENTS[case["intent"]]
+            say = case["say"].strip().rstrip(".")
+            matched = any(
+                sentence_matches(template, say) for template in by_id[trigger_id]
+            )
+            self.assertTrue(
+                matched, f"{case['id']}: {say!r} matches no {trigger_id} sentence"
+            )
+            self.assertEqual(case["response"], "Done.", case["id"])
+            self.assertEqual(case["targets"], ["script.jarvis_play_media"], case["id"])
 
 
 if __name__ == "__main__":
