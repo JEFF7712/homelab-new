@@ -43,6 +43,18 @@ in
       default = "kiosk";
       description = "System user to run cage and browser under";
     };
+
+    scaleFactor = lib.mkOption {
+      type = lib.types.str;
+      default = "1.0";
+      description = "Device scale factor for Chromium";
+    };
+
+    disableOutputs = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "List of output names to disable via wlr-randr before launching Chromium";
+    };
   };
 
   config = lib.mkIf cfg.enable {
