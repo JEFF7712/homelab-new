@@ -386,11 +386,10 @@ views:
               action: toggle
             hold_action:
               action: more-info
-          - entity: switch.kitchen_mushroom_lamp
+          - entity: light.kitchen_mushroom_lamp
             name: Mushroom Lamp
-            features:
-              - type: toggle
-            type: tile
+            fill_container: true
+            type: custom:mushroom-light-card
             tap_action:
               action: toggle
             hold_action:

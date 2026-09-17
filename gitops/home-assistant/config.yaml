@@ -8,6 +8,15 @@ data:
     default_config:
     homeassistant:
       external_url: https://ha.rupan.dev
+      auth_providers:
+        - type: homeassistant
+        - type: trusted_networks
+          trusted_networks:
+            - 10.0.30.15/32
+            - 127.0.0.1
+          trusted_users:
+            10.0.30.15: 8415ac1522be4ac5a1a5460a40e5127f
+          allow_bypass_login: true
     frontend:
       themes: !include_dir_merge_named themes
     automation: !include automations.yaml
@@ -46,6 +55,9 @@ data:
       - platform: switch
         name: Living Room Good Vibes Sign
         entity_id: switch.living_room_good_vibes_sign
+      - platform: switch
+        name: Kitchen Mushroom Lamp
+        entity_id: switch.kitchen_mushroom_lamp
     homekit:
       - name: Homelab Bridge
         port: 21063
@@ -65,6 +77,7 @@ data:
             - light.bedroom_window_plug
             - light.bedroom_mushroom_plug
             - light.living_room_good_vibes_sign
+            - light.kitchen_mushroom_lamp
             - switch.stairs_light
             - climate.living_room_ac_living_room_ac_thermostat
     recorder:
