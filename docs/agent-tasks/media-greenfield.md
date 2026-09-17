@@ -1,18 +1,18 @@
 # Agent Task: media-greenfield
 
-Status: `active`
+Status: `complete`
 
 Base commit: `492473fd0a546902f649f97dfaf056b35724691d`
 
-Checkpoint HEAD: `492473fd0a546902f649f97dfaf056b35724691d`
+Checkpoint HEAD: `d3e76c21397541cebd467a3267e98f6b4417bd31`
 
 Owner: `opencode`
 
 Session: `media-greenfield`
 
-Exported at: `2026-09-16T20:42:57.838807+00:00`
+Exported at: `2026-09-17T04:11:00.124789+00:00`
 
-Current HEAD at export: `23733d0cc09729bc947ed93f5871fb41012f17e3`
+Current HEAD at export: `d3e76c21397541cebd467a3267e98f6b4417bd31`
 
 ## Objective
 
@@ -20,7 +20,8 @@ Greenfield media stack port
 
 ## Acceptance criteria
 
-- [ ] gitops/media renders and passes kubeconform
+- [x] gitops/media renders and passes kubeconform (.agent-state/evidence/checks/gitops.log)
+- [x] 13/14 media pods Running with restored configs (kubectl get pods -n media)
 
 ## Owned source
 
@@ -29,15 +30,19 @@ Greenfield media stack port
 
 ## Remaining work
 
-- scaffold manifests
+- Jellyfin GPU blocked: both GPUs claimed (immich-ml, voice/ollama)
+- re-seed /tank/media bulk library from originals
+- verify SLSKD soulseek password (login rejected)
+- optional: remove /tank/cluster/restore-stage (7.1G) after confirmation
 
 ## Verification
 
-- None recorded
+- `kubectl kustomize gitops/media`: exit 0, evidence `.agent-state/evidence/checks/gitops.log`
+- `just fmt-check`: exit 0, evidence `.agent-state/evidence/checks/gitops.log`
 
 ## Next action
 
-scaffold gitops/media
+handoff reported; open items need user decisions (GPU, bulk media, slskd password)
 
 ## Uncommitted work
 
