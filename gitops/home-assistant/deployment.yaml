@@ -18,6 +18,8 @@ spec:
         checksum/config: f72c60707bbf20f5031a3af637cd68f6d93b6ce2e32509988c7b2fae449483de
         checksum/dependencies: 8eac350ea6f0dc5b311c3b363345bb99229e5efa193aa69111e630103301751e
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab-03
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       securityContext:

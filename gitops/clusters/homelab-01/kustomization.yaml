@@ -13,9 +13,11 @@ resources:
   - ingress-crds.yaml
   - ingress.yaml
   - media.yaml
+  - music-assistant.yaml
   - observability.yaml
   - obsidian.yaml
   - platform.yaml
   - secrets.yaml
   - storage.yaml
+  - voice.yaml
   - websites.yaml

@@ -49,10 +49,14 @@ automation referencing them.
    selected. Set it as the preferred pipeline and select it on the
    satellite device.
    The Jarvis conversation subentry prompt carries the room semantics:
-   downstairs means Living Room plus Kitchen, and a lights command with no
-   room means all downstairs lights. The prompt is UI-managed config-entry
-   state; the `light.downstairs_lights` group in
-   `home-assistant/core/configuration.yaml` is its deterministic backup.
+   downstairs means Living Room plus Kitchen, light commands with no room
+   default to all downstairs lights, and light color changes default to
+   Govee light bulbs. Output is tuned for concise spoken acknowledgments.
+   The context window must be set to `num_ctx: 8192` (at 2048 Ollama truncates
+   the 3.5k+ token prompt and tool schemas) and `llm_hass_api` set to
+   `assist` only (omitting SmartHQ saves ~1.2k tokens of unused tool schemas).
+   The prompt is UI-managed config-entry state; the `light.downstairs_lights`
+   group in `home-assistant/core/configuration.yaml` is its deterministic backup.
 3. Expose exactly the entities Jarvis may control (lights, switches, climate
    in `home-assistant/core/configuration.yaml` groups, plus scenes and the
    shopping list) to Assist. Unexposed entities are invisible to voice
