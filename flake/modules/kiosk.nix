@@ -7,7 +7,9 @@
 let
   cfg = config.homelab.kiosk;
   kioskBrowser = pkgs.writeShellScript "kiosk-browser" ''
-    ${lib.concatMapStringsSep "\n" (output: "${pkgs.wlr-randr}/bin/wlr-randr --output ${output} --off || true") cfg.disableOutputs}
+    ${lib.concatMapStringsSep "\n" (
+      output: "${pkgs.wlr-randr}/bin/wlr-randr --output ${output} --off || true"
+    ) cfg.disableOutputs}
     exec ${pkgs.chromium}/bin/chromium \
       --ozone-platform=wayland \
       --enable-features=UseOzonePlatform \
