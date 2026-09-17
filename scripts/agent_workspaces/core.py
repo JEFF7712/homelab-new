@@ -370,9 +370,9 @@ def _validate_workspace(value: Any, index: int) -> Workspace:
     secret_root = (
         pathlib.PurePosixPath("/run/credentials/agent-workspaces") / item["id"]
     )
-    for index, ref in enumerate(refs):
-        refs[index] = _path_beneath(
-            ref, f"{context}.secret_references[{index}]", secret_root
+    for ref_index, ref in enumerate(refs):
+        refs[ref_index] = _path_beneath(
+            ref, f"{context}.secret_references[{ref_index}]", secret_root
         )
     return Workspace(item)
 
@@ -505,6 +505,7 @@ def render_domain(workspace: Workspace) -> str:
     )
     block_tune = ET.SubElement(domain, "blkiotune")
     ET.SubElement(block_tune, "weight").text = str(resources["io_weight"])
+    ET.SubElement(domain, "cpu", {"mode": "host-passthrough", "check": "none"})
     os_node = ET.SubElement(domain, "os")
     ET.SubElement(os_node, "type", {"arch": "x86_64", "machine": "q35"}).text = "hvm"
     features = ET.SubElement(domain, "features")

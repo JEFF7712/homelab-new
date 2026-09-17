@@ -1,0 +1,89 @@
+{
+  "auth": {
+    "password_auth_to_own": "denied_password",
+    "password_auth_to_peer": "denied_password",
+    "primary_to_own": "accepted",
+    "primary_to_peer": "denied_publickey",
+    "unauthorized_to_own": "denied_publickey",
+    "unauthorized_to_peer": "denied_publickey"
+  },
+  "egress": {
+    "network_url": "https://1.1.1.1",
+    "status": "verified"
+  },
+  "health": {
+    "after": {
+      "captured_at": "2026-09-16T22:09:25.880121+00:00",
+      "etcd": {
+        "readyz_seconds": 0.11246911506168544,
+        "voters": 3
+      },
+      "home_assistant": {
+        "http_status": 200,
+        "seconds": 0.01057581405621022
+      },
+      "nodes": {
+        "ready": 5,
+        "seconds": 0.13868460105732083,
+        "total": 5
+      },
+      "postgres": {
+        "query": "SELECT 1",
+        "seconds": 0.19003994297236204
+      },
+      "pressure_conditions": [],
+      "workspace_slice": {
+        "cpu_quota_per_second": "2s",
+        "cpu_usage_nsec": 1745222641000,
+        "memory_current_bytes": 3193966592,
+        "memory_high_bytes": 9663676416,
+        "memory_max_bytes": 10737418240,
+        "memory_peak_bytes": 4453249024,
+        "oomd_action": "kill",
+        "seconds": 0.02345069800503552
+      }
+    },
+    "before": {
+      "captured_at": "2026-09-16T22:09:20.225207+00:00",
+      "etcd": {
+        "readyz_seconds": 0.10891219298355281,
+        "voters": 3
+      },
+      "home_assistant": {
+        "http_status": 200,
+        "seconds": 0.010941126034595072
+      },
+      "nodes": {
+        "ready": 5,
+        "seconds": 0.14509329991415143,
+        "total": 5
+      },
+      "postgres": {
+        "query": "SELECT 1",
+        "seconds": 0.19186229491606355
+      },
+      "pressure_conditions": [],
+      "workspace_slice": {
+        "cpu_quota_per_second": "2s",
+        "cpu_usage_nsec": 1743028036000,
+        "memory_current_bytes": 3193925632,
+        "memory_high_bytes": 9663676416,
+        "memory_max_bytes": 10737418240,
+        "memory_peak_bytes": 4453249024,
+        "oomd_action": "kill",
+        "seconds": 0.010234576999209821
+      }
+    }
+  },
+  "isolation": {
+    "firewall_drop_delta": {
+      "rupan": 3
+    },
+    "peer_denial": "timeout"
+  },
+  "kind": "agent-workspace-real-access-acceptance",
+  "peer_workspace": "sam",
+  "primary_workspace": "rupan",
+  "result": "accepted",
+  "schema_version": 1
+}
