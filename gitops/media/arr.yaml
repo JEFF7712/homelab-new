@@ -475,7 +475,7 @@ spec:
           image: registry.rupan.dev/upstream/ghcr.io/flaresolverr/flaresolverr@sha256:139dfee1c6f89249c8d665d1333a42e8ec74ec0a86bc6bb1c8461e10d3a66a47  # yamllint disable-line rule:line-length
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false
           env:
             - name: LOG_LEVEL
               value: info
