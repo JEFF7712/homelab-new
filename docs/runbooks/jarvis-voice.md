@@ -84,6 +84,14 @@ automation referencing them.
      treat background hum as ongoing speech until hitting the 10-second STT
      safety timeout. Lowering to 75% with High noise suppression detects the end
      of speech immediately.
+6. Music playback (Music Assistant & providers):
+   - `script.jarvis_play_media` is exposed to Assist to handle music requests.
+   - Platform parameter supports `spotify` (default) and `youtube_music` (`ytmusic`).
+   - Music Assistant runs on `homelab-05` host network
+     (`gitops/music-assistant/server.yaml`) and routes audio to the satellite speaker.
+   - YouTube Music streaming requires a Proof-of-Origin (PO) token server; the
+     `pot-provider` companion container (`brainicism/bgutil-ytdlp-pot-provider:1.2.1`)
+     runs on `homelab-05` at `http://127.0.0.1:4416`.
 
 ## Pinned images
 
@@ -97,6 +105,7 @@ sources for refresh:
 | whisper | `docker.io/rhasspy/wyoming-whisper` | `3.8.1` | Docker Hub tags, newest `3.x` |
 | piper | `docker.io/rhasspy/wyoming-piper` | `2.5.2` | Docker Hub tags, newest non-`omnivoice` `2.x` |
 | ollama | `docker.io/ollama/ollama` | `0.34.1` | Docker Hub tags, newest stable (skip `-rc`) |
+| pot-provider | `docker.io/brainicism/bgutil-ytdlp-pot-provider` | `1.2.1` | Docker Hub tags, newest stable |
 
 Refresh with `just check-changed` and `just check` before handoff. Bumping the
 satellite past `1.1.1` re-derives entity behavior; re-verify the canonical IDs
