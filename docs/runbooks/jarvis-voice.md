@@ -126,6 +126,16 @@ retired PVCs can be reclaimed on the NAS by hand.
   that fits VRAM without spilling to system RAM. Check residency with the
   Ollama `/api/ps` endpoint; a model larger than VRAM spills to system RAM
   and every turn pays for it.
+- `gitops/voice/ollama.yaml` enables `OLLAMA_FLASH_ATTENTION: "true"` and
+  `OLLAMA_KV_CACHE_TYPE: "q8_0"`. On Turing (Compute 7.5), flash attention
+  accelerates attention computation while Q8_0 cuts the KV cache memory footprint
+  in half (~750 MB savings at 8k context), preventing CUDA memory pressure on
+  the 4 GB T1000.
+- Cold KV prompt evaluation vs. warm turn: Warm turns (hitting cached prompt
+  prefixes) take ~0.3–1.0s total. When cold (after model reloads or context resets),
+  evaluating the ~3.5k–3.8k token prefix (system prompt, tool schemas, exposed
+  entities) takes several seconds. Pruning unneeded entities and tool schemas from
+  Assist exposure keeps the prefix lean and directly lowers cold evaluation latency.
 - Whisper runs `turbo` (large-v3-turbo, ~800 MB) on `homelab-04` CPU with
   `--beam-size 1` (greedy decoding; the pinned 3.8.1 defaults to beam 5 on
   x86) and a 6-core cap. Turbo matches large-v3 accuracy near base-model
