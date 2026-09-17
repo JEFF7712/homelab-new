@@ -12,9 +12,11 @@ resources:
   - immich.yaml
   - ingress-crds.yaml
   - ingress.yaml
+  - media.yaml
   - observability.yaml
   - obsidian.yaml
   - platform.yaml
   - secrets.yaml
   - storage.yaml
+  - voice.yaml
   - websites.yaml

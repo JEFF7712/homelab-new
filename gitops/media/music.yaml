@@ -1,0 +1,137 @@
+# Music: navidrome + nightly beets tagger. Library is read-only for the
+# server; beets owns writes on its schedule.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: navidrome
+  namespace: media
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: navidrome
+  template:
+    metadata:
+      labels:
+        app: navidrome
+    spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: navidrome
+          image: registry.rupan.dev/upstream/docker.io/deluan/navidrome@sha256:9012939114fbb1bb641b81cf96dec5ded15f0aafefe8d47a511d7cb919658e40  # yamllint disable-line rule:line-length
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          env:
+            - name: ND_MUSICFOLDER
+              value: /media/music
+            - name: ND_DATAFOLDER
+              value: /data
+            - name: ND_SCANSCHEDULE
+              value: 1h
+            - name: ND_SCANNER_PURGEMISSING
+              value: always
+            - name: ND_LOGLEVEL
+              value: info
+            - name: TZ
+              value: America/Chicago
+          ports:
+            - containerPort: 4533
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: media
+              mountPath: /media
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: navidrome-data
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-library
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: navidrome
+  namespace: media
+spec:
+  selector:
+    app: navidrome
+  ports:
+    - port: 80
+      targetPort: 4533
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: beets-nightly
+  namespace: media
+spec:
+  schedule: 0 3 * * *
+  timeZone: America/Chicago
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            fsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: beets
+              image: registry.rupan.dev/upstream/lscr.io/linuxserver/beets@sha256:90b1404e962dfc09c1926f4d8dca8920fc90d71369df5398340a12eb8ce7328c  # yamllint disable-line rule:line-length
+              command: ["beet", "-c", "/config/config.yaml", "import", "-p", "-q", "/data/music"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+              env:
+                - name: PUID
+                  value: "1000"
+                - name: PGID
+                  value: "1000"
+                - name: TZ
+                  value: America/Chicago
+              volumeMounts:
+                - name: media
+                  mountPath: /data
+                - name: beets-config
+                  mountPath: /config
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 512Mi
+                limits:
+                  memory: 2Gi
+          volumes:
+            - name: media
+              persistentVolumeClaim:
+                claimName: media-library
+            - name: beets-config
+              configMap:
+                name: beets-config
+            - name: tmp
+              emptyDir: {}

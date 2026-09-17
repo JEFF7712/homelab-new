@@ -1,0 +1,215 @@
+# Frontend/helpers: seerr requests, filebrowser raw access, subgen whisper
+# subtitles (internal-only, consumed by bazarr/sonarr side).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seerr
+  namespace: media
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: seerr
+  template:
+    metadata:
+      labels:
+        app: seerr
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: fix-permissions
+          image: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616  # yamllint disable-line rule:line-length
+          command: ["sh", "-c", "chown -R 1000:1000 /app/config"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+      containers:
+        - name: seerr
+          image: registry.rupan.dev/upstream/docker.io/seerr/seerr@sha256:f4768de5f616248d723e05891f3345a1402123775d03bf0890dbfedc0831bda1  # yamllint disable-line rule:line-length
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+          env:
+            - name: TZ
+              value: America/Chicago
+          ports:
+            - containerPort: 5055
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: seerr-config
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seerr
+  namespace: media
+spec:
+  selector:
+    app: seerr
+  ports:
+    - port: 80
+      targetPort: 5055
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filebrowser
+  namespace: media
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: filebrowser
+  template:
+    metadata:
+      labels:
+        app: filebrowser
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: filebrowser
+          image: registry.rupan.dev/upstream/docker.io/filebrowser/filebrowser@sha256:a469ea076d4a1b4b1d86a41d130f2f536cd9da996a2b1fb39c0d7635f9d89b9a  # yamllint disable-line rule:line-length
+          args: ["--root=/srv", "--database=/database/filebrowser.db", "--port=8080"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: db
+              mountPath: /database
+            - name: media
+              mountPath: /srv
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: db
+          persistentVolumeClaim:
+            claimName: filebrowser-db
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-library
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: filebrowser
+  namespace: media
+spec:
+  selector:
+    app: filebrowser
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subgen
+  namespace: media
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: subgen
+  template:
+    metadata:
+      labels:
+        app: subgen
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: subgen
+          image: registry.rupan.dev/upstream/docker.io/mccloud/subgen@sha256:2841515a3b409677669f0a10d77d49160bffb8111db91640fb33a4db06b3396c  # yamllint disable-line rule:line-length
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          env:
+            - name: WHISPER_MODEL
+              value: small
+            - name: TRANSCRIBE_DEVICE
+              value: cpu
+            - name: WHISPER_THREADS
+              value: "4"
+            - name: GUNICORN_WORKERS
+              value: "1"
+            - name: TIMEOUT
+              value: "3600"
+            - name: CONCURRENT
+              value: "1"
+            - name: TZ
+              value: America/Chicago
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: media
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+            limits:
+              cpu: "3"
+              memory: 4Gi
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-library
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subgen
+  namespace: media
+spec:
+  selector:
+    app: subgen
+  ports:
+    - port: 80
+      targetPort: 9000

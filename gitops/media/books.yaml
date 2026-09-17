@@ -1,0 +1,171 @@
+# Books: calibre-web-automated (books.rupan.dev) + custom bookshelf.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calibre-web
+  namespace: media
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: calibre-web
+  template:
+    metadata:
+      labels:
+        app: calibre-web
+    spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: fix-permissions
+          image: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616  # yamllint disable-line rule:line-length
+          command: ["sh", "-c", "chown -R 1000:1000 /config"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      containers:
+        - name: calibre-web
+          image: registry.rupan.dev/upstream/docker.io/crocodilestick/calibre-web-automated@sha256:c31a738b6d5ec6982c050063dd3f063b6943eb1051fc81144789f840d9093a8d  # yamllint disable-line rule:line-length
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: America/Chicago
+          ports:
+            - containerPort: 8083
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /calibre-library
+              subPath: books/library
+            - name: media
+              mountPath: /cwa-book-ingest
+              subPath: books/ingest
+            - name: dirs
+              mountPath: /app/calibre-web-automated/dirs.json
+              subPath: dirs.json
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: calibre-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-library
+        - name: dirs
+          configMap:
+            name: calibre-web-dirs
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: calibre-web
+  namespace: media
+spec:
+  selector:
+    app: calibre-web
+  ports:
+    - port: 80
+      targetPort: 8083
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookshelf
+  namespace: media
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: bookshelf
+  template:
+    metadata:
+      labels:
+        app: bookshelf
+    spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: fix-permissions
+          image: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616  # yamllint disable-line rule:line-length
+          command: ["sh", "-c", "chown -R 1000:1000 /config"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      containers:
+        - name: bookshelf
+          image: registry.rupan.dev/apps/bookshelf@sha256:9a185c4195c92413993794d44ebe380b5dab0bcb158869a344ef3cd130b3c744  # yamllint disable-line rule:line-length
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          env:
+            - name: TZ
+              value: America/Chicago
+          ports:
+            - containerPort: 8787
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: bookshelf-config
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-library
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookshelf
+  namespace: media
+spec:
+  selector:
+    app: bookshelf
+  ports:
+    - port: 80
+      targetPort: 8787

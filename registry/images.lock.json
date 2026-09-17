@@ -1,6 +1,6 @@
 {
   "destination_registry": "registry.rupan.dev",
-  "generated_at": "2026-09-16T02:07:03+00:00",
+  "generated_at": "2026-09-16T20:52:16+00:00",
   "images": [
     {
       "authenticity": {
@@ -43,6 +43,48 @@
         "registry": "ghcr.io",
         "repository": "jeff7712/apolline",
         "tag": "0.0.13"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/books.yaml:129"
+      ],
+      "destination_repository": "apps/bookshelf",
+      "destination_tags": [
+        "retention-deployed-9a185c4195c92413"
+      ],
+      "digest": "sha256:9a185c4195c92413993794d44ebe380b5dab0bcb158869a344ef3cd130b3c744",
+      "id": "first-party-jeff7712-bookshelf-eae2399244a0",
+      "kind": "first-party",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/bookshelf",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:9a185c4195c92413993794d44ebe380b5dab0bcb158869a344ef3cd130b3c744",
+        "reference": "ghcr.io/jeff7712/bookshelf@sha256:9a185c4195c92413993794d44ebe380b5dab0bcb158869a344ef3cd130b3c744",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/bookshelf",
+        "tag": null
       }
     },
     {
@@ -1023,6 +1065,85 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/media/books.yaml:36"
+      ],
+      "destination_repository": "upstream/docker.io/crocodilestick/calibre-web-automated",
+      "destination_tags": [
+        "retention-deployed-c31a738b6d5ec698"
+      ],
+      "digest": "sha256:c31a738b6d5ec6982c050063dd3f063b6943eb1051fc81144789f840d9093a8d",
+      "id": "upstream-crocodilestick-calibre-web-automated-9927dc80f54f",
+      "kind": "upstream",
+      "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:c31a738b6d5ec6982c050063dd3f063b6943eb1051fc81144789f840d9093a8d",
+        "reference": "docker.io/crocodilestick/calibre-web-automated@sha256:c31a738b6d5ec6982c050063dd3f063b6943eb1051fc81144789f840d9093a8d",
+        "registry": "docker.io",
+        "repository": "crocodilestick/calibre-web-automated",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/music.yaml:27"
+      ],
+      "destination_repository": "upstream/docker.io/deluan/navidrome",
+      "destination_tags": [
+        "retention-deployed-9012939114fbb1bb"
+      ],
+      "digest": "sha256:9012939114fbb1bb641b81cf96dec5ded15f0aafefe8d47a511d7cb919658e40",
+      "id": "upstream-deluan-navidrome-c1adb9880fdc",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/386",
+        "linux/amd64",
+        "linux/arm/v6",
+        "linux/arm/v7",
+        "linux/arm64",
+        "linux/riscv64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:9012939114fbb1bb641b81cf96dec5ded15f0aafefe8d47a511d7cb919658e40",
+        "reference": "docker.io/deluan/navidrome@sha256:9012939114fbb1bb641b81cf96dec5ded15f0aafefe8d47a511d7cb919658e40",
+        "registry": "docker.io",
+        "repository": "deluan/navidrome",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "observed:external-secrets/external-secrets-5dcc447d56-9wnsq/external-secrets",
         "observed:external-secrets/external-secrets-cert-controller-7bb979fc44-85gwg/cert-controller",
         "observed:external-secrets/external-secrets-webhook-55585c5576-9svqm/webhook"
@@ -1057,6 +1178,84 @@
         "registry": "ghcr.io",
         "repository": "external-secrets/external-secrets",
         "tag": "v2.10.0"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/frontend.yaml:99"
+      ],
+      "destination_repository": "upstream/docker.io/filebrowser/filebrowser",
+      "destination_tags": [
+        "retention-deployed-a469ea076d4a1b4b"
+      ],
+      "digest": "sha256:a469ea076d4a1b4b1d86a41d130f2f536cd9da996a2b1fb39c0d7635f9d89b9a",
+      "id": "upstream-filebrowser-filebrowser-893178c05586",
+      "kind": "upstream",
+      "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm/v7",
+        "linux/arm64"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:a469ea076d4a1b4b1d86a41d130f2f536cd9da996a2b1fb39c0d7635f9d89b9a",
+        "reference": "docker.io/filebrowser/filebrowser@sha256:a469ea076d4a1b4b1d86a41d130f2f536cd9da996a2b1fb39c0d7635f9d89b9a",
+        "registry": "docker.io",
+        "repository": "filebrowser/filebrowser",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/arr.yaml:455"
+      ],
+      "destination_repository": "upstream/ghcr.io/flaresolverr/flaresolverr",
+      "destination_tags": [
+        "retention-deployed-139dfee1c6f89249"
+      ],
+      "digest": "sha256:139dfee1c6f89249c8d665d1333a42e8ec74ec0a86bc6bb1c8461e10d3a66a47",
+      "id": "upstream-flaresolverr-flaresolverr-aced3508bf6b",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/386",
+        "linux/amd64",
+        "linux/arm/v7",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:139dfee1c6f89249c8d665d1333a42e8ec74ec0a86bc6bb1c8461e10d3a66a47",
+        "reference": "ghcr.io/flaresolverr/flaresolverr@sha256:139dfee1c6f89249c8d665d1333a42e8ec74ec0a86bc6bb1c8461e10d3a66a47",
+        "registry": "ghcr.io",
+        "repository": "flaresolverr/flaresolverr",
+        "tag": null
       }
     },
     {
@@ -1461,6 +1660,43 @@
         "reference": "ghcr.io/home-assistant/home-assistant@sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17",
         "registry": "ghcr.io",
         "repository": "home-assistant/home-assistant",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/arr.yaml:209"
+      ],
+      "destination_repository": "upstream/ghcr.io/hotio/lidarr",
+      "destination_tags": [
+        "retention-deployed-18b65fc099647c1f"
+      ],
+      "digest": "sha256:18b65fc099647c1f60254a16f51219cfc61f8adfc64027b6c55aa3dc82e6895f",
+      "id": "upstream-hotio-lidarr-4239f8cb40ac",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:18b65fc099647c1f60254a16f51219cfc61f8adfc64027b6c55aa3dc82e6895f",
+        "reference": "ghcr.io/hotio/lidarr@sha256:18b65fc099647c1f60254a16f51219cfc61f8adfc64027b6c55aa3dc82e6895f",
+        "registry": "ghcr.io",
+        "repository": "hotio/lidarr",
         "tag": null
       }
     },
@@ -1997,7 +2233,65 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/media/download.yaml:45"
+      ],
+      "destination_repository": "upstream/docker.io/library/alpine",
+      "destination_tags": [
+        "retention-deployed-28bd5fe8b56d1bd0"
+      ],
+      "digest": "sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b",
+      "id": "upstream-library-alpine-a4ebc441200a",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/386",
+        "linux/amd64",
+        "linux/arm/v6",
+        "linux/arm/v7",
+        "linux/arm64/v8",
+        "linux/ppc64le",
+        "linux/riscv64",
+        "linux/s390x",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b",
+        "reference": "docker.io/library/alpine@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b",
+        "registry": "docker.io",
+        "repository": "library/alpine",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/home-assistant/deployment.yaml:28",
+        "gitops/home-assistant/deployment.yaml:49",
+        "gitops/media/arr.yaml:115",
+        "gitops/media/arr.yaml:199",
+        "gitops/media/arr.yaml:27",
+        "gitops/media/arr.yaml:297",
+        "gitops/media/arr.yaml:374",
+        "gitops/media/books.yaml:119",
+        "gitops/media/books.yaml:26",
+        "gitops/media/download.yaml:32",
+        "gitops/media/download.yaml:65",
+        "gitops/media/frontend.yaml:25",
+        "gitops/media/jellyfin.yaml:32",
         "gitops/obsidian/couchdb.yaml:25",
+        "gitops/obsidian/couchdb.yaml:27",
         "gitops/websites/nixagent/deployment.yaml:22",
         "gitops/websites/spatia/deployment.yaml:22",
         "observed:nixagent/website-deploy-796cd7c89d-dqdnf/prepare-nginx-tmp",
@@ -2400,6 +2694,272 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/media/arr.yaml:384"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/bazarr",
+      "destination_tags": [
+        "retention-deployed-3a820372f19fcb29"
+      ],
+      "digest": "sha256:3a820372f19fcb2981ea19fe4b5382934d67414afaba974bce831ddda0a64a02",
+      "id": "upstream-linuxserver-bazarr-4315b01b6cd7",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:3a820372f19fcb2981ea19fe4b5382934d67414afaba974bce831ddda0a64a02",
+        "reference": "lscr.io/linuxserver/bazarr@sha256:3a820372f19fcb2981ea19fe4b5382934d67414afaba974bce831ddda0a64a02",
+        "registry": "lscr.io",
+        "repository": "linuxserver/bazarr",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/music.yaml:103"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/beets",
+      "destination_tags": [
+        "retention-deployed-90b1404e962dfc09"
+      ],
+      "digest": "sha256:90b1404e962dfc09c1926f4d8dca8920fc90d71369df5398340a12eb8ce7328c",
+      "id": "upstream-linuxserver-beets-93b2a61d13c7",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:90b1404e962dfc09c1926f4d8dca8920fc90d71369df5398340a12eb8ce7328c",
+        "reference": "lscr.io/linuxserver/beets@sha256:90b1404e962dfc09c1926f4d8dca8920fc90d71369df5398340a12eb8ce7328c",
+        "registry": "lscr.io",
+        "repository": "linuxserver/beets",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/jellyfin.yaml:42"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/jellyfin",
+      "destination_tags": [
+        "retention-deployed-4f6d8dfc53ec5a1d"
+      ],
+      "digest": "sha256:4f6d8dfc53ec5a1ddf7a90e4338972d57d7b0adff6dc88b53184f8285d0b594f",
+      "id": "upstream-linuxserver-jellyfin-f24097bf25c9",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:4f6d8dfc53ec5a1ddf7a90e4338972d57d7b0adff6dc88b53184f8285d0b594f",
+        "reference": "lscr.io/linuxserver/jellyfin@sha256:4f6d8dfc53ec5a1ddf7a90e4338972d57d7b0adff6dc88b53184f8285d0b594f",
+        "registry": "lscr.io",
+        "repository": "linuxserver/jellyfin",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/arr.yaml:307"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/prowlarr",
+      "destination_tags": [
+        "retention-deployed-ab91301778251f82"
+      ],
+      "digest": "sha256:ab91301778251f82a31bbfc87f0497376d59e84439d9a1ceff6a61d594d1e3d7",
+      "id": "upstream-linuxserver-prowlarr-42b1b25f4e88",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ab91301778251f82a31bbfc87f0497376d59e84439d9a1ceff6a61d594d1e3d7",
+        "reference": "lscr.io/linuxserver/prowlarr@sha256:ab91301778251f82a31bbfc87f0497376d59e84439d9a1ceff6a61d594d1e3d7",
+        "registry": "lscr.io",
+        "repository": "linuxserver/prowlarr",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/download.yaml:135"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/qbittorrent",
+      "destination_tags": [
+        "retention-deployed-304b19cf94bf4fda"
+      ],
+      "digest": "sha256:304b19cf94bf4fda534e0b086cab9c5f1a9e139a8180c05c0ad7d2ba1526fa99",
+      "id": "upstream-linuxserver-qbittorrent-fd10ea3e2403",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:304b19cf94bf4fda534e0b086cab9c5f1a9e139a8180c05c0ad7d2ba1526fa99",
+        "reference": "lscr.io/linuxserver/qbittorrent@sha256:304b19cf94bf4fda534e0b086cab9c5f1a9e139a8180c05c0ad7d2ba1526fa99",
+        "registry": "lscr.io",
+        "repository": "linuxserver/qbittorrent",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/arr.yaml:125"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/radarr",
+      "destination_tags": [
+        "retention-deployed-119aaa4a4f7349bc"
+      ],
+      "digest": "sha256:119aaa4a4f7349bcd2a136c5373a0d7925b5479915c7dfe0c0ad352db2a6d438",
+      "id": "upstream-linuxserver-radarr-3aac2b830377",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:119aaa4a4f7349bcd2a136c5373a0d7925b5479915c7dfe0c0ad352db2a6d438",
+        "reference": "lscr.io/linuxserver/radarr@sha256:119aaa4a4f7349bcd2a136c5373a0d7925b5479915c7dfe0c0ad352db2a6d438",
+        "registry": "lscr.io",
+        "repository": "linuxserver/radarr",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/arr.yaml:37"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/sonarr",
+      "destination_tags": [
+        "retention-deployed-c19aa4ecdf03d73e"
+      ],
+      "digest": "sha256:c19aa4ecdf03d73e1d5c901da33744cb7eb4d921f89bafed1ca264601d7fa224",
+      "id": "upstream-linuxserver-sonarr-4bbdc78a74e8",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:c19aa4ecdf03d73e1d5c901da33744cb7eb4d921f89bafed1ca264601d7fa224",
+        "reference": "lscr.io/linuxserver/sonarr@sha256:c19aa4ecdf03d73e1d5c901da33744cb7eb4d921f89bafed1ca264601d7fa224",
+        "registry": "lscr.io",
+        "repository": "linuxserver/sonarr",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "gitops/home-assistant/deployment.yaml:89"
       ],
       "destination_repository": "upstream/ghcr.io/matter-js/matterjs-server",
@@ -2431,6 +2991,43 @@
         "registry": "ghcr.io",
         "repository": "matter-js/matterjs-server",
         "tag": "1.4.0"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/frontend.yaml:165"
+      ],
+      "destination_repository": "upstream/docker.io/mccloud/subgen",
+      "destination_tags": [
+        "retention-deployed-2841515a3b409677"
+      ],
+      "digest": "sha256:2841515a3b409677669f0a10d77d49160bffb8111db91640fb33a4db06b3396c",
+      "id": "upstream-mccloud-subgen-fb99eda6f5f4",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:2841515a3b409677669f0a10d77d49160bffb8111db91640fb33a4db06b3396c",
+        "reference": "docker.io/mccloud/subgen@sha256:2841515a3b409677669f0a10d77d49160bffb8111db91640fb33a4db06b3396c",
+        "registry": "docker.io",
+        "repository": "mccloud/subgen",
+        "tag": null
       }
     },
     {
@@ -2779,6 +3376,48 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/media/download.yaml:85"
+      ],
+      "destination_repository": "upstream/docker.io/qmcgaw/gluetun",
+      "destination_tags": [
+        "retention-deployed-8e92dcb57ed64b0e"
+      ],
+      "digest": "sha256:8e92dcb57ed64b0e4469c933f00ef1e09ee00867fee150e783a95fa6b53effa4",
+      "id": "upstream-qmcgaw-gluetun-b5f01bf4790a",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/386",
+        "linux/amd64",
+        "linux/arm/v6",
+        "linux/arm/v7",
+        "linux/arm64",
+        "linux/ppc64le",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:8e92dcb57ed64b0e4469c933f00ef1e09ee00867fee150e783a95fa6b53effa4",
+        "reference": "docker.io/qmcgaw/gluetun@sha256:8e92dcb57ed64b0e4469c933f00ef1e09ee00867fee150e783a95fa6b53effa4",
+        "registry": "docker.io",
+        "repository": "qmcgaw/gluetun",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "observed:kube-system/helm-install-cilium-cnhlj/helm"
       ],
       "destination_repository": "upstream/docker.io/rancher/klipper-helm",
@@ -3037,6 +3676,43 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/media/frontend.yaml:35"
+      ],
+      "destination_repository": "upstream/docker.io/seerr/seerr",
+      "destination_tags": [
+        "retention-deployed-f4768de5f616248d"
+      ],
+      "digest": "sha256:f4768de5f616248d723e05891f3345a1402123775d03bf0890dbfedc0831bda1",
+      "id": "upstream-seerr-seerr-9d87cd30fd63",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:f4768de5f616248d723e05891f3345a1402123775d03bf0890dbfedc0831bda1",
+        "reference": "docker.io/seerr/seerr@sha256:f4768de5f616248d723e05891f3345a1402123775d03bf0890dbfedc0831bda1",
+        "registry": "docker.io",
+        "repository": "seerr/seerr",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "observed:storage/nfs-subdir-external-provisioner-54bd59cbd-l4qvp/nfs-subdir-external-provisioner"
       ],
       "destination_repository": "upstream/registry.k8s.io/sig-storage/nfs-subdir-external-provisioner",
@@ -3070,6 +3746,45 @@
         "registry": "registry.k8s.io",
         "repository": "sig-storage/nfs-subdir-external-provisioner",
         "tag": "v4.0.2"
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/media/download.yaml:163"
+      ],
+      "destination_repository": "upstream/docker.io/slskd/slskd",
+      "destination_tags": [
+        "retention-deployed-ecd4026d4f8fb504"
+      ],
+      "digest": "sha256:ecd4026d4f8fb504e2cc55323efa2c1f5b56d20d3686b018249cc36b48ea17a6",
+      "id": "upstream-slskd-slskd-c6b4994e4748",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm/v7",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ecd4026d4f8fb504e2cc55323efa2c1f5b56d20d3686b018249cc36b48ea17a6",
+        "reference": "docker.io/slskd/slskd@sha256:ecd4026d4f8fb504e2cc55323efa2c1f5b56d20d3686b018249cc36b48ea17a6",
+        "registry": "docker.io",
+        "repository": "slskd/slskd",
+        "tag": null
       }
     },
     {
@@ -3195,7 +3910,7 @@
   "kind": "registry-image-lock",
   "mirror_exceptions": [],
   "schema_version": 1,
-  "source_revision": "19c46aebc58baf84cf9b8de9b4ad34a405e93264",
+  "source_revision": "23733d0cc09729bc947ed93f5871fb41012f17e3",
   "unresolved_inputs": [
     {
       "blocking": false,

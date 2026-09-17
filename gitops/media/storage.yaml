@@ -1,0 +1,33 @@
+# Bulk media lives on nas-01 /tank/media (recordsize 1M, weekly snapshots),
+# exported RW to the k3s nodes (10.0.30.0/24). Static PV so the library
+# survives cluster rebuilds; app configs use dynamic nfs-cluster PVCs.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-library-nfs
+spec:
+  capacity:
+    storage: 6Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  mountOptions:
+    - nfsvers=4.2
+  nfs:
+    server: 10.0.30.20
+    path: /tank/media
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-library
+  namespace: media
+spec:
+  volumeName: media-library-nfs
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 6Ti

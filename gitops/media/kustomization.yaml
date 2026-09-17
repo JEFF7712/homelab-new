@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - secrets.yaml
+  - storage.yaml
+  - volumes.yaml
+  - configs.yaml
+  - arr.yaml
+  - download.yaml
+  - jellyfin.yaml
+  - books.yaml
+  - music.yaml
+  - frontend.yaml
+  - routes.yaml

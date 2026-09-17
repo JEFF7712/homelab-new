@@ -1,0 +1,255 @@
+# Shared download gateway: ONE AirVPN WireGuard tunnel (gluetun) with
+# qbittorrent and slskd sharing its network namespace. Kill-switch applies
+# to both. Single AirVPN connection instead of two.
+#
+# Port-forward note: AirVPN assigns forwarded ports per account. Both apps
+# default to VPN_PORT_FORWARDING; if a second port is provisioned, set
+# SLSKD listen port to it via the VPN_PORT_FORWARDING_2 key (optional).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: download
+  namespace: media
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: download
+  template:
+    metadata:
+      labels:
+        app: download
+    spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: fix-permissions
+          image: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616  # yamllint disable-line rule:line-length
+          command: ["sh", "-c", "chown -R 1000:1000 /config-qbit && chown -R 1000:1000 /config-slskd && mkdir -p /data/downloads/soulseek/incomplete && chown 1000:1000 /data/downloads/soulseek /data/downloads/soulseek/incomplete"]  # yamllint disable-line rule:line-length
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: qbit-config
+              mountPath: /config-qbit
+            - name: slskd-config
+              mountPath: /config-slskd
+            - name: media
+              mountPath: /data
+        - name: seed-slskd
+          image: registry.rupan.dev/upstream/docker.io/library/alpine@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b  # yamllint disable-line rule:line-length
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              if [ -d /config-slskd/slskd.yml ]; then rm -rf /config-slskd/slskd.yml; fi
+              if [ ! -f /config-slskd/slskd.yml ]; then echo "$SLSKD_YML" > /config-slskd/slskd.yml; fi
+              chown 1000:1000 /config-slskd/slskd.yml
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          env:
+            - name: SLSKD_YML
+              valueFrom:
+                secretKeyRef:
+                  name: media-app
+                  key: SLSKD_YML
+          volumeMounts:
+            - name: slskd-config
+              mountPath: /config-slskd
+        - name: configure-qbittorrent
+          image: registry.rupan.dev/upstream/docker.io/library/busybox@sha256:dc2d74b28e4cf8984fa52af1f39bc7c3d9c73760b41a74d629f5d11b1ab28616  # yamllint disable-line rule:line-length
+          command: ["sh", "-c"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          args:
+            - |
+              mkdir -p /config-qbit/qBittorrent
+              CONF="/config-qbit/qBittorrent/qBittorrent.conf"
+              if [ ! -f "$CONF" ]; then echo "[Preferences]" > "$CONF"; fi
+              if grep -q "HostHeaderValidation" "$CONF"; then
+                sed -i 's/HostHeaderValidation=true/HostHeaderValidation=false/' "$CONF"
+              else
+                echo "WebUI\\HostHeaderValidation=false" >> "$CONF"
+              fi
+          volumeMounts:
+            - name: qbit-config
+              mountPath: /config-qbit
+      containers:
+        - name: gluetun
+          image: registry.rupan.dev/upstream/docker.io/qmcgaw/gluetun@sha256:8e92dcb57ed64b0e4469c933f00ef1e09ee00867fee150e783a95fa6b53effa4  # yamllint disable-line rule:line-length
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add: ["NET_ADMIN"]
+            readOnlyRootFilesystem: false
+          env:
+            - name: VPN_SERVICE_PROVIDER
+              value: airvpn
+            - name: VPN_TYPE
+              value: wireguard
+            - name: VPN_MTU
+              value: "1320"
+            - name: FIREWALL_OUTBOUND_SUBNETS
+              value: 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+            - name: FIREWALL_INPUT_PORTS
+              value: 8080,5030
+            - name: FIREWALL_VPN_INPUT_PORTS
+              valueFrom:
+                secretKeyRef:
+                  name: media-vpn
+                  key: VPN_PORT_FORWARDING
+            - name: WIREGUARD_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: media-vpn
+                  key: WIREGUARD_PRIVATE_KEY
+            - name: WIREGUARD_PRESHARED_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: media-vpn
+                  key: WIREGUARD_PRESHARED_KEY
+            - name: WIREGUARD_ADDRESSES
+              valueFrom:
+                secretKeyRef:
+                  name: media-vpn
+                  key: WIREGUARD_ADDRESSES
+            - name: BLOCK_MALICIOUS
+              value: "off"
+          ports:
+            - containerPort: 8080
+              name: qbit
+            - containerPort: 5030
+              name: slskd
+          volumeMounts:
+            - name: gluetun-config
+              mountPath: /gluetun
+            - name: tmp
+              mountPath: /tmp
+        - name: qbittorrent
+          image: registry.rupan.dev/upstream/lscr.io/linuxserver/qbittorrent@sha256:304b19cf94bf4fda534e0b086cab9c5f1a9e139a8180c05c0ad7d2ba1526fa99  # yamllint disable-line rule:line-length
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: America/Chicago
+            - name: WEBUI_PORT
+              value: "8080"
+          volumeMounts:
+            - name: media
+              mountPath: /data
+            - name: qbit-config
+              mountPath: /config
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+        - name: slskd
+          image: registry.rupan.dev/upstream/docker.io/slskd/slskd@sha256:ecd4026d4f8fb504e2cc55323efa2c1f5b56d20d3686b018249cc36b48ea17a6  # yamllint disable-line rule:line-length
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          env:
+            - name: SLSKD_HTTP_URL
+              value: http://0.0.0.0:5030
+            - name: SLSKD_UMASK
+              value: "000"
+            - name: SLSKD_WEB__PORT
+              value: "5030"
+            - name: SLSKD_WEB__IP_ADDRESS
+              value: 0.0.0.0
+            - name: SLSKD_APP_DIR
+              value: /config
+            - name: SLSKD_REMOTE_CONFIGURATION
+              value: "true"
+            - name: SLSKD_SOULSEEK__LISTEN_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: media-vpn
+                  key: VPN_PORT_FORWARDING
+            - name: SLSKD_SOULSEEK__USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: media-app
+                  key: SLSKD_USERNAME
+            - name: SLSKD_SOULSEEK__PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: media-app
+                  key: SLSKD_PASSWORD
+          volumeMounts:
+            - name: media
+              mountPath: /data
+            - name: slskd-config
+              mountPath: /config
+            - name: tmp
+              mountPath: /tmp
+            - name: dotnet-bundle
+              mountPath: /.net
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-library
+        - name: qbit-config
+          persistentVolumeClaim:
+            claimName: download-config
+        - name: slskd-config
+          persistentVolumeClaim:
+            claimName: slskd-config
+        - name: gluetun-config
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: dotnet-bundle
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent
+  namespace: media
+spec:
+  selector:
+    app: download
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: slskd
+  namespace: media
+spec:
+  selector:
+    app: download
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5030

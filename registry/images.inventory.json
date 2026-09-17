@@ -1,9 +1,8 @@
 {
-  "generated_at": "2026-09-09T14:58:54+00:00",
+  "generated_at": "2026-09-17T00:36:41+00:00",
   "images": [
     {
       "consumers": [
-        "gitops/websites/apolline/deployment.yaml:23",
         "observed:apolline/website-deploy-5b9d449c7f-l5d85/web"
       ],
       "destination_repository": "apps/apolline",
@@ -32,7 +31,27 @@
     },
     {
       "consumers": [
-        "gitops/websites/cr-demo/deployment.yaml:22",
+        "gitops/media/books.yaml:129"
+      ],
+      "destination_repository": "apps/bookshelf",
+      "id": "first-party-jeff7712-bookshelf-eae2399244a0",
+      "kind": "first-party",
+      "producer": {
+        "location": "external-image-repository:ghcr.io/jeff7712/bookshelf",
+        "owner": "jeff7712",
+        "pipeline_status": "unverified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:9a185c4195c92413993794d44ebe380b5dab0bcb158869a344ef3cd130b3c744",
+        "reference": "ghcr.io/jeff7712/bookshelf@sha256:9a185c4195c92413993794d44ebe380b5dab0bcb158869a344ef3cd130b3c744",
+        "registry": "ghcr.io",
+        "repository": "jeff7712/bookshelf",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
         "observed:cr-demo/website-deploy-5fdd8fd64f-kn8rv/web"
       ],
       "destination_repository": "apps/cr-demo",
@@ -58,7 +77,6 @@
     },
     {
       "consumers": [
-        "gitops/websites/darkbit/deployment.yaml:23",
         "observed:darkbit/website-deploy-5c87cf8d7d-lgrn8/web"
       ],
       "destination_repository": "apps/darkbit",
@@ -87,7 +105,6 @@
     },
     {
       "consumers": [
-        "gitops/websites/distrojeff/deployment.yaml:23",
         "observed:distrojeff/website-deploy-79b9b9896c-cjx5f/web"
       ],
       "destination_repository": "apps/distrojeff-site",
@@ -112,27 +129,6 @@
         "registry": "ghcr.io",
         "repository": "jeff7712/distrojeff-site",
         "tag": "0.0.22"
-      }
-    },
-    {
-      "consumers": [
-        "gitops/automation/renovate-agent.yaml:23"
-      ],
-      "destination_repository": "apps/homelab-renovate-agent",
-      "id": "first-party-jeff7712-homelab-renovate-agent-59244b81562c",
-      "kind": "first-party",
-      "producer": {
-        "location": "external-image-repository:docker.io/jeff7712/homelab-renovate-agent",
-        "owner": "jeff7712",
-        "pipeline_status": "unverified"
-      },
-      "retention_class": "deployed",
-      "source": {
-        "digest": null,
-        "reference": "docker.io/jeff7712/homelab-renovate-agent:0.0.1495",
-        "registry": "docker.io",
-        "repository": "jeff7712/homelab-renovate-agent",
-        "tag": "0.0.1495"
       }
     },
     {
@@ -187,28 +183,6 @@
     },
     {
       "consumers": [
-        "gitops/automation/renovate-dashboard.yaml:26"
-      ],
-      "destination_repository": "apps/homelab-renovate-dashboard",
-      "id": "first-party-jeff7712-homelab-renovate-dashboard-45fe005a5032",
-      "kind": "first-party",
-      "producer": {
-        "location": "external-image-repository:docker.io/jeff7712/homelab-renovate-dashboard",
-        "owner": "jeff7712",
-        "pipeline_status": "unverified"
-      },
-      "retention_class": "deployed",
-      "source": {
-        "digest": null,
-        "reference": "docker.io/jeff7712/homelab-renovate-dashboard:0.0.1495",
-        "registry": "docker.io",
-        "repository": "jeff7712/homelab-renovate-dashboard",
-        "tag": "0.0.1495"
-      }
-    },
-    {
-      "consumers": [
-        "gitops/websites/ism/deployment.yaml:22",
         "observed:ism/website-deploy-57b4f774c-4pqms/web"
       ],
       "destination_repository": "apps/ism",
@@ -234,7 +208,6 @@
     },
     {
       "consumers": [
-        "gitops/websites/majorfinder/deployment.yaml:24",
         "observed:majorfinder/website-deploy-f99cbbc9c-bjpn9/web"
       ],
       "destination_repository": "apps/majorfinder",
@@ -260,7 +233,6 @@
     },
     {
       "consumers": [
-        "gitops/websites/nixagent/deployment.yaml:38",
         "observed:nixagent/website-deploy-796cd7c89d-dqdnf/web"
       ],
       "destination_repository": "apps/nix-agent-site",
@@ -289,7 +261,6 @@
     },
     {
       "consumers": [
-        "gitops/websites/photography/deployment.yaml:24",
         "observed:photography/website-deploy-777cb5d6df-2c2gt/web"
       ],
       "destination_repository": "apps/photography",
@@ -311,27 +282,6 @@
         "registry": "ghcr.io",
         "repository": "jeff7712/photography",
         "tag": null
-      }
-    },
-    {
-      "consumers": [
-        "gitops/websites/pulse/deployment.yaml:22"
-      ],
-      "destination_repository": "apps/pulse-site",
-      "id": "first-party-jeff7712-pulse-site-c5e9a0d9e193",
-      "kind": "first-party",
-      "producer": {
-        "location": "external-image-repository:ghcr.io/jeff7712/pulse-site",
-        "owner": "jeff7712",
-        "pipeline_status": "unverified"
-      },
-      "retention_class": "deployed",
-      "source": {
-        "digest": null,
-        "reference": "ghcr.io/jeff7712/pulse-site:0.0.89",
-        "registry": "ghcr.io",
-        "repository": "jeff7712/pulse-site",
-        "tag": "0.0.89"
       }
     },
     {
@@ -393,48 +343,6 @@
     },
     {
       "consumers": [
-        "gitops/obsidian/deployment.yaml:25"
-      ],
-      "destination_repository": "apps/quartz",
-      "id": "first-party-jeff7712-quartz-bca998b2ccbe",
-      "kind": "first-party",
-      "producer": {
-        "location": "external-image-repository:ghcr.io/jeff7712/quartz",
-        "owner": "jeff7712",
-        "pipeline_status": "unverified"
-      },
-      "retention_class": "deployed",
-      "source": {
-        "digest": "sha256:032a4530b88e33b112af51961dacb1fb56216caee3d2268d6f3d2a10edc82ba5",
-        "reference": "ghcr.io/jeff7712/quartz@sha256:032a4530b88e33b112af51961dacb1fb56216caee3d2268d6f3d2a10edc82ba5",
-        "registry": "ghcr.io",
-        "repository": "jeff7712/quartz",
-        "tag": null
-      }
-    },
-    {
-      "consumers": [
-        "gitops/websites/rupanism/deployment.yaml:22"
-      ],
-      "destination_repository": "apps/rupanism",
-      "id": "first-party-jeff7712-rupanism-4e09f5a7ad68",
-      "kind": "first-party",
-      "producer": {
-        "location": "external-image-repository:ghcr.io/jeff7712/rupanism",
-        "owner": "jeff7712",
-        "pipeline_status": "unverified"
-      },
-      "retention_class": "deployed",
-      "source": {
-        "digest": null,
-        "reference": "ghcr.io/jeff7712/rupanism:0.0.49",
-        "registry": "ghcr.io",
-        "repository": "jeff7712/rupanism",
-        "tag": "0.0.49"
-      }
-    },
-    {
-      "consumers": [
         "observed:rupanism/website-deploy-868b45d7fb-kdg9m/web"
       ],
       "destination_repository": "apps/rupanism",
@@ -463,7 +371,6 @@
     },
     {
       "consumers": [
-        "gitops/websites/soluble-rupan/deployment.yaml:22",
         "observed:soluble-rupan/website-deploy-bfdcd7cb4-8mmfd/web",
         "observed:soluble-rupan/website-deploy-bfdcd7cb4-kbbhc/web"
       ],
@@ -493,7 +400,6 @@
     },
     {
       "consumers": [
-        "gitops/websites/spatia/deployment.yaml:37",
         "observed:spatia/website-deploy-5458fdffd-7ttmd/web"
       ],
       "destination_repository": "apps/spatia-site",
@@ -522,26 +428,6 @@
     },
     {
       "consumers": [
-        "gitops/automation/cluster-sentinel.yaml:23",
-        "gitops/automation/dockerhub-retention.yaml:22",
-        "gitops/automation/website-monitors.yaml:23",
-        "gitops/automation/website-monitors.yaml:77"
-      ],
-      "destination_repository": "upstream/docker.io/alpine/k8s",
-      "id": "upstream-alpine-k8s-125813ffc6dc",
-      "kind": "upstream",
-      "producer": null,
-      "retention_class": "deployed",
-      "source": {
-        "digest": null,
-        "reference": "docker.io/alpine/k8s:1.37.0",
-        "registry": "docker.io",
-        "repository": "alpine/k8s",
-        "tag": "1.37.0"
-      }
-    },
-    {
-      "consumers": [
         "observed:rendered/automation/kubernetes-jobs"
       ],
       "destination_repository": "upstream/docker.io/alpine/k8s",
@@ -562,6 +448,278 @@
         "registry": "docker.io",
         "repository": "alpine/k8s",
         "tag": "1.36.2"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/apolline/deployment.yaml:23"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/apolline",
+      "id": "upstream-apps-apolline-8e851fc266a1",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a",
+        "reference": "registry.rupan.dev/apps/apolline@sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/apolline",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/cr-demo/deployment.yaml:22"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/cr-demo",
+      "id": "upstream-apps-cr-demo-3a0e9faeb997",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:65aa32d6593b0d1e8284cd0339a2eafc092b779b99e2df98118c72a1e19e3387",
+        "reference": "registry.rupan.dev/apps/cr-demo@sha256:65aa32d6593b0d1e8284cd0339a2eafc092b779b99e2df98118c72a1e19e3387",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/cr-demo",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/darkbit/deployment.yaml:23"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/darkbit",
+      "id": "upstream-apps-darkbit-ffe2dd0098f0",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:6c52241abf2223df23394470d2c8851d9add4e706856247f3304b13edc5b7bff",
+        "reference": "registry.rupan.dev/apps/darkbit@sha256:6c52241abf2223df23394470d2c8851d9add4e706856247f3304b13edc5b7bff",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/darkbit",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/distrojeff/deployment.yaml:23"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/distrojeff-site",
+      "id": "upstream-apps-distrojeff-site-955de216deb8",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:a3e6461a7fc969a68d561ffef660aab7684bd52a9f6d2eabdac34deb3db523d7",
+        "reference": "registry.rupan.dev/apps/distrojeff-site@sha256:a3e6461a7fc969a68d561ffef660aab7684bd52a9f6d2eabdac34deb3db523d7",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/distrojeff-site",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/automation/renovate-agent.yaml:23"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/homelab-renovate-agent",
+      "id": "upstream-apps-homelab-renovate-agent-d670104077bd",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:128f085244a15c4fe45fe176be6bad3a112ba13f3fce3173825a9cb3bc4fea58",
+        "reference": "registry.rupan.dev/apps/homelab-renovate-agent@sha256:128f085244a15c4fe45fe176be6bad3a112ba13f3fce3173825a9cb3bc4fea58",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/homelab-renovate-agent",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/automation/renovate-dashboard.yaml:26"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/homelab-renovate-dashboard",
+      "id": "upstream-apps-homelab-renovate-dashboard-4196d7b8fde7",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:dc947a8226bcdb112cc2bf9e119c67fcd3f63168b7234eb1e060618613d490e3",
+        "reference": "registry.rupan.dev/apps/homelab-renovate-dashboard@sha256:dc947a8226bcdb112cc2bf9e119c67fcd3f63168b7234eb1e060618613d490e3",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/homelab-renovate-dashboard",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/ism/deployment.yaml:22"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/ism",
+      "id": "upstream-apps-ism-4ff8af1f72fd",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:41b1dc3eccd6d484877f744777b759c1339c550f560d237c7f6554d1fbef0488",
+        "reference": "registry.rupan.dev/apps/ism@sha256:41b1dc3eccd6d484877f744777b759c1339c550f560d237c7f6554d1fbef0488",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/ism",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/majorfinder/deployment.yaml:24"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/majorfinder",
+      "id": "upstream-apps-majorfinder-e327a2109af2",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:73a66eaf824b53d1f6a69d04514b07223f547f51d1e3cc7e784e1a2a8a59ed85",
+        "reference": "registry.rupan.dev/apps/majorfinder@sha256:73a66eaf824b53d1f6a69d04514b07223f547f51d1e3cc7e784e1a2a8a59ed85",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/majorfinder",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/nixagent/deployment.yaml:38"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/nix-agent-site",
+      "id": "upstream-apps-nix-agent-site-c3835c137785",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:901a466b3e9ed474dba31a7000f1604a0170c306c0e35b72231de6f9cee235b2",
+        "reference": "registry.rupan.dev/apps/nix-agent-site@sha256:901a466b3e9ed474dba31a7000f1604a0170c306c0e35b72231de6f9cee235b2",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/nix-agent-site",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/photography/deployment.yaml:24"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/photography",
+      "id": "upstream-apps-photography-b593d8007be0",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:731128663e8bb12861fcf2b801bd0a671478607c44198bf5166812dfc88d57e6",
+        "reference": "registry.rupan.dev/apps/photography@sha256:731128663e8bb12861fcf2b801bd0a671478607c44198bf5166812dfc88d57e6",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/photography",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/pulse/deployment.yaml:22"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/pulse-site",
+      "id": "upstream-apps-pulse-site-047a45b09868",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:b8564dd25c02ba6ba52ba16b17839d94ed8a042540d0ade75ef6608aecc75db4",
+        "reference": "registry.rupan.dev/apps/pulse-site@sha256:b8564dd25c02ba6ba52ba16b17839d94ed8a042540d0ade75ef6608aecc75db4",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/pulse-site",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/obsidian/deployment.yaml:25"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/quartz",
+      "id": "upstream-apps-quartz-266c648174f5",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:0023aa4fff0cbe5df1ec652425cdc3b7177fba4641165f3ec8d2d8f8b025f797",
+        "reference": "registry.rupan.dev/apps/quartz@sha256:0023aa4fff0cbe5df1ec652425cdc3b7177fba4641165f3ec8d2d8f8b025f797",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/quartz",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/rupan-dev/deployment.yaml:22"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/rupan-dev",
+      "id": "upstream-apps-rupan-dev-c4610e707008",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
+        "reference": "registry.rupan.dev/apps/rupan-dev@sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/rupan-dev",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/rupanism/deployment.yaml:22"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/rupanism",
+      "id": "upstream-apps-rupanism-de34527f0b46",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:fdd2bc2a68439f1f993f2e554a60b973422a441caac251a78c32397e2981ecd5",
+        "reference": "registry.rupan.dev/apps/rupanism@sha256:fdd2bc2a68439f1f993f2e554a60b973422a441caac251a78c32397e2981ecd5",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/rupanism",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/soluble-rupan/deployment.yaml:22"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/solubility-gnn",
+      "id": "upstream-apps-solubility-gnn-1b7a7cf47320",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:d08831ca8407fc8ca2b0f3bbac78cfa8f00ea1cfcf53d24dd8a09113ac4720b9",
+        "reference": "registry.rupan.dev/apps/solubility-gnn@sha256:d08831ca8407fc8ca2b0f3bbac78cfa8f00ea1cfcf53d24dd8a09113ac4720b9",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/solubility-gnn",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/websites/spatia/deployment.yaml:37"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/apps/spatia-site",
+      "id": "upstream-apps-spatia-site-b7cafddd3aae",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:754085d236f6eecef224ff15c94d3b24ba17ce4580bba29733e28cd8220ecdf4",
+        "reference": "registry.rupan.dev/apps/spatia-site@sha256:754085d236f6eecef224ff15c94d3b24ba17ce4580bba29733e28cd8220ecdf4",
+        "registry": "registry.rupan.dev",
+        "repository": "apps/spatia-site",
+        "tag": null
       }
     },
     {
@@ -687,7 +845,6 @@
     },
     {
       "consumers": [
-        "gitops/cloudflare/tunnel.yaml:24",
         "observed:cloudflare/cloudflared-5fd59f884d-6ds6b/cloudflared",
         "observed:cloudflare/cloudflared-5fd59f884d-rvlff/cloudflared"
       ],
@@ -708,6 +865,40 @@
         "reference": "docker.io/cloudflare/cloudflared@sha256:51c9cefcb4569df44e1ad403ab1d3d8065aa8e84339bcfc6aee75502e1140339",
         "registry": "docker.io",
         "repository": "cloudflare/cloudflared",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/books.yaml:36"
+      ],
+      "destination_repository": "upstream/docker.io/crocodilestick/calibre-web-automated",
+      "id": "upstream-crocodilestick-calibre-web-automated-9927dc80f54f",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:c31a738b6d5ec6982c050063dd3f063b6943eb1051fc81144789f840d9093a8d",
+        "reference": "docker.io/crocodilestick/calibre-web-automated@sha256:c31a738b6d5ec6982c050063dd3f063b6943eb1051fc81144789f840d9093a8d",
+        "registry": "docker.io",
+        "repository": "crocodilestick/calibre-web-automated",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/music.yaml:27"
+      ],
+      "destination_repository": "upstream/docker.io/deluan/navidrome",
+      "id": "upstream-deluan-navidrome-c1adb9880fdc",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:9012939114fbb1bb641b81cf96dec5ded15f0aafefe8d47a511d7cb919658e40",
+        "reference": "docker.io/deluan/navidrome@sha256:9012939114fbb1bb641b81cf96dec5ded15f0aafefe8d47a511d7cb919658e40",
+        "registry": "docker.io",
+        "repository": "deluan/navidrome",
         "tag": null
       }
     },
@@ -741,19 +932,36 @@
     },
     {
       "consumers": [
-        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:5125"
+        "gitops/media/frontend.yaml:99"
       ],
-      "destination_repository": "upstream/ghcr.io/fluxcd/helm-controller",
-      "id": "upstream-fluxcd-helm-controller-0f8316006237",
+      "destination_repository": "upstream/docker.io/filebrowser/filebrowser",
+      "id": "upstream-filebrowser-filebrowser-893178c05586",
       "kind": "upstream",
       "producer": null,
       "retention_class": "deployed",
       "source": {
-        "digest": null,
-        "reference": "ghcr.io/fluxcd/helm-controller:v1.6.4",
+        "digest": "sha256:a469ea076d4a1b4b1d86a41d130f2f536cd9da996a2b1fb39c0d7635f9d89b9a",
+        "reference": "docker.io/filebrowser/filebrowser@sha256:a469ea076d4a1b4b1d86a41d130f2f536cd9da996a2b1fb39c0d7635f9d89b9a",
+        "registry": "docker.io",
+        "repository": "filebrowser/filebrowser",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/arr.yaml:455"
+      ],
+      "destination_repository": "upstream/ghcr.io/flaresolverr/flaresolverr",
+      "id": "upstream-flaresolverr-flaresolverr-aced3508bf6b",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:139dfee1c6f89249c8d665d1333a42e8ec74ec0a86bc6bb1c8461e10d3a66a47",
+        "reference": "ghcr.io/flaresolverr/flaresolverr@sha256:139dfee1c6f89249c8d665d1333a42e8ec74ec0a86bc6bb1c8461e10d3a66a47",
         "registry": "ghcr.io",
-        "repository": "fluxcd/helm-controller",
-        "tag": "v1.6.4"
+        "repository": "flaresolverr/flaresolverr",
+        "tag": null
       }
     },
     {
@@ -780,23 +988,6 @@
         "registry": "ghcr.io",
         "repository": "fluxcd/helm-controller",
         "tag": "v1.6.1"
-      }
-    },
-    {
-      "consumers": [
-        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:3530"
-      ],
-      "destination_repository": "upstream/ghcr.io/fluxcd/kustomize-controller",
-      "id": "upstream-fluxcd-kustomize-controller-4d8f0384c770",
-      "kind": "upstream",
-      "producer": null,
-      "retention_class": "deployed",
-      "source": {
-        "digest": null,
-        "reference": "ghcr.io/fluxcd/kustomize-controller:v1.9.5",
-        "registry": "ghcr.io",
-        "repository": "fluxcd/kustomize-controller",
-        "tag": "v1.9.5"
       }
     },
     {
@@ -849,40 +1040,6 @@
         "registry": "ghcr.io",
         "repository": "fluxcd/notification-controller",
         "tag": "v1.9.1"
-      }
-    },
-    {
-      "consumers": [
-        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:6027"
-      ],
-      "destination_repository": "upstream/ghcr.io/fluxcd/notification-controller",
-      "id": "upstream-fluxcd-notification-controller-ff5bf39b3dfe",
-      "kind": "upstream",
-      "producer": null,
-      "retention_class": "deployed",
-      "source": {
-        "digest": null,
-        "reference": "ghcr.io/fluxcd/notification-controller:v1.9.4",
-        "registry": "ghcr.io",
-        "repository": "fluxcd/notification-controller",
-        "tag": "v1.9.4"
-      }
-    },
-    {
-      "consumers": [
-        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:2605"
-      ],
-      "destination_repository": "upstream/ghcr.io/fluxcd/source-controller",
-      "id": "upstream-fluxcd-source-controller-2099072c4dfb",
-      "kind": "upstream",
-      "producer": null,
-      "retention_class": "deployed",
-      "source": {
-        "digest": null,
-        "reference": "ghcr.io/fluxcd/source-controller:v1.9.5",
-        "registry": "ghcr.io",
-        "repository": "fluxcd/source-controller",
-        "tag": "v1.9.5"
       }
     },
     {
@@ -1044,7 +1201,6 @@
     },
     {
       "consumers": [
-        "gitops/home-assistant/deployment.yaml:47",
         "observed:home-assistant/home-assistant-654d5bcc89-r62dr/home-assistant"
       ],
       "destination_repository": "upstream/ghcr.io/home-assistant/home-assistant",
@@ -1066,7 +1222,23 @@
     },
     {
       "consumers": [
-        "gitops/immich/machine-learning.yaml:23",
+        "gitops/media/arr.yaml:209"
+      ],
+      "destination_repository": "upstream/ghcr.io/hotio/lidarr",
+      "id": "upstream-hotio-lidarr-4239f8cb40ac",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:18b65fc099647c1f60254a16f51219cfc61f8adfc64027b6c55aa3dc82e6895f",
+        "reference": "ghcr.io/hotio/lidarr@sha256:18b65fc099647c1f60254a16f51219cfc61f8adfc64027b6c55aa3dc82e6895f",
+        "registry": "ghcr.io",
+        "repository": "hotio/lidarr",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
         "observed:immich/immich-machine-learning-56c59d58f7-zg2np/immich-machine-learning"
       ],
       "destination_repository": "upstream/ghcr.io/immich-app/immich-machine-learning",
@@ -1092,7 +1264,6 @@
     },
     {
       "consumers": [
-        "gitops/immich/server.yaml:23",
         "observed:immich/immich-server-5659cbb99c-9g57n/immich-server"
       ],
       "destination_repository": "upstream/ghcr.io/immich-app/immich-server",
@@ -1139,23 +1310,6 @@
         "registry": "ghcr.io",
         "repository": "immich-app/postgres",
         "tag": "14-vectorchord0.4.3-pgvectors0.2.0"
-      }
-    },
-    {
-      "consumers": [
-        "gitops/immich/postgres.yaml:25"
-      ],
-      "destination_repository": "upstream/ghcr.io/immich-app/postgres",
-      "id": "upstream-immich-app-postgres-0f7eacac6277",
-      "kind": "upstream",
-      "producer": null,
-      "retention_class": "deployed",
-      "source": {
-        "digest": null,
-        "reference": "ghcr.io/immich-app/postgres:16-vectorchord0.4.3-pgvectors0.2.0",
-        "registry": "ghcr.io",
-        "repository": "immich-app/postgres",
-        "tag": "16-vectorchord0.4.3-pgvectors0.2.0"
       }
     },
     {
@@ -1391,7 +1545,36 @@
     },
     {
       "consumers": [
-        "gitops/home-assistant/deployment.yaml:25",
+        "gitops/media/download.yaml:45"
+      ],
+      "destination_repository": "upstream/docker.io/library/alpine",
+      "id": "upstream-library-alpine-a4ebc441200a",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b",
+        "reference": "docker.io/library/alpine@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b",
+        "registry": "docker.io",
+        "repository": "library/alpine",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/home-assistant/deployment.yaml:28",
+        "gitops/home-assistant/deployment.yaml:49",
+        "gitops/media/arr.yaml:115",
+        "gitops/media/arr.yaml:199",
+        "gitops/media/arr.yaml:27",
+        "gitops/media/arr.yaml:297",
+        "gitops/media/arr.yaml:374",
+        "gitops/media/books.yaml:119",
+        "gitops/media/books.yaml:26",
+        "gitops/media/download.yaml:32",
+        "gitops/media/download.yaml:65",
+        "gitops/media/frontend.yaml:25",
+        "gitops/media/jellyfin.yaml:32",
         "gitops/obsidian/couchdb.yaml:27",
         "gitops/websites/nixagent/deployment.yaml:22",
         "gitops/websites/spatia/deployment.yaml:22",
@@ -1428,7 +1611,6 @@
     },
     {
       "consumers": [
-        "gitops/obsidian/couchdb.yaml:42",
         "observed:rendered/obsidian/couchdb"
       ],
       "destination_repository": "upstream/docker.io/library/couchdb",
@@ -1544,8 +1726,6 @@
     },
     {
       "consumers": [
-        "gitops/backups/home-assistant-db-dump.yaml:23",
-        "gitops/home-assistant/postgres.yaml:25",
         "observed:home-assistant/home-assistant-postgres-85ccd74787-47sh9/postgres"
       ],
       "destination_repository": "upstream/docker.io/library/postgres",
@@ -1567,24 +1747,6 @@
     },
     {
       "consumers": [
-        "gitops/backups/db-dump.yaml:23"
-      ],
-      "destination_repository": "upstream/docker.io/library/postgres",
-      "id": "upstream-library-postgres-c6b76386d83b",
-      "kind": "upstream",
-      "producer": null,
-      "retention_class": "deployed",
-      "source": {
-        "digest": null,
-        "reference": "docker.io/library/postgres:16-alpine",
-        "registry": "docker.io",
-        "repository": "library/postgres",
-        "tag": "16-alpine"
-      }
-    },
-    {
-      "consumers": [
-        "gitops/automation/renovate-agent.yaml:125",
         "observed:rendered/automation/renovate-agent-init"
       ],
       "destination_repository": "upstream/docker.io/library/python",
@@ -1612,6 +1774,142 @@
         "registry": "docker.io",
         "repository": "library/python",
         "tag": "3.14-alpine"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/arr.yaml:384"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/bazarr",
+      "id": "upstream-linuxserver-bazarr-4315b01b6cd7",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:3a820372f19fcb2981ea19fe4b5382934d67414afaba974bce831ddda0a64a02",
+        "reference": "lscr.io/linuxserver/bazarr@sha256:3a820372f19fcb2981ea19fe4b5382934d67414afaba974bce831ddda0a64a02",
+        "registry": "lscr.io",
+        "repository": "linuxserver/bazarr",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/music.yaml:103"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/beets",
+      "id": "upstream-linuxserver-beets-93b2a61d13c7",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:90b1404e962dfc09c1926f4d8dca8920fc90d71369df5398340a12eb8ce7328c",
+        "reference": "lscr.io/linuxserver/beets@sha256:90b1404e962dfc09c1926f4d8dca8920fc90d71369df5398340a12eb8ce7328c",
+        "registry": "lscr.io",
+        "repository": "linuxserver/beets",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/jellyfin.yaml:42"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/jellyfin",
+      "id": "upstream-linuxserver-jellyfin-f24097bf25c9",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:4f6d8dfc53ec5a1ddf7a90e4338972d57d7b0adff6dc88b53184f8285d0b594f",
+        "reference": "lscr.io/linuxserver/jellyfin@sha256:4f6d8dfc53ec5a1ddf7a90e4338972d57d7b0adff6dc88b53184f8285d0b594f",
+        "registry": "lscr.io",
+        "repository": "linuxserver/jellyfin",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/arr.yaml:307"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/prowlarr",
+      "id": "upstream-linuxserver-prowlarr-42b1b25f4e88",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ab91301778251f82a31bbfc87f0497376d59e84439d9a1ceff6a61d594d1e3d7",
+        "reference": "lscr.io/linuxserver/prowlarr@sha256:ab91301778251f82a31bbfc87f0497376d59e84439d9a1ceff6a61d594d1e3d7",
+        "registry": "lscr.io",
+        "repository": "linuxserver/prowlarr",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/download.yaml:135"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/qbittorrent",
+      "id": "upstream-linuxserver-qbittorrent-fd10ea3e2403",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:304b19cf94bf4fda534e0b086cab9c5f1a9e139a8180c05c0ad7d2ba1526fa99",
+        "reference": "lscr.io/linuxserver/qbittorrent@sha256:304b19cf94bf4fda534e0b086cab9c5f1a9e139a8180c05c0ad7d2ba1526fa99",
+        "registry": "lscr.io",
+        "repository": "linuxserver/qbittorrent",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/arr.yaml:125"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/radarr",
+      "id": "upstream-linuxserver-radarr-3aac2b830377",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:119aaa4a4f7349bcd2a136c5373a0d7925b5479915c7dfe0c0ad352db2a6d438",
+        "reference": "lscr.io/linuxserver/radarr@sha256:119aaa4a4f7349bcd2a136c5373a0d7925b5479915c7dfe0c0ad352db2a6d438",
+        "registry": "lscr.io",
+        "repository": "linuxserver/radarr",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/arr.yaml:37"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/sonarr",
+      "id": "upstream-linuxserver-sonarr-4bbdc78a74e8",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:c19aa4ecdf03d73e1d5c901da33744cb7eb4d921f89bafed1ca264601d7fa224",
+        "reference": "lscr.io/linuxserver/sonarr@sha256:c19aa4ecdf03d73e1d5c901da33744cb7eb4d921f89bafed1ca264601d7fa224",
+        "registry": "lscr.io",
+        "repository": "linuxserver/sonarr",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/frontend.yaml:165"
+      ],
+      "destination_repository": "upstream/docker.io/mccloud/subgen",
+      "id": "upstream-mccloud-subgen-fb99eda6f5f4",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:2841515a3b409677669f0a10d77d49160bffb8111db91640fb33a4db06b3396c",
+        "reference": "docker.io/mccloud/subgen@sha256:2841515a3b409677669f0a10d77d49160bffb8111db91640fb33a4db06b3396c",
+        "registry": "docker.io",
+        "repository": "mccloud/subgen",
+        "tag": null
       }
     },
     {
@@ -1648,7 +1946,7 @@
     {
       "consumers": [
         ".gitlab-ci.yml:1",
-        ".gitlab-ci.yml:522",
+        ".gitlab-ci.yml:704",
         "observed:ci/default-image"
       ],
       "destination_repository": "upstream/docker.io/nixos/nix",
@@ -1842,6 +2140,23 @@
     },
     {
       "consumers": [
+        "gitops/media/download.yaml:85"
+      ],
+      "destination_repository": "upstream/docker.io/qmcgaw/gluetun",
+      "id": "upstream-qmcgaw-gluetun-b5f01bf4790a",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:8e92dcb57ed64b0e4469c933f00ef1e09ee00867fee150e783a95fa6b53effa4",
+        "reference": "docker.io/qmcgaw/gluetun@sha256:8e92dcb57ed64b0e4469c933f00ef1e09ee00867fee150e783a95fa6b53effa4",
+        "registry": "docker.io",
+        "repository": "qmcgaw/gluetun",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
         "observed:kube-system/helm-install-cilium-cnhlj/helm"
       ],
       "destination_repository": "upstream/docker.io/rancher/klipper-helm",
@@ -1978,8 +2293,6 @@
     },
     {
       "consumers": [
-        "gitops/backups/dumps-to-r2.yaml:23",
-        "gitops/backups/library-local.yaml:23",
         "observed:backups/dumps-to-r2-29811360-v2g8k/restic",
         "observed:backups/test-r2b-2dqhn/restic",
         "observed:immich/library-to-local-repo-29811240-rqdmj/restic",
@@ -2011,6 +2324,23 @@
     },
     {
       "consumers": [
+        "gitops/media/frontend.yaml:35"
+      ],
+      "destination_repository": "upstream/docker.io/seerr/seerr",
+      "id": "upstream-seerr-seerr-9d87cd30fd63",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:f4768de5f616248d723e05891f3345a1402123775d03bf0890dbfedc0831bda1",
+        "reference": "docker.io/seerr/seerr@sha256:f4768de5f616248d723e05891f3345a1402123775d03bf0890dbfedc0831bda1",
+        "registry": "docker.io",
+        "repository": "seerr/seerr",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
         "observed:storage/nfs-subdir-external-provisioner-54bd59cbd-l4qvp/nfs-subdir-external-provisioner"
       ],
       "destination_repository": "upstream/registry.k8s.io/sig-storage/nfs-subdir-external-provisioner",
@@ -2034,6 +2364,23 @@
         "registry": "registry.k8s.io",
         "repository": "sig-storage/nfs-subdir-external-provisioner",
         "tag": "v4.0.2"
+      }
+    },
+    {
+      "consumers": [
+        "gitops/media/download.yaml:163"
+      ],
+      "destination_repository": "upstream/docker.io/slskd/slskd",
+      "id": "upstream-slskd-slskd-c6b4994e4748",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ecd4026d4f8fb504e2cc55323efa2c1f5b56d20d3686b018249cc36b48ea17a6",
+        "reference": "docker.io/slskd/slskd@sha256:ecd4026d4f8fb504e2cc55323efa2c1f5b56d20d3686b018249cc36b48ea17a6",
+        "registry": "docker.io",
+        "repository": "slskd/slskd",
+        "tag": null
       }
     },
     {
@@ -2064,6 +2411,375 @@
     },
     {
       "consumers": [
+        "gitops/automation/cluster-sentinel.yaml:23",
+        "gitops/automation/dockerhub-retention.yaml:22",
+        "gitops/automation/website-monitors.yaml:23",
+        "gitops/automation/website-monitors.yaml:77"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/docker.io/alpine/k8s",
+      "id": "upstream-upstream-docker-io-alpine-k8s-091ab09bd987",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47",
+        "reference": "registry.rupan.dev/upstream/docker.io/alpine/k8s@sha256:44ef4942e171939b9c665a4a84beb80e2dcdb9a24330d4651cfdfd2e9deecc47",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/docker.io/alpine/k8s",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/cloudflare/tunnel.yaml:24"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/docker.io/cloudflare/cloudflared",
+      "id": "upstream-upstream-docker-io-cloudflare-cloudflared-57ed599514a1",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ff69a2225ad7c6f85ed84fbd5f3087df46202426b2388ec60214098e0adf05e9",
+        "reference": "registry.rupan.dev/upstream/docker.io/cloudflare/cloudflared@sha256:ff69a2225ad7c6f85ed84fbd5f3087df46202426b2388ec60214098e0adf05e9",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/docker.io/cloudflare/cloudflared",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/obsidian/couchdb.yaml:49"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/docker.io/library/couchdb",
+      "id": "upstream-upstream-docker-io-library-couchdb-6fd9e8c83e8b",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:199ff89f9a930df6032a216570ae0169fcc36c449bb02b40fafeb6efecdb606f",
+        "reference": "registry.rupan.dev/upstream/docker.io/library/couchdb@sha256:199ff89f9a930df6032a216570ae0169fcc36c449bb02b40fafeb6efecdb606f",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/docker.io/library/couchdb",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/automation/github-runner/deployment.yaml:1086",
+        "gitops/automation/github-runner/deployment.yaml:1235",
+        "gitops/automation/github-runner/deployment.yaml:1384",
+        "gitops/automation/github-runner/deployment.yaml:1533",
+        "gitops/automation/github-runner/deployment.yaml:1682",
+        "gitops/automation/github-runner/deployment.yaml:1831",
+        "gitops/automation/github-runner/deployment.yaml:192",
+        "gitops/automation/github-runner/deployment.yaml:341",
+        "gitops/automation/github-runner/deployment.yaml:43",
+        "gitops/automation/github-runner/deployment.yaml:490",
+        "gitops/automation/github-runner/deployment.yaml:639",
+        "gitops/automation/github-runner/deployment.yaml:788",
+        "gitops/automation/github-runner/deployment.yaml:937"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/docker.io/library/docker",
+      "id": "upstream-upstream-docker-io-library-docker-e1c1a858d6dc",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
+        "reference": "registry.rupan.dev/upstream/docker.io/library/docker@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/docker.io/library/docker",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/backups/home-assistant-db-dump.yaml:23",
+        "gitops/home-assistant/postgres.yaml:25"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/docker.io/library/postgres",
+      "id": "upstream-upstream-docker-io-library-postgres-a5b09f002c9f",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+        "reference": "registry.rupan.dev/upstream/docker.io/library/postgres@sha256:747d5ed1fdeeb124b880fbe3d7c6557d2c4064ae41d6b6297d417882effce4be",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/docker.io/library/postgres",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/backups/db-dump.yaml:23"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/docker.io/library/postgres",
+      "id": "upstream-upstream-docker-io-library-postgres-d90541da2de7",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685",
+        "reference": "registry.rupan.dev/upstream/docker.io/library/postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/docker.io/library/postgres",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/automation/renovate-agent.yaml:125"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/docker.io/library/python",
+      "id": "upstream-upstream-docker-io-library-python-32f886a3449e",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:c6ead215bfd31f1e433d968853b7a769989117115b728874824e6c0a27cb96fc",
+        "reference": "registry.rupan.dev/upstream/docker.io/library/python@sha256:c6ead215bfd31f1e433d968853b7a769989117115b728874824e6c0a27cb96fc",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/docker.io/library/python",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/backups/dumps-to-r2.yaml:23",
+        "gitops/backups/library-local.yaml:23"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/docker.io/restic/restic",
+      "id": "upstream-upstream-docker-io-restic-restic-a18a3661f8a8",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510",
+        "reference": "registry.rupan.dev/upstream/docker.io/restic/restic@sha256:136600b6ff6843d61d355f7f71f460a166429f35de6fd11b568fece3c9a4d510",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/docker.io/restic/restic",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/immich/valkey.yaml:23"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/docker.io/valkey/valkey",
+      "id": "upstream-upstream-docker-io-valkey-valkey-7a447642af89",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d",
+        "reference": "registry.rupan.dev/upstream/docker.io/valkey/valkey@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/docker.io/valkey/valkey",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/automation/github-runner/deployment.yaml:1115",
+        "gitops/automation/github-runner/deployment.yaml:1264",
+        "gitops/automation/github-runner/deployment.yaml:1413",
+        "gitops/automation/github-runner/deployment.yaml:1562",
+        "gitops/automation/github-runner/deployment.yaml:1711",
+        "gitops/automation/github-runner/deployment.yaml:1860",
+        "gitops/automation/github-runner/deployment.yaml:221",
+        "gitops/automation/github-runner/deployment.yaml:370",
+        "gitops/automation/github-runner/deployment.yaml:519",
+        "gitops/automation/github-runner/deployment.yaml:668",
+        "gitops/automation/github-runner/deployment.yaml:72",
+        "gitops/automation/github-runner/deployment.yaml:817",
+        "gitops/automation/github-runner/deployment.yaml:966"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/ghcr.io/actions/actions-runner",
+      "id": "upstream-upstream-ghcr-io-actions-actions-runner-90a689290bc6",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
+        "reference": "registry.rupan.dev/upstream/ghcr.io/actions/actions-runner@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/ghcr.io/actions/actions-runner",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:5125"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/ghcr.io/fluxcd/helm-controller",
+      "id": "upstream-upstream-ghcr-io-fluxcd-helm-controller-06b162b58672",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:b113d67328a58ecaa04ce69aa41fb285a1ebd10f021e2371065598a1325042fd",
+        "reference": "registry.rupan.dev/upstream/ghcr.io/fluxcd/helm-controller@sha256:b113d67328a58ecaa04ce69aa41fb285a1ebd10f021e2371065598a1325042fd",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/ghcr.io/fluxcd/helm-controller",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:3530"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/ghcr.io/fluxcd/kustomize-controller",
+      "id": "upstream-upstream-ghcr-io-fluxcd-kustomize-controller-f2b53e4e6e41",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:ae1a90c0c76d518618c5e2a64b82b6476c8213aa7a2b17ec8b94828f0230a6b8",
+        "reference": "registry.rupan.dev/upstream/ghcr.io/fluxcd/kustomize-controller@sha256:ae1a90c0c76d518618c5e2a64b82b6476c8213aa7a2b17ec8b94828f0230a6b8",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/ghcr.io/fluxcd/kustomize-controller",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:6027"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/ghcr.io/fluxcd/notification-controller",
+      "id": "upstream-upstream-ghcr-io-fluxcd-notification-controller-538954a40586",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:d52626555d96dd5666a942ef8aad09650e1bdbf58ca67ddb835d9de27e9002be",
+        "reference": "registry.rupan.dev/upstream/ghcr.io/fluxcd/notification-controller@sha256:d52626555d96dd5666a942ef8aad09650e1bdbf58ca67ddb835d9de27e9002be",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/ghcr.io/fluxcd/notification-controller",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/clusters/homelab-01/flux-system/gotk-components.yaml:2605"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/ghcr.io/fluxcd/source-controller",
+      "id": "upstream-upstream-ghcr-io-fluxcd-source-controller-20f8135fbe5a",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:773a90fa26e014d4f23d5c6a48ca5875c4686bdc6aac2ea73951b9cd9fda48dd",
+        "reference": "registry.rupan.dev/upstream/ghcr.io/fluxcd/source-controller@sha256:773a90fa26e014d4f23d5c6a48ca5875c4686bdc6aac2ea73951b9cd9fda48dd",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/ghcr.io/fluxcd/source-controller",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/home-assistant/deployment.yaml:86"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/ghcr.io/home-assistant/home-assistant",
+      "id": "upstream-upstream-ghcr-io-home-assistant-home-assistant-f3bdcfe4f691",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17",
+        "reference": "registry.rupan.dev/upstream/ghcr.io/home-assistant/home-assistant@sha256:31076d37e3b7dc9681b32d892aa4413fa866c9a90e5c8a50324b397dce415d17",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/ghcr.io/home-assistant/home-assistant",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/immich/machine-learning.yaml:26"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/ghcr.io/immich-app/immich-machine-learning",
+      "id": "upstream-upstream-ghcr-io-immich-app-immich-machine-learn-bb4bd6350441",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:63c5c212cce8ca78621c6d41a62c22e6c305d497cbb7a6069837d8cc7c2fd074",
+        "reference": "registry.rupan.dev/upstream/ghcr.io/immich-app/immich-machine-learning@sha256:63c5c212cce8ca78621c6d41a62c22e6c305d497cbb7a6069837d8cc7c2fd074",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/ghcr.io/immich-app/immich-machine-learning",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/immich/server.yaml:23"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/ghcr.io/immich-app/immich-server",
+      "id": "upstream-upstream-ghcr-io-immich-app-immich-server-124c403100b6",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:b434cb9287eea1471c9974845914d4dd328c9c2d652e446ed4930f99944f0ceb",
+        "reference": "registry.rupan.dev/upstream/ghcr.io/immich-app/immich-server@sha256:b434cb9287eea1471c9974845914d4dd328c9c2d652e446ed4930f99944f0ceb",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/ghcr.io/immich-app/immich-server",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/immich/postgres.yaml:25"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/ghcr.io/immich-app/postgres",
+      "id": "upstream-upstream-ghcr-io-immich-app-postgres-25e54eb5bcdb",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:1a078b237c1d9b420b0ee59147386b4aa60d3a07a8e6a402fc84a57e41b043a4",
+        "reference": "registry.rupan.dev/upstream/ghcr.io/immich-app/postgres@sha256:1a078b237c1d9b420b0ee59147386b4aa60d3a07a8e6a402fc84a57e41b043a4",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/ghcr.io/immich-app/postgres",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/home-assistant/deployment.yaml:126"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/ghcr.io/matter-js/matterjs-server",
+      "id": "upstream-upstream-ghcr-io-matter-js-matterjs-server-30f848ad9922",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
+        "reference": "registry.rupan.dev/upstream/ghcr.io/matter-js/matterjs-server@sha256:54232d0d3e7dff5a54759469d2753399270412b4c30c55b31750a4595e4cb236",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/ghcr.io/matter-js/matterjs-server",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
+        "gitops/platform/nvidia-device-plugin/daemonset.yaml:29"
+      ],
+      "destination_repository": "upstream/registry.rupan.dev/upstream/nvcr.io/nvidia/k8s-device-plugin",
+      "id": "upstream-upstream-nvcr-io-nvidia-k8s-device-plugin-77da690da3ba",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": null,
+        "reference": "registry.rupan.dev/upstream/nvcr.io/nvidia/k8s-device-plugin:v0.17.0",
+        "registry": "registry.rupan.dev",
+        "repository": "upstream/nvcr.io/nvidia/k8s-device-plugin",
+        "tag": "v0.17.0"
+      }
+    },
+    {
+      "consumers": [
         "observed:immich/immich-valkey-58bc4b8d86-6hlxt/valkey"
       ],
       "destination_repository": "upstream/docker.io/valkey/valkey",
@@ -2087,73 +2803,6 @@
         "repository": "valkey/valkey",
         "tag": null
       }
-    },
-    {
-      "consumers": [
-        "gitops/immich/valkey.yaml:23"
-      ],
-      "destination_repository": "upstream/docker.io/valkey/valkey",
-      "id": "upstream-valkey-valkey-e2f774717d7f",
-      "kind": "upstream",
-      "producer": null,
-      "retention_class": "deployed",
-      "source": {
-        "digest": "sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d",
-        "reference": "docker.io/valkey/valkey:9.1.2@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d",
-        "registry": "docker.io",
-        "repository": "valkey/valkey",
-        "tag": "9.1.2"
-      }
-    },
-    {
-      "consumers": [
-        "gitops/automation/github-runner/deployment.yaml:1102",
-        "gitops/automation/github-runner/deployment.yaml:185",
-        "gitops/automation/github-runner/deployment.yaml:316",
-        "gitops/automation/github-runner/deployment.yaml:447",
-        "gitops/automation/github-runner/deployment.yaml:54",
-        "gitops/automation/github-runner/deployment.yaml:578",
-        "gitops/automation/github-runner/deployment.yaml:709",
-        "gitops/automation/github-runner/deployment.yaml:840",
-        "gitops/automation/github-runner/deployment.yaml:971"
-      ],
-      "destination_repository": "upstream/ghcr.io/actions/actions-runner",
-      "id": "upstream-actions-actions-runner-1fd06dba0828",
-      "kind": "upstream",
-      "producer": null,
-      "retention_class": "deployed",
-      "source": {
-        "digest": "sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
-        "reference": "ghcr.io/actions/actions-runner:2.337.0@sha256:e5496277be5d09bc968b3d64911b74e219ac4a3f2edce956a3ecf9271bea1ef4",
-        "registry": "ghcr.io",
-        "repository": "actions/actions-runner",
-        "tag": "2.337.0"
-      }
-    },
-    {
-      "consumers": [
-        "gitops/automation/github-runner/deployment.yaml:1073",
-        "gitops/automation/github-runner/deployment.yaml:156",
-        "gitops/automation/github-runner/deployment.yaml:25",
-        "gitops/automation/github-runner/deployment.yaml:287",
-        "gitops/automation/github-runner/deployment.yaml:418",
-        "gitops/automation/github-runner/deployment.yaml:549",
-        "gitops/automation/github-runner/deployment.yaml:680",
-        "gitops/automation/github-runner/deployment.yaml:811",
-        "gitops/automation/github-runner/deployment.yaml:942"
-      ],
-      "destination_repository": "upstream/docker.io/library/docker",
-      "id": "upstream-library-docker-5edcd7943944",
-      "kind": "upstream",
-      "producer": null,
-      "retention_class": "deployed",
-      "source": {
-        "digest": "sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
-        "reference": "docker.io/library/docker:27.5.1-dind@sha256:aa3df78ecf320f5fafdce71c659f1629e96e9de0968305fe1de670e0ca9176ce",
-        "registry": "docker.io",
-        "repository": "library/docker",
-        "tag": "27.5.1-dind"
-      }
     }
   ],
   "kind": "registry-inventory",
@@ -2168,12 +2817,12 @@
       "registry/observed-images.json"
     ]
   },
-  "source_revision": "1b6b0e5cc310ae3f5f49413928a2beec421edda1",
+  "source_revision": "85f039b2430df1b23504d2e7f34051d616ce2397",
   "unresolved_inputs": [
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/websites/apolline/deployment.yaml:23,observed:apolline/website-deploy-5b9d449c7f-l5d85/web",
+      "consumer": "observed:apolline/website-deploy-5b9d449c7f-l5d85/web",
       "id": "producer:first-party-jeff7712-apolline-f6344821e8d9",
       "input": "ghcr.io/jeff7712/apolline:0.0.13@sha256:3e60662d89254ab85ea9ab0a534d70922eee627a1de7b5b8cf08903435eb4c8a",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
@@ -2181,7 +2830,7 @@
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/websites/cr-demo/deployment.yaml:22,observed:cr-demo/website-deploy-5fdd8fd64f-kn8rv/web",
+      "consumer": "observed:cr-demo/website-deploy-5fdd8fd64f-kn8rv/web",
       "id": "producer:first-party-jeff7712-cr-demo-1211582ac457",
       "input": "docker.io/jeff7712/cr-demo@sha256:65aa32d6593b0d1e8284cd0339a2eafc092b779b99e2df98118c72a1e19e3387",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
@@ -2189,7 +2838,7 @@
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/websites/darkbit/deployment.yaml:23,observed:darkbit/website-deploy-5c87cf8d7d-lgrn8/web",
+      "consumer": "observed:darkbit/website-deploy-5c87cf8d7d-lgrn8/web",
       "id": "producer:first-party-jeff7712-darkbit-9b3ffba78d0f",
       "input": "ghcr.io/jeff7712/darkbit:0.0.25@sha256:6c52241abf2223df23394470d2c8851d9add4e706856247f3304b13edc5b7bff",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
@@ -2197,17 +2846,9 @@
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/websites/distrojeff/deployment.yaml:23,observed:distrojeff/website-deploy-79b9b9896c-cjx5f/web",
+      "consumer": "observed:distrojeff/website-deploy-79b9b9896c-cjx5f/web",
       "id": "producer:first-party-jeff7712-distrojeff-site-ab9710929827",
       "input": "ghcr.io/jeff7712/distrojeff-site:0.0.22@sha256:a3e6461a7fc969a68d561ffef660aab7684bd52a9f6d2eabdac34deb3db523d7",
-      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
-    },
-    {
-      "blocking": false,
-      "class": "producer-pipeline",
-      "consumer": "gitops/automation/renovate-agent.yaml:23",
-      "id": "producer:first-party-jeff7712-homelab-renovate-agent-59244b81562c",
-      "input": "docker.io/jeff7712/homelab-renovate-agent:0.0.1495",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
     },
     {
@@ -2229,15 +2870,7 @@
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/automation/renovate-dashboard.yaml:26",
-      "id": "producer:first-party-jeff7712-homelab-renovate-dashboard-45fe005a5032",
-      "input": "docker.io/jeff7712/homelab-renovate-dashboard:0.0.1495",
-      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
-    },
-    {
-      "blocking": false,
-      "class": "producer-pipeline",
-      "consumer": "gitops/websites/ism/deployment.yaml:22,observed:ism/website-deploy-57b4f774c-4pqms/web",
+      "consumer": "observed:ism/website-deploy-57b4f774c-4pqms/web",
       "id": "producer:first-party-jeff7712-ism-c0694e47410b",
       "input": "docker.io/jeff7712/ism@sha256:41b1dc3eccd6d484877f744777b759c1339c550f560d237c7f6554d1fbef0488",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
@@ -2245,7 +2878,7 @@
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/websites/majorfinder/deployment.yaml:24,observed:majorfinder/website-deploy-f99cbbc9c-bjpn9/web",
+      "consumer": "observed:majorfinder/website-deploy-f99cbbc9c-bjpn9/web",
       "id": "producer:first-party-jeff7712-majorfinder-5e85d8d2824c",
       "input": "ghcr.io/jeff7712/majorfinder@sha256:73a66eaf824b53d1f6a69d04514b07223f547f51d1e3cc7e784e1a2a8a59ed85",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
@@ -2253,7 +2886,7 @@
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/websites/nixagent/deployment.yaml:38,observed:nixagent/website-deploy-796cd7c89d-dqdnf/web",
+      "consumer": "observed:nixagent/website-deploy-796cd7c89d-dqdnf/web",
       "id": "producer:first-party-jeff7712-nix-agent-site-79adbb322813",
       "input": "ghcr.io/jeff7712/nix-agent-site:0.0.19@sha256:901a466b3e9ed474dba31a7000f1604a0170c306c0e35b72231de6f9cee235b2",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
@@ -2261,17 +2894,9 @@
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/websites/photography/deployment.yaml:24,observed:photography/website-deploy-777cb5d6df-2c2gt/web",
+      "consumer": "observed:photography/website-deploy-777cb5d6df-2c2gt/web",
       "id": "producer:first-party-jeff7712-photography-7f744af23df3",
       "input": "ghcr.io/jeff7712/photography@sha256:731128663e8bb12861fcf2b801bd0a671478607c44198bf5166812dfc88d57e6",
-      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
-    },
-    {
-      "blocking": false,
-      "class": "producer-pipeline",
-      "consumer": "gitops/websites/pulse/deployment.yaml:22",
-      "id": "producer:first-party-jeff7712-pulse-site-c5e9a0d9e193",
-      "input": "ghcr.io/jeff7712/pulse-site:0.0.89",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
     },
     {
@@ -2293,22 +2918,6 @@
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/obsidian/deployment.yaml:25",
-      "id": "producer:first-party-jeff7712-quartz-bca998b2ccbe",
-      "input": "ghcr.io/jeff7712/quartz@sha256:032a4530b88e33b112af51961dacb1fb56216caee3d2268d6f3d2a10edc82ba5",
-      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
-    },
-    {
-      "blocking": false,
-      "class": "producer-pipeline",
-      "consumer": "gitops/websites/rupanism/deployment.yaml:22",
-      "id": "producer:first-party-jeff7712-rupanism-4e09f5a7ad68",
-      "input": "ghcr.io/jeff7712/rupanism:0.0.49",
-      "reason": "producer pipeline location and local-registry publication are not proven by this repository"
-    },
-    {
-      "blocking": false,
-      "class": "producer-pipeline",
       "consumer": "observed:rupanism/website-deploy-868b45d7fb-kdg9m/web",
       "id": "producer:first-party-jeff7712-rupanism-ee57f683dc8e",
       "input": "ghcr.io/jeff7712/rupanism:0.0.46@sha256:fdd2bc2a68439f1f993f2e554a60b973422a441caac251a78c32397e2981ecd5",
@@ -2317,7 +2926,7 @@
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/websites/soluble-rupan/deployment.yaml:22,observed:soluble-rupan/website-deploy-bfdcd7cb4-8mmfd/web,observed:soluble-rupan/website-deploy-bfdcd7cb4-kbbhc/web",
+      "consumer": "observed:soluble-rupan/website-deploy-bfdcd7cb4-8mmfd/web,observed:soluble-rupan/website-deploy-bfdcd7cb4-kbbhc/web",
       "id": "producer:first-party-jeff7712-solubility-gnn-6b9c8ea16068",
       "input": "ghcr.io/jeff7712/solubility-gnn:0.0.46@sha256:d08831ca8407fc8ca2b0f3bbac78cfa8f00ea1cfcf53d24dd8a09113ac4720b9",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
@@ -2325,7 +2934,7 @@
     {
       "blocking": false,
       "class": "producer-pipeline",
-      "consumer": "gitops/websites/spatia/deployment.yaml:37,observed:spatia/website-deploy-5458fdffd-7ttmd/web",
+      "consumer": "observed:spatia/website-deploy-5458fdffd-7ttmd/web",
       "id": "producer:first-party-jeff7712-spatia-site-c1c5ac3f6ca0",
       "input": "ghcr.io/jeff7712/spatia-site:0.0.27@sha256:754085d236f6eecef224ff15c94d3b24ba17ce4580bba29733e28cd8220ecdf4",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
