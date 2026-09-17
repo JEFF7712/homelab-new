@@ -72,16 +72,16 @@
   labels: []
 - entity_id: light.kitchen_light
   labels:
-  - shared_space
+    - shared_space
 - entity_id: light.kitchen_light_2
   labels:
-  - shared_space
+    - shared_space
 - entity_id: light.living_room_mushroom_lamp
   labels:
-  - shared_space
+    - shared_space
 - entity_id: light.living_room_tulip_lamp
   labels:
-  - shared_space
+    - shared_space
 - disabled_by: integration
   entity_id: sensor.0xffffb40e0608c96f_linkquality
   labels: []
@@ -691,10 +691,10 @@
 - entity_id: switch.kitchen_mushroom_lamp
   name: Kitchen Mushroom Lamp
   labels:
-  - shared_space
+    - shared_space
 - entity_id: switch.living_room_good_vibes_sign
   labels:
-  - shared_space
+    - shared_space
 - entity_id: switch.mushroom_pre_release
   disabled_by: integration
   labels: []
@@ -703,7 +703,7 @@
   labels: []
 - entity_id: switch.stairs_light
   labels:
-  - shared_space
+    - shared_space
 - disabled_by: integration
   entity_id: switch.watchman_pre_release
   labels: []

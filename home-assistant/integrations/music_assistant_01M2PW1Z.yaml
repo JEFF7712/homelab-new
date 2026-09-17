@@ -1,0 +1,7 @@
+title: Music Assistant
+disabled_by: null
+domain: music_assistant
+entry_id: 01M2PW1ZWNQ31HTTG69TBVKSV3
+pref_disable_new_entities: false
+pref_disable_polling: false
+source: zeroconf
