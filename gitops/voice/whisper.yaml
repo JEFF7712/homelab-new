@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wyoming-whisper
+  namespace: voice
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: wyoming-whisper
+  template:
+    metadata:
+      labels:
+        app: wyoming-whisper
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab-04
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: whisper
+          # Pinned upstream tag: 3.8.1
+          image: docker.io/rhasspy/wyoming-whisper@sha256:ba6fcb6056ebe237d15a325381763a80af2fc8fcedaa04f6a714a7375eb20d80  # yamllint disable-line rule:line-length
+          args:
+            - "--model"
+            - "turbo"
+            - "--language"
+            - "en"
+            - "--beam-size"
+            - "1"
+            - "--data-dir"
+            - "/data"
+            - "--download-dir"
+            - "/data"
+          ports:
+            - containerPort: 10300
+              name: wyoming
+          startupProbe:
+            tcpSocket:
+              port: wyoming
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: wyoming
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: wyoming
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "1"
+              memory: 1Gi
+            limits:
+              cpu: "6"
+              memory: 4Gi
+          volumeMounts:
+            - name: model-cache
+              mountPath: /data
+      volumes:
+        - name: model-cache
+          hostPath:
+            path: /persist/voice-models/whisper
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wyoming-whisper
+  namespace: voice
+spec:
+  selector:
+    app: wyoming-whisper
+  ports:
+    - name: wyoming
+      port: 10300
+      targetPort: 10300

@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linux-voice-assistant
+  namespace: voice
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: linux-voice-assistant
+  template:
+    metadata:
+      labels:
+        app: linux-voice-assistant
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: homelab-05
+      containers:
+        - name: satellite
+          # Pinned upstream tag: 1.1.1
+          image: ghcr.io/ohf-voice/linux-voice-assistant@sha256:012dc174ab8c405d6ac2845be3337cc0bb219e87fac6a06fa5863378efca9eb5  # yamllint disable-line rule:line-length
+          securityContext:
+            privileged: true
+            runAsUser: 1001
+            runAsGroup: 995
+          env:
+            - name: CLIENT_NAME
+              value: "Homelab 05 Satellite"
+            - name: PORT
+              value: "6053"
+            - name: PREFERENCES_FILE
+              value: "/data/preferences.json"
+            - name: PULSE_SERVER
+              value: "unix:/run/user/1001/pulse/native"
+            - name: SKIP_PULSE_AUDIO_WAIT
+              value: "1"
+            - name: PULSE_COOKIE
+              value: "/tmp/pulse-cookie"
+            - name: XDG_RUNTIME_DIR
+              value: "/tmp"
+            - name: ENABLE_DEBUG
+              value: "1"
+            - name: AUDIO_INPUT_DEVICE
+              value: "HyperX QuadCast S Analog Stereo"
+            - name: LISTEN_DURING_WAKE_SOUND
+              value: "1"
+            - name: WAKE_MODEL
+              value: "hey_jarvis.tflite"
+          ports:
+            - containerPort: 6053
+              name: satellite
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 1Gi
+          startupProbe:
+            tcpSocket:
+              port: satellite
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: satellite
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: satellite
+            periodSeconds: 30
+          volumeMounts:
+            - name: sound-device
+              mountPath: /dev/snd
+            - name: pulse-socket
+              mountPath: /run/user/1001/pulse
+            - name: persist-data
+              mountPath: /data
+            - name: local-data
+              mountPath: /app/local
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: sound-device
+          hostPath:
+            path: /dev/snd
+            type: Directory
+        - name: pulse-socket
+          hostPath:
+            path: /run/user/1001/pulse
+            type: Directory
+        - name: persist-data
+          hostPath:
+            path: /persist/voice-assistant
+            type: DirectoryOrCreate
+        - name: local-data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: voice-satellite
+  namespace: voice
+spec:
+  selector:
+    app: linux-voice-assistant
+  ports:
+    - name: satellite
+      port: 6053
+      targetPort: 6053
