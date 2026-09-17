@@ -5,11 +5,11 @@ entities:
   light.kitchen_lights:
     state: "on"
     brightness: 128
-    color_temp_kelvin: 2200
+    color_temp_kelvin: 2700
   light.living_room_lights:
     state: "on"
     brightness: 128
-    color_temp_kelvin: 2200
+    color_temp_kelvin: 2700
   switch.kitchen_mushroom_lamp:
     state: "on"
   switch.living_room_good_vibes_sign:
