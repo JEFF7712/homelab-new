@@ -1,10 +1,12 @@
-alias: Jarvis — play media via Spotify
+alias: Jarvis — play media
 description: >-
   Plays music, songs, artists, albums, or playlists on the Jarvis satellite
-  speaker via Music Assistant / Spotify. Call this script whenever the user
-  asks to play music, a song, an artist, a playlist, or an album. Pass
-  media_content_type='music' and media_content_id set to the search query
-  or artist name.
+  speaker via Music Assistant. Supports Spotify and YouTube Music. Call this
+  script whenever the user asks to play music, a song, an artist, a playlist,
+  or an album. If the user specifies the music platform ('spotify' or
+  'youtube_music'), pass it in the platform parameter. If the user does not
+  specify a platform, default to 'spotify'. Pass media_content_type='music'
+  and media_content_id set to the search query or artist name.
 fields:
   media_content_type:
     description: >-
@@ -22,22 +24,64 @@ fields:
           - track
   media_content_id:
     description: >-
-      Free-text search (e.g. "The Weeknd"), Spotify URI (e.g.
-      `spotify:artist:1Xyo4u8dXCvp56eB51DXfh`), or full Spotify URL.
+      Free-text search (e.g. "The Weeknd"), streaming URI (e.g.
+      `spotify:artist:...` or `ytmusic:...`), or full URL.
     example: The Weeknd
     required: true
     selector:
       text: {}
+  platform:
+    description: >-
+      Music streaming platform to play from: 'spotify' or 'youtube_music'.
+      If unspecified by the user, defaults to 'spotify'.
+    example: spotify
+    default: spotify
+    required: false
+    selector:
+      select:
+        options:
+          - spotify
+          - youtube_music
 sequence:
-  - action: media_player.play_media
-    target:
-      entity_id: media_player.homelab_05_satellite_media_player_2
-    data:
-      media_content_type: "{{ media_content_type }}"
-      media_content_id: "{{ media_content_id }}"
+  - variables:
+      target_platform: "{{ platform | default('spotify') }}"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ target_platform in ['youtube_music', 'youtube', 'ytmusic'] }}"
+        sequence:
+          - action: music_assistant.search
+            data:
+              config_entry_id: 01M2PW1ZWNQ31HTTG69TBVKSV3
+              name: "{{ media_content_id }}"
+              media_type: "{{ media_content_type if media_content_type in ['artist', 'album', 'track', 'playlist'] else 'track' }}"
+              limit: 5
+            response_variable: mass_search
+            continue_on_error: true
+          - variables:
+              yt_uri: >-
+                {% set tracks = mass_search.tracks | default([]) | selectattr('uri', 'search', '^ytmusic:') | map(attribute='uri') | list %}
+                {% set albums = mass_search.albums | default([]) | selectattr('uri', 'search', '^ytmusic:') | map(attribute='uri') | list %}
+                {% set artists = mass_search.artists | default([]) | selectattr('uri', 'search', '^ytmusic:') | map(attribute='uri') | list %}
+                {% set playlists = mass_search.playlists | default([]) | selectattr('uri', 'search', '^ytmusic:') | map(attribute='uri') | list %}
+                {{ (tracks + albums + artists + playlists) | first | default(media_content_id) }}
+          - action: media_player.play_media
+            target:
+              entity_id: media_player.homelab_05_satellite_media_player_2
+            data:
+              media_content_type: "{{ media_content_type }}"
+              media_content_id: "{{ yt_uri }}"
+    default:
+      - action: media_player.play_media
+        target:
+          entity_id: media_player.homelab_05_satellite_media_player_2
+        data:
+          media_content_type: "{{ media_content_type }}"
+          media_content_id: "{{ media_content_id }}"
   - variables:
       playback_result:
         media: "{{ media_content_id }}"
+        platform: "{{ target_platform }}"
         status: playing
   - stop: Playback started
     response_variable: playback_result

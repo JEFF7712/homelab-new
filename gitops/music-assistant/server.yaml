@@ -57,6 +57,17 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+        - name: pot-provider
+          image: docker.io/brainicism/bgutil-ytdlp-pot-provider:1.2.1@sha256:7064546d70a58680aec236b50859c4fca065092d7ed462c85ea5d897b003095e  # yamllint disable-line rule:line-length
+          ports:
+            - containerPort: 4416
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
       volumes:
         - name: data
           persistentVolumeClaim:
