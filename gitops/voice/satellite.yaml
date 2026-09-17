@@ -69,12 +69,10 @@ spec:
             failureThreshold: 30
             periodSeconds: 10
           readinessProbe:
-            exec:
-              command:
-                - pgrep
-                - -f
-                - linux_voice_assistant
+            tcpSocket:
+              port: satellite
             periodSeconds: 10
+            failureThreshold: 3
           livenessProbe:
             exec:
               command:

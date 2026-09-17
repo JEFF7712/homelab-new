@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .adapters import ADAPTERS, get_adapter, try_get_adapter
-from .adapters.core import sync_core_to_gitops
+from .adapters.core import render_config_configmap, sync_core_to_gitops
 from .canonical import (
     canonical_hash,
     canonical_json,
@@ -734,18 +734,8 @@ def cmd_validate(args: argparse.Namespace, repo_root: Path) -> int:
     core_file = repo_root / "home-assistant" / "core" / "configuration.yaml"
     cm_file = repo_root / "gitops" / "home-assistant" / "config.yaml"
     if core_file.is_file() and cm_file.is_file():
-        core_raw = core_file.read_text(encoding="utf-8")
         cm_raw = cm_file.read_text(encoding="utf-8")
-        indented_lines = ["    " + line for line in core_raw.splitlines()]
-        expected_cm = (
-            "apiVersion: v1\n"
-            "kind: ConfigMap\n"
-            "metadata:\n"
-            "  name: home-assistant-config\n"
-            "  namespace: home-assistant\n"
-            "data:\n"
-            f"  configuration.yaml: |\n{chr(10).join(indented_lines)}\n"
-        )
+        expected_cm, _ = render_config_configmap(repo_root)
         if cm_raw.strip() != expected_cm.strip():
             errors.append(
                 "Core configuration in gitops/home-assistant/config.yaml is out of sync with home-assistant/core/configuration.yaml. "

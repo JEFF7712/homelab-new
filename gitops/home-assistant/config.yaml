@@ -22,6 +22,16 @@ data:
     automation: !include automations.yaml
     script: !include scripts.yaml
     scene: !include scenes.yaml
+    intent_script:
+      JarvisSignatureColor:
+        action:
+          - service: light.turn_on
+            target:
+              entity_id: "{{ jarvis_light }}"
+            data:
+              rgb_color: [255, 16, 240]
+        speech:
+          text: "Done."
     light:
       - platform: group
         name: Kitchen Lights
@@ -131,3 +141,61 @@ data:
         sensor:
           - name: HA latest version
             value_template: "{{ value_json.homeassistant.default }}"
+  custom_sentences/en/jarvis_colors.yaml: |
+    language: en
+    intents:
+      JarvisSignatureColor:
+        data:
+          - sentences:
+              - "(make|set|turn) [the] {jarvis_light} [light|lamp|lights] {jarvis_color}"
+              - "[make] [the] {jarvis_light} [light|lamp|lights] {jarvis_color}"
+              - "(set|turn) [the] {jarvis_light} [light|lamp|lights] to {jarvis_color}"
+    lists:
+      jarvis_light:
+        values:
+          - in: "downstairs"
+            out: "light.downstairs_lights"
+          - in: "downstairs lights"
+            out: "light.downstairs_lights"
+          - in: "kitchen"
+            out: "light.kitchen_lights"
+          - in: "kitchen lights"
+            out: "light.kitchen_lights"
+          - in: "living room"
+            out: "light.living_room_lights"
+          - in: "living room lights"
+            out: "light.living_room_lights"
+          - in: "bedroom"
+            out: "light.bedroom_roku_lights"
+          - in: "bedroom lights"
+            out: "light.bedroom_roku_lights"
+          - in: "govee"
+            out: "light.all_govee_lights"
+          - in: "all govee lights"
+            out: "light.all_govee_lights"
+          - in: "kitchen mushroom lamp"
+            out: "light.kitchen_mushroom_lamp"
+          - in: "bedroom window plug"
+            out: "light.bedroom_window_plug"
+          - in: "bedroom mushroom plug"
+            out: "light.bedroom_mushroom_plug"
+          - in: "good vibes sign"
+            out: "light.living_room_good_vibes_sign"
+      jarvis_color:
+        values:
+          - in: "neon pink"
+            out: "neon_pink"
+          - in: "hot pink"
+            out: "neon_pink"
+  custom_sentences/en/jarvis_terse.yaml: |
+    language: en
+    responses:
+      intents:
+        HassTurnOn:
+          default: Done.
+        HassTurnOff:
+          default: Done.
+        HassToggle:
+          default: Done.
+        HassLightSet:
+          default: Done.

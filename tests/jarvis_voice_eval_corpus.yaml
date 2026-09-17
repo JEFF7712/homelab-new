@@ -1,0 +1,237 @@
+# Jarvis voice regression corpus.
+#
+# Canonical commands to re-run (via Assist traces plus
+# jarvis_turn_path_total) whenever the model, system prompt, Whisper
+# version, or Assist exposures change. See docs/runbooks/jarvis-voice.md
+# ("Eval loop") for the procedure.
+#
+# Schema per entry:
+#   id: unique stable slug
+#   say: the exact utterance to speak or type into Assist debug
+#   path: local (built-in intent engine) or llm (Ollama fallback)
+#   intent: built-in intent name, required when path is local. Must have a
+#     terse override in home-assistant/custom_sentences/en/jarvis_terse.yaml.
+#   targets: entity IDs the turn must act on. Required when path is local;
+#     every ID must exist in home-assistant/core/configuration.yaml groups
+#     or home-assistant/scripts/.
+#   response: exact expected spoken reply, required when path is local.
+#   tool: expected tool or script, required when path is llm.
+#   notes: free-form expectation for llm-path turns.
+- id: lights-kitchen-on
+  say: Turn on the kitchen lights.
+  path: local
+  intent: HassTurnOn
+  targets: [light.kitchen_lights]
+  response: Done.
+- id: lights-kitchen-off
+  say: Turn off the kitchen lights.
+  path: local
+  intent: HassTurnOff
+  targets: [light.kitchen_lights]
+  response: Done.
+- id: lights-living-on
+  say: Turn on the living room lights.
+  path: local
+  intent: HassTurnOn
+  targets: [light.living_room_lights]
+  response: Done.
+- id: lights-living-off
+  say: Turn off the living room lights.
+  path: local
+  intent: HassTurnOff
+  targets: [light.living_room_lights]
+  response: Done.
+- id: lights-downstairs-off
+  say: Turn off the downstairs lights.
+  path: local
+  intent: HassTurnOff
+  targets: [light.downstairs_lights]
+  response: Done.
+- id: lights-downstairs-on
+  say: Turn on the downstairs lights.
+  path: local
+  intent: HassTurnOn
+  targets: [light.downstairs_lights]
+  response: Done.
+- id: lights-bedroom-roku-off
+  say: Turn off the bedroom lights.
+  path: local
+  intent: HassTurnOff
+  targets: [light.bedroom_roku_lights]
+  response: Done.
+- id: lights-govee-on
+  say: Turn on all the Govee lights.
+  path: local
+  intent: HassTurnOn
+  targets: [light.all_govee_lights]
+  response: Done.
+- id: lights-kitchen-mushroom-off
+  say: Turn off the kitchen mushroom lamp.
+  path: local
+  intent: HassTurnOff
+  targets: [light.kitchen_mushroom_lamp]
+  response: Done.
+- id: lights-bedroom-mushroom-plug-on
+  say: Turn on the bedroom mushroom plug.
+  path: local
+  intent: HassTurnOn
+  targets: [light.bedroom_mushroom_plug]
+  response: Done.
+- id: lights-good-vibes-off
+  say: Turn off the good vibes sign.
+  path: local
+  intent: HassTurnOff
+  targets: [light.living_room_good_vibes_sign]
+  response: Done.
+- id: lights-toggle-kitchen
+  say: Toggle the kitchen lights.
+  path: local
+  intent: HassToggle
+  targets: [light.kitchen_lights]
+  response: Done.
+- id: lights-dim-downstairs
+  say: Dim the downstairs lights to 30 percent.
+  path: local
+  intent: HassLightSet
+  targets: [light.downstairs_lights]
+  response: Done.
+- id: lights-brighten-living
+  say: Set the living room lights to full brightness.
+  path: local
+  intent: HassLightSet
+  targets: [light.living_room_lights]
+  response: Done.
+- id: lights-kitchen-blue
+  say: Set the kitchen lights to blue.
+  path: local
+  intent: HassLightSet
+  targets: [light.kitchen_light, light.kitchen_light_2]
+  response: Done.
+- id: lights-downstairs-warm
+  say: Set the downstairs lights to warm white.
+  path: local
+  intent: HassLightSet
+  targets: [light.downstairs_lights]
+  response: Done.
+- id: color-neon-pink-downstairs
+  say: Make the downstairs lights neon pink.
+  path: local
+  intent: JarvisSignatureColor
+  targets: [light.downstairs_lights]
+  response: Done.
+- id: color-hot-pink-kitchen
+  say: Set the kitchen to hot pink.
+  path: local
+  intent: JarvisSignatureColor
+  targets: [light.kitchen_lights]
+  response: Done.
+- id: color-neon-pink-bedroom
+  say: Turn the bedroom neon pink.
+  path: local
+  intent: JarvisSignatureColor
+  targets: [light.bedroom_roku_lights]
+  response: Done.
+- id: plug-window-on
+  say: Turn on the bedroom window plug.
+  path: local
+  intent: HassTurnOn
+  targets: [light.bedroom_window_plug]
+  response: Done.
+- id: plug-mushroom-off
+  say: Turn off the bedroom mushroom plug.
+  path: local
+  intent: HassTurnOff
+  targets: [light.bedroom_mushroom_plug]
+  response: Done.
+- id: sign-good-vibes-on
+  say: Turn on the good vibes sign.
+  path: local
+  intent: HassTurnOn
+  targets: [light.living_room_good_vibes_sign]
+  response: Done.
+- id: stairs-light-off
+  say: Turn off the stairs light.
+  path: local
+  intent: HassTurnOff
+  targets: [switch.stairs_light]
+  response: Done.
+- id: music-play-artist
+  say: Play Young Thug.
+  path: llm
+  tool: script.jarvis_play_media
+  notes: Spotify default. Reply is exactly Done.
+- id: music-play-artist-polite
+  say: Put on The Weeknd.
+  path: llm
+  tool: script.jarvis_play_media
+  notes: Spotify default. Reply is exactly Done.
+- id: music-playlist
+  say: Play my workout playlist.
+  path: llm
+  tool: script.jarvis_play_media
+  notes: media_content_type playlist. Reply is exactly Done.
+- id: music-explicit-platform
+  say: Play Coldplay on YouTube Music.
+  path: llm
+  tool: script.jarvis_play_media
+  notes: Platform routes to youtube_music. Reply is exactly Done.
+- id: vague-darker-downstairs
+  say: Make it darker down here.
+  path: llm
+  tool: light.turn_on
+  notes: Ambiguous natural language; LLM resolves room to downstairs and dims. Reply is exactly Done.
+- id: state-kitchen-query
+  say: Are the kitchen lights on?
+  path: llm
+  tool: none
+  notes: Factual home-state question answered from HA state in one short sentence, no filler.
+- id: state-temperature-query
+  say: What is the temperature downstairs?
+  path: llm
+  tool: none
+  notes: Answered from the AC ambient-temperature sensor, numbers only.
+- id: media-query
+  say: What is playing?
+  path: llm
+  tool: none
+  notes: Answered from the satellite media player state in one short sentence.
+- id: general-question
+  say: How many ounces are in a cup?
+  path: llm
+  tool: none
+  notes: General knowledge answered in one or two sentences, no home action.
+- id: multistep-movie
+  say: Set up movie mode in the living room.
+  path: llm
+  tool: scene.turn_on
+  notes: Multi-step request; LLM picks the living room movie scene. Reply is exactly Done.
+- id: followup-brighter
+  say: Make it brighter.
+  path: llm
+  tool: light.turn_on
+  notes: Follow-up resolved from conversation context only; never invents a room.
+- id: followup-yes
+  say: Yes.
+  path: llm
+  tool: none
+  notes: Only meaningful inside a continued conversation; standalone it must ask for clarification, never act.
+- id: ambiguous-them
+  say: Turn them back on.
+  path: llm
+  tool: none
+  notes: No stale room carried across wake words; asks one short clarification question.
+- id: shopping-add
+  say: Add oat milk to the shopping list.
+  path: llm
+  tool: shopping_list.add_item
+  notes: Reply is exactly Done.
+- id: climate-set
+  say: Set the living room thermostat to 72 degrees.
+  path: llm
+  tool: climate.set_temperature
+  notes: Reply is exactly Done.
+- id: unknown-device
+  say: Turn on the garage disco ball.
+  path: llm
+  tool: none
+  notes: No such device; states the problem briefly without inventing entity IDs.

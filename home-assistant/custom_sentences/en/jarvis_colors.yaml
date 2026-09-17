@@ -1,0 +1,45 @@
+language: en
+intents:
+  JarvisSignatureColor:
+    data:
+      - sentences:
+          - "(make|set|turn) [the] {jarvis_light} [light|lamp|lights] {jarvis_color}"
+          - "[make] [the] {jarvis_light} [light|lamp|lights] {jarvis_color}"
+          - "(set|turn) [the] {jarvis_light} [light|lamp|lights] to {jarvis_color}"
+lists:
+  jarvis_light:
+    values:
+      - in: "downstairs"
+        out: "light.downstairs_lights"
+      - in: "downstairs lights"
+        out: "light.downstairs_lights"
+      - in: "kitchen"
+        out: "light.kitchen_lights"
+      - in: "kitchen lights"
+        out: "light.kitchen_lights"
+      - in: "living room"
+        out: "light.living_room_lights"
+      - in: "living room lights"
+        out: "light.living_room_lights"
+      - in: "bedroom"
+        out: "light.bedroom_roku_lights"
+      - in: "bedroom lights"
+        out: "light.bedroom_roku_lights"
+      - in: "govee"
+        out: "light.all_govee_lights"
+      - in: "all govee lights"
+        out: "light.all_govee_lights"
+      - in: "kitchen mushroom lamp"
+        out: "light.kitchen_mushroom_lamp"
+      - in: "bedroom window plug"
+        out: "light.bedroom_window_plug"
+      - in: "bedroom mushroom plug"
+        out: "light.bedroom_mushroom_plug"
+      - in: "good vibes sign"
+        out: "light.living_room_good_vibes_sign"
+  jarvis_color:
+    values:
+      - in: "neon pink"
+        out: "neon_pink"
+      - in: "hot pink"
+        out: "neon_pink"

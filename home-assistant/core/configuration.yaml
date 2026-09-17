@@ -15,6 +15,16 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+intent_script:
+  JarvisSignatureColor:
+    action:
+      - service: light.turn_on
+        target:
+          entity_id: "{{ jarvis_light }}"
+        data:
+          rgb_color: [255, 16, 240]
+    speech:
+      text: "Done."
 light:
   - platform: group
     name: Kitchen Lights

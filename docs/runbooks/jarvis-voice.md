@@ -52,30 +52,70 @@ automation referencing them.
    downstairs means Living Room plus Kitchen, light commands with no room
    default to all downstairs lights, light color changes default to
    Govee light bulbs, and music/artist/playlist requests explicitly call
-   `script.jarvis_play_media` (`media_content_type='music'`). Output is tuned
-   for concise spoken acknowledgments.
-   The context window must be set to `num_ctx: 8192` (at 2048 Ollama truncates
-   the 3.5k+ token prompt and tool schemas) and `llm_hass_api` set to
-   `assist` only (omitting SmartHQ saves ~1.2k tokens of unused tool schemas).
-   The prompt is UI-managed config-entry state; the `light.downstairs_lights`
-   group in `home-assistant/core/configuration.yaml` is its deterministic backup.
-3. Expose exactly the entities Jarvis may control (lights, switches, climate
-   in `home-assistant/core/configuration.yaml` groups, plus scenes and the
-   shopping list) to Assist. Unexposed entities are invisible to voice
-   commands. Exposure audit 2026-09-17: 59 exposed down to 37. Deliberately
-   unexposed: all AC alert internals, Bambu bed/nozzle thermometers, AC
-   RSSI/energy-counter sensors, browser_mod screen and player, the AC
-   temperature-units selector, the four adaptive-lighting control switches
-   (name-collision risk with "turn off all lights"), and
+   `script.jarvis_play_media` (`media_content_type='music'`). The canonical
+   prompt text is recorded below ("Conversation prompt"); the live copy is
+   UI-managed config-entry state, so keep the two in sync on any edit.
+   Required conversation-agent settings, in priority order:
+   - `Prefer handling commands locally`: ON. Built-in intents answer basic
+     light, scene, and state commands without waking Qwen. Qwen is the
+     fallback for ambiguous, multi-step, music, and general questions.
+   - `Max history messages`: 4. Old turns hurt a 3B model more than they
+     help; follow-ups inside one continued conversation still work.
+   - `num_ctx`: 8192 (at 2048 Ollama truncates the 3.5k+ token prompt and
+     tool schemas). The 8k window is headroom, not a target; keep pruning
+     prompt and exposures instead of filling it.
+   - `llm_hass_api`: `assist` only (omitting SmartHQ saves ~1.2k tokens of
+     unused tool schemas).
+   The `light.downstairs_lights` group in
+   `home-assistant/core/configuration.yaml` is the deterministic backup for
+   the room semantics.
+3. Terse local replies are enforced in Git, not in the LLM prompt: a local
+   command never reaches Ollama, so the prompt cannot shorten it.
+   `home-assistant/custom_sentences/en/jarvis_terse.yaml` overrides the
+   built-in action-intent responses (`HassTurnOn`, `HassTurnOff`,
+   `HassToggle`, `HassLightSet`) with `Done.` It deploys via the
+   `home-assistant-config` ConfigMap
+   (`scripts/home_assistant/adapters/core.py` renders every
+   `home-assistant/custom_sentences/<lang>/*.yaml` into it, and the HA
+   initContainer copies the tree into `/config`). State queries keep their
+   dynamic built-in responses; do not override them with static text.
+   Extend the override file only after inspecting Assist traces for the
+   next most common intents.
+   Signature colors live one layer up: the Ollama `HassLightSet` tool
+   accepts color *names* only (validated by `color_name_to_rgb`), so the
+   LLM can never emit exact hex and "pink" always lands on CSS pink
+   (255, 192, 203). `home-assistant/custom_sentences/en/jarvis_colors.yaml`
+   maps phrases like "neon pink" / "hot pink" onto room and plug targets,
+   and `intent_script.JarvisSignatureColor` in `configuration.yaml` fires
+   `light.turn_on` with hardcoded `rgb_color: [255, 16, 240]`, replying
+   `Done.` To add a color: append its phrases to the `jarvis_color` list
+   and add a `choose` branch on `{{ jarvis_color }}` in the intent script.
+   These requests resolve in the local intent engine, never reaching Qwen.
+4. Expose 15 to 25 conceptual controls to the Ollama agent, not every raw
+   entity. Prefer groups (`light.downstairs_lights`), named lamps actually
+   mentioned by voice, climate controls, scenes, music, and the shopping
+   list. Diagnostic and status sensors stay available to deterministic local
+   queries but do not go into Qwen's tool schema. Exposure audit 2026-09-17:
+   59 down to 37, then cut to 19 managed controls (5 light groups, 4
+   plug/sign singles, thermostat plus 2 AC sensors, 3 shared scenes,
+   `script.jarvis_play_media`, shopping list, satellite media player,
+   stairs light). Dropped: 7 Govee/Roku singles covered by their groups,
+   6 bedroom scenes, AC power sensor. Four unregistered entities (sun,
+   zone, `sensor.ha_latest_version`, `conversation.home_assistant`) have no
+   exposure flag and stay visible; negligible cost.
+   Deliberately unexposed: all AC alert internals, Bambu bed/nozzle
+   thermometers, AC RSSI/energy-counter sensors, browser_mod screen and
+   player, the AC temperature-units selector, the four adaptive-lighting
+   control switches (name-collision risk with "turn off all lights"), and
    `switch.zigbee2mqtt_bridge_permit_join` (voice must never open Zigbee
    pairing). Kept AC ambient-temperature, power, and mode sensors for
    "how warm / is it on" queries. When adding devices, expose only the
    control entity, never diagnostic sensors.
-4. The kiosk bypass in `configuration.yaml` `trusted_networks` must keep
+5. The kiosk bypass in `configuration.yaml` `trusted_networks` must keep
    `10.0.30.15/32` so the face websocket authenticates without a prompt.
    The long-lived token remains the fallback and is stored only in the kiosk
    browser profile, never in Git.
-5. Satellite audio and VAD tuning (on device `Homelab 05 Satellite`):
+6. Satellite audio and VAD tuning (on device `Homelab 05 Satellite`):
    - `select.homelab_05_satellite_finished_speaking_detection`: set to `aggressive`
      (0.25s silence detection vs. 0.7s default).
    - `select.homelab_05_satellite_mic_noise_suppression`: set to `High` (level 3).
@@ -84,7 +124,7 @@ automation referencing them.
      treat background hum as ongoing speech until hitting the 10-second STT
      safety timeout. Lowering to 75% with High noise suppression detects the end
      of speech immediately.
-6. Music playback (Music Assistant & providers):
+7. Music playback (Music Assistant & providers):
    - `script.jarvis_play_media` is exposed to Assist to handle music requests.
    - Platform parameter supports `spotify` (default) and `youtube_music` (`ytmusic`).
    - Music Assistant runs on `homelab-05` host network
@@ -92,6 +132,121 @@ automation referencing them.
    - YouTube Music streaming requires a Proof-of-Origin (PO) token server; the
      `pot-provider` companion container (`brainicism/bgutil-ytdlp-pot-provider:1.2.1`)
      runs on `homelab-05` at `http://127.0.0.1:4416`.
+
+## Conversation prompt (canonical)
+
+Paste this verbatim into the Jarvis conversation subentry. Keep this copy
+and the live copy in sync; this file is the reviewable source.
+
+```text
+You are Jarvis, the voice assistant for this Home Assistant instance.
+
+Your primary job is to understand the user's request, perform the requested
+Home Assistant action when appropriate, and respond with as few words as
+possible.
+
+RESPONSE STYLE
+
+Voice responses must be extremely concise.
+
+For a successfully completed action, respond exactly:
+
+Done.
+
+Do not describe the action you just performed unless the user asks.
+
+Bad: "I've turned off all of the lights downstairs for you."
+Good: "Done."
+
+For a successfully completed multi-step action, also respond: Done.
+
+For a simple factual question about the home, answer with only the requested
+information. Examples: "What's the temperature downstairs?" -> "72 degrees."
+"Are the kitchen lights on?" -> "Yes." "What's playing?" ->
+"Nights by Frank Ocean."
+
+For general questions, answer concisely. Prefer one or two sentences unless
+the user explicitly asks for detail.
+
+Never add filler such as: "Certainly." "Of course." "Sure thing."
+"I'd be happy to." "Here you go." "Let me check." "Anything else?"
+
+Do not repeat the user's request back to them.
+
+ACTION RULES
+
+When the user requests an action: perform the action first, wait for the
+tool result, and if it succeeds say "Done." Never claim success unless the
+tool confirms it. If an action fails, state the problem briefly
+("Couldn't reach the bedroom lights.", "Spotify is unavailable."). If only
+part of a request succeeds, say what failed in one short sentence.
+
+Do not explain Home Assistant internals, entity IDs, service names, tool
+names, or implementation details unless explicitly asked.
+
+Do not ask for confirmation for ordinary reversible actions such as lights,
+music, scenes, climate adjustments, or volume changes.
+
+If the request is genuinely ambiguous and acting could produce an incorrect
+result, ask one short clarification question.
+
+ROOM SEMANTICS
+
+"Downstairs" means the Living Room and Kitchen. When the user gives a light
+command without specifying a room, default to all downstairs lights unless
+conversational context clearly establishes another room. When the user asks
+to change a light color without naming a specific light, default to the
+Govee light bulbs in the relevant room. Use Home Assistant areas, groups,
+and entities rather than guessing device names.
+
+MUSIC
+
+For music, artist, album, song, or playlist requests, use
+`script.jarvis_play_media`. Spotify is the default platform unless the user
+explicitly requests another available platform. After successful playback
+begins, say: Done.
+
+CONTEXT
+
+Treat the current conversation as temporary. Use recent conversation context
+only to resolve natural follow-ups such as "turn it off", "make it
+brighter", "what about upstairs?", "yes", or "no". Do not invent context
+that is not present. Do not allow an unrelated earlier request to influence
+a new request.
+
+KNOWLEDGE AND HOME STATE
+
+For questions about the current state of the home, use Home Assistant state
+information rather than guessing. Never fabricate temperatures, device
+states, media playback, light states, presence, or sensor readings. If the
+required information is unavailable, say so briefly.
+
+BEHAVIOR
+
+Be precise, quiet, and action-oriented. The ideal interaction is: user gives
+command, Jarvis performs it, Jarvis says "Done." Only speak more when the
+user actually needs information.
+```
+
+## Conversation lifetime
+
+Every new wake-word activation starts a new conversation. Do not persist
+context across separate "Hey Jarvis" invocations: a bare "turn them back
+on" twenty minutes later must ask for clarification, never resolve "them"
+from a stale turn. Multi-turn follow-ups ("Yes.", "make it brighter") work
+only inside a continued satellite conversation
+(`assist_satellite.start_conversation`). Never restart Ollama or clear its
+model cache on wake; `OLLAMA_KEEP_ALIVE=-1`, the Q8 KV cache, and the warmup
+Job stay as they are. Conversation state and model residency are separate.
+
+## Satellite health
+
+`gitops/voice/satellite.yaml` gates readiness on a TCP probe against port
+6053, so the pod leaves the rotation when the Wyoming server stops
+accepting connections even if the process is still alive. Startup and
+liveness keep the `pgrep -f linux_voice_assistant` exec checks. The HA-level
+`jarvis_satellite_watchdog.yaml` automation stays as the higher-level check
+for HA losing the satellite.
 
 ## Pinned images
 
@@ -198,6 +353,12 @@ Metrics and their exact semantics:
   listening or processing without ever responding.
 - `jarvis_requests_by_room_total{room}`: completed turns attributed to the
   area of the first targeted entity, else `unknown`.
+- `jarvis_turn_path_total{satellite,path}`: completed turns split by
+  handling path, where `path` is `local` or `llm`. This is a latency
+  heuristic, not a pipeline label: turns whose processing phase fits within
+  `LOCAL_TURN_MAX_SECONDS` (default `2.0`) count as local built-in-intent
+  handling, slower turns as LLM. Recalibrate the threshold against Assist
+  traces if the split disagrees with them.
 - `jarvis_exporter_ha_connected`: 1 while the websocket is authenticated.
 
 The exporter needs a Home Assistant long-lived token in the GitLab project
@@ -206,6 +367,23 @@ ClusterSecretStore). Without it the exporter still serves `/metrics` with
 `connected=0`, and the dashboard shows no turns. Exporter logic is covered
 by `tests/test_jarvis_exporter.py`, which executes the exact script embedded
 in the ConfigMap.
+
+### Eval loop
+
+`tests/jarvis_voice_eval_corpus.yaml` holds 30 to 50 canonical commands with
+their expected path (`local` vs `llm`), target entities, tools, and replies.
+`tests/test_jarvis_voice_eval.py` keeps the corpus consistent offline: local
+entries must name an intent overridden in
+`home-assistant/custom_sentences/en/jarvis_terse.yaml`, reply `Done.`, and
+target only entities defined in `home-assistant/core/configuration.yaml` or
+`home-assistant/scripts/`.
+
+Whenever the model, prompt, Whisper version, or exposures change, run the
+corpus live: speak or type each `say` into an Assist debug trace, then check
+the handling path in the trace, the spoken reply, and the
+`jarvis_turn_path_total` split in Prometheus. A regression is any local-path
+case that falls through to the LLM, any reply longer than the corpus
+expects, or any action on an entity outside `targets`.
 
 ## Failure symptoms
 

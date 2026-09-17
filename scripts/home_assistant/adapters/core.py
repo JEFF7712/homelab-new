@@ -9,34 +9,72 @@ from ..client import HomeAssistantClient
 from ..models import OwnerMode, PlanAction, ResourceDocument
 from .base import BaseAdapter
 
+CUSTOM_SENTENCES_DIR = Path("home-assistant") / "custom_sentences"
+
+
+def iter_custom_sentences(repo_root: Path) -> list[tuple[str, str]]:
+    """Collect custom_sentences/<lang>/<name>.yaml as (configmap_key, content)."""
+    base = repo_root / CUSTOM_SENTENCES_DIR
+    if not base.is_dir():
+        return []
+    collected: list[tuple[str, str]] = []
+    for lang_dir in sorted(p for p in base.iterdir() if p.is_dir()):
+        for sentence_file in sorted(lang_dir.glob("*.yaml")):
+            if not sentence_file.is_file():
+                continue
+            key = f"custom_sentences/{lang_dir.name}/{sentence_file.name}"
+            collected.append((key, sentence_file.read_text(encoding="utf-8")))
+    return collected
+
+
+def render_config_configmap(repo_root: Path) -> tuple[str, str]:
+    """Render gitops/home-assistant/config.yaml content plus its checksum.
+
+    The ConfigMap carries configuration.yaml plus every
+    home-assistant/custom_sentences/<lang>/*.yaml file. The checksum covers
+    all rendered content so HA restarts when any of it changes.
+    """
+    core_file = repo_root / "home-assistant" / "core" / "configuration.yaml"
+    core_content = core_file.read_text(encoding="utf-8")
+
+    def _block(content: str) -> str:
+        indented = "\n".join("    " + line for line in content.splitlines())
+        return f"{indented}\n"
+
+    parts = [
+        "apiVersion: v1\n",
+        "kind: ConfigMap\n",
+        "metadata:\n",
+        "  name: home-assistant-config\n",
+        "  namespace: home-assistant\n",
+        "data:\n",
+        f"  configuration.yaml: |\n{_block(core_content)}",
+    ]
+    checksum_parts = [core_content]
+    for key, content in iter_custom_sentences(repo_root):
+        parts.append(f"  {key}: |\n{_block(content)}")
+        checksum_parts.append(f"{key}\n{content}")
+    cm_text = "".join(parts)
+    checksum = hashlib.sha256("\n".join(checksum_parts).encode("utf-8")).hexdigest()
+    return cm_text, checksum
+
 
 def sync_core_to_gitops(repo_root: Path) -> None:
-    """Synchronize home-assistant/core/configuration.yaml into gitops/home-assistant/config.yaml
-    and recalculate checksum/config in gitops/home-assistant/deployment.yaml."""
+    """Synchronize home-assistant/core/configuration.yaml (plus custom_sentences)
+    into gitops/home-assistant/config.yaml and recalculate checksum/config
+    in gitops/home-assistant/deployment.yaml."""
     core_file = repo_root / "home-assistant" / "core" / "configuration.yaml"
     if not core_file.is_file():
         return
-    core_content = core_file.read_text(encoding="utf-8")
+    cm_text, checksum = render_config_configmap(repo_root)
 
     # Render into gitops ConfigMap
     config_cm_file = repo_root / "gitops" / "home-assistant" / "config.yaml"
-    indented_lines = ["    " + line for line in core_content.splitlines()]
-    indented_content = "\n".join(indented_lines) + "\n"
-    cm_text = (
-        "apiVersion: v1\n"
-        "kind: ConfigMap\n"
-        "metadata:\n"
-        "  name: home-assistant-config\n"
-        "  namespace: home-assistant\n"
-        "data:\n"
-        f"  configuration.yaml: |\n{indented_content}"
-    )
     config_cm_file.write_text(cm_text, encoding="utf-8")
 
     # Update deployment checksum/config
     deployment_file = repo_root / "gitops" / "home-assistant" / "deployment.yaml"
     if deployment_file.is_file():
-        checksum = hashlib.sha256(core_content.encode("utf-8")).hexdigest()
         dep_text = deployment_file.read_text(encoding="utf-8")
         dep_text = re.sub(
             r"checksum/config:\s*[a-f0-9]+",

@@ -15,7 +15,10 @@ data:
     Stage semantics are externally observed, not internal: stt covers the
     listening phase (user utterance plus transcription), llm covers the
     processing phase, tts covers the responding phase. Tool calls are
-    call_service bus events seen while the satellite is processing.
+    call_service bus events seen while the satellite is processing. The
+    handling path is a latency heuristic, not a pipeline label: turns whose
+    processing phase fits within LOCAL_TURN_MAX_SECONDS count as "local"
+    (built-in intent engine), slower turns count as "llm".
     """
 
     from __future__ import annotations
@@ -108,6 +111,7 @@ data:
             self.tool_calls = Counter("jarvis_tool_calls_total", "Service calls seen while the satellite was processing.", ("satellite",))
             self.failed = Counter("jarvis_failed_requests_total", "Turns abandoned before responding.", ("satellite", "stage"))
             self.by_room = Counter("jarvis_requests_by_room_total", "Completed voice turns by target room.", ("room",))
+            self.path = Counter("jarvis_turn_path_total", "Completed voice turns by handling path.", ("satellite", "path"))
             self.stt = Histogram("jarvis_stt_latency_seconds", "Listening phase duration: utterance plus transcription.", ("satellite",))
             self.llm = Histogram("jarvis_llm_latency_seconds", "Processing phase duration.", ("satellite",))
             self.tts = Histogram("jarvis_tts_latency_seconds", "Responding phase duration.", ("satellite",))
@@ -124,7 +128,7 @@ data:
                     "# TYPE jarvis_exporter_ha_connected gauge",
                     f"jarvis_exporter_ha_connected {self._connected}",
                 ]
-                for metric in (self.requests, self.tool_calls, self.failed, self.by_room):
+                for metric in (self.requests, self.tool_calls, self.failed, self.by_room, self.path):
                     lines.extend(metric.render())
                 for metric in (self.stt, self.llm, self.tts):
                     lines.extend(metric.render())
@@ -134,9 +138,10 @@ data:
     class TurnTracker:
         """Serial per-satellite turn state machine."""
 
-        def __init__(self, metrics: Metrics, satellite: str) -> None:
+        def __init__(self, metrics: Metrics, satellite: str, local_max_seconds: float = 2.0) -> None:
             self._metrics = metrics
             self._satellite = satellite
+            self._local_max_seconds = local_max_seconds
             self._lock = threading.Lock()
             self.reset()
 
@@ -182,6 +187,9 @@ data:
                         self._metrics.requests.labels(self._satellite).inc()
                         room = resolve_room(self.turn_areas) if resolve_room else "unknown"
                         self._metrics.by_room.labels(room).inc()
+                        processing = self.responding_start - self.processing_start
+                        path = "local" if processing <= self._local_max_seconds else "llm"
+                        self._metrics.path.labels(self._satellite, path).inc()
                     else:
                         self._abandon_locked(now)
                     self.reset()
@@ -428,9 +436,10 @@ data:
             "assist_satellite.homelab_05_satellite_assist_satellite",
         )
         port = int(os.environ.get("METRICS_PORT", "8000"))
+        local_max = float(os.environ.get("LOCAL_TURN_MAX_SECONDS", "2.0"))
         short_name = satellite.split(".", 1)[-1]
         metrics = Metrics(short_name)
-        tracker = TurnTracker(metrics, short_name)
+        tracker = TurnTracker(metrics, short_name, local_max_seconds=local_max)
         resolver = AreaResolver()
         MetricsHandler.metrics = metrics
         server = ThreadingHTTPServer(("0.0.0.0", port), MetricsHandler)
@@ -499,6 +508,8 @@ spec:
               value: "http://home-assistant.home-assistant:8123"
             - name: SATELLITE_ENTITY
               value: "assist_satellite.homelab_05_satellite_assist_satellite"
+            - name: LOCAL_TURN_MAX_SECONDS
+              value: "2.0"
             - name: HA_TOKEN
               valueFrom:
                 secretKeyRef:

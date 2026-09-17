@@ -1,0 +1,11 @@
+language: en
+responses:
+  intents:
+    HassTurnOn:
+      default: Done.
+    HassTurnOff:
+      default: Done.
+    HassToggle:
+      default: Done.
+    HassLightSet:
+      default: Done.
