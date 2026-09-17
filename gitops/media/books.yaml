@@ -61,6 +61,8 @@ spec:
               readOnly: true
             - name: tmp
               mountPath: /tmp
+            - name: run
+              mountPath: /run
           resources:
             requests:
               cpu: 100m
@@ -78,6 +80,8 @@ spec:
           configMap:
             name: calibre-web-dirs
         - name: tmp
+          emptyDir: {}
+        - name: run
           emptyDir: {}
 ---
 apiVersion: v1

@@ -486,6 +486,12 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            - name: run
+              mountPath: /run
+            - name: apphome
+              mountPath: /app/.local
+            - name: dshm
+              mountPath: /dev/shm
           resources:
             requests:
               cpu: 100m
@@ -495,6 +501,14 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: run
+          emptyDir: {}
+        - name: apphome
+          emptyDir: {}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
 ---
 apiVersion: v1
 kind: Service
