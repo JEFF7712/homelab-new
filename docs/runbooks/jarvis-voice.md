@@ -73,6 +73,15 @@ automation referencing them.
    `10.0.30.15/32` so the face websocket authenticates without a prompt.
    The long-lived token remains the fallback and is stored only in the kiosk
    browser profile, never in Git.
+5. Satellite audio and VAD tuning (on device `Homelab 05 Satellite`):
+   - `select.homelab_05_satellite_finished_speaking_detection`: set to `aggressive`
+     (0.25s silence detection vs. 0.7s default).
+   - `select.homelab_05_satellite_mic_noise_suppression`: set to `High` (level 3).
+   - `number.homelab_05_satellite_mic_volume`: set to `75.0`. At 100% gain, the
+     QuadCast S condenser mic saturates room ambient noise, causing Silero VAD to
+     treat background hum as ongoing speech until hitting the 10-second STT
+     safety timeout. Lowering to 75% with High noise suppression detects the end
+     of speech immediately.
 
 ## Pinned images
 
