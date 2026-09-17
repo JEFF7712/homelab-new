@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
+import yaml
+
+from scripts.home_assistant.adapters.core import (
+    iter_custom_sentences,
+    render_config_configmap,
+)
 from scripts.home_assistant.models import ResourceDocument
 from scripts.home_assistant.source import (
     adopt_resources,
@@ -130,6 +137,17 @@ class TestHomeAssistantSource(unittest.TestCase):
         self.assertEqual(written.name, "entities.yaml")
         tree = load_source_tree(self.root)
         self.assertIn("entity/collection", tree)
+
+    def test_configmap_keys_are_valid(self) -> None:
+        repo_root = Path(__file__).resolve().parent.parent
+        cm_text, _ = render_config_configmap(repo_root)
+        data = yaml.safe_load(cm_text)["data"]
+        pattern = re.compile(r"^[-._a-zA-Z0-9]+$")
+        for key in data:
+            self.assertRegex(key, pattern, key)
+        rendered = {key: data[key] for key in data if key != "configuration.yaml"}
+        expected = dict(iter_custom_sentences(repo_root))
+        self.assertEqual(rendered, expected)
 
     def test_legacy_entitys_filename_still_loads(self) -> None:
         reg_dir = self.root / "home-assistant" / "registries"

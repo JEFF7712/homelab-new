@@ -1,0 +1,32 @@
+language: en
+intents:
+  JarvisMovieMode:
+    data:
+      - sentences:
+          - "(set up|start) movie mode [in the living room]"
+          - "movie mode"
+          - "turn on movie mode [in the living room]"
+  JarvisWhatsPlaying:
+    data:
+      - sentences:
+          - "what's playing"
+          - "what is playing"
+          - "what's on [the speaker]"
+  JarvisTempDownstairs:
+    data:
+      - sentences:
+          - "what's the temperature downstairs"
+          - "what is the temperature downstairs"
+          - "how warm is it downstairs"
+          - "how warm is it down here"
+  JarvisKitchenLightsState:
+    data:
+      - sentences:
+          - "are the kitchen lights on"
+          - "are the kitchen lights off"
+  JarvisAcState:
+    data:
+      - sentences:
+          - "is the ac on"
+          - "is the air conditioning on"
+          - "is the living room ac on"

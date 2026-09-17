@@ -25,6 +25,48 @@ intent_script:
           rgb_color: [255, 16, 240]
     speech:
       text: "Done."
+  JarvisBrightnessNudge:
+    action:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ jarvis_direction == 'decrease' }}"
+            sequence:
+              - service: light.turn_on
+                target:
+                  entity_id: light.downstairs_lights
+                data:
+                  brightness_step_pct: -30
+        default:
+          - service: light.turn_on
+            target:
+              entity_id: light.downstairs_lights
+            data:
+              brightness_step_pct: 30
+    speech:
+      text: "Done."
+  JarvisMovieMode:
+    action:
+      - service: scene.turn_on
+        target:
+          entity_id: scene.movie_low_living_room
+    speech:
+      text: "Done."
+  JarvisWhatsPlaying:
+    speech:
+      text: >-
+        {% set title = state_attr('media_player.homelab_05_satellite_media_player_2', 'media_title') %}
+        {% set artist = state_attr('media_player.homelab_05_satellite_media_player_2', 'media_artist') %}
+        {% if title %}{{ title }}{% if artist %} by {{ artist }}{% endif %}{% else %}Nothing is playing.{% endif %}
+  JarvisTempDownstairs:
+    speech:
+      text: "{{ states('sensor.living_room_ac_ambient_temperature_degf') }} degrees."
+  JarvisKitchenLightsState:
+    speech:
+      text: "{% if is_state('light.kitchen_lights', 'on') %}Yes.{% else %}No.{% endif %}"
+  JarvisAcState:
+    speech:
+      text: "{% if states('sensor.living_room_ac_mode') == 'off' %}No.{% else %}Yes.{% endif %}"
 light:
   - platform: group
     name: Kitchen Lights

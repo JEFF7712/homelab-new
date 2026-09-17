@@ -13,7 +13,12 @@ CUSTOM_SENTENCES_DIR = Path("home-assistant") / "custom_sentences"
 
 
 def iter_custom_sentences(repo_root: Path) -> list[tuple[str, str]]:
-    """Collect custom_sentences/<lang>/<name>.yaml as (configmap_key, content)."""
+    """Collect custom_sentences/<lang>/<name>.yaml as (configmap_key, content).
+
+    ConfigMap keys cannot contain slashes, so <lang>/<name> becomes
+    <lang>.<name> (split on the first dot on deploy). Language and file
+    names must therefore avoid dots of their own beyond the .yaml suffix.
+    """
     base = repo_root / CUSTOM_SENTENCES_DIR
     if not base.is_dir():
         return []
@@ -22,7 +27,7 @@ def iter_custom_sentences(repo_root: Path) -> list[tuple[str, str]]:
         for sentence_file in sorted(lang_dir.glob("*.yaml")):
             if not sentence_file.is_file():
                 continue
-            key = f"custom_sentences/{lang_dir.name}/{sentence_file.name}"
+            key = f"{lang_dir.name}.{sentence_file.name}"
             collected.append((key, sentence_file.read_text(encoding="utf-8")))
     return collected
 

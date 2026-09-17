@@ -108,25 +108,31 @@ class TurnTrackerTest(unittest.TestCase):
         text = self.metrics.render()
         self.assertIn('jarvis_requests_by_room_total{room="living_room"} 1.0', text)
 
-    def test_fast_turn_records_local_path(self) -> None:
+    def test_fast_turn_records_fast_class(self) -> None:
         self.drive("listening", "processing", "responding", "idle")
         text = self.metrics.render()
-        self.assertIn('jarvis_turn_path_total{satellite="sat",path="local"} 1.0', text)
+        self.assertIn(
+            'jarvis_turn_speed_class_total{satellite="sat",class="fast"} 1.0', text
+        )
 
-    def test_slow_turn_records_llm_path(self) -> None:
+    def test_slow_turn_records_slow_class(self) -> None:
         self.drive("listening", "processing", "responding", "idle", step=3.0)
         text = self.metrics.render()
-        self.assertIn('jarvis_turn_path_total{satellite="sat",path="llm"} 1.0', text)
+        self.assertIn(
+            'jarvis_turn_speed_class_total{satellite="sat",class="slow"} 1.0', text
+        )
 
-    def test_path_threshold_is_configurable(self) -> None:
+    def test_speed_threshold_is_configurable(self) -> None:
         metrics = EXPORTER["Metrics"]("sat")
-        tracker = EXPORTER["TurnTracker"](metrics, "sat", local_max_seconds=10.0)
+        tracker = EXPORTER["TurnTracker"](metrics, "sat", fast_max_seconds=10.0)
         now = 1000.0
         for state in ("listening", "processing", "responding", "idle"):
             tracker.observe_state(state, now, None)
             now += 3.0
         text = metrics.render()
-        self.assertIn('jarvis_turn_path_total{satellite="sat",path="local"} 1.0', text)
+        self.assertIn(
+            'jarvis_turn_speed_class_total{satellite="sat",class="fast"} 1.0', text
+        )
 
     def test_seed_suppresses_partial_turn(self) -> None:
         self.tracker.seed("processing")

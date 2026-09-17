@@ -1,0 +1,14 @@
+language: en
+intents:
+  JarvisBrightnessNudge:
+    data:
+      - sentences:
+          - "(make|turn) it {jarvis_direction} down here"
+          - "(make|turn) it {jarvis_direction} downstairs"
+lists:
+  jarvis_direction:
+    values:
+      - in: "darker"
+        out: "decrease"
+      - in: "brighter"
+        out: "increase"

@@ -32,6 +32,48 @@ data:
               rgb_color: [255, 16, 240]
         speech:
           text: "Done."
+      JarvisBrightnessNudge:
+        action:
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ jarvis_direction == 'decrease' }}"
+                sequence:
+                  - service: light.turn_on
+                    target:
+                      entity_id: light.downstairs_lights
+                    data:
+                      brightness_step_pct: -30
+            default:
+              - service: light.turn_on
+                target:
+                  entity_id: light.downstairs_lights
+                data:
+                  brightness_step_pct: 30
+        speech:
+          text: "Done."
+      JarvisMovieMode:
+        action:
+          - service: scene.turn_on
+            target:
+              entity_id: scene.movie_low_living_room
+        speech:
+          text: "Done."
+      JarvisWhatsPlaying:
+        speech:
+          text: >-
+            {% set title = state_attr('media_player.homelab_05_satellite_media_player_2', 'media_title') %}
+            {% set artist = state_attr('media_player.homelab_05_satellite_media_player_2', 'media_artist') %}
+            {% if title %}{{ title }}{% if artist %} by {{ artist }}{% endif %}{% else %}Nothing is playing.{% endif %}
+      JarvisTempDownstairs:
+        speech:
+          text: "{{ states('sensor.living_room_ac_ambient_temperature_degf') }} degrees."
+      JarvisKitchenLightsState:
+        speech:
+          text: "{% if is_state('light.kitchen_lights', 'on') %}Yes.{% else %}No.{% endif %}"
+      JarvisAcState:
+        speech:
+          text: "{% if states('sensor.living_room_ac_mode') == 'off' %}No.{% else %}Yes.{% endif %}"
     light:
       - platform: group
         name: Kitchen Lights
@@ -141,7 +183,7 @@ data:
         sensor:
           - name: HA latest version
             value_template: "{{ value_json.homeassistant.default }}"
-  custom_sentences/en/jarvis_colors.yaml: |
+  en.jarvis_colors.yaml: |
     language: en
     intents:
       JarvisSignatureColor:
@@ -187,7 +229,55 @@ data:
             out: "neon_pink"
           - in: "hot pink"
             out: "neon_pink"
-  custom_sentences/en/jarvis_terse.yaml: |
+  en.jarvis_home.yaml: |
+    language: en
+    intents:
+      JarvisMovieMode:
+        data:
+          - sentences:
+              - "(set up|start) movie mode [in the living room]"
+              - "movie mode"
+              - "turn on movie mode [in the living room]"
+      JarvisWhatsPlaying:
+        data:
+          - sentences:
+              - "what's playing"
+              - "what is playing"
+              - "what's on [the speaker]"
+      JarvisTempDownstairs:
+        data:
+          - sentences:
+              - "what's the temperature downstairs"
+              - "what is the temperature downstairs"
+              - "how warm is it downstairs"
+              - "how warm is it down here"
+      JarvisKitchenLightsState:
+        data:
+          - sentences:
+              - "are the kitchen lights on"
+              - "are the kitchen lights off"
+      JarvisAcState:
+        data:
+          - sentences:
+              - "is the ac on"
+              - "is the air conditioning on"
+              - "is the living room ac on"
+  en.jarvis_nudge.yaml: |
+    language: en
+    intents:
+      JarvisBrightnessNudge:
+        data:
+          - sentences:
+              - "(make|turn) it {jarvis_direction} down here"
+              - "(make|turn) it {jarvis_direction} downstairs"
+    lists:
+      jarvis_direction:
+        values:
+          - in: "darker"
+            out: "decrease"
+          - in: "brighter"
+            out: "increase"
+  en.jarvis_terse.yaml: |
     language: en
     responses:
       intents:
