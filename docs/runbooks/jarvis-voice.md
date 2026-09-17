@@ -145,14 +145,12 @@ retired PVCs can be reclaimed on the NAS by hand.
   evaluating the ~3.5k–3.8k token prefix (system prompt, tool schemas, exposed
   entities) takes several seconds. Pruning unneeded entities and tool schemas from
   Assist exposure keeps the prefix lean and directly lowers cold evaluation latency.
-- Whisper runs `turbo` (large-v3-turbo, ~800 MB) on `homelab-04` CPU with
-  `--beam-size 1` (greedy decoding; the pinned 3.8.1 defaults to beam 5 on
-  x86) and a 6-core cap. Turbo matches large-v3 accuracy near base-model
-  speed, and fixed `--language en` skips auto-detect. `distil-small.en` was
-  rejected: upstream notes it is damaged by missing prompt conditioning.
-  Further options, in order of invasiveness: drop to `tiny.en`, or move STT
-  to GPU at the expense of Ollama headroom (4 GB VRAM is already spoken for
-  by `qwen2.5:3b`).
+- Whisper runs `base.en` (~140 MB) on `homelab-04` CPU with `--beam-size 1`
+  and fixed `--language en`. `base.en` completes transcription in ~300ms on
+  CPU. `turbo` (large-v3-turbo, ~800 MB) was benchmarked and rejected: without
+  GPU acceleration, `turbo` on CPU incurs a ~6.0s transcription delay per turn,
+  causing the satellite to appear to stall or listen long after the user stops
+  speaking. `base.en` restores sub-second turn responsiveness.
 - Piper is sub-second at steady state but re-downloads its voice on every pod
   restart unless its model cache persists. Voices persist on the
   `piper-voices` PVC (`gitops/voice/storage.yaml`); do not revert that volume
