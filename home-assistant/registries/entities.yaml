@@ -70,6 +70,18 @@
 - disabled_by: integration
   entity_id: binary_sensor.zigbee2mqtt_bridge_restart_required
   labels: []
+- entity_id: light.kitchen_light
+  labels:
+  - shared_space
+- entity_id: light.kitchen_light_2
+  labels:
+  - shared_space
+- entity_id: light.living_room_mushroom_lamp
+  labels:
+  - shared_space
+- entity_id: light.living_room_tulip_lamp
+  labels:
+  - shared_space
 - disabled_by: integration
   entity_id: sensor.0xffffb40e0608c96f_linkquality
   labels: []
@@ -94,11 +106,104 @@
 - disabled_by: integration
   entity_id: sensor.0xffffb40e0608faec_power_factor
   labels: []
+- disabled_by: user
+  entity_id: sensor.active_issues
+  labels: []
+- disabled_by: user
+  entity_id: sensor.air_quality
+  labels: []
+- disabled_by: user
+  entity_id: sensor.alarm_control_panels
+  labels: []
+- disabled_by: user
+  entity_id: sensor.areas
+  labels: []
+- disabled_by: user
+  entity_id: sensor.automations
+  labels: []
+- disabled_by: user
+  entity_id: sensor.binary_sensors
+  labels: []
+- disabled_by: user
+  entity_id: sensor.buttons
+  labels: []
+- disabled_by: user
+  entity_id: sensor.calendars
+  labels: []
+- disabled_by: user
+  entity_id: sensor.cameras
+  labels: []
+- disabled_by: user
+  entity_id: sensor.climate
+  labels: []
+- disabled_by: user
+  entity_id: sensor.counters
+  labels: []
+- disabled_by: user
+  entity_id: sensor.covers
+  labels: []
+- disabled_by: user
+  entity_id: sensor.custom_integrations
+  labels: []
+- disabled_by: user
+  entity_id: sensor.dates
+  labels: []
+- disabled_by: user
+  entity_id: sensor.datetimes
+  labels: []
+- disabled_by: user
+  entity_id: sensor.device_trackers
+  labels: []
+- disabled_by: user
+  entity_id: sensor.devices
+  labels: []
+- disabled_by: user
+  entity_id: sensor.entities
+  labels: []
+- disabled_by: user
+  entity_id: sensor.fans
+  labels: []
 - disabled_by: integration
   entity_id: sensor.govee_integration_api_rate_limit_remaining
   labels: []
 - disabled_by: integration
   entity_id: sensor.govee_integration_last_mqtt_received
+  labels: []
+- disabled_by: user
+  entity_id: sensor.groups
+  labels: []
+- disabled_by: user
+  entity_id: sensor.humidifiers
+  labels: []
+- disabled_by: user
+  entity_id: sensor.ignored_issues
+  labels: []
+- disabled_by: user
+  entity_id: sensor.images
+  labels: []
+- disabled_by: user
+  entity_id: sensor.input_booleans
+  labels: []
+- disabled_by: user
+  entity_id: sensor.input_buttons
+  labels: []
+- disabled_by: user
+  entity_id: sensor.input_datetimes
+  labels: []
+- disabled_by: user
+  entity_id: sensor.input_numbers
+  labels: []
+- disabled_by: user
+  entity_id: sensor.input_selects
+  labels: []
+- disabled_by: user
+  entity_id: sensor.input_texts
+  labels: []
+- disabled_by: user
+  entity_id: sensor.integrations
+  labels: []
+- disabled_by: user
+  entity_id: sensor.issues
   labels: []
 - disabled_by: integration
   entity_id: sensor.kitchen_light_2_last_command_sent
@@ -117,6 +222,27 @@
   labels: []
 - disabled_by: integration
   entity_id: sensor.kitchen_light_last_update_received
+  labels: []
+- disabled_by: user
+  entity_id: sensor.lights
+  labels: []
+- disabled_by: user
+  entity_id: sensor.locks
+  labels: []
+- disabled_by: user
+  entity_id: sensor.media_players
+  labels: []
+- disabled_by: user
+  entity_id: sensor.numbers
+  labels: []
+- disabled_by: user
+  entity_id: sensor.persistent_notifications
+  labels: []
+- disabled_by: user
+  entity_id: sensor.persons
+  labels: []
+- disabled_by: user
+  entity_id: sensor.remotes
   labels: []
 - disabled_by: integration
   entity_id: sensor.rupan_phone_audio_output
@@ -145,26 +271,23 @@
 - disabled_by: integration
   entity_id: sensor.rupan_phone_storage
   labels: []
+- disabled_by: user
+  entity_id: sensor.scenes
+  labels: []
+- disabled_by: user
+  entity_id: sensor.scripts
+  labels: []
+- disabled_by: user
+  entity_id: sensor.selects
+  labels: []
+- disabled_by: user
+  entity_id: sensor.sensors
+  labels: []
+- disabled_by: user
+  entity_id: sensor.sirens
+  labels: []
 - disabled_by: integration
   entity_id: sensor.sm_s948u1_accent_color
-  labels: []
-- disabled_by: integration
-  entity_id: sensor.smart_led_bulb_last_command_sent
-  labels: []
-- disabled_by: integration
-  entity_id: sensor.smart_led_bulb_last_command_sent_2
-  labels: []
-- disabled_by: integration
-  entity_id: sensor.smart_led_bulb_last_mqtt_received
-  labels: []
-- disabled_by: integration
-  entity_id: sensor.smart_led_bulb_last_mqtt_received_2
-  labels: []
-- disabled_by: integration
-  entity_id: sensor.smart_led_bulb_last_update_received
-  labels: []
-- disabled_by: integration
-  entity_id: sensor.smart_led_bulb_last_update_received_2
   labels: []
 - disabled_by: integration
   entity_id: sensor.sm_s948u1_active_calories_burned
@@ -467,148 +590,31 @@
   entity_id: sensor.sm_s948u1_wi_fi_signal_strength
   labels: []
 - disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_command_sent
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_command_sent_2
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_mqtt_received
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_mqtt_received_2
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_update_received
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.smart_led_bulb_last_update_received_2
+  labels: []
+- disabled_by: user
+  entity_id: sensor.stt
+  labels: []
+- disabled_by: integration
   entity_id: sensor.sun_solar_azimuth
   labels: []
 - disabled_by: integration
   entity_id: sensor.sun_solar_elevation
-  labels: []
-- disabled_by: integration
-  entity_id: sensor.zigbee2mqtt_bridge_coordinator_version
-  labels: []
-- disabled_by: integration
-  entity_id: sensor.zigbee2mqtt_bridge_network_map
-  labels: []
-- disabled_by: user
-  entity_id: sensor.active_issues
-  labels: []
-- disabled_by: user
-  entity_id: sensor.air_quality
-  labels: []
-- disabled_by: user
-  entity_id: sensor.alarm_control_panels
-  labels: []
-- disabled_by: user
-  entity_id: sensor.areas
-  labels: []
-- disabled_by: user
-  entity_id: sensor.automations
-  labels: []
-- disabled_by: user
-  entity_id: sensor.binary_sensors
-  labels: []
-- disabled_by: user
-  entity_id: sensor.buttons
-  labels: []
-- disabled_by: user
-  entity_id: sensor.calendars
-  labels: []
-- disabled_by: user
-  entity_id: sensor.cameras
-  labels: []
-- disabled_by: user
-  entity_id: sensor.climate
-  labels: []
-- disabled_by: user
-  entity_id: sensor.counters
-  labels: []
-- disabled_by: user
-  entity_id: sensor.covers
-  labels: []
-- disabled_by: user
-  entity_id: sensor.custom_integrations
-  labels: []
-- disabled_by: user
-  entity_id: sensor.dates
-  labels: []
-- disabled_by: user
-  entity_id: sensor.datetimes
-  labels: []
-- disabled_by: user
-  entity_id: sensor.device_trackers
-  labels: []
-- disabled_by: user
-  entity_id: sensor.devices
-  labels: []
-- disabled_by: user
-  entity_id: sensor.entities
-  labels: []
-- disabled_by: user
-  entity_id: sensor.fans
-  labels: []
-- disabled_by: user
-  entity_id: sensor.groups
-  labels: []
-- disabled_by: user
-  entity_id: sensor.humidifiers
-  labels: []
-- disabled_by: user
-  entity_id: sensor.ignored_issues
-  labels: []
-- disabled_by: user
-  entity_id: sensor.images
-  labels: []
-- disabled_by: user
-  entity_id: sensor.input_booleans
-  labels: []
-- disabled_by: user
-  entity_id: sensor.input_buttons
-  labels: []
-- disabled_by: user
-  entity_id: sensor.input_datetimes
-  labels: []
-- disabled_by: user
-  entity_id: sensor.input_numbers
-  labels: []
-- disabled_by: user
-  entity_id: sensor.input_selects
-  labels: []
-- disabled_by: user
-  entity_id: sensor.input_texts
-  labels: []
-- disabled_by: user
-  entity_id: sensor.integrations
-  labels: []
-- disabled_by: user
-  entity_id: sensor.issues
-  labels: []
-- disabled_by: user
-  entity_id: sensor.lights
-  labels: []
-- disabled_by: user
-  entity_id: sensor.locks
-  labels: []
-- disabled_by: user
-  entity_id: sensor.media_players
-  labels: []
-- disabled_by: user
-  entity_id: sensor.numbers
-  labels: []
-- disabled_by: user
-  entity_id: sensor.persistent_notifications
-  labels: []
-- disabled_by: user
-  entity_id: sensor.persons
-  labels: []
-- disabled_by: user
-  entity_id: sensor.remotes
-  labels: []
-- disabled_by: user
-  entity_id: sensor.scenes
-  labels: []
-- disabled_by: user
-  entity_id: sensor.scripts
-  labels: []
-- disabled_by: user
-  entity_id: sensor.selects
-  labels: []
-- disabled_by: user
-  entity_id: sensor.sensors
-  labels: []
-- disabled_by: user
-  entity_id: sensor.sirens
-  labels: []
-- disabled_by: user
-  entity_id: sensor.stt
   labels: []
 - disabled_by: user
   entity_id: sensor.suns
@@ -643,14 +649,14 @@
 - disabled_by: user
   entity_id: sensor.weather
   labels: []
+- disabled_by: integration
+  entity_id: sensor.zigbee2mqtt_bridge_coordinator_version
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.zigbee2mqtt_bridge_network_map
+  labels: []
 - disabled_by: user
   entity_id: sensor.zones
-  labels: []
-- entity_id: switch.govee_cloud_integration_pre_release
-  disabled_by: integration
-  labels: []
-- entity_id: switch.hacs_pre_release
-  disabled_by: integration
   labels: []
 - entity_id: switch.adaptive_lighting_pre_release
   disabled_by: integration
@@ -661,36 +667,11 @@
 - entity_id: switch.auto_entities_pre_release
   disabled_by: integration
   labels: []
-- entity_id: switch.mushroom_pre_release
-  disabled_by: integration
-  labels: []
-- entity_id: switch.spook_your_homie_pre_release
-  disabled_by: integration
-  labels: []
-- entity_id: switch.living_room_good_vibes_sign
-  labels:
-    - shared_space
-- entity_id: light.kitchen_light
-  labels:
-    - shared_space
-- entity_id: light.kitchen_light_2
-  labels:
-    - shared_space
-- entity_id: light.living_room_mushroom_lamp
-  labels:
-    - shared_space
-- entity_id: light.living_room_tulip_lamp
-  labels:
-    - shared_space
-- entity_id: switch.stairs_light
-  labels:
-    - shared_space
-- entity_id: switch.kitchen_mushroom_lamp
-  name: Kitchen Mushroom Lamp
-  labels:
-    - shared_space
 - disabled_by: integration
   entity_id: switch.browser_mod_pre_release
+  labels: []
+- entity_id: switch.button_card_pre_release
+  disabled_by: integration
   labels: []
 - disabled_by: integration
   entity_id: switch.card_mod_pre_release
@@ -698,9 +679,31 @@
 - disabled_by: integration
   entity_id: switch.frosted_glass_theme_pre_release
   labels: []
+- entity_id: switch.govee_cloud_integration_pre_release
+  disabled_by: integration
+  labels: []
+- entity_id: switch.hacs_pre_release
+  disabled_by: integration
+  labels: []
 - disabled_by: integration
   entity_id: switch.ios_themes_dark_mode_and_light_mode_pre_release
   labels: []
+- entity_id: switch.kitchen_mushroom_lamp
+  name: Kitchen Mushroom Lamp
+  labels:
+  - shared_space
+- entity_id: switch.living_room_good_vibes_sign
+  labels:
+  - shared_space
+- entity_id: switch.mushroom_pre_release
+  disabled_by: integration
+  labels: []
+- entity_id: switch.spook_your_homie_pre_release
+  disabled_by: integration
+  labels: []
+- entity_id: switch.stairs_light
+  labels:
+  - shared_space
 - disabled_by: integration
   entity_id: switch.watchman_pre_release
   labels: []

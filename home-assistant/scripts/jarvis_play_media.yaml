@@ -1,0 +1,36 @@
+alias: Jarvis — play media via Spotify
+description: >-
+  Routes voice requests from the Jarvis conversation agent to the Spotify media_player.
+  Pass a free-text artist/track query, a Spotify URI, or a Spotify URL. Output is
+  pinned to the Music Assistant speaker group via the `jarvis_spotify_source_pin`
+  automation, so audio lands on the Jarvis satellite/soundbar.
+fields:
+  media_content_type:
+    description: >-
+      `music` for free-text search (artist or track); `playlist`, `artist`, `album`,
+      `track` for typed lookups.
+    example: music
+    required: true
+    selector:
+      select:
+        options:
+          - music
+          - playlist
+          - artist
+          - album
+          - track
+  media_content_id:
+    description: >-
+      Free-text search (e.g. "The Weeknd"), Spotify URI (e.g.
+      `spotify:artist:1Xyo4u8dXCvp56eB51DXfh`), or full Spotify URL.
+    example: The Weeknd
+    required: true
+    selector:
+      text: {}
+sequence:
+  - action: media_player.play_media
+    target:
+      entity_id: media_player.spotify_rupan
+    data:
+      media_content_type: "{{ media_content_type }}"
+      media_content_id: "{{ media_content_id }}"

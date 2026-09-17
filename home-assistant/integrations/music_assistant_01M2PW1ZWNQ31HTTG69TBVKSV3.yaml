@@ -1,0 +1,12 @@
+title: Music Assistant
+disabled_by: null
+domain: music_assistant
+entry_id: 01M2PW1ZWNQ31HTTG69TBVKSV3
+pref_disable_new_entities: false
+pref_disable_polling: false
+source: zeroconf
+notes: >-
+  Discovered at `http://10.0.30.15:8095` via mDNS (`_mass._tcp.local.`). The
+  long-lived token is in `core.config_entries` storage and is not committed.
+  Reprovision: keep the MA server running on homelab-05; the integration
+  re-discovers automatically.

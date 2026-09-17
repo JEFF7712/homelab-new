@@ -1,0 +1,8 @@
+name: Jarvis Preferred Music Output
+icon: mdi:speaker-multiple
+entity_id: input_select.jarvis_music_output
+options:
+  - Homelab 05 Satellite Media Player | Music Assistant
+  - media_player.homelab_05_satellite_speaker_group
+  - Web (Firefox on Linux)
+initial: Homelab 05 Satellite Media Player | Music Assistant
