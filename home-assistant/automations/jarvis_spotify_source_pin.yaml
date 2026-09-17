@@ -1,20 +1,30 @@
 id: jarvis_spotify_source_pin
 alias: Pin Spotify output to Jarvis satellite
 description: >-
-  Whenever the Spotify integration becomes active or returns to idle, force-select
-  the Music Assistant speaker group as the playback target so audio routes to
-  the Jarvis satellite and the soundbar. Catches the cold-start case where
-  Spotify boots with no source and silently drops HA-initiated playback.
+  When the Spotify integration starts playing (or sits idle) with no output
+  source selected, select the Music Assistant speaker group so audio routes
+  to the Jarvis satellite and the soundbar. Never overrides an explicitly
+  chosen source such as the phone, and never fires while nobody is home,
+  so phone playback away from home is left alone.
 mode: single
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: media_player.spotify_rupan
     to: "idle"
     for: "00:00:05"
-  - platform: state
+    id: "idle"
+  - trigger: state
     entity_id: media_player.spotify_rupan
     to: "playing"
-action:
+    id: "playing"
+conditions:
+  - condition: template
+    value_template: >-
+      {% set src = state_attr('media_player.spotify_rupan', 'source') %}
+      {{ not src or src in ('unknown', 'unavailable', 'none', '') }}
+  - condition: template
+    value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count > 0 }}"
+actions:
   - action: media_player.select_source
     target:
       entity_id: media_player.spotify_rupan
