@@ -54,6 +54,8 @@ spec:
               mountPath: /data
             - name: tmp
               mountPath: /tmp
+            - name: run
+              mountPath: /run
           livenessProbe:
             httpGet:
               path: /ping
@@ -74,6 +76,8 @@ spec:
           persistentVolumeClaim:
             claimName: media-library
         - name: tmp
+          emptyDir: {}
+        - name: run
           emptyDir: {}
 ---
 apiVersion: v1
@@ -142,6 +146,8 @@ spec:
               mountPath: /data
             - name: tmp
               mountPath: /tmp
+            - name: run
+              mountPath: /run
           resources:
             requests:
               cpu: 250m
@@ -156,6 +162,8 @@ spec:
           persistentVolumeClaim:
             claimName: media-library
         - name: tmp
+          emptyDir: {}
+        - name: run
           emptyDir: {}
 ---
 apiVersion: v1
@@ -239,6 +247,8 @@ spec:
               mountPath: /data
             - name: tmp
               mountPath: /tmp
+            - name: run
+              mountPath: /run
           resources:
             requests:
               cpu: 250m
@@ -256,6 +266,8 @@ spec:
           persistentVolumeClaim:
             claimName: media-library
         - name: tmp
+          emptyDir: {}
+        - name: run
           emptyDir: {}
 ---
 apiVersion: v1
@@ -322,6 +334,8 @@ spec:
               mountPath: /config
             - name: tmp
               mountPath: /tmp
+            - name: run
+              mountPath: /run
           resources:
             requests:
               cpu: 100m
@@ -333,6 +347,8 @@ spec:
           persistentVolumeClaim:
             claimName: prowlarr-config
         - name: tmp
+          emptyDir: {}
+        - name: run
           emptyDir: {}
 ---
 apiVersion: v1
@@ -401,6 +417,8 @@ spec:
               mountPath: /data
             - name: tmp
               mountPath: /tmp
+            - name: run
+              mountPath: /run
           resources:
             requests:
               cpu: 100m
@@ -415,6 +433,8 @@ spec:
           persistentVolumeClaim:
             claimName: media-library
         - name: tmp
+          emptyDir: {}
+        - name: run
           emptyDir: {}
 ---
 apiVersion: v1
@@ -463,12 +483,18 @@ spec:
               value: America/Chicago
           ports:
             - containerPort: 8191
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           resources:
             requests:
               cpu: 100m
               memory: 256Mi
             limits:
               memory: 1Gi
+      volumes:
+        - name: tmp
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

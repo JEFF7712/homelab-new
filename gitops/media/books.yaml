@@ -142,6 +142,8 @@ spec:
               mountPath: /data
             - name: tmp
               mountPath: /tmp
+            - name: run
+              mountPath: /run
           resources:
             requests:
               cpu: 100m
@@ -156,6 +158,8 @@ spec:
           persistentVolumeClaim:
             claimName: media-library
         - name: tmp
+          emptyDir: {}
+        - name: run
           emptyDir: {}
 ---
 apiVersion: v1

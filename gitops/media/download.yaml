@@ -152,6 +152,8 @@ spec:
               mountPath: /config
             - name: tmp
               mountPath: /tmp
+            - name: run
+              mountPath: /run
           resources:
             requests:
               cpu: 500m
@@ -225,6 +227,8 @@ spec:
         - name: gluetun-config
           emptyDir: {}
         - name: tmp
+          emptyDir: {}
+        - name: run
           emptyDir: {}
         - name: dotnet-bundle
           emptyDir: {}
