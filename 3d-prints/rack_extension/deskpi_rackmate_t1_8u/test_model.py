@@ -147,6 +147,15 @@ class ExtensionParamsTests(unittest.TestCase):
     def test_validate_passes(self) -> None:
         self.assertEqual(params.validate(), [])
 
+    def test_phase1_coupon_covers_attachment_pair(self) -> None:
+        self.assertLess(params.COUPON_Y_START_MM, 25.0)
+        self.assertGreater(params.COUPON_Y_END_MM, 38.0)
+        self.assertAlmostEqual(params.COUPON_HOLE_DIA_MM, 4.5)
+        self.assertAlmostEqual(params.coupon_channel_mm(), 30.6)
+        self.assertLess(
+            params.COUPON_Y_END_MM - params.COUPON_Y_START_MM, params.BED_Y_MM
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

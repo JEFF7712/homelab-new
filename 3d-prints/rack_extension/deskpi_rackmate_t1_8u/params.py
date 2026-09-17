@@ -199,6 +199,23 @@ def bore_wall_front_y_mm() -> float:
     return BORE_CENTER_Y_MM - TIE_BORE_DIA_MM / 2
 
 
+# --- Phase 1 interface coupon ----------------------------------------------------
+# Rail section over one corner attachment pair (Y=25/38) with M4 clearance
+# holes, seating face, and side locating lips with print clearance around
+# the 30 mm aluminum member. Print upside-down (seating face up): no supports.
+COUPON_Y_START_MM = 8.0
+COUPON_Y_END_MM = 68.0
+COUPON_HOLE_DIA_MM = 4.5
+LIP_CLEARANCE_MM = 0.3
+LIP_THICK_MM = 2.0
+LIP_DEPTH_MM = 3.0
+
+
+def coupon_channel_mm() -> float:
+    """Lip-to-lip channel the aluminum member must fit."""
+    return TOP_MEMBER_WIDTH_MM + 2 * LIP_CLEARANCE_MM
+
+
 # --- Manufacturing --------------------------------------------------------------
 BED_X_MM = 256.0
 BED_Y_MM = 256.0
@@ -292,4 +309,8 @@ def validate() -> list[str]:
         errors.append("rack screw tip must clear the M5 bore wall")
     if not BOSS_OD_NOMINAL_MM <= BOSS_OD_MAX_MM:
         errors.append("nominal boss must stay within the OD envelope")
+    if not (COUPON_Y_START_MM < ATTACH_Y_MM[0] and ATTACH_Y_MM[1] < COUPON_Y_END_MM):
+        errors.append("coupon must cover the corner attachment pair")
+    if not LIP_CLEARANCE_MM > 0.0:
+        errors.append("locating lips need positive clearance")
     return errors

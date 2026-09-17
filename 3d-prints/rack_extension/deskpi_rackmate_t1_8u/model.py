@@ -340,6 +340,40 @@ def end_blocks_and_strips() -> list[Part]:
     return parts
 
 
+def interface_coupon() -> Part:
+    """Phase 1 fit coupon: rail section + holes + locating lips (Rev-1)."""
+    rail_w = params.TOP_MEMBER_WIDTH_MM
+    y0, y1 = params.COUPON_Y_START_MM, params.COUPON_Y_END_MM
+    rail = Box(
+        rail_w, y1 - y0, params.FRAME_ZONE_MM, align=(Align.MIN, Align.MIN, Align.MIN)
+    ).locate(Location((0, y0, 0)))
+    lip_out = Box(
+        params.LIP_THICK_MM,
+        y1 - y0,
+        params.LIP_DEPTH_MM,
+        align=(Align.MIN, Align.MIN, Align.MIN),
+    ).locate(
+        Location(
+            (-params.LIP_CLEARANCE_MM - params.LIP_THICK_MM, y0, -params.LIP_DEPTH_MM)
+        )
+    )
+    lip_in = Box(
+        params.LIP_THICK_MM,
+        y1 - y0,
+        params.LIP_DEPTH_MM,
+        align=(Align.MIN, Align.MIN, Align.MIN),
+    ).locate(Location((rail_w + params.LIP_CLEARANCE_MM, y0, -params.LIP_DEPTH_MM)))
+    part: Part = rail + lip_out + lip_in
+    for y in (25.0, 38.0):
+        hole = Cylinder(
+            radius=params.COUPON_HOLE_DIA_MM / 2,
+            height=params.FRAME_ZONE_MM + 2.0,
+            align=(Align.CENTER, Align.CENTER, Align.MIN),
+        ).locate(Location((params.STRUCTURAL_HOLE_X_LEFT_MM, y, -1.0)))
+        part = part - hole
+    return part
+
+
 def column_origins() -> list[tuple[float, float]]:
     w = params.COLUMN_INWARD_MM
     d = params.COLUMN_DEPTH_MM
@@ -425,6 +459,8 @@ def export_assembly(out_dir: Path) -> dict[str, Path]:
     export_stl(top_end_block(0, 0, False), str(top))
     strip = out_dir / "splice_rail_strip.stl"
     export_stl(splice_rail_strip(0, 0, False), str(strip))
+    coupon = out_dir / "phase1_interface_coupon.stl"
+    export_stl(interface_coupon(), str(coupon))
     return {
         "step": step_path,
         "stl": stl_path,
@@ -432,6 +468,7 @@ def export_assembly(out_dir: Path) -> dict[str, Path]:
         "bottom": bottom,
         "top": top,
         "strip": strip,
+        "coupon": coupon,
     }
 
 
