@@ -31,6 +31,13 @@ spec:
             - "en"
             - "--beam-size"
             - "1"
+            - "--initial-prompt"
+            - >-
+              Govee, Spotify, Young Thug, The Weeknd, Coldplay, Kendrick Lamar,
+              Drake, Travis Scott, Kanye West, Rauw Alejandro, Post Malone,
+              Metro Boomin, 21 Savage, Gunna, Future, tulip lamp, mushroom lamp,
+              good vibes sign, floor lamp, desk lamp, light strip, living room,
+              bedroom, kitchen, downstairs, Jarvis.
             - "--data-dir"
             - "/data"
             - "--download-dir"

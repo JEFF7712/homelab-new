@@ -50,8 +50,10 @@ automation referencing them.
    satellite device.
    The Jarvis conversation subentry prompt carries the room semantics:
    downstairs means Living Room plus Kitchen, light commands with no room
-   default to all downstairs lights, and light color changes default to
-   Govee light bulbs. Output is tuned for concise spoken acknowledgments.
+   default to all downstairs lights, light color changes default to
+   Govee light bulbs, and music/artist/playlist requests explicitly call
+   `script.jarvis_play_media` (`media_content_type='music'`). Output is tuned
+   for concise spoken acknowledgments.
    The context window must be set to `num_ctx: 8192` (at 2048 Ollama truncates
    the 3.5k+ token prompt and tool schemas) and `llm_hass_api` set to
    `assist` only (omitting SmartHQ saves ~1.2k tokens of unused tool schemas).
