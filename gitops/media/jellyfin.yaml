@@ -19,12 +19,13 @@ spec:
       labels:
         app: jellyfin
     spec:
-      runtimeClassName: nvidia
       nodeSelector:
-        nvidia.com/gpu.present: "true"
+        kubernetes.io/hostname: homelab-04
       securityContext:
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups:
+          - 303
         seccompProfile:
           type: RuntimeDefault
       initContainers:
@@ -52,10 +53,6 @@ spec:
               value: America/Chicago
             - name: JELLYFIN_PublishedServerUrl
               value: https://jellyfin.rupan.dev
-            - name: NVIDIA_VISIBLE_DEVICES
-              value: all
-            - name: NVIDIA_DRIVER_CAPABILITIES
-              value: all
           ports:
             - containerPort: 8096
           volumeMounts:
@@ -66,6 +63,10 @@ spec:
               readOnly: true
             - name: tmp
               mountPath: /tmp
+            - name: run
+              mountPath: /run
+            - name: dri
+              mountPath: /dev/dri
           readinessProbe:
             httpGet:
               path: /health
@@ -82,11 +83,9 @@ spec:
             requests:
               cpu: "1"
               memory: 2Gi
-              nvidia.com/gpu: "1"
             limits:
               cpu: "4"
               memory: 8Gi
-              nvidia.com/gpu: "1"
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -96,6 +95,11 @@ spec:
             claimName: media-library
         - name: tmp
           emptyDir: {}
+        - name: run
+          emptyDir: {}
+        - name: dri
+          hostPath:
+            path: /dev/dri
 ---
 apiVersion: v1
 kind: Service

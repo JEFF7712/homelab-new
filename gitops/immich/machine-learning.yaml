@@ -17,6 +17,7 @@ spec:
     spec:
       runtimeClassName: nvidia
       nodeSelector:
+        kubernetes.io/hostname: homelab-05
         nvidia.com/gpu.present: "true"
       securityContext:
         seccompProfile:
