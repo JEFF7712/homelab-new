@@ -7,6 +7,9 @@
 let
   cfg = config.homelab.kiosk;
   kioskBrowser = pkgs.writeShellScript "kiosk-browser" ''
+    ${lib.concatMapStringsSep "\n" (
+      output: "${pkgs.wlr-randr}/bin/wlr-randr --output ${output} --off || true"
+    ) cfg.disableOutputs}
     exec ${pkgs.chromium}/bin/chromium \
       --ozone-platform=wayland \
       --enable-features=UseOzonePlatform \
@@ -17,9 +20,10 @@ let
       --check-for-update-interval=31536000 \
       --password-store=basic \
       --disable-session-crashed-bubble \
-      --incognito \
-      --kiosk \
-      "${cfg.url}"
+      --remote-debugging-port=9222 \
+      --remote-allow-origins=* \
+      --force-device-scale-factor=${cfg.scaleFactor} \
+      --app="${cfg.url}"
   '';
 in
 {
@@ -43,6 +47,18 @@ in
       default = "kiosk";
       description = "System user to run cage and browser under";
     };
+
+    scaleFactor = lib.mkOption {
+      type = lib.types.str;
+      default = "1.0";
+      description = "Device scale factor for Chromium";
+    };
+
+    disableOutputs = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "List of output names to disable via wlr-randr before launching Chromium";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -53,6 +69,7 @@ in
       extraGroups = [
         "video"
         "input"
+        "audio"
       ];
       createHome = true;
       home = "/home/${cfg.user}";
