@@ -87,8 +87,11 @@ automation referencing them.
 6. Music playback (Music Assistant & providers):
    - `script.jarvis_play_media` is exposed to Assist to handle music requests.
    - Platform parameter supports `spotify` (default) and `youtube_music` (`ytmusic`).
-   - Music Assistant runs on `homelab-05` host network (`gitops/music-assistant/server.yaml`) and routes audio to the satellite speaker.
-   - YouTube Music streaming requires a Proof-of-Origin (PO) token server; the `pot-provider` companion container (`brainicism/bgutil-ytdlp-pot-provider:1.2.1`) runs on `homelab-05` at `http://127.0.0.1:4416`.
+   - Music Assistant runs on `homelab-05` host network
+     (`gitops/music-assistant/server.yaml`) and routes audio to the satellite speaker.
+   - YouTube Music streaming requires a Proof-of-Origin (PO) token server; the
+     `pot-provider` companion container (`brainicism/bgutil-ytdlp-pot-provider:1.2.1`)
+     runs on `homelab-05` at `http://127.0.0.1:4416`.
 
 ## Pinned images
 

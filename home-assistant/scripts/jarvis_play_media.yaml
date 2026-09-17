@@ -54,17 +54,30 @@ sequence:
             data:
               config_entry_id: 01M2PW1ZWNQ31HTTG69TBVKSV3
               name: "{{ media_content_id }}"
-              media_type: "{{ media_content_type if media_content_type in ['artist', 'album', 'track', 'playlist'] else 'track' }}"
+              media_type: >-
+                {% if media_content_type in ['artist', 'album', 'track', 'playlist'] %}
+                  {{ media_content_type }}
+                {% else %}
+                  track
+                {% endif %}
               limit: 5
             response_variable: mass_search
             continue_on_error: true
           - variables:
               yt_uri: >-
-                {% set tracks = mass_search.tracks | default([]) | selectattr('uri', 'search', '^ytmusic:') | map(attribute='uri') | list %}
-                {% set albums = mass_search.albums | default([]) | selectattr('uri', 'search', '^ytmusic:') | map(attribute='uri') | list %}
-                {% set artists = mass_search.artists | default([]) | selectattr('uri', 'search', '^ytmusic:') | map(attribute='uri') | list %}
-                {% set playlists = mass_search.playlists | default([]) | selectattr('uri', 'search', '^ytmusic:') | map(attribute='uri') | list %}
-                {{ (tracks + albums + artists + playlists) | first | default(media_content_id) }}
+                {% set t = mass_search.tracks | default([])
+                  | selectattr('uri', 'search', '^ytmusic:')
+                  | map(attribute='uri') | list %}
+                {% set al = mass_search.albums | default([])
+                  | selectattr('uri', 'search', '^ytmusic:')
+                  | map(attribute='uri') | list %}
+                {% set ar = mass_search.artists | default([])
+                  | selectattr('uri', 'search', '^ytmusic:')
+                  | map(attribute='uri') | list %}
+                {% set pl = mass_search.playlists | default([])
+                  | selectattr('uri', 'search', '^ytmusic:')
+                  | map(attribute='uri') | list %}
+                {{ (t + al + ar + pl) | first | default(media_content_id) }}
           - action: media_player.play_media
             target:
               entity_id: media_player.homelab_05_satellite_media_player_2
