@@ -13,6 +13,7 @@ resources:
   - alloy/release.yaml
   - grafana/service.yaml
   - grafana/dashboard-kubernetes.yaml
+  - grafana/dashboard-jarvis.yaml
   - grafana/dashboard-gpu.yaml
   - grafana/dashboard-hosts.yaml
   - grafana/dashboard-zfs.yaml

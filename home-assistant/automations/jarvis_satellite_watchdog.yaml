@@ -1,0 +1,31 @@
+id: jarvis_satellite_watchdog
+alias: "Jarvis: Satellite Watchdog"
+description: "Notify phone when the Jarvis voice satellite or its speaker go unavailable."
+triggers:
+  - trigger: state
+    entity_id:
+      - assist_satellite.homelab_05_satellite_assist_satellite
+      - media_player.homelab_05_satellite_media_player
+    to: "unavailable"
+    for: "00:10:00"
+    id: "satellite"
+  - trigger: state
+    entity_id:
+      - assist_satellite.homelab_05_satellite_assist_satellite
+      - media_player.homelab_05_satellite_media_player
+    to: "unknown"
+    for: "00:10:00"
+    id: "satellite_unknown"
+conditions: []
+actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.rupan_phone
+    data:
+      title: "Jarvis Offline"
+      message: >-
+        {{ trigger.entity_id }} has been {{ trigger.to_state.state }} for 10 minutes.
+        Check the voice namespace pods on homelab-04/homelab-05 (see docs/runbooks/jarvis-voice.md).
+    continue_on_error: true
+mode: parallel
+max: 4

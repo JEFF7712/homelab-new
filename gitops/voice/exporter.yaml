@@ -1,0 +1,565 @@
+# yamllint disable rule:line-length
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvis-exporter-code
+  namespace: voice
+data:
+  exporter.py: |
+    #!/usr/bin/env python3
+    """Jarvis voice pipeline Prometheus exporter.
+
+    Watches the Home Assistant websocket for assist satellite state changes
+    and service calls, and derives per-turn stage timings plus counters.
+
+    Stage semantics are externally observed, not internal: stt covers the
+    listening phase (user utterance plus transcription), llm covers the
+    processing phase, tts covers the responding phase. Tool calls are
+    call_service bus events seen while the satellite is processing.
+    """
+
+    from __future__ import annotations
+
+    import base64
+    import hashlib
+    import json
+    import os
+    import socket
+    import ssl
+    import struct
+    import threading
+    import time
+    import urllib.parse
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    BUCKETS = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0)
+    STALE_TURN_SECONDS = 180.0
+    REGISTRY_REFRESH_SECONDS = 900.0
+
+
+    class Counter:
+        def __init__(self, name: str, documentation: str, labelnames: tuple[str, ...] = ()) -> None:
+            self._name = name
+            self._documentation = documentation
+            self._labelnames = labelnames
+            self._values: dict[tuple[str, ...], float] = {}
+
+        def labels(self, *labelvalues: str) -> Counter:
+            self._values.setdefault(tuple(labelvalues), 0.0)
+            return _BoundCounter(self, tuple(labelvalues))
+
+        def render(self) -> list[str]:
+            lines = [f"# HELP {self._name} {self._documentation}", f"# TYPE {self._name} counter"]
+            for labelvalues, value in sorted(self._values.items()):
+                labels = ",".join(f'{k}="{v}"' for k, v in zip(self._labelnames, labelvalues))
+                lines.append(f"{self._name}{{{labels}}} {value}")
+            return lines
+
+
+    class _BoundCounter:
+        def __init__(self, parent: Counter, labelvalues: tuple[str, ...]) -> None:
+            self._parent = parent
+            self._labelvalues = labelvalues
+
+        def inc(self, amount: float = 1.0) -> None:
+            self._parent._values[self._labelvalues] = self._parent._values.get(self._labelvalues, 0.0) + amount
+
+
+    class Histogram:
+        def __init__(self, name: str, documentation: str, labelnames: tuple[str, ...] = (), buckets: tuple[float, ...] = BUCKETS) -> None:
+            self._name = name
+            self._documentation = documentation
+            self._labelnames = labelnames
+            self._buckets = buckets
+            self._observations: dict[tuple[str, ...], list[float]] = {}
+
+        def labels(self, *labelvalues: str) -> Histogram:
+            self._observations.setdefault(tuple(labelvalues), [])
+            return _BoundHistogram(self, tuple(labelvalues))
+
+        def render(self) -> list[str]:
+            lines = [f"# HELP {self._name} {self._documentation}", f"# TYPE {self._name} histogram"]
+            for labelvalues, values in sorted(self._observations.items()):
+                labels = ",".join(f'{k}="{v}"' for k, v in zip(self._labelnames, labelvalues))
+                cumulative = 0
+                for bound in self._buckets:
+                    cumulative += sum(1 for v in values if v <= bound)
+                    lines.append(f'{self._name}_bucket{{{labels},le="{bound}"}} {cumulative}')
+                lines.append(f'{self._name}_bucket{{{labels},le="+Inf"}} {len(values)}')
+                lines.append(f"{self._name}_sum{{{labels}}} {sum(values)!r}")
+                lines.append(f"{self._name}_count{{{labels}}} {len(values)}")
+            return lines
+
+
+    class _BoundHistogram:
+        def __init__(self, parent: Histogram, labelvalues: tuple[str, ...]) -> None:
+            self._parent = parent
+            self._labelvalues = labelvalues
+
+        def observe(self, value: float) -> None:
+            self._parent._observations.setdefault(self._labelvalues, []).append(value)
+
+
+    class Metrics:
+        def __init__(self, satellite: str) -> None:
+            self._satellite = satellite
+            self._lock = threading.Lock()
+            self.requests = Counter("jarvis_requests_total", "Completed voice turns.", ("satellite",))
+            self.tool_calls = Counter("jarvis_tool_calls_total", "Service calls seen while the satellite was processing.", ("satellite",))
+            self.failed = Counter("jarvis_failed_requests_total", "Turns abandoned before responding.", ("satellite", "stage"))
+            self.by_room = Counter("jarvis_requests_by_room_total", "Completed voice turns by target room.", ("room",))
+            self.stt = Histogram("jarvis_stt_latency_seconds", "Listening phase duration: utterance plus transcription.", ("satellite",))
+            self.llm = Histogram("jarvis_llm_latency_seconds", "Processing phase duration.", ("satellite",))
+            self.tts = Histogram("jarvis_tts_latency_seconds", "Responding phase duration.", ("satellite",))
+            self._connected = 0.0
+
+        def set_connected(self, value: bool) -> None:
+            with self._lock:
+                self._connected = 1.0 if value else 0.0
+
+        def render(self) -> str:
+            with self._lock:
+                lines = [
+                    "# HELP jarvis_exporter_ha_connected Whether the exporter holds an authenticated HA websocket.",
+                    "# TYPE jarvis_exporter_ha_connected gauge",
+                    f"jarvis_exporter_ha_connected {self._connected}",
+                ]
+                for metric in (self.requests, self.tool_calls, self.failed, self.by_room):
+                    lines.extend(metric.render())
+                for metric in (self.stt, self.llm, self.tts):
+                    lines.extend(metric.render())
+                return "\n".join(lines) + "\n"
+
+
+    class TurnTracker:
+        """Serial per-satellite turn state machine."""
+
+        def __init__(self, metrics: Metrics, satellite: str) -> None:
+            self._metrics = metrics
+            self._satellite = satellite
+            self._lock = threading.Lock()
+            self.reset()
+
+        def reset(self) -> None:
+            self.phase = "idle"
+            self.emit = True
+            self.listening_start = 0.0
+            self.processing_start = 0.0
+            self.responding_start = 0.0
+            self.turn_tools = 0
+            self.turn_areas: list[str] = []
+
+        def seed(self, state: str) -> None:
+            with self._lock:
+                self.reset()
+                self.phase = state
+                self.emit = False
+
+        def observe_state(self, state: str, now: float, resolve_room) -> None:
+            with self._lock:
+                if state == "listening":
+                    if self.phase != "idle":
+                        self._abandon_locked(now)
+                    self.reset()
+                    self.listening_start = now
+                    self.phase = "listening"
+                    return
+                if self.phase == "idle" or not self.emit:
+                    if state == "idle":
+                        self.reset()
+                    return
+                if state == "processing" and self.phase == "listening":
+                    self._metrics.stt.labels(self._satellite).observe(now - self.listening_start)
+                    self.processing_start = now
+                    self.phase = "processing"
+                elif state == "responding" and self.phase == "processing":
+                    self._metrics.llm.labels(self._satellite).observe(now - self.processing_start)
+                    self.responding_start = now
+                    self.phase = "responding"
+                elif state == "idle":
+                    if self.phase == "responding":
+                        self._metrics.tts.labels(self._satellite).observe(now - self.responding_start)
+                        self._metrics.requests.labels(self._satellite).inc()
+                        room = resolve_room(self.turn_areas) if resolve_room else "unknown"
+                        self._metrics.by_room.labels(room).inc()
+                    else:
+                        self._abandon_locked(now)
+                    self.reset()
+                elif state in ("unavailable", "unknown"):
+                    self._abandon_locked(now)
+                    self.reset()
+
+        def observe_service_call(self, entity_ids: list[str]) -> None:
+            with self._lock:
+                if self.phase == "processing" and self.emit:
+                    self.turn_tools += 1
+                    self._metrics.tool_calls.labels(self._satellite).inc()
+                    self.turn_areas.extend(entity_ids)
+
+        def sweep_stale(self, now: float) -> None:
+            with self._lock:
+                start = self.listening_start or self.processing_start or self.responding_start
+                if self.phase != "idle" and self.emit and start and now - start > STALE_TURN_SECONDS:
+                    self._abandon_locked(now)
+                    self.reset()
+
+        def _abandon_locked(self, now: float) -> None:
+            del now
+            if self.phase != "idle" and self.emit:
+                self._metrics.failed.labels(self._satellite, self.phase).inc()
+
+
+    class AreaResolver:
+        def __init__(self) -> None:
+            self._entity_area: dict[str, str] = {}
+            self._area_name: dict[str, str] = {}
+            self._refreshed_at = 0.0
+
+        def refresh(self, ws_call) -> None:
+            try:
+                areas = ws_call("config/area_registry/list") or []
+                self._area_name = {a["area_id"]: a.get("name") or a["area_id"] for a in areas}
+                entities = ws_call("config/entity_registry/list") or []
+                self._entity_area = {e["entity_id"]: e.get("area_id") for e in entities if e.get("area_id")}
+                self._refreshed_at = time.monotonic()
+            except Exception:
+                pass
+
+        def maybe_refresh(self, ws_call) -> None:
+            if time.monotonic() - self._refreshed_at > REGISTRY_REFRESH_SECONDS:
+                self.refresh(ws_call)
+
+        def room_for(self, entity_ids: list[str]) -> str:
+            for entity_id in entity_ids:
+                area_id = self._entity_area.get(entity_id)
+                if area_id:
+                    return self._area_name.get(area_id, area_id)
+            return "unknown"
+
+
+    class HomeAssistantSocket:
+        def __init__(self, base_url: str, token: str, timeout: float = 10.0) -> None:
+            parsed = urllib.parse.urlparse(base_url)
+            self._host = parsed.hostname or "127.0.0.1"
+            self._port = parsed.port or (443 if parsed.scheme == "https" else 80)
+            self._ssl = parsed.scheme == "https"
+            self._token = token
+            self._timeout = timeout
+            self._sock: socket.socket | None = None
+            self._msg_id = 1
+
+        def connect(self) -> None:
+            raw = socket.create_connection((self._host, self._port), timeout=self._timeout)
+            sock: socket.socket = ssl.create_default_context().wrap_socket(raw, server_hostname=self._host) if self._ssl else raw
+            key = base64.b64encode(os.urandom(16)).decode()
+            sock.sendall(
+                (
+                    f"GET /api/websocket HTTP/1.1\r\nHost: {self._host}\r\n"
+                    "Upgrade: websocket\r\nConnection: Upgrade\r\n"
+                    f"Sec-WebSocket-Key: {key}\r\nSec-WebSocket-Version: 13\r\n\r\n"
+                ).encode()
+            )
+            sock.settimeout(self._timeout)
+            self._sock = sock
+            auth_msg = self._read_message()
+            if auth_msg.get("type") != "auth_required":
+                raise RuntimeError(f"unexpected handshake message: {auth_msg.get('type')}")
+            self._send({"type": "auth", "access_token": self._token})
+            auth_result = self._read_message()
+            if auth_result.get("type") != "auth_ok":
+                raise RuntimeError(f"authentication failed: {auth_result.get('message')}")
+            self._msg_id = 1
+
+        def call(self, cmd_type: str, timeout: float | None = None, **kwargs) -> object:
+            if self._sock is None:
+                self.connect()
+            msg_id = self._msg_id
+            self._msg_id += 1
+            self._send({"id": msg_id, "type": cmd_type, **kwargs})
+            previous_timeout = self._sock.gettimeout() if self._sock else None
+            try:
+                if self._sock:
+                    self._sock.settimeout(timeout or self._timeout)
+                while True:
+                    message = self._read_message()
+                    if message.get("id") == msg_id:
+                        if not message.get("success", True):
+                            error = message.get("error", {})
+                            raise RuntimeError(f"{cmd_type} failed ({error.get('code')}): {error.get('message')}")
+                        return message.get("result")
+            finally:
+                if self._sock and previous_timeout is not None:
+                    self._sock.settimeout(previous_timeout)
+
+        def read_event(self, timeout: float) -> dict | None:
+            if self._sock is None:
+                return None
+            self._sock.settimeout(timeout)
+            try:
+                return self._read_message()
+            except socket.timeout:
+                return None
+
+        def close(self) -> None:
+            if self._sock is not None:
+                try:
+                    self._sock.close()
+                except OSError:
+                    pass
+                self._sock = None
+
+        def _send(self, payload: dict) -> None:
+            assert self._sock is not None
+            data = json.dumps(payload).encode()
+            mask = os.urandom(4)
+            header = bytes([0x81, 0x80 | len(data)]) if len(data) < 126 else struct.pack("!BBH", 0x81, 0x80 | 126, len(data))
+            self._sock.sendall(header + mask + bytes(b ^ mask[i % 4] for i, b in enumerate(data)))
+
+        def _read_message(self) -> dict:
+            assert self._sock is not None
+            header = self._recv_exact(2)
+            first, second = header[0], header[1]
+            opcode = first & 0x0F
+            length = second & 0x7F
+            if length == 126:
+                (length,) = struct.unpack("!H", self._recv_exact(2))
+            elif length == 127:
+                (length,) = struct.unpack("!Q", self._recv_exact(8))
+            payload = self._recv_exact(length) if length else b""
+            if opcode == 0x8:
+                self.close()
+                raise RuntimeError("server closed the connection")
+            if opcode == 0x9:
+                self._send_raw(bytes([0x8A, length]) + payload if length < 126 else struct.pack("!BBH", 0x8A, 126, length) + payload)
+                return self._read_message()
+            if opcode == 0xA:
+                return self._read_message()
+            return json.loads(payload.decode("utf-8")) if payload else {}
+
+        def _send_raw(self, data: bytes) -> None:
+            assert self._sock is not None
+            self._sock.sendall(data)
+
+        def _recv_exact(self, count: int) -> bytes:
+            assert self._sock is not None
+            chunks = []
+            while count > 0:
+                chunk = self._sock.recv(count)
+                if not chunk:
+                    raise RuntimeError("connection closed while reading")
+                chunks.append(chunk)
+                count -= len(chunk)
+            return b"".join(chunks)
+
+
+    def entity_ids_from(service_data: dict) -> list[str]:
+        raw = (service_data or {}).get("entity_id", [])
+        if isinstance(raw, str):
+            return [raw]
+        return [e for e in raw if isinstance(e, str)]
+
+
+    class MetricsHandler(BaseHTTPRequestHandler):
+        metrics: Metrics | None = None
+
+        def do_GET(self) -> None:  # noqa: N802
+            if self.path != "/metrics":
+                self.send_response(404)
+                self.end_headers()
+                return
+            body = (self.metrics.render() if self.metrics else "").encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; version=0.0.4")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args: object) -> None:
+            pass
+
+
+    def watch_forever(metrics: Metrics, tracker: TurnTracker, resolver: AreaResolver, base_url: str, token: str, satellite: str) -> None:
+        backoff = 5.0
+        while True:
+            sock = HomeAssistantSocket(base_url, token)
+            try:
+                sock.connect()
+                states = sock.call("get_states") or []
+                current = next((s for s in states if isinstance(s, dict) and s.get("entity_id") == satellite), {})
+                tracker.seed(str(current.get("state", "idle")))
+                sock.call("subscribe_events", event_type="state_changed")
+                sock.call("subscribe_events", event_type="call_service")
+                resolver.refresh(sock.call)
+                metrics.set_connected(True)
+                backoff = 5.0
+                while True:
+                    event = sock.read_event(timeout=30.0)
+                    now = time.time()
+                    if event is None:
+                        tracker.sweep_stale(now)
+                        resolver.maybe_refresh(sock.call)
+                        continue
+                    if event.get("type") != "event":
+                        continue
+                    inner = event.get("event", {})
+                    if inner.get("event_type") == "state_changed":
+                        data = inner.get("data", {})
+                        if data.get("entity_id") == satellite:
+                            new_state = (data.get("new_state") or {}).get("state")
+                            if new_state:
+                                tracker.observe_state(str(new_state), time.time(), resolver.room_for)
+                    elif inner.get("event_type") == "call_service":
+                        data = inner.get("data", {})
+                        tracker.observe_service_call(entity_ids_from(data.get("service_data", {})))
+            except Exception as exc:
+                print(f"watch error: {exc}", flush=True)
+                metrics.set_connected(False)
+            finally:
+                sock.close()
+            time.sleep(backoff)
+            backoff = min(backoff * 1.5, 60.0)
+
+
+    def main() -> None:
+        base_url = os.environ.get("HA_URL", "http://home-assistant.home-assistant:8123")
+        token = os.environ.get("HA_TOKEN", "")
+        satellite = os.environ.get(
+            "SATELLITE_ENTITY",
+            "assist_satellite.homelab_05_satellite_assist_satellite",
+        )
+        port = int(os.environ.get("METRICS_PORT", "8000"))
+        short_name = satellite.split(".", 1)[-1]
+        metrics = Metrics(short_name)
+        tracker = TurnTracker(metrics, short_name)
+        resolver = AreaResolver()
+        MetricsHandler.metrics = metrics
+        server = ThreadingHTTPServer(("0.0.0.0", port), MetricsHandler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        if not token:
+            print("HA_TOKEN is empty; serving metrics with connected=0", flush=True)
+            while True:
+                time.sleep(3600.0)
+        watch_forever(metrics, tracker, resolver, base_url, token, satellite)
+
+
+    if __name__ == "__main__":
+        main()
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: jarvis-exporter-ha
+  namespace: voice
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: gitlab-project
+  target:
+    name: jarvis-exporter-ha
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      data:
+        token: "{{ .ha_token }}"
+  data:
+    - secretKey: ha_token
+      remoteRef:
+        key: JARVIS_EXPORTER_HA_TOKEN
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvis-exporter
+  namespace: voice
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: jarvis-exporter
+  template:
+    metadata:
+      labels:
+        app: jarvis-exporter
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          # Pinned upstream tag: 3.13-slim
+          image: docker.io/library/python@sha256:9d2e5553305c7c7b0097999bb17187c69b921ccd6bc9d40e4bb5ebe652c00285  # yamllint disable-line rule:line-length
+          command:
+            - python3
+            - /app/exporter.py
+          env:
+            - name: HA_URL
+              value: "http://home-assistant.home-assistant:8123"
+            - name: SATELLITE_ENTITY
+              value: "assist_satellite.homelab_05_satellite_assist_satellite"
+            - name: HA_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: jarvis-exporter-ha
+                  key: token
+                  optional: true
+          ports:
+            - containerPort: 8000
+              name: metrics
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+            periodSeconds: 30
+          volumeMounts:
+            - name: code
+              mountPath: /app
+      volumes:
+        - name: code
+          configMap:
+            name: jarvis-exporter-code
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvis-exporter
+  namespace: voice
+  labels:
+    app: jarvis-exporter
+spec:
+  selector:
+    app: jarvis-exporter
+  ports:
+    - name: metrics
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: jarvis-exporter
+  namespace: voice
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: jarvis-exporter
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
