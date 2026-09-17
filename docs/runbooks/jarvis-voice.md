@@ -48,6 +48,11 @@ automation referencing them.
    (`http://ollama.voice:11434`) as the brain, with model `qwen2.5:3b`
    selected. Set it as the preferred pipeline and select it on the
    satellite device.
+   The Jarvis conversation subentry prompt carries the room semantics:
+   downstairs means Living Room plus Kitchen, and a lights command with no
+   room means all downstairs lights. The prompt is UI-managed config-entry
+   state; the `light.downstairs_lights` group in
+   `home-assistant/core/configuration.yaml` is its deterministic backup.
 3. Expose exactly the entities Jarvis may control (lights, switches, climate
    in `home-assistant/core/configuration.yaml` groups, plus scenes and the
    shopping list) to Assist. Unexposed entities are invisible to voice
