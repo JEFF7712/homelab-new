@@ -33,6 +33,76 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+    wireplumber.extraConfig = {
+      "10-device-priorities" = {
+        "monitor.alsa.rules" = [
+          # Always prioritize the HyperX QuadCast USB microphone as default input.
+          # A single QuadCast substring covers the usb-Kingston_HyperX_QuadCast_S
+          # node name and survives USB ID renames (e.g. 4100-00 suffix changes).
+          {
+            matches = [
+              { "node.name" = "~alsa_input.*QuadCast.*"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 2500;
+                "priority.session" = 2500;
+              };
+            };
+          }
+          # Deprioritize onboard PCI audio input
+          {
+            matches = [
+              { "node.name" = "~alsa_input.pci.*"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 500;
+                "priority.session" = 500;
+              };
+            };
+          }
+          # Prioritize the Nvidia HDMI soundbar output for speaker output.
+          # Keep this narrow: a generic pci.*pro-output-3 pattern would also
+          # match onboard 00:1f.3 pro-output-3, which the fallback rule owns.
+          {
+            matches = [
+              { "node.name" = "~alsa_output.pci-0000_01_00.1.*"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 2000;
+                "priority.session" = 2000;
+              };
+            };
+          }
+          # Fallback onboard line-out audio
+          {
+            matches = [
+              { "node.name" = "~alsa_output.pci-0000_00_1f.3.*"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 1000;
+                "priority.session" = 1000;
+              };
+            };
+          }
+          # Deprioritize QuadCast headphone jack so output doesn't route to the mic
+          {
+            matches = [
+              { "node.name" = "~alsa_output.*QuadCast.*"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 500;
+                "priority.session" = 500;
+              };
+            };
+          }
+        ];
+      };
+    };
   };
 
   homelab.kiosk = {
@@ -52,7 +122,7 @@
   boot.kernelParams = [ "video=HDMI-A-2:e" ];
 
   systemd.services.satellite-alsa-restore = {
-    description = "Unmute onboard audio for Jarvis satellite";
+    description = "Unmute onboard audio fallback for Jarvis satellite";
     after = [ "sound.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
@@ -66,52 +136,23 @@
       if [ -e /sys/class/drm/card1-HDMI-A-2/status ]; then
         echo on > /sys/class/drm/card1-HDMI-A-2/status || true
       fi
+      # Onboard stays unmuted as the fallback sink (WirePlumber priority 1000)
+      # for when the HDMI soundbar is unreachable.
       amixer -c 0 set Master unmute 100%
       amixer -c 0 set Headphone unmute 100%
     '';
   };
 
-  systemd.services.satellite-combine-sink = {
-    description = "Reload combined Pulse sink for Jarvis satellite";
-    after = [
-      "systemd-user-sessions.service"
-      "satellite-alsa-restore.service"
-    ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      User = "kiosk";
-      Restart = "on-failure";
-      RestartSec = "30s";
-    };
-    environment = {
-      XDG_RUNTIME_DIR = "/run/user/1001";
-      PULSE_SERVER = "unix:/run/user/1001/pulse/native";
-    };
-    path = [ pkgs.pulseaudio ];
-    script = ''
-      for i in $(seq 1 30); do
-        pactl info >/dev/null 2>&1 && break
-        sleep 2
-      done
-      pactl info >/dev/null 2>&1 || exit 1
-      if ! pactl list modules short | grep -q 'module-combine-sink.*sink_name=combined'; then
-        pactl load-module module-combine-sink sink_name=combined slaves=alsa_output.usb-Kingston_HyperX_QuadCast_S_4100-00.analog-stereo,alsa_output.pci-0000_00_1f.3.pro-output-0,alsa_output.pci-0000_00_1f.3.pro-output-3,alsa_output.pci-0000_00_1f.3.pro-output-7,alsa_output.pci-0000_01_00.1.pro-output-3
-      fi
-    '';
-  };
-
   systemd.services.satellite-hdmi-audio-clock = {
-    description = "Clock HDMI-A-2 for Jarvis soundbar audio after kiosk start";
+    description = "Clock HDMI-A-2 for Jarvis soundbar audio";
     after = [ "cage-tty1.service" ];
     wantedBy = [ "cage-tty1.service" ];
+    partOf = [ "cage-tty1.service" ];
     serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
+      Type = "simple";
       User = "kiosk";
-      Restart = "on-failure";
-      RestartSec = "30s";
+      Restart = "always";
+      RestartSec = "5s";
     };
     environment = {
       XDG_RUNTIME_DIR = "/run/user/1001";
@@ -122,14 +163,24 @@
       pkgs.curl
     ];
     script = ''
-      for i in $(seq 1 30); do
-        curl -s --max-time 5 http://127.0.0.1:9222/json | grep -q '"title": "JARVIS"' && break
+      # Wait in-process for the kiosk browser instead of exiting: with
+      # Restart=always an exit would spin a restart every RestartSec while
+      # HA/Chromium is down. Sleeping here keeps one quiet process.
+      while ! curl -s --max-time 5 http://127.0.0.1:9222/json | grep -q '"title": "JARVIS"'; do
+        sleep 5
+      done
+
+      # Steady state note: homelab.kiosk.disableOutputs turns HDMI-A-2 off on
+      # every cage start so Chromium stays on the primary display; this daemon
+      # re-enables it so the soundbar keeps the video clock its audio needs.
+      while true; do
+        if wlr-randr 2>/dev/null | grep -A1 'HDMI-A-2' | grep -q 'Enabled: no'; then
+          wlr-randr --output HDMI-A-2 --on --mode 1920x1080@60.000000 2>/dev/null \
+            || wlr-randr --output HDMI-A-2 --on 2>/dev/null \
+            || true
+        fi
         sleep 2
       done
-      curl -s --max-time 5 http://127.0.0.1:9222/json | grep -q '"title": "JARVIS"' || exit 1
-      if wlr-randr | grep -A1 'HDMI-A-2' | grep -q 'Enabled: no'; then
-        wlr-randr --output HDMI-A-2 --on
-      fi
     '';
   };
 }
