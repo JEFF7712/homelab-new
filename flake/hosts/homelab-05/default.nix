@@ -62,9 +62,9 @@
               };
             };
           }
-          # Prioritize the Nvidia HDMI soundbar output for speaker output.
+          # Nvidia HDMI audio (nothing plugged into the T600 mini-DP ports).
           # Keep this narrow: a generic pci.*pro-output-3 pattern would also
-          # match onboard 00:1f.3 pro-output-3, which the fallback rule owns.
+          # match onboard 00:1f.3 pro-output-3, which the rules below own.
           {
             matches = [
               { "node.name" = "~alsa_output.pci-0000_01_00.1.*"; }
@@ -88,6 +88,21 @@
               };
             };
           }
+          # Pin the LG soundbar PCM as the default output. Measured
+          # 2026-09-18: pro-output-3 is the only onboard PCM reaching the
+          # soundbar on HDMI-A-2. Placed after the generic onboard rule so
+          # it wins the priority for this one node.
+          {
+            matches = [
+              { "node.name" = "~alsa_output.pci-0000_00_1f.3.pro-output-3"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 3000;
+                "priority.session" = 3000;
+              };
+            };
+          }
           # Deprioritize QuadCast headphone jack so output doesn't route to the mic
           {
             matches = [
@@ -107,7 +122,7 @@
 
   homelab.kiosk = {
     enable = true;
-    url = "http://10.0.40.13:8123/local/jarvis/index.html?v=2026-09-18e";
+    url = "http://10.0.40.13:8123/local/jarvis/index.html?v=11";
     drmDevice = "/dev/dri/card1";
     scaleFactor = "1.0";
     disableOutputs = [ "HDMI-A-2" ];
@@ -173,8 +188,18 @@
       # Steady state note: homelab.kiosk.disableOutputs turns HDMI-A-2 off on
       # every cage start so Chromium stays on the primary display; this daemon
       # re-enables it so the soundbar keeps the video clock its audio needs.
+      # HDMI-A-2 must stay at 1080p, not just enabled: a soundbar/TV hotplug
+      # can bring it back at 4K, and an overlapping 4K output crops the face
+      # on the 1080p primary down to one eye corner. 1080p still provides
+      # the video clock HDMI audio needs.
       while true; do
-        if wlr-randr 2>/dev/null | grep -A1 'HDMI-A-2' | grep -q 'Enabled: no'; then
+        if ! wlr-randr 2>/dev/null | awk '
+          /^HDMI-A-2 / { f = 1; en = 0; ok = 0; next }
+          f && /^[^ ]/ { exit !(en && ok) }
+          f && /Enabled: yes/ { en = 1 }
+          f && /\(current\)/ && /1920x1080/ { ok = 1 }
+          END { exit !(en && ok) }
+        '; then
           wlr-randr --output HDMI-A-2 --on --mode 1920x1080@60.000000 2>/dev/null \
             || wlr-randr --output HDMI-A-2 --on 2>/dev/null \
             || true
