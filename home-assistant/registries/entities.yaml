@@ -84,6 +84,9 @@
 - entity_id: light.kitchen_light_2
   labels:
     - shared_space
+- entity_id: light.kitchen_mushroom_lamp
+  area_id: kitchen
+  labels: []
 - entity_id: light.living_room_mushroom_lamp
   labels:
     - shared_space
