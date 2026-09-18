@@ -135,6 +135,11 @@ automation referencing them.
      play commands before the LLM and routes by trigger id: artist phrasings
      ("play some X", "put on X") play top tracks via an artist search;
      song, album, and playlist phrasings keep narrower lookups.
+   - Stopping is deterministic and local: `home-assistant/automations/jarvis_music_stop.yaml`
+     pauses the satellite speaker on "turn off [the] music" / "turn [the] music
+     off" (built-in intents already cover "stop the music"). Never route music
+     stop through the LLM: on 2026-09-18 "turn off the music" fell to Qwen and
+     died on a poisoned chat log while "stop the music" paused in 13 ms.
    - Platform parameter supports `spotify` (default) and `youtube_music` (`ytmusic`).
    - Music Assistant runs on `homelab-05` host network
      (`gitops/music-assistant/server.yaml`) and routes audio to the satellite speaker.
@@ -284,13 +289,17 @@ again). Layer 1 is live as of 2026-09-18; layer 2 is implemented, unit-tested,
 and embedded in `gitops/voice/voice-id.yaml`, pending a push for Flux to roll
 it to the whisper pod:
 
-1. `home-assistant/automations/jarvis_satellite_tts_mic_mute.yaml` mutes
-   `switch.homelab_05_satellite_mute` while the satellite is `responding`
-   and unmutes 300 ms after it returns to `idle` (also unmutes on HA start
-   so a restart can never leave the mic stuck muted). This is the hard gate:
-   no capture during TTS means no TTS-echo turn. Trade-off: no barge-in
-   while Jarvis speaks; speak after it finishes. Tune the tail in the
-   automation (150-500 ms) if reverb tails still trip VAD.
+1. Muting the satellite during TTS was tried via
+   `home-assistant/automations/jarvis_satellite_tts_mic_mute.yaml` (mute on
+   `responding`, unmute 300 ms after `idle`) and FAILED on 2026-09-18: LVA's
+   mute switch is a user shut-up control, not a capture gate. Engaging it
+   runs `tts_player.stop()` (killing the in-flight reply ~100-250 ms in) and
+   plays mute/unmute chimes through the same single mpv instance, so every
+   reply was truncated and chimed over. It also mistimes: HA reports `idle`
+   at pipeline end while the mp3 keeps playing. The file stays in Git
+   disabled (`initial_state: false`) as a record; do not re-enable without
+   a satellite build whose mute path skips stop and chimes. Barge-in during
+   TTS remains unavailable by design (single mpv, no duplex path).
 2. Transcript sanity guard in `scripts/voice_id/proxy.py`
    (`is_garbage_transcript`, unit-tested in
    `tests/test_transcript_guard.py`, embedded into `gitops/voice/voice-id.yaml`
@@ -507,7 +516,15 @@ routing and personalization without modifying Home Assistant core:
 ### Speaker enrollment procedure
 
 To add or update speaker voice profiles:
-1. Obtain ~20-30s of clear speech in any format (.wav, .m4a, .mp3).
+1. Obtain ~20-30s of clear speech in any format (.wav, .m4a, .mp3). Prefer
+   far-field samples recorded through the satellite mic itself
+   (`pw-record --target=<quadcast-id> --rate=16000 --channels=1`) from the
+   usual speaking spot: close-mic enrollment scores poorly against living-room
+   audio. Re-enrolling one speaker must keep the others: pass the existing
+   enrollment wavs (kept next to the model) for unchanged speakers, since the
+   script rewrites the whole file. Keep threshold 0.35 / min_margin 0.10 as
+   written by `scripts/voice_id/enroll.py` (a copy under the model volume has
+   different defaults; the repo script is authoritative).
 2. Convert to 16kHz mono WAV:
    ```sh
    ffmpeg -i user.m4a -ar 16000 -ac 1 /tmp/user.wav
