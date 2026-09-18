@@ -1,8 +1,8 @@
 # Jarvis voice regression corpus.
 #
-# Canonical commands to re-run (via Assist traces plus
-# jarvis_turn_path_total) whenever the model, system prompt, Whisper
-# version, or Assist exposures change. See docs/runbooks/jarvis-voice.md
+# Canonical commands to re-run (via assist_pipeline/run at the intent
+# stage, checking processed_locally) whenever the model, system prompt,
+# Whisper version, or Assist exposures change. See docs/runbooks/jarvis-voice.md
 # ("Eval loop") for the procedure.
 #
 # Schema per entry:
@@ -56,13 +56,13 @@
 - id: lights-bedroom-roku-off
   say: Turn off the bedroom lights.
   path: local
-  intent: HassTurnOff
+  intent: JarvisAliasOff
   targets: [light.bedroom_roku_lights]
   response: Done.
 - id: lights-govee-on
   say: Turn on all the Govee lights.
   path: local
-  intent: HassTurnOn
+  intent: JarvisAliasOn
   targets: [light.all_govee_lights]
   response: Done.
 - id: lights-kitchen-mushroom-off
@@ -175,29 +175,56 @@
   response: Done.
 - id: music-explicit-platform
   say: Play Coldplay on YouTube Music.
-  path: llm
-  tool: script.jarvis_play_media
-  notes: Platform routes to youtube_music. Reply is exactly Done.
+  path: local
+  intent: MusicYoutubeTrack
+  targets: [script.jarvis_play_media]
+  response: Done.
+- id: music-youtube-artist
+  say: Play some MF DOOM on YouTube.
+  path: local
+  intent: MusicYoutubeArtist
+  targets: [script.jarvis_play_media]
+  response: Done.
 - id: vague-darker-downstairs
   say: Make it darker down here.
-  path: llm
-  tool: light.turn_on
-  notes: Ambiguous natural language; LLM resolves room to downstairs and dims. Reply is exactly Done.
+  path: local
+  intent: JarvisBrightnessNudge
+  targets: [light.downstairs_lights]
+  response: Done.
+- id: brighter-downstairs
+  say: Make it brighter down here.
+  path: local
+  intent: JarvisBrightnessNudge
+  targets: [light.downstairs_lights]
+  response: Done.
 - id: state-kitchen-query
   say: Are the kitchen lights on?
-  path: llm
-  tool: none
-  notes: Factual home-state question answered from HA state in one short sentence, no filler.
+  path: local
+  intent: JarvisKitchenLightsState
+  targets: []
+  response: Yes.
+  dynamic: true
+- id: ac-on-query
+  say: Is the living room AC on?
+  path: local
+  intent: JarvisAcState
+  targets: []
+  response: Yes.
+  dynamic: true
 - id: state-temperature-query
   say: What is the temperature downstairs?
-  path: llm
-  tool: none
-  notes: Answered from the AC ambient-temperature sensor, numbers only.
+  path: local
+  intent: JarvisTempDownstairs
+  targets: []
+  response: 72 degrees.
+  dynamic: true
 - id: media-query
   say: What is playing?
-  path: llm
-  tool: none
-  notes: Answered from the satellite media player state in one short sentence.
+  path: local
+  intent: JarvisWhatsPlaying
+  targets: []
+  response: Nights by Frank Ocean.
+  dynamic: true
 - id: general-question
   say: How many ounces are in a cup?
   path: llm
@@ -205,9 +232,10 @@
   notes: General knowledge answered in one or two sentences, no home action.
 - id: multistep-movie
   say: Set up movie mode in the living room.
-  path: llm
-  tool: scene.turn_on
-  notes: Multi-step request; LLM picks the living room movie scene. Reply is exactly Done.
+  path: local
+  intent: JarvisMovieMode
+  targets: [scene.movie_low_living_room]
+  response: Done.
 - id: followup-brighter
   say: Make it brighter.
   path: llm
@@ -225,9 +253,11 @@
   notes: No stale room carried across wake words; asks one short clarification question.
 - id: shopping-add
   say: Add oat milk to the shopping list.
-  path: llm
-  tool: shopping_list.add_item
-  notes: Reply is exactly Done.
+  path: local
+  intent: HassShoppingListAddItem
+  targets: []
+  response: Added oat milk.
+  dynamic: true
 - id: climate-set
   say: Set the living room thermostat to 72 degrees.
   path: llm

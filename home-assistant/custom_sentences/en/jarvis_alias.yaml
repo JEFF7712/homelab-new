@@ -1,0 +1,27 @@
+language: en
+intents:
+  JarvisAliasOn:
+    data:
+      - sentences:
+          - "(turn on|switch on) [the] {jarvis_alias} [lights]"
+  JarvisAliasOff:
+    data:
+      - sentences:
+          - "(turn off|switch off) [the] {jarvis_alias} [lights]"
+lists:
+  jarvis_alias:
+    values:
+      - in: "bedroom"
+        out: "light.bedroom_roku_lights"
+      - in: "bedroom lights"
+        out: "light.bedroom_roku_lights"
+      - in: "roku lights"
+        out: "light.bedroom_roku_lights"
+      - in: "govee"
+        out: "light.all_govee_lights"
+      - in: "govee lights"
+        out: "light.all_govee_lights"
+      - in: "all govee lights"
+        out: "light.all_govee_lights"
+      - in: "all the govee lights"
+        out: "light.all_govee_lights"

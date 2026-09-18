@@ -22,6 +22,11 @@ data:
     automation: !include automations.yaml
     script: !include scripts.yaml
     scene: !include scenes.yaml
+    conversation:
+      intents:
+        HassLightSet:
+          - "dim {name} to {brightness} [percent]"
+          - "brighten {name} to {brightness} [percent]"
     intent_script:
       JarvisSignatureColor:
         action:
@@ -74,6 +79,20 @@ data:
       JarvisAcState:
         speech:
           text: "{% if states('sensor.living_room_ac_mode') == 'off' %}No.{% else %}Yes.{% endif %}"
+      JarvisAliasOn:
+        action:
+          - service: light.turn_on
+            target:
+              entity_id: "{{ jarvis_alias }}"
+        speech:
+          text: "Done."
+      JarvisAliasOff:
+        action:
+          - service: light.turn_off
+            target:
+              entity_id: "{{ jarvis_alias }}"
+        speech:
+          text: "Done."
     light:
       - platform: group
         name: Kitchen Lights
@@ -183,6 +202,34 @@ data:
         sensor:
           - name: HA latest version
             value_template: "{{ value_json.homeassistant.default }}"
+  en.jarvis_alias.yaml: |
+    language: en
+    intents:
+      JarvisAliasOn:
+        data:
+          - sentences:
+              - "(turn on|switch on) [the] {jarvis_alias} [lights]"
+      JarvisAliasOff:
+        data:
+          - sentences:
+              - "(turn off|switch off) [the] {jarvis_alias} [lights]"
+    lists:
+      jarvis_alias:
+        values:
+          - in: "bedroom"
+            out: "light.bedroom_roku_lights"
+          - in: "bedroom lights"
+            out: "light.bedroom_roku_lights"
+          - in: "roku lights"
+            out: "light.bedroom_roku_lights"
+          - in: "govee"
+            out: "light.all_govee_lights"
+          - in: "govee lights"
+            out: "light.all_govee_lights"
+          - in: "all govee lights"
+            out: "light.all_govee_lights"
+          - in: "all the govee lights"
+            out: "light.all_govee_lights"
   en.jarvis_colors.yaml: |
     language: en
     intents:
@@ -289,3 +336,6 @@ data:
           default: Done.
         HassLightSet:
           default: Done.
+          brightness: Done.
+          color: Done.
+          temperature: Done.

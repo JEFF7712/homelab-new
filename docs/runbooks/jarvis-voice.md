@@ -15,9 +15,10 @@ recorded here so a rebuild restores them exactly.
 
 Microphone on `homelab-05` (`HyperX QuadCast S` via Pipewire) -> satellite
 container (`linux-voice-assistant`, wake word `hey_jarvis.tflite`, port 6053)
--> Home Assistant on `homelab-03` -> STT/TTS/LLM on `homelab-04`
-(`wyoming-whisper` 10300, `wyoming-piper` 10200, `ollama` 11434) -> audio back
-to the `homelab-05` speaker -> face state via the HA websocket.
+-> Home Assistant on `homelab-03` -> Voice-ID proxy on `homelab-04` (port 10300)
+-> Whisper STT (`wyoming-whisper` localhost:10301) -> transcript with speaker tag
+`[Speaker: <Name>]` -> TTS/LLM on `homelab-04` (`wyoming-piper` 10200, `ollama` 11434)
+-> audio back to the `homelab-05` speaker -> face state via the HA websocket.
 
 ## Canonical entity IDs
 
@@ -76,8 +77,10 @@ automation referencing them.
    `HassToggle`, `HassLightSet`) with `Done.` It deploys via the
    `home-assistant-config` ConfigMap
    (`scripts/home_assistant/adapters/core.py` renders every
-   `home-assistant/custom_sentences/<lang>/*.yaml` into it, and the HA
-   initContainer copies the tree into `/config`). State queries keep their
+   `home-assistant/custom_sentences/<lang>/*.yaml` into it under dotted
+   `<lang>.<name>` keys, since ConfigMap keys cannot contain slashes, and
+   the HA initContainer splits them back into `/config/custom_sentences/`
+   on boot). State queries keep their
    dynamic built-in responses; do not override them with static text.
    Extend the override file only after inspecting Assist traces for the
    next most common intents.
@@ -153,6 +156,8 @@ RESPONSE STYLE
 
 Voice responses must be extremely concise.
 
+Respond in English.
+
 For a successfully completed action, respond exactly:
 
 Done.
@@ -176,6 +181,14 @@ Never add filler such as: "Certainly." "Of course." "Sure thing."
 "I'd be happy to." "Here you go." "Let me check." "Anything else?"
 
 Do not repeat the user's request back to them.
+
+SPEAKER RECOGNITION
+
+The user input begins with `[Speaker: <Name>]` (e.g. `[Speaker: Rupan]` or
+`[Speaker: Sam]`) when their voice is recognized.
+When the user asks "who am I", "who is speaking", or what their name is,
+identify them directly and concisely: "You are Rupan." or "You are Sam." If no
+speaker tag is present or voice is unknown, reply: "I don't recognize your voice."
 
 ACTION RULES
 
@@ -206,12 +219,15 @@ and entities rather than guessing device names.
 MUSIC
 
 For music, artist, album, song, or playlist requests, use
-`script.jarvis_play_media`. Spotify is the default platform unless the user
-explicitly requests another available platform. A bare artist name or "play
-some X" means the artist: pass media_content_type='artist' and the script
-plays their top tracks. Never ask which album or song; just play. Specific
-songs use 'music', albums 'album', playlists 'playlist'. After successful
-playback begins, say: Done.
+`script.jarvis_play_media`. When a `[Speaker: <Name>]` tag is present, default
+platform to 'spotify' for Rupan and 'youtube_music' for Sam, passing
+speaker='Rupan' or speaker='Sam'. If the user explicitly requests another
+platform (e.g. "on youtube music" or "on spotify"), respect the user's explicit
+choice. A bare artist name or "play some X" means the artist: pass
+media_content_type='artist' and the script plays their top tracks. Never ask
+which album or song; just play. Specific songs use 'music', albums 'album',
+playlists 'playlist'. After successful playback begins, say: Done, <Name>. (or
+Done. if speaker is unverified).
 
 CONTEXT
 
@@ -220,6 +236,17 @@ only to resolve natural follow-ups such as "turn it off", "make it
 brighter", "what about upstairs?", "yes", or "no". Do not invent context
 that is not present. Do not allow an unrelated earlier request to influence
 a new request.
+
+PRONOUN SAFETY
+
+Never perform an action based on "it", "them", "that", "those", "there",
+or similar references unless the referenced object is unambiguous from
+the current conversation.
+
+If this is the first message in a conversation, such pronouns never have
+an antecedent.
+
+Ask a short clarification question instead.
 
 KNOWLEDGE AND HOME STATE
 
@@ -360,12 +387,12 @@ Metrics and their exact semantics:
   listening or processing without ever responding.
 - `jarvis_requests_by_room_total{room}`: completed turns attributed to the
   area of the first targeted entity, else `unknown`.
-- `jarvis_turn_path_total{satellite,path}`: completed turns split by
-  handling path, where `path` is `local` or `llm`. This is a latency
-  heuristic, not a pipeline label: turns whose processing phase fits within
-  `LOCAL_TURN_MAX_SECONDS` (default `2.0`) count as local built-in-intent
-  handling, slower turns as LLM. Recalibrate the threshold against Assist
-  traces if the split disagrees with them.
+- `jarvis_turn_speed_class_total{satellite,class}`: completed turns split
+  by processing-phase speed, where `class` is `fast` or `slow`. This is a
+  latency metric, not a routing label: turns whose processing phase fits
+  within `FAST_TURN_MAX_SECONDS` (default `2.0`) count as fast, slower
+  turns as slow. Routing ground truth is the `processed_locally` field on
+  Assist intent traces, never this series.
 - `jarvis_exporter_ha_connected`: 1 while the websocket is authenticated.
 
 The exporter needs a Home Assistant long-lived token in the GitLab project
@@ -378,7 +405,7 @@ in the ConfigMap.
 ### Eval loop
 
 `tests/jarvis_voice_eval_corpus.yaml` holds 30 to 50 canonical commands with
-their expected path (`local` vs `llm`), target entities, tools, and replies.
+their expected routing (`local` vs `llm`), target entities, tools, and replies.
 `tests/test_jarvis_voice_eval.py` keeps the corpus consistent offline: local
 entries must name an intent overridden in
 `home-assistant/custom_sentences/en/jarvis_terse.yaml`, reply `Done.`, and
@@ -386,11 +413,75 @@ target only entities defined in `home-assistant/core/configuration.yaml` or
 `home-assistant/scripts/`.
 
 Whenever the model, prompt, Whisper version, or exposures change, run the
-corpus live: speak or type each `say` into an Assist debug trace, then check
-the handling path in the trace, the spoken reply, and the
-`jarvis_turn_path_total` split in Prometheus. A regression is any local-path
-case that falls through to the LLM, any reply longer than the corpus
-expects, or any action on an entity outside `targets`.
+corpus live through `assist_pipeline/run` starting at the `intent` stage
+with text input (this exercises real pipeline routing while bypassing only
+wake word and STT). Check each `intent-end` event's `processed_locally`
+field, the spoken reply, and the exact action taken. A regression is any
+local-path case with `processed_locally: false`, any reply longer than the
+corpus expects, or any action on an entity outside `targets`. Keep a
+smaller acoustic suite (8 to 12 representative commands) for microphone to
+Whisper regressions; intent routing and STT are separate concerns.
+
+## Voice-ID speaker recognition
+
+### Architecture and proxy intercept
+
+Home Assistant Assist consumes Wyoming STT events (`audio-start`, `audio-chunk`,
+`audio-stop`), but discards raw audio once transcribed. To achieve speaker-aware
+routing and personalization without modifying Home Assistant core:
+
+1. A lightweight Wyoming proxy (`scripts/voice_id/proxy.py`) runs as a sidecar
+   in `wyoming-whisper` pod (`gitops/voice/whisper.yaml`) listening on port `10300`.
+   The actual Whisper STT engine listens upstream on `127.0.0.1:10301`.
+2. As the client streams audio, the proxy transparently forwards audio events to
+   Whisper while buffering the 16kHz PCM audio in memory.
+3. Upon `audio-stop`, the proxy uses `sherpa-onnx` CAMP++ ONNX model
+   (`3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx`) to compute a 512-dimensional
+   speaker embedding vector in ~35ms on CPU.
+4. Audio samples shorter than 3.5 seconds are tiled to 3.5s to provide the
+   receptive field required by the neural network for high-confidence classification.
+5. The embedding is scored via cosine similarity against enrolled profiles
+   in `gitops/voice/voice-id.yaml` (ConfigMap `wyoming-voice-id-config`).
+6. If the top score exceeds `threshold` (0.35) and exceeds the runner-up by
+   `min_margin` (0.10), the speaker identity is confirmed (`Rupan` or `Sam`).
+7. When Whisper returns the `transcript` event, the proxy prefixes `[Speaker: <Name>]`
+   (e.g. `[Speaker: Sam] play some Kanye`) before sending it back to Home Assistant.
+8. `home-assistant/automations/jarvis_voice_music_playback.yaml` and
+   `home-assistant/scripts/jarvis_play_media.yaml` read the speaker identity and route
+   music requests directly to Sam's YouTube Music or Rupan's Spotify.
+
+### Speaker enrollment procedure
+
+To add or update speaker voice profiles:
+1. Obtain ~20-30s of clear speech in any format (.wav, .m4a, .mp3).
+2. Convert to 16kHz mono WAV:
+   ```sh
+   ffmpeg -i user.m4a -ar 16000 -ac 1 /tmp/user.wav
+   ```
+3. Run the enrollment script inside the voice container or development shell:
+   ```sh
+   python3 scripts/voice_id/enroll.py \
+     --model /persist/voice-models/whisper/voice-id/model.onnx \
+     --speaker Rupan /tmp/rupan.wav \
+     --speaker Sam /tmp/sam.wav \
+     --output scripts/voice_id/profiles.json
+   ```
+4. Regenerate `gitops/voice/voice-id.yaml` ConfigMap:
+   ```sh
+   python3 -c "
+   import yaml
+   with open('scripts/voice_id/proxy.py') as f: proxy = f.read()
+   with open('scripts/voice_id/profiles.json') as f: prof = f.read()
+   manifest = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': 'wyoming-voice-id-config', 'namespace': 'voice'}, 'data': {'proxy.py': proxy, 'profiles.json': prof}}
+   def p(d, data): return d.represent_scalar('tag:yaml.org,2002:str', data, style='|' if len(data.splitlines()) > 1 else None)
+   yaml.add_representer(str, p)
+   with open('gitops/voice/voice-id.yaml', 'w') as f:
+       f.write('# yamllint disable rule:line-length\n')
+       yaml.dump(manifest, f, default_flow_style=False, sort_keys=False, width=120)
+   "
+   ```
+5. Commit and let Flux apply the updated ConfigMap.
+
 
 ## Failure symptoms
 

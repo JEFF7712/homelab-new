@@ -1,0 +1,25 @@
+id: jarvis_voice_identity
+alias: "Jarvis: Voice Identity"
+description: >-
+  Responds to "who am I" or "who is speaking" with the speaker identified
+  by the Voice-ID proxy.
+mode: single
+triggers:
+  - trigger: conversation
+    command:
+      - "who am I"
+      - "who is speaking"
+      - "who is this"
+      - "what is my name"
+      - "[speaker {speaker}] who am I"
+      - "[speaker {speaker}] who is speaking"
+      - "[speaker {speaker}] who is this"
+      - "[speaker {speaker}] what is my name"
+conditions: []
+actions:
+  - set_conversation_response: >-
+      {% if trigger.slots.speaker is defined and trigger.slots.speaker %}
+        You are {{ trigger.slots.speaker }}.
+      {% else %}
+        I don't recognize your voice.
+      {% endif %}

@@ -42,6 +42,53 @@ spec:
             - "/data"
             - "--download-dir"
             - "/data"
+            - "--uri"
+            - "tcp://127.0.0.1:10301"
+          ports:
+            - containerPort: 10301
+              name: whisper
+          startupProbe:
+            tcpSocket:
+              port: whisper
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: whisper
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: whisper
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "1"
+              memory: 1Gi
+            limits:
+              cpu: "6"
+              memory: 8Gi
+          volumeMounts:
+            - name: model-cache
+              mountPath: /data
+        - name: voice-id
+          # Pinned upstream tag: 3.8.1
+          image: docker.io/rhasspy/wyoming-whisper@sha256:ba6fcb6056ebe237d15a325381763a80af2fc8fcedaa04f6a714a7375eb20d80  # yamllint disable-line rule:line-length
+          command:
+            - "/usr/src/.venv/bin/python3"
+            - "/app/proxy.py"
+          args:
+            - "--host"
+            - "0.0.0.0"
+            - "--port"
+            - "10300"
+            - "--upstream-host"
+            - "127.0.0.1"
+            - "--upstream-port"
+            - "10301"
+            - "--model"
+            - "/data/voice-id/model.onnx"
+            - "--profiles"
+            - "/app/profiles.json"
           ports:
             - containerPort: 10300
               name: wyoming
@@ -60,19 +107,24 @@ spec:
             periodSeconds: 30
           resources:
             requests:
-              cpu: "1"
-              memory: 1Gi
+              cpu: 100m
+              memory: 256Mi
             limits:
-              cpu: "6"
-              memory: 8Gi
+              cpu: "2"
+              memory: 1Gi
           volumeMounts:
             - name: model-cache
               mountPath: /data
+            - name: voice-id-config
+              mountPath: /app
       volumes:
         - name: model-cache
           hostPath:
             path: /persist/voice-models/whisper
             type: DirectoryOrCreate
+        - name: voice-id-config
+          configMap:
+            name: wyoming-voice-id-config
 ---
 apiVersion: v1
 kind: Service

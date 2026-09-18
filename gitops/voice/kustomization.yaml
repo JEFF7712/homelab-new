@@ -8,3 +8,4 @@ resources:
   - piper.yaml
   - satellite.yaml
   - exporter.yaml
+  - voice-id.yaml

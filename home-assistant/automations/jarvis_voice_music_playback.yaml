@@ -4,7 +4,9 @@ description: >-
   Deterministically plays music on the Jarvis satellite speaker via Music
   Assistant. Bare artist requests ("play some MF DOOM") play the artist's
   top tracks; song, album, and playlist requests keep their narrower
-  lookup. The media type rides the trigger id into script.jarvis_play_media.
+  lookup. The media type and platform ride the trigger id into
+  script.jarvis_play_media. The reply is only "Done." when the script
+  reports playback started.
 mode: restart
 triggers:
   - trigger: conversation
@@ -15,26 +17,67 @@ triggers:
       - "play the artist {query}"
       - "listen to [some] {query}"
       - "play [some] music by {query}"
+      - "[speaker {speaker}] play some {query}"
+      - "[speaker {speaker}] put on [some] {query}"
+      - "[speaker {speaker}] play the artist {query}"
+      - "[speaker {speaker}] listen to [some] {query}"
+      - "[speaker {speaker}] play [some] music by {query}"
   - trigger: conversation
     id: track
     command:
       - "play the song {query}"
       - "play {query}"
+      - "[speaker {speaker}] play the song {query}"
+      - "[speaker {speaker}] play {query}"
   - trigger: conversation
     id: album
     command:
       - "play the album {query}"
+      - "[speaker {speaker}] play the album {query}"
   - trigger: conversation
     id: playlist
     command:
       - "play the playlist {query}"
       - "play [my] {query} playlist"
+      - "[speaker {speaker}] play the playlist {query}"
+      - "[speaker {speaker}] play [my] {query} playlist"
+  - trigger: conversation
+    id: youtube_artist
+    command:
+      - "play some {query} on youtube [music]"
+      - "put on [some] {query} on youtube [music]"
+      - "[speaker {speaker}] play some {query} on youtube [music]"
+      - "[speaker {speaker}] put on [some] {query} on youtube [music]"
+  - trigger: conversation
+    id: youtube_track
+    command:
+      - "play {query} on youtube [music]"
+      - "play the song {query} on youtube [music]"
+      - "[speaker {speaker}] play {query} on youtube [music]"
+      - "[speaker {speaker}] play the song {query} on youtube [music]"
 conditions: []
 actions:
-  - set_conversation_response: "Done."
   - action: script.jarvis_play_media
     data:
       media_content_type: >-
         {{ {'artist': 'artist', 'track': 'music', 'album': 'album',
-            'playlist': 'playlist'}[trigger.id] }}
+            'playlist': 'playlist', 'youtube_artist': 'artist',
+            'youtube_track': 'music'}[trigger.id] }}
+      platform: >-
+        {{ 'youtube_music' if trigger.id in ['youtube_artist', 'youtube_track']
+            else 'youtube_music' if trigger.slots.speaker is defined and trigger.slots.speaker | lower == 'sam'
+            else 'spotify' }}
+      speaker: "{{ trigger.slots.speaker | default('') }}"
       media_content_id: "{{ trigger.slots.query }}"
+    response_variable: playback
+    continue_on_error: true
+  - set_conversation_response: >-
+      {% if playback is defined and playback.status == 'playing' %}
+        {% if trigger.slots.speaker is defined and trigger.slots.speaker %}
+          Done, {{ trigger.slots.speaker }}.
+        {% else %}
+          Done.
+        {% endif %}
+      {% else %}
+        Could not start playback.
+      {% endif %}
