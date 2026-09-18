@@ -7,7 +7,8 @@ description: >-
   'youtube_music'), pass it in the platform parameter. If the user does not
   specify a platform, default to 'spotify'. A bare artist name or "play
   some X" means the artist: pass media_content_type='artist' with the
-  artist name and the script plays their top tracks. Never ask which album
+  artist name and the script starts an endless artist mix (radio_mode)
+  so playback continues past the first track. Never ask which album
   or song; just play. Specific songs use 'music', albums 'album',
   playlists 'playlist'.
 fields:
@@ -83,12 +84,14 @@ sequence:
                 {% else %}
                   {{ (artist_uris | select('search', '^spotify:') | list + artist_uris + [media_content_id]) | first }}
                 {% endif %}
-          - action: media_player.play_media
+          - action: music_assistant.play_media
             target:
               entity_id: media_player.homelab_05_satellite_media_player_2
             data:
-              media_content_type: artist
-              media_content_id: "{{ artist_uri }}"
+              media_type: artist
+              media_id: "{{ artist_uri }}"
+              enqueue: replace
+              radio_mode: true
       - conditions:
           - condition: template
             value_template: "{{ target_platform in ['youtube_music', 'youtube', 'ytmusic'] }}"
