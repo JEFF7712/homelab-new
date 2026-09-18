@@ -133,8 +133,10 @@ automation referencing them.
    - `script.jarvis_play_media` is exposed to Assist to handle music requests.
    - `home-assistant/automations/jarvis_voice_music_playback.yaml` catches
      play commands before the LLM and routes by trigger id: artist phrasings
-     ("play some X", "put on X") play top tracks via an artist search;
-     song, album, and playlist phrasings keep narrower lookups.
+     ("play some X", "put on X") resolve the artist via search, then start
+     an endless artist mix (`music_assistant.play_media`, `radio_mode: true`)
+     so playback continues past the first track; song, album, and playlist
+     phrasings keep narrower lookups.
    - Stopping is deterministic and local: `home-assistant/automations/jarvis_music_stop.yaml`
      pauses the satellite speaker on "turn off [the] music" / "turn [the] music
      off" (built-in intents already cover "stop the music"). Never route music
@@ -226,15 +228,15 @@ and entities rather than guessing device names.
 MUSIC
 
 For music, artist, album, song, or playlist requests, use
-`script.jarvis_play_media`. When a `[Speaker: <Name>]` tag is present, default
+`script.jarvis_play_media`. When a `speaker <Name>` tag is present, default
 platform to 'spotify' for Rupan and 'youtube_music' for Sam, passing
 speaker='Rupan' or speaker='Sam'. If the user explicitly requests another
 platform (e.g. "on youtube music" or "on spotify"), respect the user's explicit
 choice. A bare artist name or "play some X" means the artist: pass
-media_content_type='artist' and the script plays their top tracks. Never ask
-which album or song; just play. Specific songs use 'music', albums 'album',
-playlists 'playlist'. After successful playback begins, say: Done, <Name>. (or
-Done. if speaker is unverified).
+media_content_type='artist' and the script starts an endless artist mix.
+Never ask which album or song; just play. Specific songs use 'music', albums
+'album', playlists 'playlist'. After successful playback begins, say: Done,
+<Name>. (or Done. if speaker is unverified).
 
 CONTEXT
 

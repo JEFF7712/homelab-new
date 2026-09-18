@@ -2,8 +2,9 @@ id: jarvis_voice_music_playback
 alias: "Jarvis: Voice Music Playback"
 description: >-
   Deterministically plays music on the Jarvis satellite speaker via Music
-  Assistant. Bare artist requests ("play some MF DOOM") play the artist's
-  top tracks; song, album, and playlist requests keep their narrower
+  Assistant. Bare artist requests ("play some MF DOOM") start an endless
+  artist mix (radio_mode) so playback continues past the first track;
+  song, album, and playlist requests keep their narrower
   lookup. The media type and platform ride the trigger id into
   script.jarvis_play_media. The reply is only "Done." when the script
   reports playback started.

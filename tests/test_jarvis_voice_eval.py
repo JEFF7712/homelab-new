@@ -22,6 +22,7 @@ SIGNATURE_INTENT = "JarvisSignatureColor"
 MUSIC_AUTOMATION = (
     REPO_ROOT / "home-assistant" / "automations" / "jarvis_voice_music_playback.yaml"
 )
+PLAY_MEDIA_SCRIPT = REPO_ROOT / "home-assistant" / "scripts" / "jarvis_play_media.yaml"
 MUSIC_INTENTS = {
     "MusicArtist": "artist",
     "MusicPlaylist": "playlist",
@@ -391,6 +392,28 @@ class EvalCorpusTest(unittest.TestCase):
             )
             self.assertEqual(case["response"], "Done.", case["id"])
             self.assertEqual(case["targets"], ["script.jarvis_play_media"], case["id"])
+
+
+    def test_artist_branch_plays_endless_mix(self) -> None:
+        script = yaml.safe_load(PLAY_MEDIA_SCRIPT.read_text(encoding="utf-8"))
+        choose = next(step["choose"] for step in script["sequence"] if "choose" in step)
+        artist_branch = next(
+            branch
+            for branch in choose
+            if "artist" in json.dumps(branch.get("conditions", []))
+        )
+        play_calls = [
+            action
+            for action in artist_branch["sequence"]
+            if action.get("action") == "music_assistant.play_media"
+        ]
+        self.assertTrue(play_calls, "artist branch uses music_assistant.play_media")
+        for call in play_calls:
+            self.assertEqual(call["data"]["media_type"], "artist")
+            self.assertTrue(call["data"]["radio_mode"])
+            self.assertEqual(call["data"]["enqueue"], "replace")
+            self.assertIn("artist_uri", call["data"]["media_id"])
+        self.assertNotIn("media_player.play_media", json.dumps(artist_branch))
 
 
 if __name__ == "__main__":
