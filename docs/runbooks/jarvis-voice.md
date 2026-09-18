@@ -13,12 +13,14 @@ recorded here so a rebuild restores them exactly.
 
 ## Signal chain
 
-Microphone on `homelab-05` (`HyperX QuadCast S` via Pipewire) -> satellite
-container (`linux-voice-assistant`, wake word `hey_jarvis.tflite`, port 6053)
+Microphone on `homelab-05` (`HyperX QuadCast S` via Pipewire, pinned with
+top priority 2500 in WirePlumber) -> satellite container (`linux-voice-assistant`,
+wake word `hey_jarvis.tflite`, port 6053, device substring match `QuadCast`)
 -> Home Assistant on `homelab-03` -> Voice-ID proxy on `homelab-04` (port 10300)
 -> Whisper STT (`wyoming-whisper` localhost:10301) -> transcript with speaker tag
 `[Speaker: <Name>]` -> TTS/LLM on `homelab-04` (`wyoming-piper` 10200, `ollama` 11434)
--> audio back to the `homelab-05` speaker -> face state via the HA websocket.
+-> audio back to the `homelab-05` soundbar (HDMI-A-2 with continuous video clocking daemon,
+prioritized at 2000 in WirePlumber) -> face state via the HA websocket.
 
 ## Canonical entity IDs
 
@@ -508,3 +510,19 @@ To add or update speaker voice profiles:
 - Face state frozen while voice works: HA websocket broken in
   `app.js`; use keys 1-5 on the kiosk keyboard to confirm the face itself
   still cycles states.
+- Mic not detected or satellite in CrashLoopBackOff: verify Pipewire/WirePlumber
+  sees the QuadCast on `homelab-05` via `wpctl status`. WirePlumber assigns it
+  top priority 2500 (`~alsa_input.*QuadCast.*`), and the satellite container
+  matches on substring `QuadCast` (first substring hit wins, so if several
+  QuadCast nodes appear, confirm the USB source is listed first). For the exact
+  Pulse source names the container sees, run it once with `LIST_DEVICES=1`.
+- Soundbar loses sound after switching inputs: HDMI audio requires active video
+  clocking. On `homelab-05`, `satellite-hdmi-audio-clock.service` runs as a
+  continuous daemon re-clocking `HDMI-A-2` via `wlr-randr` whenever the soundbar
+  reconnects. WirePlumber prioritizes the HDMI sink (priority 2000) over onboard
+  audio (1000) and deprioritizes the QuadCast headphone jack (500). Priorities
+  only influence default selection: after an HDMI dropout PipeWire may stay on
+  the onboard fallback, so `wpctl status` should show the Nvidia HDMI sink as
+  default once the soundbar returns (use `wpctl set-default <hdmi-sink>` if it
+  sticks to onboard). Check `systemctl status satellite-hdmi-audio-clock` if
+  soundbar audio does not return.
