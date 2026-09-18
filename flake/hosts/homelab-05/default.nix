@@ -36,10 +36,11 @@
     wireplumber.extraConfig = {
       "10-device-priorities" = {
         "monitor.alsa.rules" = [
-          # Always prioritize the HyperX QuadCast USB microphone as default input
+          # Always prioritize the HyperX QuadCast USB microphone as default input.
+          # A single QuadCast substring covers the usb-Kingston_HyperX_QuadCast_S
+          # node name and survives USB ID renames (e.g. 4100-00 suffix changes).
           {
             matches = [
-              { "node.name" = "~alsa_input.*usb-Kingston_HyperX_QuadCast_S.*"; }
               { "node.name" = "~alsa_input.*QuadCast.*"; }
             ];
             actions = {
@@ -61,12 +62,12 @@
               };
             };
           }
-          # Prioritize HDMI soundbar outputs for speaker output
+          # Prioritize the Nvidia HDMI soundbar output for speaker output.
+          # Keep this narrow: a generic pci.*pro-output-3 pattern would also
+          # match onboard 00:1f.3 pro-output-3, which the fallback rule owns.
           {
             matches = [
               { "node.name" = "~alsa_output.pci-0000_01_00.1.*"; }
-              { "node.name" = "~alsa_output.pci.*pro-output-3.*"; }
-              { "node.name" = "~alsa_output.pci.*hdmi.*"; }
             ];
             actions = {
               update-props = {
@@ -121,7 +122,7 @@
   boot.kernelParams = [ "video=HDMI-A-2:e" ];
 
   systemd.services.satellite-alsa-restore = {
-    description = "Unmute onboard audio for Jarvis satellite";
+    description = "Unmute onboard audio fallback for Jarvis satellite";
     after = [ "sound.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
@@ -135,6 +136,8 @@
       if [ -e /sys/class/drm/card1-HDMI-A-2/status ]; then
         echo on > /sys/class/drm/card1-HDMI-A-2/status || true
       fi
+      # Onboard stays unmuted as the fallback sink (WirePlumber priority 1000)
+      # for when the HDMI soundbar is unreachable.
       amixer -c 0 set Master unmute 100%
       amixer -c 0 set Headphone unmute 100%
     '';
@@ -144,6 +147,7 @@
     description = "Clock HDMI-A-2 for Jarvis soundbar audio";
     after = [ "cage-tty1.service" ];
     wantedBy = [ "cage-tty1.service" ];
+    partOf = [ "cage-tty1.service" ];
     serviceConfig = {
       Type = "simple";
       User = "kiosk";
@@ -159,15 +163,21 @@
       pkgs.curl
     ];
     script = ''
-      for i in $(seq 1 30); do
-        curl -s --max-time 5 http://127.0.0.1:9222/json | grep -q '"title": "JARVIS"' && break
-        sleep 2
+      # Wait in-process for the kiosk browser instead of exiting: with
+      # Restart=always an exit would spin a restart every RestartSec while
+      # HA/Chromium is down. Sleeping here keeps one quiet process.
+      while ! curl -s --max-time 5 http://127.0.0.1:9222/json | grep -q '"title": "JARVIS"'; do
+        sleep 5
       done
-      curl -s --max-time 5 http://127.0.0.1:9222/json | grep -q '"title": "JARVIS"' || exit 1
 
+      # Steady state note: homelab.kiosk.disableOutputs turns HDMI-A-2 off on
+      # every cage start so Chromium stays on the primary display; this daemon
+      # re-enables it so the soundbar keeps the video clock its audio needs.
       while true; do
         if wlr-randr 2>/dev/null | grep -A1 'HDMI-A-2' | grep -q 'Enabled: no'; then
-          wlr-randr --output HDMI-A-2 --on --mode 1920x1080@60.000000 || true
+          wlr-randr --output HDMI-A-2 --on --mode 1920x1080@60.000000 2>/dev/null \
+            || wlr-randr --output HDMI-A-2 --on 2>/dev/null \
+            || true
         fi
         sleep 2
       done
