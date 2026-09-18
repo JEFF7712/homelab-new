@@ -11,15 +11,27 @@ triggers:
       - "who is speaking"
       - "who is this"
       - "what is my name"
+      - "do you know who I am"
+      - "do you know who this is"
+      - "can you tell who I am"
+      - "are you able to tell who is speaking"
+      - "are you able to tell who is speaking right now"
+      - "who do you think I am"
       - "[speaker {speaker}] who am I"
       - "[speaker {speaker}] who is speaking"
       - "[speaker {speaker}] who is this"
       - "[speaker {speaker}] what is my name"
+      - "[speaker {speaker}] do you know who I am"
+      - "[speaker {speaker}] do you know who this is"
+      - "[speaker {speaker}] can you tell who I am"
+      - "[speaker {speaker}] are you able to tell who is speaking"
+      - "[speaker {speaker}] are you able to tell who is speaking right now"
+      - "[speaker {speaker}] who do you think I am"
 conditions: []
 actions:
   - set_conversation_response: >-
       {% if trigger.slots.speaker is defined and trigger.slots.speaker %}
-        You are {{ trigger.slots.speaker }}.
+        You are {{ 'Roopen' if trigger.slots.speaker == 'Rupan' else trigger.slots.speaker }}.
       {% else %}
         I don't recognize your voice.
       {% endif %}

@@ -18,7 +18,7 @@ top priority 2500 in WirePlumber) -> satellite container (`linux-voice-assistant
 wake word `hey_jarvis.tflite`, port 6053, device substring match `QuadCast`)
 -> Home Assistant on `homelab-03` -> Voice-ID proxy on `homelab-04` (port 10300)
 -> Whisper STT (`wyoming-whisper` localhost:10301) -> transcript with speaker tag
-`[Speaker: <Name>]` -> TTS/LLM on `homelab-04` (`wyoming-piper` 10200, `ollama` 11434)
+`speaker <Name>` -> TTS/LLM on `homelab-04` (`wyoming-piper` 10200, `ollama` 11434)
 -> audio back to the `homelab-05` soundbar (HDMI-A-2 with continuous video clocking daemon,
 prioritized at 2000 in WirePlumber) -> face state via the HA websocket.
 
@@ -193,8 +193,8 @@ Do not repeat the user's request back to them.
 
 SPEAKER RECOGNITION
 
-The user input begins with `[Speaker: <Name>]` (e.g. `[Speaker: Rupan]` or
-`[Speaker: Sam]`) when their voice is recognized.
+The user input begins with `speaker <Name>` (e.g. `speaker Rupan` or
+`speaker Sam`) when their voice is recognized.
 When the user asks "who am I", "who is speaking", or what their name is,
 identify them directly and concisely: "You are Rupan." or "You are Sam." If no
 speaker tag is present or voice is unknown, reply: "I don't recognize your voice."
@@ -509,8 +509,8 @@ routing and personalization without modifying Home Assistant core:
    in `gitops/voice/voice-id.yaml` (ConfigMap `wyoming-voice-id-config`).
 6. If the top score exceeds `threshold` (0.35) and exceeds the runner-up by
    `min_margin` (0.10), the speaker identity is confirmed (`Rupan` or `Sam`).
-7. When Whisper returns the `transcript` event, the proxy prefixes `[Speaker: <Name>]`
-   (e.g. `[Speaker: Sam] play some Kanye`) before sending it back to Home Assistant.
+7. When Whisper returns the `transcript` event, the proxy prefixes `speaker <Name>`
+   (e.g. `speaker Sam play some Kanye`) before sending it back to Home Assistant.
 8. `home-assistant/automations/jarvis_voice_music_playback.yaml` and
    `home-assistant/scripts/jarvis_play_media.yaml` read the speaker identity and route
    music requests directly to Sam's YouTube Music or Rupan's Spotify.
