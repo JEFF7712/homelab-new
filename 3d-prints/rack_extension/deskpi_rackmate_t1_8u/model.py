@@ -38,10 +38,11 @@ def lower_frame_segments() -> list[Part]:
     for x0 in (0.0, params.BODY_WIDTH_MM - rail_w):
         seg = Box(rail_w, rail_len, h, align=(Align.MIN, Align.MIN, Align.MIN))
         segs.append(seg.locate(Location((x0, 0, Z0_LID_PLANE))))
-    cross_len = params.BODY_WIDTH_MM - 2 * rail_w
+    ov = params.JOINT_OVERLAP_MM
+    cross_len = params.BODY_WIDTH_MM - 2 * rail_w + 2 * ov
     for y0 in (0.0, params.BODY_DEPTH_MM - rail_w):
         seg = Box(cross_len, rail_w, h, align=(Align.MIN, Align.MIN, Align.MIN))
-        segs.append(seg.locate(Location((rail_w, y0, Z0_LID_PLANE))))
+        segs.append(seg.locate(Location((rail_w - ov, y0, Z0_LID_PLANE))))
     return segs
 
 
@@ -55,10 +56,11 @@ def top_frame_segments() -> list[Part]:
     for x0 in (0.0, params.BODY_WIDTH_MM - rail_w):
         seg = Box(rail_w, rail_len, h, align=(Align.MIN, Align.MIN, Align.MIN))
         segs.append(seg.locate(Location((x0, 0, top_z))))
-    cross_len = params.BODY_WIDTH_MM - 2 * rail_w
+    ov = params.JOINT_OVERLAP_MM
+    cross_len = params.BODY_WIDTH_MM - 2 * rail_w + 2 * ov
     for y0 in (0.0, params.BODY_DEPTH_MM - rail_w):
         seg = Box(cross_len, rail_w, h, align=(Align.MIN, Align.MIN, Align.MIN))
-        segs.append(seg.locate(Location((rail_w, y0, top_z))))
+        segs.append(seg.locate(Location((rail_w - ov, y0, top_z))))
     return segs
 
 
@@ -75,8 +77,11 @@ def column_body(z_base: float, length: float, with_bore: bool = True) -> Part:
         align=(Align.MIN, Align.MIN, Align.MIN),
     ).locate(Location((wall, wall, -1.0)))
     col = outer - inner
-    rib = Box(wall, d - 2 * wall, length, align=(Align.MIN, Align.MIN, Align.MIN))
-    rib = rib.locate(Location(((w - wall) / 2, wall, 0.0)))
+    ov = params.JOINT_OVERLAP_MM
+    rib = Box(
+        wall, d - 2 * wall + 2 * ov, length, align=(Align.MIN, Align.MIN, Align.MIN)
+    )
+    rib = rib.locate(Location(((w - wall) / 2, wall - ov, 0.0)))
     col = col + rib
     if with_bore:
         bore = Cylinder(
@@ -106,14 +111,14 @@ def lower_column_module(origin_x: float, origin_y: float) -> Part:
     spigot = Box(
         spigot_w,
         spigot_d,
-        params.SPLICE_ENGAGEMENT_MM,
+        params.SPLICE_ENGAGEMENT_MM + params.JOINT_OVERLAP_MM,
         align=(Align.CENTER, Align.CENTER, Align.MIN),
     ).locate(
         Location(
             (
                 origin_x + params.COLUMN_INWARD_MM / 2,
                 origin_y + params.COLUMN_DEPTH_MM / 2,
-                z_base + length,
+                z_base + length - params.JOINT_OVERLAP_MM,
             )
         )
     )
@@ -341,16 +346,27 @@ def end_blocks_and_strips() -> list[Part]:
 
 
 def interface_coupon() -> Part:
-    """Phase 1 fit coupon: rail section + holes + locating lips (Rev-1)."""
+    """Phase 1 fit coupon: rail section + holes + locating lips (Rev-1).
+
+    The rail overhangs the member on both sides so the side lips have a
+    volumetric root: lips beside the member cannot touch a flush-width
+    rail. Production registration will use corner pockets instead.
+    """
     rail_w = params.TOP_MEMBER_WIDTH_MM
+    root = params.LIP_CLEARANCE_MM + params.LIP_THICK_MM
     y0, y1 = params.COUPON_Y_START_MM, params.COUPON_Y_END_MM
     rail = Box(
-        rail_w, y1 - y0, params.FRAME_ZONE_MM, align=(Align.MIN, Align.MIN, Align.MIN)
-    ).locate(Location((0, y0, 0)))
+        rail_w + 2 * root,
+        y1 - y0,
+        params.FRAME_ZONE_MM,
+        align=(Align.MIN, Align.MIN, Align.MIN),
+    ).locate(Location((-root, y0, 0)))
+    ov = params.JOINT_OVERLAP_MM
+    lip_h = params.LIP_DEPTH_MM + ov
     lip_out = Box(
         params.LIP_THICK_MM,
         y1 - y0,
-        params.LIP_DEPTH_MM,
+        lip_h,
         align=(Align.MIN, Align.MIN, Align.MIN),
     ).locate(
         Location(
@@ -360,7 +376,7 @@ def interface_coupon() -> Part:
     lip_in = Box(
         params.LIP_THICK_MM,
         y1 - y0,
-        params.LIP_DEPTH_MM,
+        lip_h,
         align=(Align.MIN, Align.MIN, Align.MIN),
     ).locate(Location((rail_w + params.LIP_CLEARANCE_MM, y0, -params.LIP_DEPTH_MM)))
     part: Part = rail + lip_out + lip_in
