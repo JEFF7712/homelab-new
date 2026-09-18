@@ -25,7 +25,7 @@ spec:
       containers:
         - name: ollama
           # Pinned upstream tag: 0.34.1
-          image: docker.io/ollama/ollama@sha256:0c0a83210471fb50226bcdc2d6611d20ab13ae87e024cc304c94a6a5765c5e65  # yamllint disable-line rule:line-length
+          image: docker.io/ollama/ollama@sha256:da6e0dc5651df159e45686fd663c4dbe1624a52c44d7280eeac1551d8f865532  # yamllint disable-line rule:line-length
           env:
             - name: NVIDIA_VISIBLE_DEVICES
               value: all
@@ -110,7 +110,7 @@ spec:
       initContainers:
         - name: pull
           # Pinned upstream tag: 0.34.1
-          image: docker.io/ollama/ollama@sha256:0c0a83210471fb50226bcdc2d6611d20ab13ae87e024cc304c94a6a5765c5e65  # yamllint disable-line rule:line-length
+          image: docker.io/ollama/ollama@sha256:da6e0dc5651df159e45686fd663c4dbe1624a52c44d7280eeac1551d8f865532  # yamllint disable-line rule:line-length
           env:
             - name: OLLAMA_HOST
               value: "http://ollama.voice:11434"
@@ -120,7 +120,7 @@ spec:
       containers:
         - name: warmup
           # Pinned upstream tag: 0.34.1
-          image: docker.io/ollama/ollama@sha256:0c0a83210471fb50226bcdc2d6611d20ab13ae87e024cc304c94a6a5765c5e65  # yamllint disable-line rule:line-length
+          image: docker.io/ollama/ollama@sha256:da6e0dc5651df159e45686fd663c4dbe1624a52c44d7280eeac1551d8f865532  # yamllint disable-line rule:line-length
           env:
             - name: OLLAMA_HOST
               value: "http://ollama.voice:11434"
