@@ -1,0 +1,6 @@
+language: en
+lists:
+  speaker:
+    values:
+      - "Rupan"
+      - "Sam"

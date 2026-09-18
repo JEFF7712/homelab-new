@@ -31,7 +31,10 @@ actions:
   - variables:
       spotify_sources: "{{ state_attr('media_player.spotify_rupan', 'source_list') | default([], true) }}"
       target_source: >-
-        {{ (spotify_sources | select('search', '(?i)(soundbar|satellite|music assistant)') | list | first) | default('', true) }}
+        {{
+          (spotify_sources | select('search', '(?i)(soundbar|satellite|music assistant)')
+          | list | first) | default('', true)
+        }}
   - choose:
       - conditions:
           - condition: template
