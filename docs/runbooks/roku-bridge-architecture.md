@@ -46,8 +46,8 @@ HA's MQTT JSON light integration drifted from `rgb_color: [r, g, b]` (flat list)
 
 ## Files
 
-- `flake/modules/adguard-netbird-appliance.nix` — embedded bridge script and systemd unit; canonical source for the deployed closure. Lines 9–167 are the bridge Python; lines 340–372 set up the mosquitto user/ACL; lines 416–466 wire the systemd service and secrets.
-- `/home/rupan/projects/roku-bulb-local/scripts/bridge.py` — canonical Python kept in sync with the Nix mirror (per the comment at `flake/modules/adguard-netbird-appliance.nix:8`).
+- `flake/modules/adguard-netbird/roku-bridge.nix` — systemd unit, secrets staging, and bridge user; loads the pinned script below. `mosquitto.nix` in the same directory sets up the broker user/ACL.
+- `flake/modules/adguard-netbird/roku-bridge.py` — bridge Python vendored from `github.com/JEFF7712/roku-bulb-local@53fc6d2` (`scripts/bridge.py`); canonical source for the deployed closure. Re-pin by copying the file and updating the rev in `roku-bridge.nix` (`tests/test_roku_bridge_contract.py` enforces the hash).
 - `/home/rupan/projects/roku-bulb-local/scripts/local_set.py` — single-PID tester, useful for bypassing HA and the bridge entirely.
 - `/home/rupan/projects/roku-bulb-local/tests/test_bridge.py` — unit tests for `ha_to_plist` and `commanded_state`.
 - `/home/rupan/projects/roku-bulb-local/docs/local-http-api.md` — full protocol reference (encryption, pids, OUI checks, crash warning about nested-object `characteristics`).

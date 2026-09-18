@@ -1,53 +1,62 @@
 from __future__ import annotations
 
+import hashlib
 import unittest
 from pathlib import Path
 
 from scripts.roku_bridge import render_bulbs
 
 ROOT = Path(__file__).resolve().parents[1]
+MOSQUITTO = ROOT / "flake/modules/adguard-netbird/mosquitto.nix"
+BRIDGE = ROOT / "flake/modules/adguard-netbird/roku-bridge.nix"
+BRIDGE_PY = ROOT / "flake/modules/adguard-netbird/roku-bridge.py"
+BRIDGE_REV = "53fc6d2717f6c6fbf6b0b6f68607af8d79e5b8cb"
+BRIDGE_SHA256 = "a838eed9b7379b9609e367799c6aae6125a2d65ea06a0cac6df268a24843eaa8"
 
 
 class RokuBridgeContractTests(unittest.TestCase):
     def test_broker_user_is_scoped_to_roku_and_discovery(self) -> None:
-        appliance = (ROOT / "flake/modules/adguard-netbird-appliance.nix").read_text()
+        mosquitto = MOSQUITTO.read_text()
 
-        self.assertIn("roku-bridge = {", appliance)
+        self.assertIn("roku-bridge = {", mosquitto)
         self.assertIn(
             'passwordFile = "/persist/secrets/mosquitto-roku-bridge-password"',
-            appliance,
+            mosquitto,
         )
-        self.assertIn('"readwrite homeassistant/#"', appliance)
-        self.assertIn('"readwrite roku/#"', appliance)
+        self.assertIn('"readwrite homeassistant/#"', mosquitto)
+        self.assertIn('"readwrite roku/#"', mosquitto)
         self.assertIn(
             '"/persist/secrets/mosquitto-roku-bridge-password"',
-            appliance,
+            mosquitto,
         )
 
     def test_home_assistant_may_command_roku_topics(self) -> None:
-        appliance = (ROOT / "flake/modules/adguard-netbird-appliance.nix").read_text()
+        mosquitto = MOSQUITTO.read_text()
 
-        ha_start = appliance.index('"home-assistant" = {')
-        ha_block = appliance[ha_start : appliance.index("};", ha_start)]
+        ha_start = mosquitto.index('"home-assistant" = {')
+        ha_block = mosquitto[ha_start : mosquitto.index("};", ha_start)]
         self.assertIn('"readwrite roku/#"', ha_block)
 
     def test_bridge_runs_as_own_user_with_staged_secrets(self) -> None:
-        appliance = (ROOT / "flake/modules/adguard-netbird-appliance.nix").read_text()
+        bridge = BRIDGE.read_text()
 
-        self.assertIn("users.users.roku-bridge", appliance)
-        self.assertIn("systemd.services.roku-bridge-secrets", appliance)
+        self.assertIn("users.users.roku-bridge", bridge)
+        self.assertIn("systemd.services.roku-bridge-secrets", bridge)
         self.assertIn(
             "/persist/secrets/roku-bridge-bulbs.yaml",
-            appliance,
+            bridge,
         )
-        self.assertIn("systemd.services.roku-bridge", appliance)
-        self.assertIn('User = "roku-bridge"', appliance)
-        self.assertIn("--config /var/lib/roku-bridge/bulbs.yaml", appliance)
-        self.assertIn("/light/{slug}/set", appliance)
-        self.assertIn("/light/{slug}/state", appliance)
-        self.assertIn("device_request", appliance)
-        self.assertIn("supported_color_modes", appliance)
-        self.assertIn("commanded_state", appliance)
+        self.assertIn("systemd.services.roku-bridge", bridge)
+        self.assertIn('User = "roku-bridge"', bridge)
+        self.assertIn("--config /var/lib/roku-bridge/bulbs.yaml", bridge)
+        self.assertIn("builtins.readFile ./roku-bridge.py", bridge)
+
+    def test_vendored_bridge_matches_pin(self) -> None:
+        bridge = BRIDGE.read_text()
+
+        self.assertIn(BRIDGE_REV, bridge)
+        digest = hashlib.sha256(BRIDGE_PY.read_bytes()).hexdigest()
+        self.assertEqual(digest, BRIDGE_SHA256)
 
     def test_ci_provisions_bridge_secrets_before_activation(self) -> None:
         pipeline = (ROOT / ".gitlab-ci.yml").read_text()
