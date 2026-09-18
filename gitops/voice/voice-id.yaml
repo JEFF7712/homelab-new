@@ -175,6 +175,51 @@ data:
             self.recognition_done.set()
 
 
+    def normalize_transcript(text: str) -> str:
+        """Lowercase, drop sentence punctuation, collapse whitespace."""
+        clean = text.strip().lower()
+        for punct in ".!?,;:":
+            clean = clean.replace(punct, "")
+        return " ".join(clean.split())
+
+
+    # Exact normalized transcripts that are observed Whisper hallucinations, never
+    # legitimate commands. Keep this tight: short real commands ("Stop.") must
+    # keep working, and bare wake-word echoes stay untouched so a lone
+    # "Hey Jarvis" still gets its normal acknowledgement.
+    _GARBAGE_DENYLIST = frozenset(
+        {
+            "stu",
+            "control",
+            "further",
+            "chew away",
+            "say something",
+            "today whoever",
+            "you wait hey jarvis who am i",
+            "govee",
+            "govee v",
+        }
+    )
+
+
+    def is_garbage_transcript(text: str) -> bool:
+        """Detect non-speech Whisper hallucinations that must not reach HA.
+
+        A garbage turn still runs the full pipeline and speaks a confabulated
+        reply, which the mic picks up again (self-talk loop). Dropping here is
+        safe: HA treats the resulting empty transcript as an abandoned turn and
+        stays silent.
+        """
+        clean = normalize_transcript(text)
+        if not clean:
+            return True
+        tokens = [tok.strip(",.") for tok in clean.split()]
+        tokens = [tok for tok in tokens if tok]
+        if len(tokens) >= 3 and len(set(tokens)) == 1:
+            return True
+        return clean in _GARBAGE_DENYLIST
+
+
     def format_transcript_with_speaker(transcript: str, speaker: str | None) -> str:
         """Format transcript with speaker context when relevant.
 
@@ -291,9 +336,17 @@ data:
 
                         if event.data and "text" in event.data:
                             orig_text = event.data["text"].strip()
-                            formatted_text = format_transcript_with_speaker(
-                                orig_text, session.speaker
-                            )
+                            if is_garbage_transcript(orig_text):
+                                logger.warning(
+                                    f"Dropping hallucinated transcript: '{orig_text}' "
+                                    f"(speaker: {session.speaker})"
+                                )
+                                orig_text = ""
+                                formatted_text = ""
+                            else:
+                                formatted_text = format_transcript_with_speaker(
+                                    orig_text, session.speaker
+                                )
                             event.data["text"] = formatted_text
                             logger.info(
                                 f"Transcript formatted: '{orig_text}' -> '{formatted_text}' "
@@ -374,7 +427,7 @@ data:
 
     if __name__ == "__main__":
         main()
-  profiles.json: |
+  profiles.json: |-
     {
       "version": 1,
       "embedding_dim": 512,
