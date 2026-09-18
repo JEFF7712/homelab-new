@@ -45,7 +45,7 @@ spec:
             - name: ENABLE_DEBUG
               value: "1"
             - name: AUDIO_INPUT_DEVICE
-              value: "HyperX QuadCast S Analog Stereo"
+              value: "QuadCast"
             - name: LISTEN_DURING_WAKE_SOUND
               value: "1"
             - name: WAKE_MODEL
