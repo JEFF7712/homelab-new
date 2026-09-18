@@ -513,10 +513,16 @@ To add or update speaker voice profiles:
 - Mic not detected or satellite in CrashLoopBackOff: verify Pipewire/WirePlumber
   sees the QuadCast on `homelab-05` via `wpctl status`. WirePlumber assigns it
   top priority 2500 (`~alsa_input.*QuadCast.*`), and the satellite container
-  matches on substring `QuadCast`.
+  matches on substring `QuadCast` (first substring hit wins, so if several
+  QuadCast nodes appear, confirm the USB source is listed first). For the exact
+  Pulse source names the container sees, run it once with `LIST_DEVICES=1`.
 - Soundbar loses sound after switching inputs: HDMI audio requires active video
   clocking. On `homelab-05`, `satellite-hdmi-audio-clock.service` runs as a
   continuous daemon re-clocking `HDMI-A-2` via `wlr-randr` whenever the soundbar
   reconnects. WirePlumber prioritizes the HDMI sink (priority 2000) over onboard
-  audio (1000) and deprioritizes the QuadCast headphone jack (500). Check
-  `systemctl status satellite-hdmi-audio-clock` if soundbar audio does not return.
+  audio (1000) and deprioritizes the QuadCast headphone jack (500). Priorities
+  only influence default selection: after an HDMI dropout PipeWire may stay on
+  the onboard fallback, so `wpctl status` should show the Nvidia HDMI sink as
+  default once the soundbar returns (use `wpctl set-default <hdmi-sink>` if it
+  sticks to onboard). Check `systemctl status satellite-hdmi-audio-clock` if
+  soundbar audio does not return.
