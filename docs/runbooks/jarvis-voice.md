@@ -275,6 +275,36 @@ only inside a continued satellite conversation
 model cache on wake; `OLLAMA_KEEP_ALIVE=-1`, the Q8 KV cache, and the warmup
 Job stay as they are. Conversation state and model residency are separate.
 
+## Self-talk loop defenses
+
+Two layers against the 11:12-11:31 feedback loop (soundbar TTS re-entering
+the QuadCast, Whisper hallucinating fragments like `Stu.` / `Control.` /
+`Govee, Govee, ...`, every turn continuing the conversation and speaking
+again). Layer 1 is live as of 2026-09-18; layer 2 is implemented, unit-tested,
+and embedded in `gitops/voice/voice-id.yaml`, pending a push for Flux to roll
+it to the whisper pod:
+
+1. `home-assistant/automations/jarvis_satellite_tts_mic_mute.yaml` mutes
+   `switch.homelab_05_satellite_mute` while the satellite is `responding`
+   and unmutes 300 ms after it returns to `idle` (also unmutes on HA start
+   so a restart can never leave the mic stuck muted). This is the hard gate:
+   no capture during TTS means no TTS-echo turn. Trade-off: no barge-in
+   while Jarvis speaks; speak after it finishes. Tune the tail in the
+   automation (150-500 ms) if reverb tails still trip VAD.
+2. Transcript sanity guard in `scripts/voice_id/proxy.py`
+   (`is_garbage_transcript`, unit-tested in
+   `tests/test_transcript_guard.py`, embedded into `gitops/voice/voice-id.yaml`
+   via the enrollment procedure below): drops empty transcripts, a single
+   token repeated 3+ times, and a tight denylist of observed hallucinations.
+   Dropped transcripts are forwarded as empty text, which HA abandons
+   silently. Never denylist bare `Hey Jarvis.` (keeps the lone-wake-word
+   acknowledgement) or `Stop.` (the loop escape hatch).
+
+Deliberately not done: semantic similarity against the last TTS text needs
+a TTS-text feed into the proxy that does not exist yet; the mute gate
+already covers the window where semantic echo occurs. Revisit if echo
+turns survive both layers.
+
 ## Satellite health
 
 `gitops/voice/satellite.yaml` gates readiness on a TCP probe against port
@@ -372,9 +402,21 @@ retired PVCs can be reclaimed on the NAS by hand.
   old-display feel. State colors come from the `#app.state-*` CSS
   variables (`--eye-bg`, `--primary-glow`), overridable per state via
   `face_color_<state>` in `home-assistant/www/jarvis/config.json`.
-  Keys 1-5 / click cycle states for visual testing without the pipeline.
+  Keys 1-6 / click cycle states for visual testing without the pipeline.
+  The `music` state (amber eyes plus an equalizer strip, label
+  `JARVIS // PLAYING`) shows when the satellite media player is `playing`
+  while the satellite itself is idle; mute and the voice states
+  (`listening`, `processing`, `responding`) keep priority over it, so music
+  never masquerades as speaking.
 - The face does no canvas shadows or blur, so face rendering should not
   jank the T600; if it does, suspect the pipeline first.
+- Face deploys are self-updating. `home-assistant/www/jarvis/` lives on the
+  HA PVC (`/config/www/jarvis/`), not in the ConfigMap, so `ha-apply` does
+  not cover it: sync with `kubectl cp` into the home-assistant pod, then
+  bump `face_version` in `config.json` and the kiosk `?v=` in
+  `flake/hosts/homelab-05/default.nix` to match. The face polls
+  `config.json` every 60s and self-navigates to the new version, bypassing
+  the kiosk browser cache. No kiosk restart is needed.
 
 ## Observability
 
@@ -519,10 +561,23 @@ To add or update speaker voice profiles:
 - Soundbar loses sound after switching inputs: HDMI audio requires active video
   clocking. On `homelab-05`, `satellite-hdmi-audio-clock.service` runs as a
   continuous daemon re-clocking `HDMI-A-2` via `wlr-randr` whenever the soundbar
-  reconnects. WirePlumber prioritizes the HDMI sink (priority 2000) over onboard
-  audio (1000) and deprioritizes the QuadCast headphone jack (500). Priorities
-  only influence default selection: after an HDMI dropout PipeWire may stay on
-  the onboard fallback, so `wpctl status` should show the Nvidia HDMI sink as
-  default once the soundbar returns (use `wpctl set-default <hdmi-sink>` if it
-  sticks to onboard). Check `systemctl status satellite-hdmi-audio-clock` if
-  soundbar audio does not return.
+  reconnects. The soundbar PCM is onboard `pro-output-3`, pinned as default
+  output at WirePlumber priority 3000 (measured 2026-09-18: the only onboard
+  PCM reaching the soundbar); Nvidia HDMI stays at 2000, onboard fallback at
+  1000, QuadCast headphone jack at 500. If the soundbar slept through silence,
+  its kernel audio descriptor goes stale (`eld_valid 0` under
+  `/proc/asound/PCH/eld*` while EDID is still present): toggle `HDMI-A-2` off
+  and on via `wlr-randr` as the kiosk user to force a modeset and repopulate
+  the ELD, then confirm with a test tone. Check
+  `systemctl status satellite-hdmi-audio-clock` if soundbar audio does not return.
+  The daemon pins HDMI-A-2 to 1920x1080, not just enabled: a soundbar/TV
+  hotplug can bring that output back at 4K, and an overlapping 4K output
+  crops the kiosk face on the 1080p primary down to one eye corner. 1080p
+  still provides the video clock HDMI audio needs.
+- PipeWire WebRTC echo cancellation evaluated 2026-09-18 and parked: the
+  `libpipewire-module-echo-cancel` source exposed the mic with 0.0 dB measured
+  reduction on both tonal and wideband playback (correct links, correct
+  reference, 10 s stationary signal). Suspected USB-mic vs HDMI clock drift
+  defeating the canceller. Do not retry without a new measurement showing
+  cancellation. The deterministic mitigations are mic mute during TTS and a
+  transcript sanity guard in the voice-id proxy (both pending as of 2026-09-18).
