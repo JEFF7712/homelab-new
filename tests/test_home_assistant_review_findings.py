@@ -1022,17 +1022,19 @@ class TestHomeAssistantReviewFindings(unittest.TestCase):
         write_resource_atomic(self.root, doc)
         self.mock_client.automations["dirty_auto"] = doc.desired
 
-        with patch(
-            "scripts.home_assistant.__main__.get_client",
-            return_value=self.mock_client,
+        with (
+            patch(
+                "scripts.home_assistant.__main__.get_client",
+                return_value=self.mock_client,
+            ),
+            patch("subprocess.run") as mock_run,
         ):
-            with patch("subprocess.run") as mock_run:
-                mock_run.return_value = MagicMock(
-                    returncode=0,
-                    stdout=" M home-assistant/automations/dirty_auto.yaml\n",
-                )
-                code = cmd_verify(DummyArgs(checkpoint=True), self.root)
-                self.assertEqual(code, ExitCode.CONFLICT_OR_INVALID.value)
+            mock_run.return_value = MagicMock(
+                returncode=0,
+                stdout=" M home-assistant/automations/dirty_auto.yaml\n",
+            )
+            code = cmd_verify(DummyArgs(checkpoint=True), self.root)
+            self.assertEqual(code, ExitCode.CONFLICT_OR_INVALID.value)
 
 
 if __name__ == "__main__":

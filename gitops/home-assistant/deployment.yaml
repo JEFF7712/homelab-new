@@ -15,7 +15,7 @@ spec:
       labels:
         app: home-assistant
       annotations:
-        checksum/config: 94d37e43fb06a915ed84fcd066944f528b96bb3e25303753810aadb3fabe752b
+        checksum/config: 6fec02958a648adbffd688a6ab0015c1f810682a4268899c7beee482b7d66f9c
         checksum/dependencies: 8eac350ea6f0dc5b311c3b363345bb99229e5efa193aa69111e630103301751e
     spec:
       nodeSelector:

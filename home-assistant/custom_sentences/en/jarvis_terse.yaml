@@ -9,3 +9,6 @@ responses:
       default: Done.
     HassLightSet:
       default: Done.
+      brightness: Done.
+      color: Done.
+      temperature: Done.

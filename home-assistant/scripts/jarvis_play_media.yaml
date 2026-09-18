@@ -44,10 +44,24 @@ fields:
       select:
         options:
           - spotify
-          - youtube_music
+  speaker:
+    description: >-
+      Detected speaker name ('Rupan' or 'Sam'). Defaults platform:
+      Rupan -> spotify, Sam -> youtube_music.
+    example: Rupan
+    required: false
+    selector:
+      text: {}
 sequence:
   - variables:
-      target_platform: "{{ platform | default('spotify') }}"
+      target_platform: >-
+        {% if platform is defined and platform in ['spotify', 'youtube_music', 'youtube', 'ytmusic'] %}
+          {{ platform }}
+        {% elif speaker is defined and speaker | lower == 'sam' %}
+          youtube_music
+        {% else %}
+          spotify
+        {% endif %}
   - choose:
       - conditions:
           - condition: template

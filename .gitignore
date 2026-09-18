@@ -17,3 +17,6 @@ artifacts/
 .worktrees/
 *.tfstate
 *.tfstate.*
+*.m4a
+*.wav
+*.onnx

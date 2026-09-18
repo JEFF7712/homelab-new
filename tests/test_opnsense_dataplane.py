@@ -63,9 +63,8 @@ class DataPlaneVerificationTests(unittest.TestCase):
             [{"url": "http://10.0.40.10/"}],
             [{"url": "http://10.0.40.10/", "expect_status": "200"}],
         ):
-            with self.subTest(targets=bad):
-                with self.assertRaises(ValueError):
-                    verify_lb_data_plane(bad, {})
+            with self.subTest(targets=bad), self.assertRaises(ValueError):
+                verify_lb_data_plane(bad, {})
 
     def test_probe_target_maps_transport_errors_to_unreachable(self) -> None:
         def failing_opener(url: str, timeout: float) -> object:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import unittest
 from pathlib import Path
@@ -21,21 +22,122 @@ SIGNATURE_INTENT = "JarvisSignatureColor"
 MUSIC_AUTOMATION = (
     REPO_ROOT / "home-assistant" / "automations" / "jarvis_voice_music_playback.yaml"
 )
-MUSIC_INTENTS = {"MusicArtist": "artist", "MusicPlaylist": "playlist"}
+MUSIC_INTENTS = {
+    "MusicArtist": "artist",
+    "MusicPlaylist": "playlist",
+    "MusicYoutubeArtist": "youtube_artist",
+    "MusicYoutubeTrack": "youtube_track",
+}
+HOME_FILE = (
+    REPO_ROOT / "home-assistant" / "custom_sentences" / "en" / "jarvis_home.yaml"
+)
+NUDGE_FILE = (
+    REPO_ROOT / "home-assistant" / "custom_sentences" / "en" / "jarvis_nudge.yaml"
+)
+DONE_SCRIPTS = {"JarvisBrightnessNudge", "JarvisMovieMode"}
+ALIAS_INTENTS = {"JarvisAliasOn": "light.turn_on", "JarvisAliasOff": "light.turn_off"}
+ALIAS_FILE = (
+    REPO_ROOT / "home-assistant" / "custom_sentences" / "en" / "jarvis_alias.yaml"
+)
+TEMPLATE_QUERIES = {
+    "JarvisWhatsPlaying": "media_player.homelab_05_satellite_media_player_2",
+    "JarvisTempDownstairs": "sensor.living_room_ac_ambient_temperature_degf",
+    "JarvisKitchenLightsState": "light.kitchen_lights",
+    "JarvisAcState": "sensor.living_room_ac_mode",
+}
+BUILTIN_DYNAMIC = {"HassShoppingListAddItem"}
 NEON_PINK_RGB = [255, 16, 240]
 MIN_CASES = 30
 MAX_CASES = 50
 
 
+def _parse_template(template: str) -> list:
+    parts: list = []
+    buf = ""
+
+    def flush() -> None:
+        nonlocal buf
+        for word in buf.split():
+            parts.append(("lit", word.lower()))
+        buf = ""
+
+    i = 0
+    while i < len(template):
+        ch = template[i]
+        if ch in "[{(":
+            closer = {"[": "]", "{": "}", "(": ")"}[ch]
+            j = template.index(closer, i)
+            flush()
+            inner = template[i + 1 : j]
+            if ch == "{":
+                parts.append(("slot",))
+            elif ch == "(":
+                parts.append(
+                    (
+                        "alt",
+                        [[w.lower() for w in c.split()] for c in inner.split("|")],
+                    )
+                )
+            elif "|" in inner:
+                parts.append(
+                    (
+                        "optalt",
+                        [[w.lower() for w in c.split()] for c in inner.split("|")],
+                    )
+                )
+            else:
+                parts.append(("opt", [w.lower() for w in inner.split()]))
+            i = j + 1
+        else:
+            buf += ch
+            i += 1
+    flush()
+    return parts
+
+
+def _consume(part: tuple, words: list, pos: int) -> set:
+    kind = part[0]
+    if kind == "lit":
+        if pos < len(words) and words[pos] == part[1]:
+            return {pos + 1}
+        return set()
+    if kind == "slot":
+        return set(range(pos + 1, len(words) + 1))
+    if kind in ("alt", "optalt"):
+        out = {pos} if kind == "optalt" else set()
+        for choice in part[1]:
+            current = pos
+            for word in choice:
+                if current < len(words) and words[current] == word:
+                    current += 1
+                else:
+                    break
+            else:
+                out.add(current)
+        return out
+    if kind == "opt":
+        current = pos
+        for word in part[1]:
+            if current < len(words) and words[current] == word:
+                current += 1
+            else:
+                return {pos}
+        return {pos, current}
+    raise AssertionError(f"unknown part {kind}")
+
+
 def sentence_matches(template: str, say: str) -> bool:
     """Match an utterance against a hassil-style sentence template."""
-    pattern = re.escape(template)
-    pattern = pattern.replace(r"\{query\}", ".+?")
-    pattern = re.sub(r"\\\[([^\\]+?)\\\]\\ ", r"(?:\1 )?", pattern)
-    pattern = re.sub(r"\\\[([^\\]+?)\\\]", r"(?:\1)?", pattern)
-    pattern = pattern.replace(r"\(", "(?:").replace(r"\)", ")")
-    pattern = pattern.replace(r"\|", "|")
-    return re.fullmatch(pattern, say, re.IGNORECASE) is not None
+    words = [w.strip(".,?!") for w in say.lower().split()]
+    positions = {0}
+    for part in _parse_template(template):
+        following = set()
+        for pos in positions:
+            following.update(_consume(part, words, pos))
+        positions = following
+        if not positions:
+            return False
+    return len(words) in positions
 
 
 def ha_loader() -> type[yaml.SafeLoader]:
@@ -65,6 +167,15 @@ def known_entity_ids() -> set[str]:
     scripts_dir = REPO_ROOT / "home-assistant" / "scripts"
     if scripts_dir.is_dir():
         known.update(f"script.{f.stem}" for f in scripts_dir.glob("*.yaml"))
+    scenes_dir = REPO_ROOT / "home-assistant" / "scenes"
+    if scenes_dir.is_dir():
+        for f in scenes_dir.glob("*.yaml"):
+            try:
+                name = yaml.safe_load(f.read_text(encoding="utf-8")).get("name", f.stem)
+            except yaml.YAMLError:
+                name = f.stem
+            slug = re.sub(r"[^a-z0-9]+", "_", str(name).lower()).strip("_")
+            known.add(f"scene.{slug}")
     return known
 
 
@@ -74,6 +185,9 @@ class EvalCorpusTest(unittest.TestCase):
         cls.cases = yaml.safe_load(CORPUS_FILE.read_text(encoding="utf-8"))
         cls.terse = yaml.safe_load(TERSE_FILE.read_text(encoding="utf-8"))
         cls.colors = yaml.safe_load(COLORS_FILE.read_text(encoding="utf-8"))
+        cls.home = yaml.safe_load(HOME_FILE.read_text(encoding="utf-8"))
+        cls.nudge = yaml.safe_load(NUDGE_FILE.read_text(encoding="utf-8"))
+        cls.alias = yaml.safe_load(ALIAS_FILE.read_text(encoding="utf-8"))
         cls.core = yaml.load(CORE_FILE.read_text(encoding="utf-8"), Loader=ha_loader())
         cls.known = known_entity_ids()
 
@@ -92,10 +206,19 @@ class EvalCorpusTest(unittest.TestCase):
             if case["path"] == "local":
                 self.assertIn(
                     case["intent"],
-                    LOCAL_INTENTS | {SIGNATURE_INTENT} | set(MUSIC_INTENTS),
+                    LOCAL_INTENTS
+                    | {SIGNATURE_INTENT}
+                    | set(MUSIC_INTENTS)
+                    | DONE_SCRIPTS
+                    | set(TEMPLATE_QUERIES)
+                    | BUILTIN_DYNAMIC
+                    | set(ALIAS_INTENTS),
                     case["id"],
                 )
-                self.assertTrue(case["targets"], case["id"])
+                if case.get("dynamic"):
+                    self.assertEqual(case["targets"], [], case["id"])
+                else:
+                    self.assertTrue(case["targets"], case["id"])
                 self.assertTrue(case["response"].strip(), case["id"])
             else:
                 self.assertTrue(case["tool"], case["id"])
@@ -103,24 +226,36 @@ class EvalCorpusTest(unittest.TestCase):
 
     def test_local_responses_are_terse(self) -> None:
         for case in self.cases:
-            if case["path"] != "local":
+            if case["path"] != "local" or case.get("dynamic"):
                 continue
             self.assertLessEqual(len(case["response"].split()), 3, case["id"])
 
     def test_local_intents_have_terse_override(self) -> None:
         overrides = self.terse.get("responses", {}).get("intents", {})
         for case in self.cases:
-            if (
-                case["path"] != "local"
-                or case["intent"] == SIGNATURE_INTENT
-                or case["intent"] in MUSIC_INTENTS
-            ):
+            if case["path"] != "local" or case["intent"] not in LOCAL_INTENTS:
                 continue
             self.assertIn(case["intent"], overrides, case["id"])
             self.assertEqual(
                 overrides[case["intent"]].get("default"), "Done.", case["id"]
             )
             self.assertEqual(case["response"], "Done.", case["id"])
+
+    def test_light_set_slot_responses_are_terse(self) -> None:
+        light_set = self.terse["responses"]["intents"]["HassLightSet"]
+        for slot in ("brightness", "color", "temperature"):
+            self.assertEqual(light_set.get(slot), "Done.", slot)
+
+    def test_builtin_sentence_extensions(self) -> None:
+        intents = self.core["conversation"]["intents"]
+        sentences = intents["HassLightSet"]
+        self.assertTrue(any("dim" in s for s in sentences), "dim phrasing present")
+        self.assertTrue(
+            any("brighten" in s for s in sentences), "brighten phrasing present"
+        )
+        for sentence in sentences:
+            self.assertIn("{name}", sentence)
+            self.assertIn("{brightness}", sentence)
 
     def test_signature_color_palette(self) -> None:
         self.assertEqual(self.colors.get("language"), "en")
@@ -152,6 +287,71 @@ class EvalCorpusTest(unittest.TestCase):
             for entity_id in case["targets"]:
                 self.assertIn(entity_id, self.known, f"{case['id']}: {entity_id}")
 
+    def test_done_scripts(self) -> None:
+        scripts = self.core["intent_script"]
+        nudge = scripts["JarvisBrightnessNudge"]
+        self.assertEqual(nudge["speech"]["text"], "Done.")
+        flat = json.dumps(nudge["action"])
+        self.assertIn("light.downstairs_lights", flat)
+        self.assertIn("brightness_step_pct", flat)
+        movie = scripts["JarvisMovieMode"]
+        self.assertEqual(movie["speech"]["text"], "Done.")
+        self.assertEqual(
+            movie["action"][0]["target"]["entity_id"], "scene.movie_low_living_room"
+        )
+        directions = {
+            v["in"]: v["out"] for v in self.nudge["lists"]["jarvis_direction"]["values"]
+        }
+        self.assertEqual(directions, {"darker": "decrease", "brighter": "increase"})
+
+    def test_template_queries(self) -> None:
+        scripts = self.core["intent_script"]
+        for intent, entity_id in TEMPLATE_QUERIES.items():
+            speech = scripts[intent]["speech"]["text"]
+            self.assertTrue("{{" in speech or "{%" in speech, intent)
+            self.assertIn(entity_id, speech, intent)
+        for case in self.cases:
+            if case.get("intent") not in TEMPLATE_QUERIES:
+                continue
+            self.assertTrue(case.get("dynamic"), case["id"])
+
+    def test_builtin_dynamic(self) -> None:
+        cases = [c for c in self.cases if c.get("intent") in BUILTIN_DYNAMIC]
+        self.assertTrue(cases)
+        for case in cases:
+            self.assertTrue(case.get("dynamic"), case["id"])
+
+    def test_alias_routing(self) -> None:
+        self.assertEqual(self.alias.get("language"), "en")
+        outs = {v["out"] for v in self.alias["lists"]["jarvis_alias"]["values"]}
+        self.assertEqual(outs, {"light.bedroom_roku_lights", "light.all_govee_lights"})
+        for entity_id in outs:
+            self.assertIn(entity_id, self.known, entity_id)
+        scripts = self.core["intent_script"]
+        for intent, service in ALIAS_INTENTS.items():
+            entry = scripts[intent]
+            self.assertEqual(entry["speech"]["text"], "Done.")
+            self.assertEqual(entry["action"][0]["service"], service)
+
+    def test_home_sentences_match_cases(self) -> None:
+        sentences: dict[str, list[str]] = {}
+        for source in (self.home, self.nudge, self.alias):
+            self.assertEqual(source.get("language"), "en")
+            for intent, body in source.get("intents", {}).items():
+                for block in body.get("data", []):
+                    sentences.setdefault(intent, []).extend(block["sentences"])
+        for case in self.cases:
+            if case.get("intent") not in DONE_SCRIPTS | set(TEMPLATE_QUERIES) | set(
+                ALIAS_INTENTS
+            ):
+                continue
+            say = case["say"].strip().rstrip(".?!")
+            matched = any(
+                sentence_matches(template, say)
+                for template in sentences[case["intent"]]
+            )
+            self.assertTrue(matched, f"{case['id']}: {say!r} matches no sentence")
+
     def test_language_is_english(self) -> None:
         self.assertEqual(self.terse.get("language"), "en")
 
@@ -166,18 +366,23 @@ class EvalCorpusTest(unittest.TestCase):
             for a in actions
             if "set_conversation_response" in a
         )
-        self.assertEqual(response, "Done.")
+        self.assertIn("Done.", response)
+        self.assertIn("playback", response)
         script_call = next(
             a for a in actions if a.get("action") == "script.jarvis_play_media"
         )
+        self.assertEqual(script_call.get("response_variable"), "playback")
+        self.assertTrue(script_call.get("continue_on_error"))
         self.assertIn("trigger.id", script_call["data"]["media_content_type"])
+        self.assertIn("youtube_music", script_call["data"]["platform"])
         for trigger_id in MUSIC_INTENTS.values():
             self.assertTrue(by_id.get(trigger_id), trigger_id)
+            self.assertIn(trigger_id, script_call["data"]["media_content_type"])
         for case in self.cases:
             if case.get("intent") not in MUSIC_INTENTS:
                 continue
             trigger_id = MUSIC_INTENTS[case["intent"]]
-            say = case["say"].strip().rstrip(".")
+            say = case["say"].strip().rstrip(".?!")
             matched = any(
                 sentence_matches(template, say) for template in by_id[trigger_id]
             )
