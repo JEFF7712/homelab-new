@@ -713,15 +713,27 @@ class HomeAssistantClient:
             },
             "data": {"baseline.json": payload},
         }
+        manifest = json.dumps(cm)
         try:
             res = subprocess.run(
-                ["kubectl", "apply", "-f", "-"],
-                input=json.dumps(cm),
+                ["kubectl", "replace", "-f", "-"],
+                input=manifest,
                 text=True,
                 capture_output=True,
                 check=False,
                 timeout=15,
             )
+            if res.returncode != 0 and "not found" in (
+                res.stderr or ""
+            ).lower():
+                res = subprocess.run(
+                    ["kubectl", "create", "-f", "-"],
+                    input=manifest,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                    timeout=15,
+                )
         except Exception as exc:
             raise RuntimeError(
                 f"Failed to execute kubectl to save cluster baseline: {exc}"

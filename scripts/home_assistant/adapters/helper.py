@@ -31,8 +31,8 @@ class HelperAdapter(BaseAdapter):
                     key = entity_id.replace(".", "_")
                     desired = {
                         "entity_id": entity_id,
-                        "name": ent.get("name"),
-                        "icon": ent.get("icon"),
+                        "name": ent.get("name") or ent.get("original_name"),
+                        "icon": ent.get("icon") or ent.get("original_icon"),
                     }
                     docs.append(
                         ResourceDocument(
