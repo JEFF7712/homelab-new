@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#000000">
   <title>JARVIS</title>
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=8" id="face-css">
   <style>
     /* Token Prompt Modal (only if token missing) */
     #token-prompt {
@@ -102,6 +102,16 @@
     </div>
   </div>
 
-  <script src="app.js?v=8"></script>
+  <script>
+    // Thread the page ?v= into every face asset URL so a face_version
+    // bump bypasses the kiosk browser cache for the whole face.
+    (function () {
+      var v = new URLSearchParams(window.location.search).get('v') || '8';
+      document.getElementById('face-css').href = 'style.css?v=' + encodeURIComponent(v);
+      var s = document.createElement('script');
+      s.src = 'app.js?v=' + encodeURIComponent(v);
+      document.body.appendChild(s);
+    })();
+  </script>
 </body>
 </html>

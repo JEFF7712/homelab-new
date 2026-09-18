@@ -11,6 +11,7 @@
   box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
+  cursor: none !important;
 }
 
 html, body {
@@ -31,7 +32,6 @@ html, body {
   justify-content: center;
   align-items: center;
   position: relative;
-  cursor: pointer;
   background: #000000;
 }
 
@@ -124,7 +124,15 @@ html, body {
   --eye-bg: #00f0ff;
 }
 
-/* --- 5. MUTED (Sleeping State) --- */
+/* --- 5. MUSIC (Media Player Playing) --- */
+#app.state-music {
+  --primary-color: #ffb000;
+  --primary-glow: rgba(255, 176, 0, 0.45);
+  --primary-ambient: rgba(255, 176, 0, 0.1);
+  --eye-bg: #ffb000;
+}
+
+/* --- 6. MUTED (Sleeping State) --- */
 #app.state-muted {
   --primary-color: #64748b;
   --primary-glow: rgba(100, 116, 139, 0.35);

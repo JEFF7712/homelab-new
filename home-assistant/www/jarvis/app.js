@@ -36,6 +36,33 @@
   // Per-state face colors, overridden by config.json when present
   const faceColors = {};
 
+  // --- Face version self-update ---
+  // The page URL carries ?v=<face_version> and the index.html loader
+  // threads it into every asset URL, so navigating to a new v bypasses
+  // the browser cache for the whole face. Poll config.json (never cached)
+  // and self-navigate when face_version moves: pushing new www files plus
+  // a version bump is enough, the kiosk adopts it without a manual reload.
+  let faceVersion = urlParams.get('v');
+  window.__jarvisFaceVersion = faceVersion;
+  function faceVersionTarget(configV) {
+    if (configV === undefined || configV === null) return null;
+    const want = String(configV);
+    if (faceVersion === want) return null;
+    const url = new URL(window.location.href);
+    url.searchParams.set('v', want);
+    return url.toString();
+  }
+  window.__jarvisFaceVersionTarget = faceVersionTarget;
+  setInterval(() => {
+    fetch('config.json', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        const target = faceVersionTarget(data.face_version);
+        if (target) window.location.href = target;
+      })
+      .catch(() => {});
+  }, 60000);
+
   // Load external config.json if available (never cached: color edits
   // must reach the kiosk without a hard refresh)
   fetch('config.json', { cache: 'no-store' })
@@ -44,7 +71,7 @@
       if (data.satellite_entity && !urlParams.get('entity')) config.satelliteEntity = data.satellite_entity;
       if (data.mute_entity && !urlParams.get('mute')) config.muteEntity = data.mute_entity;
       if (data.media_player_entity && !urlParams.get('media')) config.mediaPlayerEntity = data.media_player_entity;
-      for (const state of ['idle', 'listening', 'processing', 'responding', 'muted']) {
+      for (const state of ['idle', 'listening', 'processing', 'responding', 'music', 'muted']) {
         if (data['face_color_' + state]) faceColors[state] = data['face_color_' + state];
       }
       // Re-apply the current state so configured colors take effect
@@ -108,6 +135,10 @@
                   lowerY: 0.3, lowerAngle: 0, lowerBend: 0.35, radius: 0.1,
                   look: 'center', bounce: true,  pulse: false, glow: 1.15,
                   asym: null },
+    music:      { sx: 1.02, sy: 0.92, upperY: 0,    upperAngle: 0,  upperBend: 0,
+                  lowerY: 0.1, lowerAngle: 0, lowerBend: 0.15, radius: 0.1,
+                  look: 'wander', bounce: true,  pulse: true,  glow: 1.0,
+                  asym: null },
     muted:      { sx: 0.9,  sy: 1.0,  upperY: 0.52, upperAngle: 0,  upperBend: 0,
                   lowerY: 0.5, lowerAngle: 0, lowerBend: 0,    radius: 0.1,
                   look: 'none',   bounce: false, pulse: false, glow: 0.5,
@@ -139,6 +170,7 @@
     let lookMode = 'wander';
     let bounce = false;
     let pulse = false;
+    let exprName = 'idle';
     let nextLookAt = 0;
     let nextBlinkAt = 0;
     let blinkStart = -1;
@@ -173,6 +205,7 @@
 
     function setExpression(state) {
       const p = EYE_PRESETS[state] || EYE_PRESETS.idle;
+      exprName = EYE_PRESETS[state] ? state : 'idle';
       tgt.sx = p.sx; tgt.sy = p.sy;
       tgt.upperY = p.upperY; tgt.upperAngle = p.upperAngle; tgt.upperBend = p.upperBend;
       tgt.lowerY = p.lowerY; tgt.lowerAngle = p.lowerAngle; tgt.lowerBend = p.lowerBend;
@@ -342,6 +375,24 @@
         upperY: cur.upperY + cur.rUpperA, upperAngle: cur.upperAngle, upperBend: cur.upperBend,
         lowerY: cur.lowerY + cur.rLowerA, lowerAngle: cur.lowerAngle, lowerBend: cur.lowerBend
       });
+      // Music state gets a flat equalizer strip under the eyes: mirrored
+      // layered sines, no audio analysis, drawn before the scanlines so
+      // the old-display treatment applies to it too.
+      if (exprName === 'music') {
+        const nBars = 11;
+        const barW = u * 2.4;
+        const barGap = u * 1.6;
+        const baseY = H * 0.88;
+        const maxBarH = u * 8;
+        ctx.fillStyle = fillColor;
+        for (let i = 0; i < nBars; i++) {
+          const d = Math.abs(i - (nBars - 1) / 2) / ((nBars - 1) / 2);
+          const env = 1 - 0.55 * d;
+          const wave = 0.5 + 0.5 * Math.sin(2 * Math.PI * (1.4 + 0.8 * d) * t + d * 2.4);
+          const bh = Math.max(u * 1.2, maxBarH * env * (0.18 + 0.82 * wave));
+          ctx.fillRect(W / 2 - (nBars * barW + (nBars - 1) * barGap) / 2 + i * (barW + barGap), baseY - bh, barW, bh);
+        }
+      }
       // Old-hardware display feel: scanlines (invisible over black, darken
       // the lit eyes) plus a cached vignette.
       ctx.fillStyle = 'rgba(0,0,0,0.28)';
@@ -398,7 +449,7 @@
     currentState = newState;
 
     // Remove existing state classes
-    appEl.classList.remove('state-idle', 'state-listening', 'state-processing', 'state-responding', 'state-muted');
+    appEl.classList.remove('state-idle', 'state-listening', 'state-processing', 'state-responding', 'state-music', 'state-muted');
     appEl.classList.add('state-' + newState);
     appEl.style.removeProperty('--primary-color');
     appEl.style.removeProperty('--eye-bg');
@@ -419,6 +470,7 @@
       newState === 'listening' ? 'JARVIS // LISTENING' :
       newState === 'processing' ? 'JARVIS // THINKING' :
       newState === 'responding' ? 'JARVIS // RESPONDING' :
+      newState === 'music' ? 'JARVIS // PLAYING' :
       newState === 'muted' ? 'JARVIS // MUTED' : 'JARVIS'
     );
     if (statusLabel) statusLabel.textContent = label;
@@ -542,9 +594,9 @@
       }
     }
 
-    // Priority 3: Media player active during assist
+    // Priority 3: Media player active while the satellite is otherwise idle
     if (mediaState && mediaState.state === 'playing') {
-      setState('responding', 'JARVIS // SPEAKING');
+      setState('music', 'JARVIS // PLAYING');
       return;
     }
 
@@ -579,7 +631,7 @@
   }
 
   // --- Interactive Debug / Testing Keys ---
-  const states = ['idle', 'listening', 'processing', 'responding', 'muted'];
+  const states = ['idle', 'listening', 'processing', 'responding', 'music', 'muted'];
   let stateIndex = 0;
 
   // Click on screen to cycle state for instant visual testing
@@ -597,7 +649,8 @@
       case '2': setState('listening'); break;
       case '3': setState('processing'); break;
       case '4': setState('responding'); break;
-      case '5': setState('muted'); break;
+      case '5': setState('music'); break;
+      case '6': setState('muted'); break;
       case 'f':
       case 'F':
         if (!document.fullscreenElement) {
@@ -611,7 +664,7 @@
 
   // Expose global controller for scripting/testing
   window.Jarvis = {
-    build: '2026-09-18g',
+    build: '2026-09-18h',
     setState: setState,
     getState: () => currentState,
     getWs: () => ws,
