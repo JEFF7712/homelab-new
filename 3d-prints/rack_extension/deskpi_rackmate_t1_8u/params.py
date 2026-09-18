@@ -130,18 +130,26 @@ USABLE_THREAD_DEPTH_MM: float | None = 5.8
 THREAD_ENGAGEMENT_MIN_MM = 4.5
 THREAD_ENGAGEMENT_MAX_MM = 5.0
 
-# --- Open physical measurements --------------------------------------------------
-# M-06 (~10 mm member thickness) is approximate. M-11 (hole surround) has no
-# dedicated profile. M-12 closed 2026-09-16: source photo filed as
-# ../m12_top_frame.jpg, observations in ../m12_top_frame_notes.md. Residual
-# risk (cables crossing the frame, oblique angle) is carried by the Phase 1
-# coupon fit test, not by further photos.
-TOP_MEMBER_THICK_APPROX_MM = 10.0
+# --- Closed physical measurements --------------------------------------------------
+# M-06 measured 2026-09-16: ~5.9 mm flat bar, top face completely flat
+# (earlier ~10 mm was an overestimate). Consistent with the peer-reported
+# 5.8 mm through-thread (M-04). M-11 closed same date: top face flat
+# around all attachment holes, no countersink or ribs. M-12 closed earlier:
+# source photo filed as ../m12_top_frame.jpg, notes in
+# ../m12_top_frame_notes.md; residual seating risk rides on the coupon fit.
+TOP_MEMBER_THICK_APPROX_MM = 5.9
+
+# Anti-tip decision (G6, 2026-09-16, revised same date): the finished rack
+# is free-standing with no wall attachment. Stability therefore rests on
+# footprint, low center of gravity (heavy equipment stays in the stock
+# lower T1 per the placement strategy), and the staged ballast test.
+# No tether hardware or CAD mounting points will be added in Revision 1.
+ANTI_TIP_STRATEGY = "free-standing (no wall attachment)"
 
 
 def open_measurements() -> list[str]:
     """Measurement IDs still blocking production geometry."""
-    return ["M-06", "M-11"]
+    return []
 
 
 # --- Revision 1 end-block detail (locked 2026-09-16) ------------------------------

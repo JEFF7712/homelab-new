@@ -92,10 +92,10 @@ class ExtensionParamsTests(unittest.TestCase):
             params.THREAD_ENGAGEMENT_MAX_MM, params.USABLE_THREAD_DEPTH_MM or 0.0
         )
 
-    def test_open_measurements_are_only_profile_details(self) -> None:
-        self.assertNotIn("M-04", params.open_measurements())
-        self.assertNotIn("M-12", params.open_measurements())
-        self.assertEqual(sorted(params.open_measurements()), ["M-06", "M-11"])
+    def test_all_measurements_closed(self) -> None:
+        self.assertEqual(params.open_measurements(), [])
+        self.assertAlmostEqual(params.TOP_MEMBER_THICK_APPROX_MM, 5.9)
+        self.assertIn("free-standing", params.ANTI_TIP_STRATEGY)
 
     def test_m12_evidence_is_filed(self) -> None:
         from pathlib import Path

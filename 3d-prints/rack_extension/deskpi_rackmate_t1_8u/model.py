@@ -411,11 +411,14 @@ def audit_gates() -> list[str]:
             "G5 final rod cut length from measured seat spacing, not the "
             f"{params.rod_length_illustrative_mm():.1f} mm illustration"
         ),
-        "G6 anti-tip restraint hardware selection and mounting points",
         (
-            "G7 remaining measurements: M-06 profile precision, M-11 hole "
-            "surround; M-01/M-02/M-03/M-04(5.8mm through, peer-reported)/ "
-            "M-09/M-10/M-12(photo filed)/M-13 confirmed"
+            "G6 anti-tip: free-standing, no wall attachment; stability via "
+            "footprint, heavy-low placement, and staged ballast test"
+        ),
+        (
+            "G7 measurements closed: M-01/M-02/M-03/M-04(5.8mm through, "
+            "consistent with 5.9mm member)/M-05..M-13 confirmed, M-06=5.9mm "
+            "flat bar, M-11 flat surrounds"
         ),
     ]
 
