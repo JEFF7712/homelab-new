@@ -6,20 +6,21 @@ from pathlib import Path
 from scripts.zigbee_gateway import render_secret
 
 ROOT = Path(__file__).resolve().parents[1]
+ZIGBEE = ROOT / "flake/modules/adguard-netbird/zigbee2mqtt.nix"
 
 
 class ZigbeeGatewayContractTests(unittest.TestCase):
     def test_coordinator_is_stable_and_state_is_persistent(self) -> None:
-        appliance = (ROOT / "flake/modules/adguard-netbird-appliance.nix").read_text()
+        zigbee = ZIGBEE.read_text()
 
-        self.assertIn("services.zigbee2mqtt", appliance)
-        self.assertIn('adapter = "ember"', appliance)
+        self.assertIn("services.zigbee2mqtt", zigbee)
+        self.assertIn('adapter = "ember"', zigbee)
         self.assertIn(
             "usb-SONOFF_SONOFF_Dongle_Lite_MG21_048030cb64a2ef11b809926661ce3355-if00-port0",
-            appliance,
+            zigbee,
         )
-        self.assertIn('network_key = "!secret.yaml network_key"', appliance)
-        self.assertIn('"/var/lib/zigbee2mqtt"', appliance)
+        self.assertIn('network_key = "!secret.yaml network_key"', zigbee)
+        self.assertIn('"/var/lib/zigbee2mqtt"', zigbee)
 
     def test_ci_provisions_runtime_secrets_before_activation(self) -> None:
         pipeline = (ROOT / ".gitlab-ci.yml").read_text()
