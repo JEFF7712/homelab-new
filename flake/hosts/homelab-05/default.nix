@@ -33,6 +33,75 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+    wireplumber.extraConfig = {
+      "10-device-priorities" = {
+        "monitor.alsa.rules" = [
+          # Always prioritize the HyperX QuadCast USB microphone as default input
+          {
+            matches = [
+              { "node.name" = "~alsa_input.*usb-Kingston_HyperX_QuadCast_S.*"; }
+              { "node.name" = "~alsa_input.*QuadCast.*"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 2500;
+                "priority.session" = 2500;
+              };
+            };
+          }
+          # Deprioritize onboard PCI audio input
+          {
+            matches = [
+              { "node.name" = "~alsa_input.pci.*"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 500;
+                "priority.session" = 500;
+              };
+            };
+          }
+          # Prioritize HDMI soundbar outputs for speaker output
+          {
+            matches = [
+              { "node.name" = "~alsa_output.pci-0000_01_00.1.*"; }
+              { "node.name" = "~alsa_output.pci.*pro-output-3.*"; }
+              { "node.name" = "~alsa_output.pci.*hdmi.*"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 2000;
+                "priority.session" = 2000;
+              };
+            };
+          }
+          # Fallback onboard line-out audio
+          {
+            matches = [
+              { "node.name" = "~alsa_output.pci-0000_00_1f.3.*"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 1000;
+                "priority.session" = 1000;
+              };
+            };
+          }
+          # Deprioritize QuadCast headphone jack so output doesn't route to the mic
+          {
+            matches = [
+              { "node.name" = "~alsa_output.*QuadCast.*"; }
+            ];
+            actions = {
+              update-props = {
+                "priority.driver" = 500;
+                "priority.session" = 500;
+              };
+            };
+          }
+        ];
+      };
+    };
   };
 
   homelab.kiosk = {
@@ -71,47 +140,15 @@
     '';
   };
 
-  systemd.services.satellite-combine-sink = {
-    description = "Reload combined Pulse sink for Jarvis satellite";
-    after = [
-      "systemd-user-sessions.service"
-      "satellite-alsa-restore.service"
-    ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      User = "kiosk";
-      Restart = "on-failure";
-      RestartSec = "30s";
-    };
-    environment = {
-      XDG_RUNTIME_DIR = "/run/user/1001";
-      PULSE_SERVER = "unix:/run/user/1001/pulse/native";
-    };
-    path = [ pkgs.pulseaudio ];
-    script = ''
-      for i in $(seq 1 30); do
-        pactl info >/dev/null 2>&1 && break
-        sleep 2
-      done
-      pactl info >/dev/null 2>&1 || exit 1
-      if ! pactl list modules short | grep -q 'module-combine-sink.*sink_name=combined'; then
-        pactl load-module module-combine-sink sink_name=combined slaves=alsa_output.usb-Kingston_HyperX_QuadCast_S_4100-00.analog-stereo,alsa_output.pci-0000_00_1f.3.pro-output-0,alsa_output.pci-0000_00_1f.3.pro-output-3,alsa_output.pci-0000_00_1f.3.pro-output-7,alsa_output.pci-0000_01_00.1.pro-output-3
-      fi
-    '';
-  };
-
   systemd.services.satellite-hdmi-audio-clock = {
-    description = "Clock HDMI-A-2 for Jarvis soundbar audio after kiosk start";
+    description = "Clock HDMI-A-2 for Jarvis soundbar audio";
     after = [ "cage-tty1.service" ];
     wantedBy = [ "cage-tty1.service" ];
     serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
+      Type = "simple";
       User = "kiosk";
-      Restart = "on-failure";
-      RestartSec = "30s";
+      Restart = "always";
+      RestartSec = "5s";
     };
     environment = {
       XDG_RUNTIME_DIR = "/run/user/1001";
@@ -127,9 +164,13 @@
         sleep 2
       done
       curl -s --max-time 5 http://127.0.0.1:9222/json | grep -q '"title": "JARVIS"' || exit 1
-      if wlr-randr | grep -A1 'HDMI-A-2' | grep -q 'Enabled: no'; then
-        wlr-randr --output HDMI-A-2 --on
-      fi
+
+      while true; do
+        if wlr-randr 2>/dev/null | grep -A1 'HDMI-A-2' | grep -q 'Enabled: no'; then
+          wlr-randr --output HDMI-A-2 --on --mode 1920x1080@60.000000 || true
+        fi
+        sleep 2
+      done
     '';
   };
 }
