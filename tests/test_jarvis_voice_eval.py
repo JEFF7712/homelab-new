@@ -22,7 +22,13 @@ SIGNATURE_INTENT = "JarvisSignatureColor"
 MUSIC_AUTOMATION = (
     REPO_ROOT / "home-assistant" / "automations" / "jarvis_voice_music_playback.yaml"
 )
+MUSIC_STOP_AUTOMATION = (
+    REPO_ROOT / "home-assistant" / "automations" / "jarvis_music_stop.yaml"
+)
 PLAY_MEDIA_SCRIPT = REPO_ROOT / "home-assistant" / "scripts" / "jarvis_play_media.yaml"
+MUSIC_STOP_INTENT = "MusicStop"
+SATELLITE_MEDIA_PLAYER = "media_player.homelab_05_satellite_media_player"
+VOICE_EXTRA_TARGETS = frozenset({SATELLITE_MEDIA_PLAYER})
 MUSIC_INTENTS = {
     "MusicArtist": "artist",
     "MusicPlaylist": "playlist",
@@ -210,6 +216,7 @@ class EvalCorpusTest(unittest.TestCase):
                     LOCAL_INTENTS
                     | {SIGNATURE_INTENT}
                     | set(MUSIC_INTENTS)
+                    | {MUSIC_STOP_INTENT}
                     | DONE_SCRIPTS
                     | set(TEMPLATE_QUERIES)
                     | BUILTIN_DYNAMIC
@@ -282,11 +289,38 @@ class EvalCorpusTest(unittest.TestCase):
                 self.assertIn(entity_id, light_lists, f"{case['id']}: {entity_id}")
 
     def test_local_targets_exist_in_source(self) -> None:
+        allowed = self.known | VOICE_EXTRA_TARGETS
         for case in self.cases:
             if case["path"] != "local":
                 continue
             for entity_id in case["targets"]:
-                self.assertIn(entity_id, self.known, f"{case['id']}: {entity_id}")
+                self.assertIn(entity_id, allowed, f"{case['id']}: {entity_id}")
+
+    def test_music_stop_cases_match_trigger_sentences(self) -> None:
+        automation = yaml.safe_load(MUSIC_STOP_AUTOMATION.read_text(encoding="utf-8"))
+        by_id = {
+            t.get("id"): t.get("command", []) for t in automation.get("triggers", [])
+        }
+        self.assertTrue(by_id.get("stop"), "stop trigger present")
+        actions = automation.get("actions", [])
+        pause_call = next(
+            a for a in actions if a.get("action") == "media_player.media_pause"
+        )
+        self.assertEqual(pause_call["target"]["entity_id"], SATELLITE_MEDIA_PLAYER)
+        response = next(
+            a["set_conversation_response"]
+            for a in actions
+            if "set_conversation_response" in a
+        )
+        self.assertIn("Paused.", response)
+        for case in self.cases:
+            if case.get("intent") != MUSIC_STOP_INTENT:
+                continue
+            say = case["say"].strip().rstrip(".?!")
+            matched = any(sentence_matches(template, say) for template in by_id["stop"])
+            self.assertTrue(matched, f"{case['id']}: {say!r} matches no stop sentence")
+            self.assertEqual(case["response"], "Paused.", case["id"])
+            self.assertEqual(case["targets"], [SATELLITE_MEDIA_PLAYER], case["id"])
 
     def test_done_scripts(self) -> None:
         scripts = self.core["intent_script"]
@@ -392,7 +426,6 @@ class EvalCorpusTest(unittest.TestCase):
             )
             self.assertEqual(case["response"], "Done.", case["id"])
             self.assertEqual(case["targets"], ["script.jarvis_play_media"], case["id"])
-
 
     def test_artist_branch_plays_endless_mix(self) -> None:
         script = yaml.safe_load(PLAY_MEDIA_SCRIPT.read_text(encoding="utf-8"))

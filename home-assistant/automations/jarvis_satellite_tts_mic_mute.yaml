@@ -7,6 +7,7 @@ description: >-
   not work while this is active; speak after Jarvis finishes. Tune the tail
   with the delay below (150-500 ms range).
 mode: restart
+initial_state: false
 triggers:
   - trigger: state
     entity_id: assist_satellite.homelab_05_satellite_assist_satellite

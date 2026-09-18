@@ -185,6 +185,18 @@
   intent: MusicYoutubeArtist
   targets: [script.jarvis_play_media]
   response: Done.
+- id: music-stop-turn-off
+  say: Turn off the music.
+  path: local
+  intent: MusicStop
+  targets: [media_player.homelab_05_satellite_media_player]
+  response: Paused.
+- id: music-put-trailing-on
+  say: Put some Travis Scott on.
+  path: local
+  intent: MusicArtist
+  targets: [script.jarvis_play_media]
+  response: Done.
 - id: vague-darker-downstairs
   say: Make it darker down here.
   path: local

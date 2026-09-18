@@ -15,11 +15,13 @@ triggers:
     command:
       - "play some {query}"
       - "put on [some] {query}"
+      - "put some {query} on"
       - "play the artist {query}"
       - "listen to [some] {query}"
       - "play [some] music by {query}"
       - "[speaker {speaker}] play some {query}"
       - "[speaker {speaker}] put on [some] {query}"
+      - "[speaker {speaker}] put some {query} on"
       - "[speaker {speaker}] play the artist {query}"
       - "[speaker {speaker}] listen to [some] {query}"
       - "[speaker {speaker}] play [some] music by {query}"
@@ -75,7 +77,7 @@ actions:
   - set_conversation_response: >-
       {% if playback is defined and playback.status == 'playing' %}
         {% if trigger.slots.speaker is defined and trigger.slots.speaker %}
-          Done, {{ trigger.slots.speaker }}.
+          Done, {{ 'Roopen' if trigger.slots.speaker == 'Rupan' else trigger.slots.speaker }}.
         {% else %}
           Done.
         {% endif %}
