@@ -147,6 +147,12 @@ class ExtensionParamsTests(unittest.TestCase):
     def test_validate_passes(self) -> None:
         self.assertEqual(params.validate(), [])
 
+    def test_joints_have_volumetric_overlap(self) -> None:
+        self.assertGreaterEqual(params.JOINT_OVERLAP_MM, 2.0)
+        lip_top = -params.LIP_DEPTH_MM + params.LIP_DEPTH_MM + params.JOINT_OVERLAP_MM
+        self.assertGreater(lip_top, 0.0)
+        self.assertLess(lip_top, params.FRAME_ZONE_MM)
+
     def test_phase1_coupon_covers_attachment_pair(self) -> None:
         self.assertLess(params.COUPON_Y_START_MM, 25.0)
         self.assertGreater(params.COUPON_Y_END_MM, 38.0)

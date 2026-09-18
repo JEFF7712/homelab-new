@@ -224,6 +224,12 @@ def coupon_channel_mm() -> float:
     return TOP_MEMBER_WIDTH_MM + 2 * LIP_CLEARANCE_MM
 
 
+# --- Joint overlap -----------------------------------------------------------------
+# Boolean unions need volumetric overlap, not face touching: every
+# additive joint embeds by JOINT_OVERLAP_MM or the slicer sees separate
+# shells (found on the Phase 1 coupon lips, 2026-09-17).
+JOINT_OVERLAP_MM = 2.0
+
 # --- Manufacturing --------------------------------------------------------------
 BED_X_MM = 256.0
 BED_Y_MM = 256.0
