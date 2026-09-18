@@ -43,7 +43,7 @@ spec:
             - "--download-dir"
             - "/data"
             - "--uri"
-            - "tcp://127.0.0.1:10301"
+            - "tcp://0.0.0.0:10301"
           ports:
             - containerPort: 10301
               name: whisper

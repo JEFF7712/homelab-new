@@ -30,6 +30,9 @@
       Group = "gitlab-runner";
       Restart = "on-failure";
       RestartSec = "30s";
+      MemoryMax = "12G";
+      CPUQuota = "800%";
+      CPUWeight = 50;
     };
   };
 

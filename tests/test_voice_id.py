@@ -163,5 +163,76 @@ class TestSessionState(unittest.TestCase):
         self.assertTrue(session.recognition_done.is_set())
 
 
+class TestFormatTranscript(unittest.TestCase):
+    def test_standard_home_commands_unaltered(self) -> None:
+        from scripts.voice_id.proxy import format_transcript_with_speaker
+
+        # Light commands must stay clean so HassTurnOn/HassTurnOff match locally
+        self.assertEqual(
+            format_transcript_with_speaker("Turn off the living room lights.", "Rupan"),
+            "Turn off the living room lights.",
+        )
+        self.assertEqual(
+            format_transcript_with_speaker("Turn on the kitchen lights.", "Sam"),
+            "Turn on the kitchen lights.",
+        )
+        self.assertEqual(
+            format_transcript_with_speaker(
+                "Make the downstairs lights neon pink.", "Rupan"
+            ),
+            "Make the downstairs lights neon pink.",
+        )
+        self.assertEqual(
+            format_transcript_with_speaker(
+                "What is the temperature downstairs?", "Sam"
+            ),
+            "What is the temperature downstairs?",
+        )
+
+    def test_identity_queries_formatted(self) -> None:
+        from scripts.voice_id.proxy import format_transcript_with_speaker
+
+        self.assertEqual(
+            format_transcript_with_speaker("Who am I?", "Rupan"),
+            "speaker Rupan Who am I",
+        )
+        self.assertEqual(
+            format_transcript_with_speaker("who is speaking", "Sam"),
+            "speaker Sam who is speaking",
+        )
+        self.assertEqual(
+            format_transcript_with_speaker("What is my name?", "Rupan"),
+            "speaker Rupan What is my name",
+        )
+
+    def test_music_queries_formatted(self) -> None:
+        from scripts.voice_id.proxy import format_transcript_with_speaker
+
+        self.assertEqual(
+            format_transcript_with_speaker("Play Drake.", "Rupan"),
+            "speaker Rupan Play Drake",
+        )
+        self.assertEqual(
+            format_transcript_with_speaker("Play some Coldplay.", "Sam"),
+            "speaker Sam Play some Coldplay",
+        )
+        self.assertEqual(
+            format_transcript_with_speaker("Put on some jazz.", "Rupan"),
+            "speaker Rupan Put on some jazz",
+        )
+
+    def test_no_speaker_unaltered(self) -> None:
+        from scripts.voice_id.proxy import format_transcript_with_speaker
+
+        self.assertEqual(
+            format_transcript_with_speaker("Play Drake.", None),
+            "Play Drake.",
+        )
+        self.assertEqual(
+            format_transcript_with_speaker("Who am I?", None),
+            "Who am I?",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

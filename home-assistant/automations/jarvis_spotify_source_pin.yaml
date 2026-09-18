@@ -2,10 +2,13 @@ id: jarvis_spotify_source_pin
 alias: Pin Spotify output to Jarvis satellite
 description: >-
   When the Spotify integration starts playing (or sits idle) with no output
-  source selected, select the Music Assistant speaker group so audio routes
-  to the Jarvis satellite and the soundbar. Never overrides an explicitly
-  chosen source such as the phone, and never fires while nobody is home,
-  so phone playback away from home is left alone.
+  source selected, select the Living Room soundbar (Music Assistant satellite
+  player) so audio routes to the soundbar. The target source is resolved
+  dynamically from the live Spotify source list (first entry matching
+  soundbar, satellite, or Music Assistant) so friendly-name renames do not
+  break routing again. Never overrides an explicitly chosen source such as
+  the phone, and never fires while nobody is home, so phone playback away
+  from home is left alone.
 mode: single
 triggers:
   - trigger: state
@@ -25,9 +28,18 @@ conditions:
   - condition: template
     value_template: "{{ states.person | selectattr('state', 'eq', 'home') | list | count > 0 }}"
 actions:
-  - action: media_player.select_source
-    target:
-      entity_id: media_player.spotify_rupan
-    data:
-      source: Homelab 05 Satellite Media Player | Music Assistant
-    continue_on_error: true
+  - variables:
+      spotify_sources: "{{ state_attr('media_player.spotify_rupan', 'source_list') | default([], true) }}"
+      target_source: >-
+        {{ (spotify_sources | select('search', '(?i)(soundbar|satellite|music assistant)') | list | first) | default('', true) }}
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ target_source != '' }}"
+        sequence:
+          - action: media_player.select_source
+            target:
+              entity_id: media_player.spotify_rupan
+            data:
+              source: "{{ target_source }}"
+            continue_on_error: true

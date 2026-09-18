@@ -61,7 +61,7 @@ surfaces:
     count: 28
     details: {}
     surface: integrations
-timestamp: '2026-09-17T18:43:02.126191+00:00'
+timestamp: '2026-09-18T01:10:40.158029+00:00'
 unsupported:
   - oauth_credentials
   - zha_pairing

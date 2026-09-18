@@ -1,18 +1,17 @@
 {
   imports = [
-    ./disk-config.nix
     ./hardware-configuration.nix
-    ../../modules/common-base.nix
-    ../../modules/k3s-server.nix
+    ../../modules/disko-single-disk.nix
+    ../../modules/k3s-joiner.nix
   ];
 
-  networking.hostName = "homelab-02";
+  homelab.disk.device = "/dev/disk/by-id/ata-FORESEE_64GB_SSD_0000007520__FMA39721";
 
-  homelab.k3s = {
+  homelab.joiner = {
     enable = true;
+    hostName = "homelab-02";
     primaryInterface = "enp1s0";
     nodeIp = "10.0.30.12";
     serverAddress = "https://10.0.30.11:6443";
-    tokenFile = "/persist/secrets/k3s-token";
   };
 }

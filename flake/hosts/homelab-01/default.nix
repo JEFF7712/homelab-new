@@ -20,6 +20,7 @@
 
   services.k3s.extraFlags = [
     "--kubelet-arg=system-reserved=cpu=2,memory=10Gi"
+    "--kubelet-arg=kube-reserved=cpu=500m,memory=1Gi"
   ];
 
   services.agent-workspaces.enable = true;

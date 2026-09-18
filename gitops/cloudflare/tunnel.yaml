@@ -22,6 +22,12 @@ spec:
       containers:
         - name: cloudflared
           image: registry.rupan.dev/upstream/docker.io/cloudflare/cloudflared@sha256:ff69a2225ad7c6f85ed84fbd5f3087df46202426b2388ec60214098e0adf05e9  # yamllint disable-line rule:line-length
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
           args:
             - tunnel
             - --metrics
@@ -43,6 +49,12 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
           livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
             httpGet:
               path: /ready
               port: 2000

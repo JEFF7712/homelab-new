@@ -13,11 +13,21 @@ import logging
 import urllib.request
 from pathlib import Path
 
-import numpy as np
-import sherpa_onnx
-from wyoming.asr import Transcript
-from wyoming.audio import AudioChunk, AudioStart, AudioStop
-from wyoming.event import async_read_event, async_write_event
+try:
+    import numpy as np
+    import sherpa_onnx
+    from wyoming.asr import Transcript
+    from wyoming.audio import AudioChunk, AudioStart, AudioStop
+    from wyoming.event import async_read_event, async_write_event
+except ImportError:
+    np = None  # type: ignore[assignment]
+    sherpa_onnx = None  # type: ignore[assignment]
+    Transcript = None  # type: ignore[assignment]
+    AudioChunk = None  # type: ignore[assignment]
+    AudioStart = None  # type: ignore[assignment]
+    AudioStop = None  # type: ignore[assignment]
+    async_read_event = None  # type: ignore[assignment]
+    async_write_event = None  # type: ignore[assignment]
 
 logging.basicConfig(
     level=logging.INFO,
@@ -157,6 +167,46 @@ class SessionState:
         self.recognition_done.set()
 
 
+def format_transcript_with_speaker(transcript: str, speaker: str | None) -> str:
+    """Format transcript with speaker context when relevant.
+
+    For speaker-dependent commands (identity queries and music playback),
+    prepends 'speaker <Name>' so Home Assistant's conversation triggers
+    and HassIL sentences match and extract the speaker slot cleanly.
+    For standard home control commands (e.g. lights, climate, sensors),
+    leaves the transcript unaltered so Home Assistant's built-in local intent
+    engine matches deterministically without waking the LLM.
+    """
+    if not speaker:
+        return transcript
+
+    clean = transcript.strip().rstrip(".!?").lower()
+
+    # Music requests: "play ...", "put on ...", "listen to ..."
+    music_prefixes = ("play ", "put on ", "listen to ")
+    is_music = any(clean.startswith(p) for p in music_prefixes)
+
+    # Identity requests: "who am i", "who is speaking", etc.
+    identity_phrases = (
+        "who am i",
+        "who is speaking",
+        "who is this",
+        "what is my name",
+        "what's my name",
+        "who's speaking",
+        "do you know who i am",
+        "who are you speaking to",
+        "who is talking",
+    )
+    is_identity = any(phrase in clean for phrase in identity_phrases)
+
+    if is_music or is_identity:
+        body = transcript.strip().rstrip(".!?")
+        return f"speaker {speaker} {body}"
+
+    return transcript
+
+
 async def handle_client(
     reader_c: asyncio.StreamReader,
     writer_c: asyncio.StreamWriter,
@@ -165,13 +215,13 @@ async def handle_client(
     classifier: VoiceIdClassifier,
 ) -> None:
     client_addr = writer_c.get_extra_info("peername")
-    logger.info(f"Connection accepted from {client_addr}")
+    logger.info(f"Incoming connection from {client_addr}")
 
     try:
         reader_u, writer_u = await asyncio.open_connection(upstream_host, upstream_port)
     except Exception as e:
         logger.error(
-            f"Failed to connect to upstream Whisper at {upstream_host}:{upstream_port}: {e}"
+            f"Failed to connect to upstream {upstream_host}:{upstream_port}: {e}"
         )
         writer_c.close()
         await writer_c.wait_closed()
@@ -231,11 +281,16 @@ async def handle_client(
                             "Timed out waiting for speaker recognition to finish"
                         )
 
-                    if session.speaker and event.data and "text" in event.data:
+                    if event.data and "text" in event.data:
                         orig_text = event.data["text"].strip()
-                        tagged_text = f"[Speaker: {session.speaker}] {orig_text}"
-                        event.data["text"] = tagged_text
-                        logger.info(f"Tagged transcript: {tagged_text}")
+                        formatted_text = format_transcript_with_speaker(
+                            orig_text, session.speaker
+                        )
+                        event.data["text"] = formatted_text
+                        logger.info(
+                            f"Transcript formatted: '{orig_text}' -> '{formatted_text}' "
+                            f"(speaker: {session.speaker})"
+                        )
                     session.reset_audio()
 
                 await async_write_event(event, writer_c)

@@ -177,6 +177,13 @@ in
               "--node-ip=${cfg.nodeIp}"
             ]
         )
+        ++ [
+          "--kubelet-arg=container-log-max-size=10Mi"
+          "--kubelet-arg=container-log-max-files=5"
+          "--kubelet-arg=image-gc-high-threshold=80"
+          "--kubelet-arg=image-gc-low-threshold=70"
+          "--kubelet-arg=eviction-hard=memory.available<500Mi,nodefs.available<10%,imagefs.available<10%"
+        ]
         ++ lib.optional cfg.registry.enforceLocalImages "--disable-default-registry-endpoint";
     };
 
@@ -262,13 +269,9 @@ in
         spec = {
           nodeSelector.matchExpressions = [
             {
-              key = "kubernetes.io/hostname";
+              key = "node-role.kubernetes.io/control-plane";
               operator = "In";
-              values = [
-                "homelab-01"
-                "homelab-02"
-                "homelab-03"
-              ];
+              values = [ "true" ];
             }
           ];
           bgpInstances = [

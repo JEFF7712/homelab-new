@@ -1,6 +1,6 @@
 # GitHub Actions self-hosted runners for the nixos-config repo CI.
 #
-# Two ephemeral runners on nas-01 so check.yml's validate/profiles jobs run
+# Two ephemeral runners on homelab-04 so check.yml's validate/profiles jobs run
 # concurrently. Ephemeral means every job starts from a clean work dir and
 # re-registers; with `replace` a reboot reuses the same runner names instead
 # of orphaning entries in the GitHub UI.
@@ -9,7 +9,7 @@
 # evaluation and builds. Here the daemon, a warm /nix/store on NVMe, and the
 # LAN Attic cache are already present, so jobs start in seconds with no Nix
 # installer step. Resource caps keep two concurrent jobs from crowding out
-# storage duties on this 6C/12T, 16G box.
+# GPU and k3s duties on this 14C/20T, 32G box.
 #
 # Provision once (classic PAT with `repo` scope on JEFF7712/nixos-config, or a
 # fine-grained PAT with Administration read/write on that repo; the file must
@@ -57,8 +57,9 @@ let
       util-linux
     ];
     serviceOverrides = {
-      MemoryMax = "12G";
-      CPUQuota = "800%";
+      MemoryMax = "8G";
+      CPUQuota = "400%";
+      CPUWeight = 50;
     };
   };
 in

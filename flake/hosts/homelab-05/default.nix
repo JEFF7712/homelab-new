@@ -1,15 +1,17 @@
 { pkgs, ... }:
 {
   imports = [
-    ./disk-config.nix
     ./hardware-configuration.nix
     ../../modules/common-base.nix
+    ../../modules/disko-single-disk.nix
     ../../modules/k3s-server.nix
     ../../modules/nvidia.nix
     ../../modules/kiosk.nix
   ];
 
   networking.hostName = "homelab-05";
+
+  homelab.disk.device = "/dev/disk/by-id/nvme-KXG70ZNV1T02_NVMe_KIOXIA_1024GB_42MFC3FQFTC5";
 
   homelab.k3s = {
     enable = true;
@@ -19,6 +21,11 @@
     serverAddress = "https://10.0.30.11:6443";
     tokenFile = "/persist/secrets/k3s-token";
   };
+
+  services.k3s.extraFlags = [
+    "--kubelet-arg=system-reserved=cpu=1,memory=2Gi"
+    "--kubelet-arg=kube-reserved=cpu=500m,memory=1Gi"
+  ];
 
   security.rtkit.enable = true;
   services.pipewire = {
@@ -30,7 +37,7 @@
 
   homelab.kiosk = {
     enable = true;
-    url = "http://10.0.40.13:8123/local/jarvis/index.html";
+    url = "http://10.0.40.13:8123/local/jarvis/index.html?v=2026-09-18e";
     drmDevice = "/dev/dri/card1";
     scaleFactor = "1.0";
     disableOutputs = [ "HDMI-A-2" ];
@@ -41,6 +48,8 @@
     ip saddr { 10.0.0.0/16, 10.42.0.0/16, 100.64.0.0/10 } tcp dport { 8095, 8097, 38801 } accept
     ip saddr { 10.0.0.0/16, 10.42.0.0/16, 100.64.0.0/10 } udp dport 5353 accept
   '';
+
+  boot.kernelParams = [ "video=HDMI-A-2:e" ];
 
   systemd.services.satellite-alsa-restore = {
     description = "Unmute onboard audio for Jarvis satellite";
@@ -54,6 +63,9 @@
     };
     path = [ pkgs.alsa-utils ];
     script = ''
+      if [ -e /sys/class/drm/card1-HDMI-A-2/status ]; then
+        echo on > /sys/class/drm/card1-HDMI-A-2/status || true
+      fi
       amixer -c 0 set Master unmute 100%
       amixer -c 0 set Headphone unmute 100%
     '';
@@ -85,7 +97,7 @@
       done
       pactl info >/dev/null 2>&1 || exit 1
       if ! pactl list modules short | grep -q 'module-combine-sink.*sink_name=combined'; then
-        pactl load-module module-combine-sink sink_name=combined slaves=alsa_output.usb-Kingston_HyperX_QuadCast_S_4100-00.analog-stereo,alsa_output.pci-0000_00_1f.3.pro-output-0,alsa_output.pci-0000_00_1f.3.pro-output-3,alsa_output.pci-0000_01_00.1.pro-output-3
+        pactl load-module module-combine-sink sink_name=combined slaves=alsa_output.usb-Kingston_HyperX_QuadCast_S_4100-00.analog-stereo,alsa_output.pci-0000_00_1f.3.pro-output-0,alsa_output.pci-0000_00_1f.3.pro-output-3,alsa_output.pci-0000_00_1f.3.pro-output-7,alsa_output.pci-0000_01_00.1.pro-output-3
       fi
     '';
   };
@@ -116,7 +128,7 @@
       done
       curl -s --max-time 5 http://127.0.0.1:9222/json | grep -q '"title": "JARVIS"' || exit 1
       if wlr-randr | grep -A1 'HDMI-A-2' | grep -q 'Enabled: no'; then
-        wlr-randr --output HDMI-A-2 --on --mode 1920x1080@60.000000
+        wlr-randr --output HDMI-A-2 --on
       fi
     '';
   };

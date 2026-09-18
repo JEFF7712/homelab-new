@@ -72,25 +72,3 @@ variable "firewall_filters" {
   }))
   default = {}
 }
-
-variable "manage_unbound" {
-  type    = bool
-  default = false
-}
-
-variable "unbound_settings" {
-  type    = any
-  default = {}
-}
-
-variable "unbound_forwards" {
-  type = map(object({
-    domain      = string
-    enabled     = bool
-    server_ip   = string
-    server_port = number
-    type        = string
-    verify_cn   = string
-  }))
-  default = {}
-}

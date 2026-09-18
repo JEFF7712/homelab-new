@@ -4,7 +4,7 @@
   "media_player_entity": "media_player.homelab_05_satellite_media_player",
   "face_color_idle": "#00f0ff",
   "face_color_listening": "#00f0ff",
-  "face_color_processing": "#f59e0b",
+  "face_color_processing": "#00f0ff",
   "face_color_responding": "#00e5ff",
   "face_color_muted": "#64748b"
 }

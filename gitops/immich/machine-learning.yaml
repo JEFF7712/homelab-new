@@ -40,6 +40,18 @@ spec:
               mountPath: /cache
             - name: tmp
               mountPath: /tmp
+          ports:
+            - containerPort: 3003
+          livenessProbe:
+            tcpSocket:
+              port: 3003
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: 3003
+            initialDelaySeconds: 30
+            periodSeconds: 15
           resources:
             requests:
               cpu: 500m
