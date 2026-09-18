@@ -45,6 +45,16 @@ spec:
               value: America/Chicago
           ports:
             - containerPort: 4533
+          livenessProbe:
+            tcpSocket:
+              port: 4533
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: 4533
+            initialDelaySeconds: 15
+            periodSeconds: 15
           volumeMounts:
             - name: data
               mountPath: /data

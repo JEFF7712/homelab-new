@@ -1,8 +1,8 @@
 {
   imports = [
-    ./disk-config.nix
     ./hardware-configuration.nix
     ../../modules/common-base.nix
+    ../../modules/disko-single-disk.nix
     ../../modules/k3s-server.nix
     ../../modules/nvidia.nix
     ../../modules/github-runner-nixos.nix
@@ -10,6 +10,8 @@
   ];
 
   networking.hostName = "homelab-04";
+
+  homelab.disk.device = "/dev/disk/by-id/nvme-PC_SN810_NVMe_WDC_1024GB_230907801780";
 
   homelab.k3s = {
     enable = true;
@@ -19,4 +21,9 @@
     serverAddress = "https://10.0.30.11:6443";
     tokenFile = "/persist/secrets/k3s-token";
   };
+
+  services.k3s.extraFlags = [
+    "--kubelet-arg=system-reserved=cpu=1,memory=2Gi"
+    "--kubelet-arg=kube-reserved=cpu=500m,memory=1Gi"
+  ];
 }

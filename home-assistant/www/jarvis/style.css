@@ -1,12 +1,8 @@
 :root {
   --primary-color: #00f0ff;
-  --primary-glow: rgba(0, 240, 255, 0.85);
-  --primary-ambient: rgba(0, 240, 255, 0.2);
+  --primary-glow: rgba(0, 240, 255, 0.45);
+  --primary-ambient: rgba(0, 240, 255, 0.1);
   --eye-bg: #00f0ff;
-  --gaze-x: 0px;
-  --gaze-y: 0px;
-  --eye-scale-x: 1;
-  --eye-scale-y: 1;
 }
 
 * {
@@ -80,218 +76,52 @@ html, body {
   display: block;
 }
 
-/* Centered Minimalist Face Container */
+/* Procedural face canvas (Cozmo-style eyes, drawn by app.js) */
 .face-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+  position: absolute;
+  inset: 0;
 }
 
-/* Eyes Container */
-.eyes-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 7vmin;
-  position: relative;
-  transform: translate(var(--gaze-x), var(--gaze-y));
-  transition: transform 0.18s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-/* 2 Big Rectangle Eyes */
-.eye {
-  width: 38vmin;
-  height: 27vmin;
-  border-radius: 10px;
-  background-color: var(--eye-bg);
-  box-shadow:
-    0 0 25px var(--primary-glow),
-    0 0 70px var(--primary-glow),
-    0 0 120px var(--primary-ambient);
-  transform-origin: center center;
-  transform: scale(var(--eye-scale-x), var(--eye-scale-y));
-  transition:
-    transform 0.12s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s ease,
-    background-color 0.3s ease,
-    border-radius 0.3s ease;
-}
-
-/* Mouth Container */
-.mouth-container {
-  margin-top: 8vmin;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 8vmin;
-  position: relative;
-}
-
-/* Sleek Minimalist Mouth Bar */
-.mouth-bar {
-  width: 26vmin;
-  height: 1.2vmin;
-  background-color: var(--primary-color);
-  border-radius: 0.6vmin;
-  box-shadow: 0 0 20px var(--primary-glow);
-  transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
-}
-
-/* Multi-column Voice Waveform */
-.mouth-wave {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  gap: 1.4vmin;
+#face-canvas {
+  display: block;
+  width: 100%;
   height: 100%;
 }
 
-.wave-col {
-  width: 1.2vmin;
-  height: 1.2vmin;
-  background-color: var(--primary-color);
-  border-radius: 0.6vmin;
-  box-shadow: 0 0 16px var(--primary-glow);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
 /* ==========================================================================
-   STATE EXPRESSIONS
+   STATE EXPRESSIONS (colors only; geometry is animated on canvas by app.js)
    ========================================================================== */
 
 /* --- 1. IDLE (Resting State) --- */
 #app.state-idle {
   --primary-color: #00f0ff;
-  --primary-glow: rgba(0, 240, 255, 0.85);
-  --primary-ambient: rgba(0, 240, 255, 0.2);
+  --primary-glow: rgba(0, 240, 255, 0.45);
+  --primary-ambient: rgba(0, 240, 255, 0.1);
   --eye-bg: #00f0ff;
-}
-#app.state-idle .mouth-bar {
-  display: block;
-  animation: mouth-breathe 4.5s infinite ease-in-out;
-}
-#app.state-idle .mouth-wave {
-  display: none;
-}
-@keyframes mouth-breathe {
-  0%, 100% { opacity: 0.7; box-shadow: 0 0 14px rgba(0, 240, 255, 0.6); transform: scaleX(0.96); }
-  50% { opacity: 1.0; box-shadow: 0 0 24px rgba(0, 240, 255, 0.95); transform: scaleX(1.0); }
 }
 
 /* --- 2. LISTENING (Wake Word Detected!) --- */
 #app.state-listening {
   --primary-color: #00f0ff;
-  --primary-glow: rgba(0, 240, 255, 1);
-  --primary-ambient: rgba(0, 240, 255, 0.4);
+  --primary-glow: rgba(0, 240, 255, 0.65);
+  --primary-ambient: rgba(0, 240, 255, 0.18);
   --eye-bg: #38bdf8;
-  --eye-scale-x: 1.06;
-  --eye-scale-y: 1.14;
-}
-#app.state-listening .eye {
-  animation: listening-pulse 1.2s infinite ease-in-out alternate;
-}
-@keyframes listening-pulse {
-  0% { box-shadow: 0 0 25px #00f0ff, 0 0 70px #00f0ff, 0 0 120px rgba(0, 240, 255, 0.3); }
-  100% { box-shadow: 0 0 45px #00f0ff, 0 0 100px #00f0ff, 0 0 160px rgba(0, 240, 255, 0.5); }
-}
-#app.state-listening .mouth-bar {
-  display: none;
-}
-#app.state-listening .mouth-wave {
-  display: flex;
-}
-#app.state-listening .wave-col {
-  animation: listening-wave 0.65s infinite ease-in-out alternate;
-}
-#app.state-listening .wave-col:nth-child(1) { animation-delay: 0.0s; }
-#app.state-listening .wave-col:nth-child(2) { animation-delay: 0.12s; }
-#app.state-listening .wave-col:nth-child(3) { animation-delay: 0.24s; }
-#app.state-listening .wave-col:nth-child(4) { animation-delay: 0.36s; }
-#app.state-listening .wave-col:nth-child(5) { animation-delay: 0.48s; }
-#app.state-listening .wave-col:nth-child(6) { animation-delay: 0.36s; }
-#app.state-listening .wave-col:nth-child(7) { animation-delay: 0.24s; }
-#app.state-listening .wave-col:nth-child(8) { animation-delay: 0.12s; }
-#app.state-listening .wave-col:nth-child(9) { animation-delay: 0.0s; }
-
-@keyframes listening-wave {
-  0% { height: 1.2vmin; }
-  100% { height: 5.5vmin; }
 }
 
-/* --- 3. PROCESSING (Thinking / LLM Query) --- */
+/* --- 3. PROCESSING (Thinking / LLM Query, blue confused squint) --- */
 #app.state-processing {
-  --primary-color: #f59e0b;
-  --primary-glow: rgba(245, 158, 11, 0.9);
-  --primary-ambient: rgba(245, 158, 11, 0.3);
-  --eye-bg: #f59e0b;
-  --eye-scale-x: 1.0;
-  --eye-scale-y: 0.85;
-}
-#app.state-processing .eye {
-  animation: thinking-pulse 1.4s infinite ease-in-out alternate;
-}
-@keyframes thinking-pulse {
-  0% { opacity: 0.85; transform: scale(1.0, 0.85); }
-  100% { opacity: 1.0; transform: scale(1.03, 0.88); }
-}
-#app.state-processing .mouth-bar {
-  display: none;
-}
-#app.state-processing .mouth-wave {
-  display: flex;
-}
-#app.state-processing .wave-col {
-  animation: processing-dots 0.9s infinite ease-in-out;
-}
-#app.state-processing .wave-col:nth-child(1) { animation-delay: 0.0s; }
-#app.state-processing .wave-col:nth-child(2) { animation-delay: 0.1s; }
-#app.state-processing .wave-col:nth-child(3) { animation-delay: 0.2s; }
-#app.state-processing .wave-col:nth-child(4) { animation-delay: 0.3s; }
-#app.state-processing .wave-col:nth-child(5) { animation-delay: 0.4s; }
-#app.state-processing .wave-col:nth-child(6) { animation-delay: 0.5s; }
-#app.state-processing .wave-col:nth-child(7) { animation-delay: 0.6s; }
-#app.state-processing .wave-col:nth-child(8) { animation-delay: 0.7s; }
-#app.state-processing .wave-col:nth-child(9) { animation-delay: 0.8s; }
-
-@keyframes processing-dots {
-  0%, 100% { height: 1.2vmin; opacity: 0.35; }
-  50% { height: 3.5vmin; opacity: 1; }
+  --primary-color: #00f0ff;
+  --primary-glow: rgba(0, 240, 255, 0.45);
+  --primary-ambient: rgba(0, 240, 255, 0.1);
+  --eye-bg: #00f0ff;
 }
 
-/* --- 4. RESPONDING (TTS Speaking Voice Wave) --- */
+/* --- 4. RESPONDING (TTS Speaking) --- */
 #app.state-responding {
   --primary-color: #00f0ff;
-  --primary-glow: rgba(0, 240, 255, 0.9);
-  --primary-ambient: rgba(0, 240, 255, 0.3);
+  --primary-glow: rgba(0, 240, 255, 0.5);
+  --primary-ambient: rgba(0, 240, 255, 0.12);
   --eye-bg: #00f0ff;
-  --eye-scale-x: 1.04;
-  --eye-scale-y: 1.04;
-}
-#app.state-responding .mouth-bar {
-  display: none;
-}
-#app.state-responding .mouth-wave {
-  display: flex;
-}
-#app.state-responding .wave-col {
-  animation: voice-talk 0.42s infinite ease-in-out alternate;
-}
-#app.state-responding .wave-col:nth-child(1) { animation-delay: 0.05s; height: 2vmin; }
-#app.state-responding .wave-col:nth-child(2) { animation-delay: 0.18s; height: 4.2vmin; }
-#app.state-responding .wave-col:nth-child(3) { animation-delay: 0.1s;  height: 6vmin; }
-#app.state-responding .wave-col:nth-child(4) { animation-delay: 0.28s; height: 7.5vmin; }
-#app.state-responding .wave-col:nth-child(5) { animation-delay: 0.15s; height: 6.8vmin; }
-#app.state-responding .wave-col:nth-child(6) { animation-delay: 0.25s; height: 7.2vmin; }
-#app.state-responding .wave-col:nth-child(7) { animation-delay: 0.08s; height: 5.5vmin; }
-#app.state-responding .wave-col:nth-child(8) { animation-delay: 0.22s; height: 3.8vmin; }
-#app.state-responding .wave-col:nth-child(9) { animation-delay: 0.12s; height: 2vmin; }
-
-@keyframes voice-talk {
-  0% { transform: scaleY(0.35); }
-  100% { transform: scaleY(1.0); }
 }
 
 /* --- 5. MUTED (Sleeping State) --- */
@@ -300,24 +130,4 @@ html, body {
   --primary-glow: rgba(100, 116, 139, 0.35);
   --primary-ambient: rgba(100, 116, 139, 0.05);
   --eye-bg: #475569;
-  --eye-scale-x: 0.95;
-  --eye-scale-y: 0.07;
-}
-#app.state-muted .eye {
-  border-radius: 4px;
-  box-shadow: 0 0 16px rgba(100, 116, 139, 0.4);
-  animation: sleep-pulse 6s infinite ease-in-out;
-}
-@keyframes sleep-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.75; }
-}
-#app.state-muted .mouth-bar {
-  display: block;
-  width: 18vmin;
-  height: 0.6vmin;
-  opacity: 0.25;
-}
-#app.state-muted .mouth-wave {
-  display: none;
 }

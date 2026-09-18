@@ -174,7 +174,13 @@
                   "--disable=servicelb"
                   "--disable=traefik"
                   "--disable=local-storage"
+                  "--kubelet-arg=container-log-max-size=10Mi"
+                  "--kubelet-arg=container-log-max-files=5"
+                  "--kubelet-arg=image-gc-high-threshold=80"
+                  "--kubelet-arg=image-gc-low-threshold=70"
+                  "--kubelet-arg=eviction-hard=memory.available<500Mi,nodefs.available<10%,imagefs.available<10%"
                   "--kubelet-arg=system-reserved=cpu=2,memory=10Gi"
+                  "--kubelet-arg=kube-reserved=cpu=500m,memory=1Gi"
                 ]
               )
             }

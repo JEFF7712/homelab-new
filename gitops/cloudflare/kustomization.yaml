@@ -4,3 +4,4 @@ resources:
   - namespace.yaml
   - tunnel.yaml
   - tunnel-token.yaml
+  - pdb.yaml

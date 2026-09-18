@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#000000">
   <title>JARVIS</title>
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=8">
   <style>
     /* Token Prompt Modal (only if token missing) */
     #token-prompt {
@@ -85,29 +85,9 @@
   <div id="app" class="state-idle">
     <div id="connection-badge">LINK LOST // RECONNECTING</div>
     <div id="status-bar"><span id="status-text">JARVIS // IDLE</span></div>
-    <!-- Centered Minimalist Face: Literally Just 2 Big Rectangles and a Mouth -->
+    <!-- Cozmo-style procedural eyes, drawn on canvas by app.js -->
     <div class="face-container">
-      <!-- 2 Big Rectangle Eyes -->
-      <div class="eyes-container" id="eyes">
-        <div class="eye" id="eye-left"></div>
-        <div class="eye" id="eye-right"></div>
-      </div>
-
-      <!-- Reactive Mouth -->
-      <div class="mouth-container" id="mouth">
-        <div class="mouth-bar"></div>
-        <div class="mouth-wave">
-          <div class="wave-col"></div>
-          <div class="wave-col"></div>
-          <div class="wave-col"></div>
-          <div class="wave-col"></div>
-          <div class="wave-col"></div>
-          <div class="wave-col"></div>
-          <div class="wave-col"></div>
-          <div class="wave-col"></div>
-          <div class="wave-col"></div>
-        </div>
-      </div>
+      <canvas id="face-canvas"></canvas>
     </div>
 
     <!-- Token Entry Dialog (if needed) -->
@@ -122,6 +102,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>

@@ -360,9 +360,19 @@ retired PVCs can be reclaimed on the NAS by hand.
   initial deploy and model switches (completed Jobs do not rerun). After a
   node reboot, the first turn reloads the model off NVMe in seconds and
   `KEEP_ALIVE=-1` holds it from there; the startup probes gate exactly this.
-- The face renders heavy glow/blur CSS in Chromium on the T600. If state
-  transitions visibly jank, reduce the blur radii in
-  `home-assistant/www/jarvis/style.css` before suspecting the pipeline.
+- The face is a Cozmo-style procedural eye engine in
+  `home-assistant/www/jarvis/app.js`: expression presets per state (eye
+  scale plus upper/lower lids with y/angle/bend, with a right-eye
+  asymmetry channel for the confused thinking squint) layered with a
+  look assistant (saccades) and a blink assistant (vertical squash),
+  all interpolated every animation frame and drawn flat (no glow) on
+  `#face-canvas`, with CRT scanlines plus a cached vignette for the
+  old-display feel. State colors come from the `#app.state-*` CSS
+  variables (`--eye-bg`, `--primary-glow`), overridable per state via
+  `face_color_<state>` in `home-assistant/www/jarvis/config.json`.
+  Keys 1-5 / click cycle states for visual testing without the pipeline.
+- The face does no canvas shadows or blur, so face rendering should not
+  jank the T600; if it does, suspect the pipeline first.
 
 ## Observability
 

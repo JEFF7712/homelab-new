@@ -24,6 +24,12 @@ spec:
       containers:
       - name: dashboard
         image: registry.rupan.dev/apps/homelab-renovate-dashboard@sha256:dc947a8226bcdb112cc2bf9e119c67fcd3f63168b7234eb1e060618613d490e3  # yamllint disable-line rule:line-length
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

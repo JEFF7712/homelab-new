@@ -21,6 +21,12 @@ spec:
           containers:
           - name: renovate-major-reviewer
             image: registry.rupan.dev/apps/homelab-renovate-agent@sha256:128f085244a15c4fe45fe176be6bad3a112ba13f3fce3173825a9cb3bc4fea58  # yamllint disable-line rule:line-length
+            resources:
+              requests:
+                cpu: 250m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
             command:
             - python
             - /config/renovate-agent.py
@@ -123,6 +129,12 @@ spec:
       containers:
       - name: webhook
         image: registry.rupan.dev/upstream/docker.io/library/python@sha256:c6ead215bfd31f1e433d968853b7a769989117115b728874824e6c0a27cb96fc  # yamllint disable-line rule:line-length
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

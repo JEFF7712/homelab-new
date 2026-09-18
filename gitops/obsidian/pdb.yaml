@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: quartz-notes
+  namespace: obsidian
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: quartz-notes
