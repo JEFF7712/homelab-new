@@ -190,6 +190,7 @@ class Planner:
     ) -> ApplyPlan:
         """Create an immutable apply plan from a diff report."""
         actions: list[PlanAction] = []
+        skipped: list[str] = []
         plan_id = f"plan-{uuid.uuid4().hex[:8]}"
 
         for item in diff_report.items:
@@ -213,13 +214,20 @@ class Planner:
                     f"Cannot generate plan with unknown live state on {rk_str}: {item.details}"
                 )
 
-            # Reject planned mutations on observe-only adapters
+            # Observe-only adapters cannot be mutated. An explicitly selected
+            # resource is still an error; otherwise skip it so one
+            # observe-only drift cannot block the rest of the plan.
             adapter = get_adapter(item.kind)
             if item.status == DiffStatus.GIT_CHANGE and not adapter.supports_mutation:
-                raise ValueError(
-                    f"Cannot plan mutation for observe-only resource {rk_str}. "
-                    f"Resource kind '{item.kind}' is observe-only and cannot be mutated."
-                )
+                if selected_keys is not None and (
+                    rk_str in selected_keys or item.key in selected_keys
+                ):
+                    raise ValueError(
+                        f"Cannot plan mutation for observe-only resource {rk_str}. "
+                        f"Resource kind '{item.kind}' is observe-only and cannot be mutated."
+                    )
+                skipped.append(rk_str)
+                continue
 
             # Git changes are planned
             if item.status == DiffStatus.GIT_CHANGE:
@@ -270,6 +278,7 @@ class Planner:
             actions=actions,
             ha_version=ha_version,
             source_hash=source_hash,
+            skipped=skipped,
         )
 
     def execute_plan(

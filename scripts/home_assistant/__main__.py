@@ -897,6 +897,7 @@ def cmd_plan(args: argparse.Namespace, repo_root: Path) -> int:
         "plan_file": str(plan_file.relative_to(repo_root)),
         "actions_count": len(plan.actions),
         "actions": [a.to_dict() for a in plan.actions],
+        "skipped": list(plan.skipped),
     }
 
     def _fmt(d: dict[str, Any]) -> None:
@@ -904,6 +905,8 @@ def cmd_plan(args: argparse.Namespace, repo_root: Path) -> int:
         print(f"Plan file: {d['plan_file']}\n")
         for a in d.get("actions", []):
             print(f"  {a['action'].upper():<8} {a['kind']}/{a['key']}")
+        for s in d.get("skipped", []):
+            print(f"  SKIPPED  {s} (observe-only, cannot mutate)")
 
     output_result(res, args.json, _fmt)
     return ExitCode.CLEAN.value

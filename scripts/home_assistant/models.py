@@ -222,6 +222,7 @@ class ApplyPlan:
     ha_version: str = ""
     source_hash: str = ""
     schema_version: str = "1.0"
+    skipped: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -234,6 +235,7 @@ class ApplyPlan:
             "ha_version": self.ha_version,
             "source_hash": self.source_hash,
             "actions": [a.to_dict() for a in self.actions],
+            "skipped": list(self.skipped),
         }
 
     @classmethod
@@ -248,6 +250,7 @@ class ApplyPlan:
             ha_version=data.get("ha_version", ""),
             source_hash=data.get("source_hash", ""),
             actions=[PlanAction.from_dict(a) for a in data.get("actions", [])],
+            skipped=list(data.get("skipped", [])),
         )
 
 
