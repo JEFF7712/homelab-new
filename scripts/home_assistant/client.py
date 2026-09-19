@@ -723,9 +723,7 @@ class HomeAssistantClient:
                 check=False,
                 timeout=15,
             )
-            if res.returncode != 0 and "not found" in (
-                res.stderr or ""
-            ).lower():
+            if res.returncode != 0 and "not found" in (res.stderr or "").lower():
                 res = subprocess.run(
                     ["kubectl", "create", "-f", "-"],
                     input=manifest,
@@ -1149,6 +1147,13 @@ class MockHomeAssistantClient(HomeAssistantClient):
 
     def list_entities(self) -> list[dict[str, Any]]:
         return list(self.entities)
+
+    def update_entity(self, entity_id: str, **kwargs: Any) -> dict[str, Any]:
+        for ent in self.entities:
+            if ent.get("entity_id") == entity_id:
+                ent.update(kwargs)
+                return dict(ent)
+        raise HomeAssistantNotFoundError(f"Entity {entity_id} not found")
 
     def list_config_entries(self) -> list[dict[str, Any]]:
         return list(self.config_entries)

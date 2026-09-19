@@ -313,6 +313,83 @@ class TestHomeAssistantCLI(unittest.TestCase):
         with self.assertRaises(ValueError):
             get_adapter("entitie")
 
+    def test_verify_summary_counts_drifted_per_surface(self) -> None:
+        from scripts.home_assistant.__main__ import build_verify_summary
+
+        git = {
+            "automation/a": ResourceDocument(
+                kind="automation", key="a", desired={"id": "a"}
+            ),
+            "automation/b": ResourceDocument(
+                kind="automation", key="b", desired={"id": "b"}
+            ),
+            "script/s": ResourceDocument(
+                kind="script", key="s", desired={"alias": "S"}
+            ),
+        }
+        live = {
+            "automation/a": ResourceDocument(
+                kind="automation", key="a", desired={"id": "a"}
+            ),
+            "automation/c": ResourceDocument(
+                kind="automation", key="c", desired={"id": "c"}
+            ),
+        }
+        summary = build_verify_summary(git, ["automation/b"], live)
+
+        auto_row = next(s for s in summary["surfaces"] if s["kind"] == "automation")
+        self.assertEqual(
+            (auto_row["managed"], auto_row["converged"], auto_row["drifted"]),
+            (2, 1, 1),
+        )
+        self.assertEqual(auto_row["unmanaged"], 1)
+        self.assertIn("automation/c", summary["unmanaged"])
+        self.assertEqual(
+            (summary["managed_total"], summary["managed_converged"]),
+            (3, 2),
+        )
+
+    @patch("scripts.home_assistant.__main__.get_client")
+    def test_verify_reports_unmanaged_without_failing(
+        self, mock_get_client: object
+    ) -> None:
+        import io
+        import json
+        from contextlib import redirect_stdout
+
+        mock_get_client.return_value = self.mock_client  # type: ignore[attr-defined]
+
+        desired = {
+            "id": "bedtime",
+            "alias": "Bedtime Routine",
+            "trigger": [],
+            "action": [],
+        }
+        write_resource_atomic(
+            self.root,
+            ResourceDocument(kind="automation", key="bedtime", desired=desired),
+        )
+        self.mock_client.automations["bedtime"] = dict(desired)
+        self.mock_client.automations["ui_experiment"] = {
+            "id": "ui_experiment",
+            "alias": "UI Experiment",
+            "trigger": [],
+            "action": [],
+        }
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            code = cmd_verify(DummyArgs(), self.root)  # type: ignore[arg-type]
+        self.assertEqual(code, ExitCode.CLEAN.value)
+        payload = json.loads(buf.getvalue())
+        self.assertEqual(payload["status"], "verified")
+        self.assertIn("automation/ui_experiment", payload["unmanaged"])
+        auto_row = next(s for s in payload["surfaces"] if s["kind"] == "automation")
+        self.assertEqual(auto_row["managed"], 1)
+        self.assertEqual(auto_row["converged"], 1)
+        self.assertEqual(auto_row["drifted"], 0)
+        self.assertEqual(auto_row["unmanaged"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -340,7 +340,9 @@ class TestHomeAssistantReviewFindings(unittest.TestCase):
         integration = IntegrationAdapter()
         core = CoreConfigurationAdapter()
 
-        self.assertFalse(helper.supports_mutation)
+        # Helpers are ui-editable for name/icon; integrations and core stay
+        # observe-only.
+        self.assertTrue(helper.supports_mutation)
         self.assertFalse(integration.supports_mutation)
         self.assertFalse(core.supports_mutation)
 
@@ -352,6 +354,8 @@ class TestHomeAssistantReviewFindings(unittest.TestCase):
             after={},
             expected_live_hash=None,
         )
+        # The registry API cannot provision helpers, so CREATE still raises
+        # with guidance to use the UI.
         with self.assertRaises(NotImplementedError):
             helper.apply(self.mock_client, action)
         with self.assertRaises(NotImplementedError):

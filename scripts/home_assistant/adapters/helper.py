@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from ..canonical import canonical_hash, strip_volatile
 from ..client import HomeAssistantClient
-from ..models import OwnerMode, PlanAction, ResourceDocument
+from ..models import ActionType, OwnerMode, PlanAction, ResourceDocument
 from .base import BaseAdapter
 
 
 class HelperAdapter(BaseAdapter):
     kind = "helper"
-    owner_mode = OwnerMode.OBSERVE_ONLY.value
-    supports_mutation = False
+    owner_mode = OwnerMode.UI_EDITABLE.value
 
     def export_from_live(self, client: HomeAssistantClient) -> list[ResourceDocument]:
         # Helpers are surfaced in entity registry under input_boolean, input_number, etc.
@@ -62,10 +61,36 @@ class HelperAdapter(BaseAdapter):
         return []
 
     def apply(self, client: HomeAssistantClient, action: PlanAction) -> None:
-        raise NotImplementedError(
-            f"Mutations are not supported for observe-only helper resource '{action.key}'. "
-            "Helper configuration settings are observe-only via this adapter."
-        )
+        if action.action == ActionType.UPDATE:
+            after = action.after
+            if not isinstance(after, dict):
+                raise ValueError(
+                    f"Cannot apply helper {action.key}: payload must be a dict"
+                )
+            entity_id = after.get("entity_id")
+            if not entity_id:
+                raise ValueError(
+                    f"Cannot apply helper {action.key}: payload missing 'entity_id'"
+                )
+            client.update_entity(
+                entity_id, name=after.get("name"), icon=after.get("icon")
+            )
+        elif action.action == ActionType.CREATE:
+            raise NotImplementedError(
+                f"Cannot create helper '{action.key}': the entity registry cannot "
+                "create helpers. Create it in the Home Assistant UI, then adopt "
+                "it into Git."
+            )
+        elif action.action == ActionType.DELETE:
+            raise NotImplementedError(
+                f"Cannot delete helper '{action.key}': removing the registry entry "
+                "does not delete the helper. Delete it in the Home Assistant UI, "
+                "then adopt the deletion."
+            )
+        else:
+            raise ValueError(
+                f"Unknown action '{action.action}' for helper {action.key}"
+            )
 
     def verify(self, client: HomeAssistantClient, doc: ResourceDocument) -> bool:
         live_docs = {d.key: self.canonicalize(d) for d in self.export_from_live(client)}
@@ -78,5 +103,7 @@ class HelperAdapter(BaseAdapter):
 
     def delete(self, client: HomeAssistantClient, key: str) -> None:
         raise NotImplementedError(
-            f"Deletions are not supported for observe-only helper resource '{key}'."
+            f"Cannot delete helper '{key}': removing the registry entry does not "
+            "delete the helper. Delete it in the Home Assistant UI, then adopt "
+            "the deletion."
         )
