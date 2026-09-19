@@ -122,7 +122,7 @@
 
   homelab.kiosk = {
     enable = true;
-    url = "http://10.0.40.13:8123/local/jarvis/index.html?v=11";
+    url = "http://10.0.40.13:8123/local/jarvis/index.html?v=13";
     drmDevice = "/dev/dri/card1";
     scaleFactor = "1.0";
     disableOutputs = [ "HDMI-A-2" ];

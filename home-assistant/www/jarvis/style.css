@@ -126,10 +126,10 @@ html, body {
 
 /* --- 5. MUSIC (Media Player Playing) --- */
 #app.state-music {
-  --primary-color: #ffb000;
-  --primary-glow: rgba(255, 176, 0, 0.45);
-  --primary-ambient: rgba(255, 176, 0, 0.1);
-  --eye-bg: #ffb000;
+  --primary-color: #00f0ff;
+  --primary-glow: rgba(0, 240, 255, 0.45);
+  --primary-ambient: rgba(0, 240, 255, 0.1);
+  --eye-bg: #00f0ff;
 }
 
 /* --- 6. MUTED (Sleeping State) --- */

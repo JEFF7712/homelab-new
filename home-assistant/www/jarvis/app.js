@@ -352,49 +352,77 @@
       drawLids(x, y, w, h, sign, lids);
     }
 
+    // Full-screen music visualizer, drawn instead of the eyes while media
+    // plays. Procedural layered sines (the kiosk has no audio tap to
+    // analyze), flat fills only, same cost class as the eyes.
+    const reduceMotion = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function drawMusicVisualizer(t, u) {
+      const vt = reduceMotion ? 0 : t;
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, W, H);
+      const nBars = 56;
+      const margin = u * 6;
+      const span = Math.max(1, W - margin * 2);
+      const step = span / nBars;
+      const barW = step * 0.62;
+      const baseY = H * 0.88;
+      const maxBarH = H * 0.55;
+      ctx.fillStyle = fillColor;
+      for (let i = 0; i < nBars; i++) {
+        const d = i / (nBars - 1);
+        const env = Math.pow(Math.sin(Math.PI * d), 0.7);
+        const w1 = 0.5 + 0.5 * Math.sin(2 * Math.PI * 1.1 * vt + d * 9.0);
+        const w2 = 0.5 + 0.5 * Math.sin(2 * Math.PI * 2.3 * vt - d * 14.0 + 1.7);
+        const bh = Math.max(u * 1.5, maxBarH * env * (0.12 + 0.88 * (0.6 * w1 + 0.4 * w2)));
+        ctx.fillRect(margin + i * step + (step - barW) / 2, baseY - bh, barW, bh);
+      }
+      const midY = H * 0.3;
+      const amp = u * 6;
+      ctx.strokeStyle = fillColor;
+      ctx.lineWidth = Math.max(2, u * 0.7);
+      ctx.beginPath();
+      const steps = 120;
+      for (let s = 0; s <= steps; s++) {
+        const d = s / steps;
+        const x = margin + d * span;
+        const y = midY + amp * Math.sin(2 * Math.PI * 2.0 * vt + d * 10.0) *
+          (0.5 + 0.5 * Math.sin(2 * Math.PI * 0.7 * vt - d * 5.0));
+        if (s === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
     function render(t) {
       if (!ctx || W <= 0 || H <= 0) return;
       const u = Math.min(W, H) / 100;
-      const squash = 1 - 0.96 * blinkClose(t);
-      const wob = bounce ? 1 + 0.015 * Math.sin(2 * Math.PI * 2.6 * t) : 1;
-      const eyeW = EYE_BASE_W * u * cur.sx;
-      const eyeH = EYE_BASE_H * u * cur.sy * squash * wob;
-      const gap = EYE_GAP * u;
-      const cy0 = H * 0.47;
-      const gx = cur.cx * GAZE_X * u;
-      const gy = cur.cy * GAZE_Y * u;
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, W, H);
-      drawEye(W / 2 - (eyeW / 2 + gap / 2) + gx, cy0 + gy, eyeW, eyeH, -1, u, t, {
-        upperY: cur.upperY, upperAngle: cur.upperAngle, upperBend: cur.upperBend,
-        lowerY: cur.lowerY, lowerAngle: cur.lowerAngle, lowerBend: cur.lowerBend
-      });
-      const rW = eyeW * cur.rSxM;
-      const rH = eyeH * cur.rSyM;
-      drawEye(W / 2 + (rW / 2 + gap / 2) + gx, cy0 + gy, rW, rH, 1, u, t, {
-        upperY: cur.upperY + cur.rUpperA, upperAngle: cur.upperAngle, upperBend: cur.upperBend,
-        lowerY: cur.lowerY + cur.rLowerA, lowerAngle: cur.lowerAngle, lowerBend: cur.lowerBend
-      });
-      // Music state gets a flat equalizer strip under the eyes: mirrored
-      // layered sines, no audio analysis, drawn before the scanlines so
-      // the old-display treatment applies to it too.
       if (exprName === 'music') {
-        const nBars = 11;
-        const barW = u * 2.4;
-        const barGap = u * 1.6;
-        const baseY = H * 0.88;
-        const maxBarH = u * 8;
-        ctx.fillStyle = fillColor;
-        for (let i = 0; i < nBars; i++) {
-          const d = Math.abs(i - (nBars - 1) / 2) / ((nBars - 1) / 2);
-          const env = 1 - 0.55 * d;
-          const wave = 0.5 + 0.5 * Math.sin(2 * Math.PI * (1.4 + 0.8 * d) * t + d * 2.4);
-          const bh = Math.max(u * 1.2, maxBarH * env * (0.18 + 0.82 * wave));
-          ctx.fillRect(W / 2 - (nBars * barW + (nBars - 1) * barGap) / 2 + i * (barW + barGap), baseY - bh, barW, bh);
-        }
-      }
+        drawMusicVisualizer(t, u);
+      } else {
+        const squash = 1 - 0.96 * blinkClose(t);
+        const wob = bounce ? 1 + 0.015 * Math.sin(2 * Math.PI * 2.6 * t) : 1;
+        const eyeW = EYE_BASE_W * u * cur.sx;
+        const eyeH = EYE_BASE_H * u * cur.sy * squash * wob;
+        const gap = EYE_GAP * u;
+        const cy0 = H * 0.47;
+        const gx = cur.cx * GAZE_X * u;
+        const gy = cur.cy * GAZE_Y * u;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, W, H);
+        drawEye(W / 2 - (eyeW / 2 + gap / 2) + gx, cy0 + gy, eyeW, eyeH, -1, u, t, {
+          upperY: cur.upperY, upperAngle: cur.upperAngle, upperBend: cur.upperBend,
+          lowerY: cur.lowerY, lowerAngle: cur.lowerAngle, lowerBend: cur.lowerBend
+        });
+        const rW = eyeW * cur.rSxM;
+        const rH = eyeH * cur.rSyM;
+        drawEye(W / 2 + (rW / 2 + gap / 2) + gx, cy0 + gy, rW, rH, 1, u, t, {
+          upperY: cur.upperY + cur.rUpperA, upperAngle: cur.upperAngle, upperBend: cur.upperBend,
+          lowerY: cur.lowerY + cur.rLowerA, lowerAngle: cur.lowerAngle, lowerBend: cur.lowerBend
+        });
+      } // end non-music eye branch; scanlines apply to both modes
       // Old-hardware display feel: scanlines (invisible over black, darken
-      // the lit eyes) plus a cached vignette.
+      // the lit shapes) plus a cached vignette.
       ctx.fillStyle = 'rgba(0,0,0,0.28)';
       const pitch = Math.max(3, u * 0.45);
       const lineH = Math.max(1, pitch * 0.35);
@@ -596,7 +624,9 @@
 
     // Priority 3: Media player active while the satellite is otherwise idle
     if (mediaState && mediaState.state === 'playing') {
-      setState('music', 'JARVIS // PLAYING');
+      const attrs = mediaState.attributes || {};
+      const track = [attrs.media_title, attrs.media_artist].filter(Boolean).join(' - ').slice(0, 80);
+      setState('music', track ? 'JARVIS // PLAYING // ' + track.toUpperCase() : 'JARVIS // PLAYING');
       return;
     }
 
@@ -664,7 +694,7 @@
 
   // Expose global controller for scripting/testing
   window.Jarvis = {
-    build: '2026-09-18h',
+    build: '2026-09-19a',
     setState: setState,
     getState: () => currentState,
     getWs: () => ws,
