@@ -70,13 +70,33 @@
 - disabled_by: integration
   entity_id: binary_sensor.zigbee2mqtt_bridge_restart_required
   labels: []
-- entity_id: input_boolean.bedroom_lights_auto_on
-  name: Bedroom Lights Auto On
+- name: Bedroom Lights Auto On
   icon: mdi:lightbulb-auto
+  entity_id: input_boolean.bedroom_lights_auto_on
   labels: []
-- entity_id: input_boolean.phone_bedtime_reminder_sent
-  name: Phone Bedtime Reminder Sent
+- name: Guest Mode
+  icon: mdi:account-multiple
+  entity_id: input_boolean.guest_mode
+  labels: []
+- name: Phone Bedtime Reminder Sent
   icon: mdi:bell-check
+  entity_id: input_boolean.phone_bedtime_reminder_sent
+  labels: []
+- name: Vacation Mode
+  icon: mdi:palmtree
+  entity_id: input_boolean.vacation_mode
+  labels: []
+- name: Bedroom Wake Time
+  icon: mdi:alarm
+  entity_id: input_datetime.bedroom_wake_time
+  labels: []
+- name: Device Low Battery Threshold
+  icon: mdi:battery-alert
+  entity_id: input_number.device_low_battery_threshold
+  labels: []
+- name: Phone Bedtime Battery Threshold
+  icon: mdi:cellphone-charging
+  entity_id: input_number.phone_bedtime_battery_threshold
   labels: []
 - entity_id: light.kitchen_light
   labels:
@@ -84,8 +104,8 @@
 - entity_id: light.kitchen_light_2
   labels:
     - shared_space
-- entity_id: light.kitchen_mushroom_lamp
-  area_id: kitchen
+- area_id: kitchen
+  entity_id: light.kitchen_mushroom_lamp
   labels: []
 - entity_id: light.living_room_mushroom_lamp
   labels:
@@ -93,8 +113,8 @@
 - entity_id: light.living_room_tulip_lamp
   labels:
     - shared_space
-- entity_id: media_player.homelab_05_satellite_media_player
-  name: Soundbar
+- name: Soundbar
+  entity_id: media_player.homelab_05_satellite_media_player
   labels: []
 - disabled_by: integration
   entity_id: sensor.0xffffb40e0608c96f_linkquality
@@ -672,20 +692,20 @@
 - disabled_by: user
   entity_id: sensor.zones
   labels: []
-- entity_id: switch.adaptive_lighting_pre_release
-  disabled_by: integration
+- disabled_by: integration
+  entity_id: switch.adaptive_lighting_pre_release
   labels: []
-- entity_id: switch.apexcharts_card_pre_release
-  disabled_by: integration
+- disabled_by: integration
+  entity_id: switch.apexcharts_card_pre_release
   labels: []
-- entity_id: switch.auto_entities_pre_release
-  disabled_by: integration
+- disabled_by: integration
+  entity_id: switch.auto_entities_pre_release
   labels: []
 - disabled_by: integration
   entity_id: switch.browser_mod_pre_release
   labels: []
-- entity_id: switch.button_card_pre_release
-  disabled_by: integration
+- disabled_by: integration
+  entity_id: switch.button_card_pre_release
   labels: []
 - disabled_by: integration
   entity_id: switch.card_mod_pre_release
@@ -693,27 +713,27 @@
 - disabled_by: integration
   entity_id: switch.frosted_glass_theme_pre_release
   labels: []
-- entity_id: switch.govee_cloud_integration_pre_release
-  disabled_by: integration
+- disabled_by: integration
+  entity_id: switch.govee_cloud_integration_pre_release
   labels: []
-- entity_id: switch.hacs_pre_release
-  disabled_by: integration
+- disabled_by: integration
+  entity_id: switch.hacs_pre_release
   labels: []
 - disabled_by: integration
   entity_id: switch.ios_themes_dark_mode_and_light_mode_pre_release
   labels: []
-- entity_id: switch.kitchen_mushroom_lamp
-  name: Kitchen Mushroom Lamp
+- name: Kitchen Mushroom Lamp
+  entity_id: switch.kitchen_mushroom_lamp
   labels:
     - shared_space
 - entity_id: switch.living_room_good_vibes_sign
   labels:
     - shared_space
-- entity_id: switch.mushroom_pre_release
-  disabled_by: integration
+- disabled_by: integration
+  entity_id: switch.mushroom_pre_release
   labels: []
-- entity_id: switch.spook_your_homie_pre_release
-  disabled_by: integration
+- disabled_by: integration
+  entity_id: switch.spook_your_homie_pre_release
   labels: []
 - entity_id: switch.stairs_light
   labels:
