@@ -1029,6 +1029,61 @@ def cmd_apply(args: argparse.Namespace, repo_root: Path) -> int:
         return ExitCode.UNAVAILABLE.value
 
 
+SURFACE_TITLES: dict[str, str] = {
+    "automation": "Automations",
+    "script": "Scripts",
+    "helper": "Helpers",
+    "scene": "Scenes",
+    "dashboard": "Dashboards",
+    "core": "Core",
+    "area": "Areas",
+    "device": "Devices",
+    "entity": "Entities",
+    "label": "Labels",
+    "floor": "Floors",
+    "integration": "Integrations",
+}
+
+
+def build_verify_summary(
+    git_docs: dict[str, ResourceDocument],
+    mismatches: list[str],
+    live_docs: dict[str, ResourceDocument],
+) -> dict[str, Any]:
+    mismatch_keys = {m.split(" (error:", 1)[0] for m in mismatches}
+    unmanaged = sorted(rk for rk in live_docs if rk not in git_docs)
+    unmanaged_set = set(unmanaged)
+    kinds = sorted(
+        {rk.split("/", 1)[0] for rk in git_docs if "/" in rk}
+        | {rk.split("/", 1)[0] for rk in live_docs if "/" in rk}
+    )
+    surfaces = []
+    for kind in kinds:
+        managed_keys = [rk for rk in git_docs if rk.startswith(f"{kind}/")]
+        drifted_keys = sorted(rk for rk in managed_keys if rk in mismatch_keys)
+        unmanaged_keys = sorted(
+            rk for rk in live_docs if rk.startswith(f"{kind}/") and rk in unmanaged_set
+        )
+        surfaces.append(
+            {
+                "surface": SURFACE_TITLES.get(kind, f"{kind}s"),
+                "kind": kind,
+                "managed": len(managed_keys),
+                "converged": len(managed_keys) - len(drifted_keys),
+                "drifted": len(drifted_keys),
+                "unmanaged": len(unmanaged_keys),
+            }
+        )
+    return {
+        "surfaces": surfaces,
+        "managed_total": len(git_docs),
+        "managed_converged": len(git_docs) - len(mismatch_keys),
+        "drifted": len(mismatch_keys),
+        "unmanaged_count": len(unmanaged),
+        "unmanaged": unmanaged,
+    }
+
+
 # ----------------------------------------------------------------------
 # Command: verify
 # ----------------------------------------------------------------------
@@ -1119,25 +1174,57 @@ def cmd_verify(args: argparse.Namespace, repo_root: Path) -> int:
             )
             return ExitCode.CONFLICT_OR_INVALID.value
 
+    try:
+        live_docs, live_errors = export_live_docs(client)
+    except Exception as exc:
+        live_docs, live_errors = {}, {"export": sanitize_error(exc)}
+    summary = build_verify_summary(git_docs, mismatches, live_docs)
+
     res = {
         "status": "verified" if is_verified else "drift_detected",
         "instance": args.instance,
         "ha_version": health.get("version"),
         "mismatches": mismatches,
+        "capture_errors": live_errors,
+        **summary,
     }
     if checkpoint_requested and is_verified:
         res["checkpointed"] = True
 
     def _fmt(d: dict[str, Any]) -> None:
+        print(f"Home Assistant desired-state verification ({d['instance']})")
+        print()
+        for s in d.get("surfaces", []):
+            print(
+                f"{s['surface']:<15} {s['converged']:>3}/{s['managed']:<3} converged"
+                f"  drifted: {s['drifted']:<3}  unmanaged: {s['unmanaged']}"
+            )
+        print()
+        if d.get("capture_errors"):
+            print("Live capture incomplete; unmanaged counts may be partial:")
+            for k, e in d["capture_errors"].items():
+                print(f"  - {k}: {e}")
+            print()
         if d["status"] == "verified":
-            msg = f"Verified: All live resources match Git desired configuration cleanly (HA v{d['ha_version']})."
+            print(
+                f"Managed converged: {d['managed_converged']}/{d['managed_total']}; "
+                f"unmanaged (report only): {d['unmanaged_count']}."
+            )
+            msg = "Home Assistant converged with Git."
             if d.get("checkpointed"):
                 msg += " Checkpointed baseline successfully."
             print(msg)
         else:
-            print("Verification found divergences:")
+            print("Drifted managed resources (must match Git):")
             for m in d["mismatches"]:
                 print(f"  - {m}")
+            print()
+            unmanaged = d.get("unmanaged", [])
+            print(f"Unmanaged HA resources (report only): {len(unmanaged)}")
+            for u in unmanaged[:20]:
+                print(f"  - {u}")
+            if len(unmanaged) > 20:
+                print(f"  ... and {len(unmanaged) - 20} more")
 
     output_result(res, args.json, _fmt)
     return ExitCode.CLEAN.value if is_verified else ExitCode.DRIFT_OR_PENDING.value

@@ -23,11 +23,11 @@ def _report() -> DiffReport:
         timestamp="2026-01-01T00:00:00+00:00",
         items=[
             ComparisonItem(
-                kind="helper",
-                key="input_boolean_guest_mode",
+                kind="integration",
+                key="mqtt_01M24J0H",
                 status=DiffStatus.GIT_CHANGE,
-                git={"name": "Guest mode"},
-                live={"name": "Guest mode (edited)"},
+                git={"title": "MQTT"},
+                live={"title": "MQTT (edited)"},
             ),
             ComparisonItem(
                 kind="automation",
@@ -51,16 +51,14 @@ class ObserveOnlyPlanTest(unittest.TestCase):
             baseline_hash="base",
         )
         self.assertEqual([a.key for a in plan.actions], ["some_auto"])
-        self.assertEqual(plan.skipped, ["helper/input_boolean_guest_mode"])
+        self.assertEqual(plan.skipped, ["integration/mqtt_01M24J0H"])
         round_tripped = plan.to_dict()
-        self.assertEqual(
-            round_tripped["skipped"], ["helper/input_boolean_guest_mode"]
-        )
+        self.assertEqual(round_tripped["skipped"], ["integration/mqtt_01M24J0H"])
         from scripts.home_assistant.models import ApplyPlan
 
         self.assertEqual(
             ApplyPlan.from_dict(round_tripped).skipped,
-            ["helper/input_boolean_guest_mode"],
+            ["integration/mqtt_01M24J0H"],
         )
 
     def test_explicit_select_still_raises(self) -> None:
@@ -69,7 +67,7 @@ class ObserveOnlyPlanTest(unittest.TestCase):
                 diff_report=_report(),
                 git_revision="abc",
                 baseline_hash="base",
-                selected_keys={"helper/input_boolean_guest_mode"},
+                selected_keys={"integration/mqtt_01M24J0H"},
             )
 
 
