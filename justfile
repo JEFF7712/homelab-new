@@ -144,3 +144,8 @@ ha-verify *args:
 
 ha-revert *args:
     python -m scripts.home_assistant revert {{args}}
+
+# Live Jarvis routing eval (executes local-path device actions; run when
+# someone is home to observe). Offline corpus checks run in the unit suite.
+jarvis-eval-live *args:
+    python -m scripts.jarvis_eval {{args}}
