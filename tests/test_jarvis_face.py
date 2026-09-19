@@ -39,11 +39,25 @@ class JarvisFaceSelfUpdateTest(unittest.TestCase):
         js = read_face("app.js")
         self.assertIn("music:", js)
         self.assertIn("state-music", js)
-        self.assertIn("setState('music', 'JARVIS // PLAYING')", js)
-        self.assertIn("state === 'playing') {\n      setState('music'", js)
-        self.assertNotIn("state === 'playing') {\n      setState('responding'", js)
+        self.assertIn("state === 'playing')", js)
+        branch = js.split("state === 'playing')")[1].split("Default: Idle")[0]
+        self.assertIn("setState('music'", branch)
+        self.assertNotIn("setState('responding'", branch)
         html_css = read_face("style.css")
         self.assertIn("#app.state-music", html_css)
+
+    def test_music_visualizer_replaces_face(self) -> None:
+        js = read_face("app.js")
+        self.assertIn("drawMusicVisualizer", js)
+        self.assertIn("if (exprName === 'music')", js)
+        self.assertNotIn("equalizer strip under the eyes", js)
+        self.assertNotIn("nBars = 11", js)
+
+    def test_music_label_shows_track(self) -> None:
+        js = read_face("app.js")
+        self.assertIn("media_title", js)
+        self.assertIn("media_artist", js)
+        self.assertIn("JARVIS // PLAYING // ", js)
 
     def test_kiosk_boot_url_matches_face_version(self) -> None:
         config = json.loads(read_face("config.json"))
