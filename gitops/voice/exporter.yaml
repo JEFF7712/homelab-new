@@ -500,7 +500,7 @@ spec:
       containers:
         - name: exporter
           # Pinned upstream tag: 3.13-slim
-          image: docker.io/library/python@sha256:a2e9788143507cacbb754fcc06ad3b7108ca9c334f97a466906103846107cdd5  # yamllint disable-line rule:line-length
+          image: docker.io/library/python@sha256:be8ccd085666c34273c9dc5607c9842f8b2e3116128aae45148ce164c07ce09d  # yamllint disable-line rule:line-length
           command:
             - python3
             - /app/exporter.py
