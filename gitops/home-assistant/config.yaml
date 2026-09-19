@@ -22,12 +22,23 @@ data:
     automation: !include automations.yaml
     script: !include scripts.yaml
     scene: !include scenes.yaml
-    conversation:
-      intents:
-        HassLightSet:
-          - "dim {name} to {brightness} [percent]"
-          - "brighten {name} to {brightness} [percent]"
     intent_script:
+      JarvisToggle:
+        action:
+          - service: homeassistant.toggle
+            target:
+              entity_id: "{{ targets.entities }}"
+        speech:
+          text: "Done."
+      JarvisBrightenFull:
+        action:
+          - service: light.turn_on
+            target:
+              entity_id: "{{ targets.entities }}"
+            data:
+              brightness_pct: 100
+        speech:
+          text: "Done."
       JarvisSignatureColor:
         action:
           - service: light.turn_on
@@ -309,6 +320,24 @@ data:
               - "is the ac on"
               - "is the air conditioning on"
               - "is the living room ac on"
+  en.jarvis_light_control.yaml: |
+    language: en
+    intents:
+      JarvisToggle:
+        data:
+          - sentences:
+              - "toggle [the] {name}"
+      HassLightSet:
+        data:
+          - sentences:
+              - "dim [the] {name} to {brightness} [percent]"
+              - "brighten [the] {name} to {brightness} [percent]"
+              - "set [the] {name} to {color_temperature_names:temperature}"
+      JarvisBrightenFull:
+        data:
+          - sentences:
+              - "brighten [the] {name} to full brightness"
+              - "set [the] {name} to full brightness"
   en.jarvis_nudge.yaml: |
     language: en
     intents:

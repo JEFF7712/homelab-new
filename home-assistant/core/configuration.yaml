@@ -15,12 +15,23 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-conversation:
-  intents:
-    HassLightSet:
-      - "dim {name} to {brightness} [percent]"
-      - "brighten {name} to {brightness} [percent]"
 intent_script:
+  JarvisToggle:
+    action:
+      - service: homeassistant.toggle
+        target:
+          entity_id: "{{ targets.entities }}"
+    speech:
+      text: "Done."
+  JarvisBrightenFull:
+    action:
+      - service: light.turn_on
+        target:
+          entity_id: "{{ targets.entities }}"
+        data:
+          brightness_pct: 100
+    speech:
+      text: "Done."
   JarvisSignatureColor:
     action:
       - service: light.turn_on

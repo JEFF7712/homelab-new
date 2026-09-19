@@ -1,0 +1,17 @@
+language: en
+intents:
+  JarvisToggle:
+    data:
+      - sentences:
+          - "toggle [the] {name}"
+  HassLightSet:
+    data:
+      - sentences:
+          - "dim [the] {name} to {brightness} [percent]"
+          - "brighten [the] {name} to {brightness} [percent]"
+          - "set [the] {name} to {color_temperature_names:temperature}"
+  JarvisBrightenFull:
+    data:
+      - sentences:
+          - "brighten [the] {name} to full brightness"
+          - "set [the] {name} to full brightness"
