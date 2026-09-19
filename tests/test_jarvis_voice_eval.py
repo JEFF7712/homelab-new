@@ -38,6 +38,13 @@ MUSIC_INTENTS = {
 HOME_FILE = (
     REPO_ROOT / "home-assistant" / "custom_sentences" / "en" / "jarvis_home.yaml"
 )
+CONTROL_FILE = (
+    REPO_ROOT
+    / "home-assistant"
+    / "custom_sentences"
+    / "en"
+    / "jarvis_light_control.yaml"
+)
 NUDGE_FILE = (
     REPO_ROOT / "home-assistant" / "custom_sentences" / "en" / "jarvis_nudge.yaml"
 )
@@ -255,15 +262,41 @@ class EvalCorpusTest(unittest.TestCase):
             self.assertEqual(light_set.get(slot), "Done.", slot)
 
     def test_builtin_sentence_extensions(self) -> None:
-        intents = self.core["conversation"]["intents"]
-        sentences = intents["HassLightSet"]
+        control = yaml.safe_load(CONTROL_FILE.read_text(encoding="utf-8"))
+        sentences = control["intents"]["HassLightSet"]["data"][0]["sentences"]
         self.assertTrue(any("dim" in s for s in sentences), "dim phrasing present")
         self.assertTrue(
             any("brighten" in s for s in sentences), "brighten phrasing present"
         )
         for sentence in sentences:
             self.assertIn("{name}", sentence)
-            self.assertIn("{brightness}", sentence)
+            if "dim" in sentence or "brighten" in sentence:
+                self.assertIn("{brightness}", sentence)
+        toggle = control["intents"]["JarvisToggle"]["data"][0]["sentences"]
+        self.assertTrue(any("toggle" in s for s in toggle), "toggle phrasing present")
+        for sentence in toggle:
+            self.assertIn("{name}", sentence)
+        temp = control["intents"]["HassLightSet"]["data"][0]["sentences"]
+        self.assertTrue(
+            any("color_temperature_names" in s for s in temp),
+            "temperature-name phrasing present",
+        )
+        full = control["intents"]["JarvisBrightenFull"]["data"][0]["sentences"]
+        self.assertTrue(
+            any("full brightness" in s for s in full),
+            "full-brightness phrasing present",
+        )
+
+    def test_toggle_and_brighten_scripts_exist(self) -> None:
+        scripts = self.core["intent_script"]
+        toggle = scripts["JarvisToggle"]
+        self.assertEqual(toggle["action"][0]["service"], "homeassistant.toggle")
+        self.assertIn("targets.entities", toggle["action"][0]["target"]["entity_id"])
+        self.assertEqual(toggle["speech"]["text"], "Done.")
+        full = scripts["JarvisBrightenFull"]
+        self.assertEqual(full["action"][0]["service"], "light.turn_on")
+        self.assertEqual(full["action"][0]["data"]["brightness_pct"], 100)
+        self.assertEqual(full["speech"]["text"], "Done.")
 
     def test_signature_color_palette(self) -> None:
         self.assertEqual(self.colors.get("language"), "en")
