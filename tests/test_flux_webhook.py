@@ -25,7 +25,8 @@ class FluxWebhookContract(unittest.TestCase):
         self.assertEqual(receiver["metadata"]["namespace"], "flux-system")
         spec = receiver["spec"]
         self.assertEqual(spec["type"], "gitlab")
-        self.assertEqual(sorted(spec["events"]), ["ping", "push"])
+        # Flux matches GitLab's raw X-Gitlab-Event names, not generic kinds.
+        self.assertEqual(sorted(spec["events"]), ["Push Hook", "Tag Push Hook"])
         self.assertEqual(spec["secretRef"], {"name": "receiver-token"})
         resources = {(r["kind"], r["name"], r["namespace"]) for r in spec["resources"]}
         self.assertEqual(

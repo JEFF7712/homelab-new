@@ -6,8 +6,8 @@ metadata:
 spec:
   type: gitlab
   events:
-    - ping
-    - push
+    - Push Hook
+    - Tag Push Hook
   secretRef:
     name: receiver-token
   resources:
