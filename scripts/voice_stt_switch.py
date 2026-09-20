@@ -39,7 +39,9 @@ def main() -> None:
         print(f"STT backend already {backend}, nothing to do")
         return
 
-    SELECTOR_FILE.write_text(text.replace(f"    backend: {old}\n", f"    backend: {backend}\n", 1))
+    SELECTOR_FILE.write_text(
+        text.replace(f"    backend: {old}\n", f"    backend: {backend}\n", 1)
+    )
     run("git", "add", "gitops/voice/whisper.yaml")
     run("git", "commit", "-m", f"feat(voice): switch STT backend to {backend}")
     run("git", "push")

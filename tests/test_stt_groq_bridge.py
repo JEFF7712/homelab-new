@@ -41,7 +41,9 @@ async def feed(data: bytes) -> asyncio.StreamReader:
 class BridgeFrameTest(unittest.TestCase):
     def test_encode_decode_round_trip(self) -> None:
         async def run() -> dict | None:
-            line = BRIDGE["encode_event"]("audio-start", {"rate": 16000, "width": 2, "channels": 1})
+            line = BRIDGE["encode_event"](
+                "audio-start", {"rate": 16000, "width": 2, "channels": 1}
+            )
             return await BRIDGE["read_event"](await feed(line))
 
         event = asyncio.run(run())
@@ -52,7 +54,9 @@ class BridgeFrameTest(unittest.TestCase):
 
     def test_encode_without_data(self) -> None:
         async def run() -> dict | None:
-            return await BRIDGE["read_event"](await feed(BRIDGE["encode_event"]("audio-stop")))
+            return await BRIDGE["read_event"](
+                await feed(BRIDGE["encode_event"]("audio-stop"))
+            )
 
         event = asyncio.run(run())
         self.assertIsNotNone(event)
@@ -74,7 +78,9 @@ class BridgeFrameTest(unittest.TestCase):
 
     def test_info_advertises_asr_model(self) -> None:
         async def run() -> dict | None:
-            return await BRIDGE["read_event"](await feed(BRIDGE["info_event"]("whisper-large-v3-turbo")))
+            return await BRIDGE["read_event"](
+                await feed(BRIDGE["info_event"]("whisper-large-v3-turbo"))
+            )
 
         event = asyncio.run(run())
         assert event is not None
