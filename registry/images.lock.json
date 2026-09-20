@@ -3829,6 +3829,44 @@
     },
     {
       "authenticity": {
+        "reason": "surgical import for the 05 device-plugin outage; publisher policy check deferred to review",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/platform/nvidia-device-plugin/daemonset.yaml:29"
+      ],
+      "destination_repository": "upstream/nvcr.io/nvidia/k8s-device-plugin",
+      "destination_tags": [
+        "v0.17.0",
+        "retention-deployed-7089559ce615"
+      ],
+      "digest": "sha256:7089559ce6153018806857f5049085bae15b3bf6f1c8bd19d8b12f707d087dea",
+      "id": "upstream-upstream-nvcr-io-nvidia-k8s-device-plugin-77da690da3ba",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:7089559ce6153018806857f5049085bae15b3bf6f1c8bd19d8b12f707d087dea",
+        "reference": "nvcr.io/nvidia/k8s-device-plugin:v0.17.0@sha256:7089559ce6153018806857f5049085bae15b3bf6f1c8bd19d8b12f707d087dea",
+        "registry": "nvcr.io",
+        "repository": "nvidia/k8s-device-plugin",
+        "tag": "v0.17.0"
+      }
+    },
+    {
+      "authenticity": {
         "reason": "no source verification policy is declared for this inventory record",
         "status": "unsupported"
       },
