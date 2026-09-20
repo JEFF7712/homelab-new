@@ -1,0 +1,19 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: receiver-token
+  namespace: flux-system
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: gitlab-project
+  target:
+    name: receiver-token
+    creationPolicy: Owner
+    template:
+      type: Opaque
+  data:
+    - secretKey: token
+      remoteRef:
+        key: FLUX_RECEIVER_TOKEN

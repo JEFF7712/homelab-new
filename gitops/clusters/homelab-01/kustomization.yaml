@@ -8,6 +8,7 @@ resources:
   - cloudflare.yaml
   - eso.yaml
   - flux-system
+  - flux-webhook.yaml
   - home-assistant.yaml
   - immich.yaml
   - ingress-crds.yaml
