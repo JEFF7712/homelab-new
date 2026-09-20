@@ -153,6 +153,8 @@ data:
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": content_type,
+                # Cloudflare in front of the API rejects urllib's default UA (error 1010)
+                "User-Agent": "homelab-stt-groq-bridge/1.0",
             },
             method="POST",
         )
