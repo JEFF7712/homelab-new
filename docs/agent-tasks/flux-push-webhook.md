@@ -1,6 +1,6 @@
 # Backlog: push-triggered Flux sync via GitLab webhook
 
-Status: manifests implemented offline 2026-09-19, live wiring pending (tunnel hostname, GitLab token + repo webhook, LAN verification).
+Status: live verification in progress 2026-09-20 (this push is the end-to-end test).
 
 ## Problem
 
