@@ -26,7 +26,7 @@ spec:
           image: docker.io/rhasspy/wyoming-whisper@sha256:ba6fcb6056ebe237d15a325381763a80af2fc8fcedaa04f6a714a7375eb20d80  # yamllint disable-line rule:line-length
           args:
             - "--model"
-            - "small.en"
+            - "base.en"
             - "--language"
             - "en"
             - "--beam-size"
