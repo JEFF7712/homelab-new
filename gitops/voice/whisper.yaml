@@ -26,11 +26,11 @@ spec:
           image: docker.io/rhasspy/wyoming-whisper@sha256:ba6fcb6056ebe237d15a325381763a80af2fc8fcedaa04f6a714a7375eb20d80  # yamllint disable-line rule:line-length
           args:
             - "--model"
-            - "base.en"
+            - "small.en"
             - "--language"
             - "en"
             - "--beam-size"
-            - "1"
+            - "5"
             - "--initial-prompt"
             - >-
               Govee, Spotify, Young Thug, The Weeknd, Coldplay, Kendrick Lamar,
