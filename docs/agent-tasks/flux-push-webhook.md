@@ -1,6 +1,6 @@
 # Backlog: push-triggered Flux sync via GitLab webhook
 
-Status: live verification in progress 2026-09-20 (this push is the end-to-end test).
+Status: final webhook verification push 2026-09-20.
 
 ## Problem
 
