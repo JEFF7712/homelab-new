@@ -288,8 +288,8 @@ Two layers against the 11:12-11:31 feedback loop (soundbar TTS re-entering
 the QuadCast, Whisper hallucinating fragments like `Stu.` / `Control.` /
 `Govee, Govee, ...`, every turn continuing the conversation and speaking
 again). Layer 1 is live as of 2026-09-18; layer 2 is implemented, unit-tested,
-and embedded in `gitops/voice/voice-id.yaml`, pending a push for Flux to roll
-it to the whisper pod:
+and shipped via `configMapGenerator` from `gitops/voice/voice-id/`, pending
+a push for Flux to roll it to the whisper pod:
 
 1. Muting the satellite during TTS was tried via
    `home-assistant/automations/jarvis_satellite_tts_mic_mute.yaml` (mute on
@@ -302,10 +302,11 @@ it to the whisper pod:
    disabled (`initial_state: false`) as a record; do not re-enable without
    a satellite build whose mute path skips stop and chimes. Barge-in during
    TTS remains unavailable by design (single mpv, no duplex path).
-2. Transcript sanity guard in `scripts/voice_id/proxy.py`
-   (`is_garbage_transcript`, unit-tested in
-   `tests/test_transcript_guard.py`, embedded into `gitops/voice/voice-id.yaml`
-   via the enrollment procedure below): drops empty transcripts, a single
+2. Transcript sanity guard (`is_garbage_transcript` in
+   `gitops/voice/voice-id/proxy.py`, unit-tested in
+   `tests/test_transcript_guard.py`, shipped via `configMapGenerator` as
+   `wyoming-voice-id-config-<hash>`, so every proxy or profile change
+   rolls the whisper pod): drops empty transcripts, a single
    token repeated 3+ times, and a tight denylist of observed hallucinations.
    Dropped transcripts are forwarded as empty text, which HA abandons
    silently. Never denylist bare `Hey Jarvis.` (keeps the lone-wake-word
@@ -482,14 +483,16 @@ target only entities defined in `home-assistant/core/configuration.yaml` or
 `home-assistant/scripts/`.
 
 Whenever the model, prompt, Whisper version, or exposures change, run the
-corpus live through `assist_pipeline/run` starting at the `intent` stage
-with text input (this exercises real pipeline routing while bypassing only
-wake word and STT). Check each `intent-end` event's `processed_locally`
-field, the spoken reply, and the exact action taken. A regression is any
-local-path case with `processed_locally: false`, any reply longer than the
-corpus expects, or any action on an entity outside `targets`. Keep a
-smaller acoustic suite (8 to 12 representative commands) for microphone to
-Whisper regressions; intent routing and STT are separate concerns.
+corpus live with `just jarvis-eval-live` (`python -m scripts.jarvis_eval`,
+`--select <id>` for a subset, `--json` for machine output). The runner
+drives `assist_pipeline/run` from the `intent` stage to the `intent` stage
+with text input (real pipeline routing, bypassing only wake word and STT;
+local-path device actions still execute, so run it when someone is home).
+Local cases must route locally with the expected reply and no action outside
+`targets`; llm cases must fall through (`processed_locally: false`). Full
+LLM behavior (tool choice, phrasing) stays manual. Keep a smaller acoustic
+suite (8 to 12 representative commands) for microphone to Whisper
+regressions; intent routing and STT are separate concerns.
 
 ## Voice-ID speaker recognition
 
@@ -499,8 +502,9 @@ Home Assistant Assist consumes Wyoming STT events (`audio-start`, `audio-chunk`,
 `audio-stop`), but discards raw audio once transcribed. To achieve speaker-aware
 routing and personalization without modifying Home Assistant core:
 
-1. A lightweight Wyoming proxy (`scripts/voice_id/proxy.py`) runs as a sidecar
-   in `wyoming-whisper` pod (`gitops/voice/whisper.yaml`) listening on port `10300`.
+1. A lightweight Wyoming proxy (`gitops/voice/voice-id/proxy.py`,
+   importable in tests as `scripts.voice_id.proxy` via symlink) runs as a
+   sidecar in `wyoming-whisper` pod (`gitops/voice/whisper.yaml`) listening on port `10300`.
    The actual Whisper STT engine listens upstream on `127.0.0.1:10301`.
 2. As the client streams audio, the proxy transparently forwards audio events to
    Whisper while buffering the 16kHz PCM audio in memory.
@@ -541,23 +545,12 @@ To add or update speaker voice profiles:
      --model /persist/voice-models/whisper/voice-id/model.onnx \
      --speaker Rupan /tmp/rupan.wav \
      --speaker Sam /tmp/sam.wav \
-     --output scripts/voice_id/profiles.json
+     --output gitops/voice/voice-id/profiles.json
    ```
-4. Regenerate `gitops/voice/voice-id.yaml` ConfigMap:
-   ```sh
-   python3 -c "
-   import yaml
-   with open('scripts/voice_id/proxy.py') as f: proxy = f.read()
-   with open('scripts/voice_id/profiles.json') as f: prof = f.read()
-   manifest = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': 'wyoming-voice-id-config', 'namespace': 'voice'}, 'data': {'proxy.py': proxy, 'profiles.json': prof}}
-   def p(d, data): return d.represent_scalar('tag:yaml.org,2002:str', data, style='|' if len(data.splitlines()) > 1 else None)
-   yaml.add_representer(str, p)
-   with open('gitops/voice/voice-id.yaml', 'w') as f:
-       f.write('# yamllint disable rule:line-length\n')
-       yaml.dump(manifest, f, default_flow_style=False, sort_keys=False, width=120)
-   "
-   ```
-5. Commit and let Flux apply the updated ConfigMap.
+4. Commit and let Flux apply the change. Kustomize hashes the ConfigMap
+   content into its name (`wyoming-voice-id-config-<hash>`) and rewrites
+   the whisper Deployment reference, so the pod rolls automatically.
+   No manual ConfigMap regeneration step.
 
 
 ## Failure symptoms

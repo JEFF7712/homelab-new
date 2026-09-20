@@ -9,9 +9,12 @@ resources:
   - piper.yaml
   - satellite.yaml
   - exporter.yaml
-  - voice-id.yaml
 
 configMapGenerator:
+  - name: wyoming-voice-id-config
+    files:
+      - voice-id/proxy.py
+      - voice-id/profiles.json
   - name: local-decision-runtime
     files:
       - local-decision/app.py
