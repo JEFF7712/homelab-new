@@ -63,6 +63,10 @@ let
         port = toString cfg.listenPort;
         realm = cfg.hostName;
         compat = [ "docker2s2" ];
+        # Importer uploads stream from upstream at source speed, so multi-GB
+        # layers exceed the 60s server default. Listener is loopback-only.
+        readTimeout = "30m";
+        writeTimeout = "30m";
       };
       log.level = "info";
       extensions = {
