@@ -3842,7 +3842,7 @@
       "digest": "sha256:7089559ce6153018806857f5049085bae15b3bf6f1c8bd19d8b12f707d087dea",
       "id": "upstream-upstream-nvcr-io-nvidia-k8s-device-plugin-77da690da3ba",
       "kind": "upstream",
-      "media_type": "application/vnd.oci.image.index.v1+json",
+      "media_type": "application/vnd.docker.distribution.manifest.list.v2+json",
       "platforms": [
         "linux/amd64",
         "linux/arm64"
