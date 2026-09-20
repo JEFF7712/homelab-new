@@ -15,37 +15,27 @@ spec:
       labels:
         app: wyoming-whisper
     spec:
+      runtimeClassName: nvidia
       nodeSelector:
-        kubernetes.io/hostname: homelab-04
+        kubernetes.io/hostname: homelab-05
+        nvidia.com/gpu.present: "true"
       securityContext:
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: whisper
-          # Pinned upstream tag: 3.8.1
-          image: docker.io/rhasspy/wyoming-whisper@sha256:ba6fcb6056ebe237d15a325381763a80af2fc8fcedaa04f6a714a7375eb20d80  # yamllint disable-line rule:line-length
-          args:
-            - "--model"
-            - "base.en"
-            - "--language"
-            - "en"
-            - "--beam-size"
-            - "5"
-            - "--initial-prompt"
-            - >-
-              Govee, Spotify, Young Thug, The Weeknd, Coldplay, Kendrick Lamar,
-              Drake, Travis Scott, Kanye West, Rauw Alejandro, Post Malone,
-              Metro Boomin, 21 Savage, Gunna, Future, tulip lamp, mushroom lamp,
-              good vibes sign, floor lamp, desk lamp, light strip, living room,
-              bedroom, kitchen, downstairs, Jarvis.
-            - "--data-dir"
-            - "/data"
-            - "--download-dir"
-            - "/data"
-            - "--uri"
-            - "tcp://0.0.0.0:10301"
+          # Pinned upstream tag: gpu (linuxserver wraps ohf-voice wyoming-faster-whisper;
+          # s6 service takes env only, fixed port 10300, --device defaults from image)
+          image: registry.rupan.dev/upstream/lscr.io/linuxserver/faster-whisper@sha256:020bd4398e2d47b755daa8d523bc1b13bf5e0be5f127c8d8bcb223a5e0f517af  # yamllint disable-line rule:line-length
+          env:
+            - name: WHISPER_MODEL
+              value: small.en
+            - name: WHISPER_BEAM
+              value: "5"
+            - name: WHISPER_LANG
+              value: en
           ports:
-            - containerPort: 10301
+            - containerPort: 10300
               name: whisper
           startupProbe:
             tcpSocket:
@@ -62,14 +52,16 @@ spec:
             periodSeconds: 30
           resources:
             requests:
-              cpu: "1"
-              memory: 1Gi
+              cpu: 500m
+              memory: 2Gi
+              nvidia.com/gpu: "1"
             limits:
-              cpu: "6"
-              memory: 8Gi
+              cpu: "2"
+              memory: 4Gi
+              nvidia.com/gpu: "1"
           volumeMounts:
             - name: model-cache
-              mountPath: /data
+              mountPath: /config
         - name: voice-id
           # Pinned upstream tag: 3.8.1
           image: docker.io/rhasspy/wyoming-whisper@sha256:ba6fcb6056ebe237d15a325381763a80af2fc8fcedaa04f6a714a7375eb20d80  # yamllint disable-line rule:line-length
@@ -80,17 +72,17 @@ spec:
             - "--host"
             - "0.0.0.0"
             - "--port"
-            - "10300"
+            - "10301"
             - "--upstream-host"
             - "127.0.0.1"
             - "--upstream-port"
-            - "10301"
+            - "10300"
             - "--model"
             - "/data/voice-id/model.onnx"
             - "--profiles"
             - "/app/profiles.json"
           ports:
-            - containerPort: 10300
+            - containerPort: 10301
               name: wyoming
           startupProbe:
             tcpSocket:
@@ -137,4 +129,4 @@ spec:
   ports:
     - name: wyoming
       port: 10300
-      targetPort: 10300
+      targetPort: 10301
