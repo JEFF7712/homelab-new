@@ -23,7 +23,7 @@ Related manifests:
 - `gitops/immich/route.yaml` (`photos.rupan.dev`, inert while `Gateway homelab` is parked)
 - `gitops/immich/server.yaml`
 
-## Ingress order (v72, 2026-09-15)
+## Ingress order (v73, 2026-09-20)
 
 Cloudflare evaluates top to bottom, first match wins. Keep specifics first, catch-all last.
 
@@ -56,7 +56,8 @@ Cloudflare Access public bypass configured.
 22. `apollinestore.com -> http://apolline-svc.apolline:80`
 23. `darkbitapparel.com -> http://darkbit-svc.darkbit:80`
 24. `pulseagent.dev -> http://pulse-svc.pulse:80`
-25. `http_status:404`
+25. `flux-wh-33b0c8004348.rupan.dev -> http://webhook-receiver.flux-system:80` (Flux GitLab push receiver, 2026-09-20; Access app `flux-webhook-bypass` reused Bypass policy, wildcard `*` app would otherwise force login)
+26. `http_status:404`
 
 Removed 2026-09-15 (v72):
 - `*.rupan.dev -> https://10.0.20.180:443` (defunct Talos Traefik VIP; caused grafana outage, then 404s for unmatched hosts after grafana fix)
