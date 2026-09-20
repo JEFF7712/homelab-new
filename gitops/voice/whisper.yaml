@@ -27,13 +27,39 @@ spec:
           # Pinned upstream tag: gpu (linuxserver wraps ohf-voice wyoming-faster-whisper;
           # s6 service takes env only, fixed port 10300, --device defaults from image)
           image: registry.rupan.dev/upstream/lscr.io/linuxserver/faster-whisper@sha256:020bd4398e2d47b755daa8d523bc1b13bf5e0be5f127c8d8bcb223a5e0f517af  # yamllint disable-line rule:line-length
+          # Bypass s6: run the server directly so --device cuda and
+          # --initial-prompt (both unsupported by the image's service script) apply
+          command:
+            - "/lsiopy/bin/python3"
+            - "-m"
+            - "wyoming_faster_whisper"
+          args:
+            - "--uri"
+            - "tcp://0.0.0.0:10300"
+            - "--model"
+            - "small.en"
+            - "--language"
+            - "en"
+            - "--beam-size"
+            - "5"
+            - "--device"
+            - "cuda"
+            - "--initial-prompt"
+            - >-
+              Govee, Spotify, Young Thug, The Weeknd, Coldplay, Kendrick Lamar,
+              Drake, Travis Scott, Kanye West, Rauw Alejandro, Post Malone,
+              Metro Boomin, 21 Savage, Gunna, Future, tulip lamp, mushroom lamp,
+              good vibes sign, floor lamp, desk lamp, light strip, living room,
+              bedroom, kitchen, downstairs, Jarvis.
+            - "--data-dir"
+            - "/config"
+            - "--download-dir"
+            - "/config"
           env:
-            - name: WHISPER_MODEL
-              value: small.en
-            - name: WHISPER_BEAM
-              value: "5"
-            - name: WHISPER_LANG
-              value: en
+            - name: HOME
+              value: /config
+            - name: TMPDIR
+              value: /tmp
           ports:
             - containerPort: 10300
               name: whisper
