@@ -1,0 +1,10 @@
+{
+  "domain": "jarvis_jev",
+  "name": "Jarvis Jev Router",
+  "codeowners": ["@JEFF7712"],
+  "config_flow": true,
+  "documentation": "https://gitlab.com/JEFF7712/homelab-new",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "version": "0.1.0"
+}

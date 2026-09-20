@@ -8,6 +8,7 @@ from pathlib import Path
 import yaml
 
 from scripts.home_assistant.adapters.core import (
+    iter_custom_components,
     iter_custom_sentences,
     render_config_configmap,
 )
@@ -146,7 +147,9 @@ class TestHomeAssistantSource(unittest.TestCase):
         for key in data:
             self.assertRegex(key, pattern, key)
         rendered = {key: data[key] for key in data if key != "configuration.yaml"}
-        expected = dict(iter_custom_sentences(repo_root))
+        expected = dict(iter_custom_sentences(repo_root)) | dict(
+            iter_custom_components(repo_root)
+        )
         self.assertEqual(rendered, expected)
 
     def test_legacy_entitys_filename_still_loads(self) -> None:

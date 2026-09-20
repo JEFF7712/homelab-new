@@ -1,0 +1,22 @@
+[project]
+name = "jarvis-local-decision"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "huggingface-hub>=0.30",
+  "numpy>=2",
+  "safetensors>=0.5",
+  "torch>=2.7",
+  "transformers>=5,<6",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[tool.uv]
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

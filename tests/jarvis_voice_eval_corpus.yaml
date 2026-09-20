@@ -280,3 +280,33 @@
   path: llm
   tool: none
   notes: No such device; states the problem briefly without inventing entity IDs.
+- id: lights-govee-misheard-on
+  say: Turn on all go vee lights.
+  path: local
+  intent: JarvisAliasOn
+  targets: [light.all_govee_lights]
+  response: Done.
+- id: lights-govee-olga-on
+  say: Turn on the Olga V lights.
+  path: local
+  intent: JarvisAliasOn
+  targets: [light.all_govee_lights]
+  response: Done.
+- id: lights-govee-blue-misheard
+  say: Turn on all go vee lights to blue.
+  path: local
+  intent: JarvisAliasColor
+  targets: [light.all_govee_lights]
+  response: Done.
+- id: lights-govee-purple
+  say: Turn all govee lights purple.
+  path: local
+  intent: JarvisAliasColor
+  targets: [light.all_govee_lights]
+  response: Done.
+- id: lights-govee-white
+  say: Turn on all govee lights to white.
+  path: local
+  intent: JarvisAliasColor
+  targets: [light.all_govee_lights]
+  response: Done.

@@ -1,0 +1,192 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-decision
+  namespace: voice
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: local-decision
+  template:
+    metadata:
+      labels:
+        app: local-decision
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab-04
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: prepare-runtime
+          image: registry.rupan.dev/upstream/ghcr.io/astral-sh/uv@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58  # yamllint disable-line rule:line-length
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              uv sync --project /config --frozen --no-dev --inexact
+              if ! /runtime/venv/bin/python -c 'import rlcd'; then
+                uv pip install --python /runtime/venv/bin/python --no-deps \
+                  'eve-rlcd @ git+https://github.com/anthony-maio/eve-rlcd@ce5ebf627058b65acfc41d49e0e334a722a14ba5'
+              fi
+              if [ ! -f "$MODEL_DIR/.complete" ]; then
+                /runtime/venv/bin/python -c '
+              from huggingface_hub import snapshot_download
+              snapshot_download(
+                  repo_id="anthonym21/qwen3-0.6b-rlcd-decision",
+                  revision="b327ec5efb5fdbf8bfafa3b369720ac5f6434b05",
+                  local_dir="/models/qwen3-0.6b-rlcd-decision-b327ec5",
+              )
+              '
+                touch "$MODEL_DIR/.complete"
+              fi
+          env:
+            - name: MODEL_DIR
+              value: /models/qwen3-0.6b-rlcd-decision-b327ec5
+            - name: UV_PROJECT_ENVIRONMENT
+              value: /runtime/venv
+            - name: UV_CACHE_DIR
+              value: /runtime/cache
+            - name: UV_LINK_MODE
+              value: copy
+            - name: HF_HUB_DISABLE_XET
+              value: "1"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "4"
+              memory: 4Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: models
+              mountPath: /models
+            - name: runtime
+              mountPath: /runtime
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: local-decision
+          image: registry.rupan.dev/upstream/ghcr.io/astral-sh/uv@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58  # yamllint disable-line rule:line-length
+          command:
+            - /runtime/venv/bin/python
+            - /config/app.py
+          env:
+            - name: MODEL_DIR
+              value: /models/qwen3-0.6b-rlcd-decision-b327ec5
+            - name: PORT
+              value: "8080"
+            - name: UV_PROJECT_ENVIRONMENT
+              value: /runtime/venv
+            - name: UV_CACHE_DIR
+              value: /runtime/cache
+            - name: OMP_NUM_THREADS
+              value: "4"
+            - name: MKL_NUM_THREADS
+              value: "4"
+          ports:
+            - name: http
+              containerPort: 8080
+          startupProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            failureThreshold: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "1"
+              memory: 3Gi
+            limits:
+              cpu: "4"
+              memory: 6Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: models
+              mountPath: /models
+              readOnly: true
+            - name: runtime
+              mountPath: /runtime
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: local-decision-runtime
+        - name: models
+          hostPath:
+            path: /persist/voice-models/local-decision/models
+            type: DirectoryOrCreate
+        - name: runtime
+          hostPath:
+            path: /persist/voice-models/local-decision/runtime
+            type: DirectoryOrCreate
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: local-decision
+  namespace: voice
+  labels:
+    app: local-decision
+spec:
+  selector:
+    app: local-decision
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: local-decision
+  namespace: voice
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: local-decision
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

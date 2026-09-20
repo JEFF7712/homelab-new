@@ -104,6 +104,15 @@ data:
               entity_id: "{{ jarvis_alias }}"
         speech:
           text: "Done."
+      JarvisAliasColor:
+        action:
+          - service: light.turn_on
+            target:
+              entity_id: "{{ jarvis_alias }}"
+            data:
+              color_name: "{{ jarvis_general_color }}"
+        speech:
+          text: "Done."
     light:
       - platform: group
         name: Kitchen Lights
@@ -224,6 +233,11 @@ data:
         data:
           - sentences:
               - "(turn off|switch off) [the] {jarvis_alias} [lights]"
+      JarvisAliasColor:
+        data:
+          - sentences:
+              - "(turn on|switch on|change|set|make) [all] [the] {jarvis_alias} [lights] to {jarvis_general_color}"
+              - "(turn|set|make) [all] [the] {jarvis_alias} [lights] {jarvis_general_color}"
     lists:
       jarvis_alias:
         values:
@@ -241,6 +255,42 @@ data:
             out: "light.all_govee_lights"
           - in: "all the govee lights"
             out: "light.all_govee_lights"
+          - in: "go vee"
+            out: "light.all_govee_lights"
+          - in: "go vee lights"
+            out: "light.all_govee_lights"
+          - in: "all go vee lights"
+            out: "light.all_govee_lights"
+          - in: "all the go vee lights"
+            out: "light.all_govee_lights"
+          - in: "go v"
+            out: "light.all_govee_lights"
+          - in: "go v lights"
+            out: "light.all_govee_lights"
+          - in: "all go v lights"
+            out: "light.all_govee_lights"
+          - in: "olga v"
+            out: "light.all_govee_lights"
+          - in: "olga v lights"
+            out: "light.all_govee_lights"
+      jarvis_general_color:
+        values:
+          - in: "white"
+            out: "white"
+          - in: "red"
+            out: "red"
+          - in: "orange"
+            out: "orange"
+          - in: "yellow"
+            out: "yellow"
+          - in: "green"
+            out: "green"
+          - in: "blue"
+            out: "blue"
+          - in: "purple"
+            out: "purple"
+          - in: "pink"
+            out: "pink"
   en.jarvis_colors.yaml: |
     language: en
     intents:
@@ -272,6 +322,22 @@ data:
           - in: "govee"
             out: "light.all_govee_lights"
           - in: "all govee lights"
+            out: "light.all_govee_lights"
+          - in: "go vee"
+            out: "light.all_govee_lights"
+          - in: "go vee lights"
+            out: "light.all_govee_lights"
+          - in: "all go vee lights"
+            out: "light.all_govee_lights"
+          - in: "go v"
+            out: "light.all_govee_lights"
+          - in: "go v lights"
+            out: "light.all_govee_lights"
+          - in: "all go v lights"
+            out: "light.all_govee_lights"
+          - in: "olga v"
+            out: "light.all_govee_lights"
+          - in: "olga v lights"
             out: "light.all_govee_lights"
           - in: "kitchen mushroom lamp"
             out: "light.kitchen_mushroom_lamp"
@@ -375,3 +441,717 @@ data:
           brightness: Done.
           color: Done.
           temperature: Done.
+  component.jarvis_jev.__init__.py: |
+    from __future__ import annotations
+
+    import asyncio
+    import logging
+    import os
+    import uuid
+    from typing import Any, Literal
+
+    from homeassistant.components import conversation
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.const import MATCH_ALL
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers import intent
+    from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
+    from .const import (
+        API_URL,
+        CONF_FALLBACK_AGENT,
+        REQUEST_TIMEOUT_SECONDS,
+        SHADOW_TIMEOUT_SECONDS,
+        SHADOW_URL,
+    )
+    from .router import TARGETS, Command, build_request, decide
+    from .shadow import ShadowResult, compare_answers, request_shadow
+
+    _LOGGER = logging.getLogger(__name__)
+
+
+    async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+        agent = JarvisJevAgent(hass, entry)
+        conversation.async_set_agent(hass, entry, agent)
+        entry.async_on_unload(lambda: conversation.async_unset_agent(hass, entry))
+        return True
+
+
+    async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+        return True
+
+
+    class JarvisJevAgent(conversation.AbstractConversationAgent):
+        def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+            self.hass = hass
+            self.entry = entry
+            self._shadow_active = False
+
+        @property
+        def supported_languages(self) -> list[str] | Literal["*"]:
+            return MATCH_ALL
+
+        async def async_process(
+            self, user_input: conversation.ConversationInput
+        ) -> conversation.ConversationResult:
+            api_key = os.environ.get("TYPESAFE_API_KEY")
+            if not api_key:
+                return _speech(user_input, "Jev is unavailable.")
+
+            request = build_request(user_input.text)
+            request_id = uuid.uuid4().hex
+            shadow_task = self._start_shadow(request)
+
+            try:
+                async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
+                    async with async_get_clientsession(self.hass).post(
+                        API_URL,
+                        headers={"Authorization": f"Bearer {api_key}"},
+                        json=request,
+                    ) as response:
+                        if response.status != 200:
+                            self._schedule_shadow_observation(request_id, shadow_task, None)
+                            return _speech(user_input, "Jev is unavailable.")
+                        payload = await response.json()
+            except Exception:  # noqa: BLE001
+                self._schedule_shadow_observation(request_id, shadow_task, None)
+                return _speech(user_input, "Jev is unavailable.")
+
+            self._schedule_shadow_observation(request_id, shadow_task, payload)
+
+            decision = decide(user_input.text, payload)
+            if decision.route == "fallback":
+                fallback_agent = self.entry.data[CONF_FALLBACK_AGENT]
+                if fallback_agent == self.entry.entry_id:
+                    return _speech(user_input, "The fallback agent is misconfigured.")
+                return await conversation.async_converse(
+                    self.hass,
+                    text=user_input.text,
+                    conversation_id=user_input.conversation_id,
+                    context=user_input.context,
+                    language=user_input.language,
+                    agent_id=fallback_agent,
+                    device_id=user_input.device_id,
+                    satellite_id=user_input.satellite_id,
+                    extra_system_prompt=user_input.extra_system_prompt,
+                )
+            if decision.route != "execute" or decision.command is None:
+                return _speech(
+                    user_input, decision.speech or "I could not safely route that."
+                )
+
+            try:
+                await _execute(self.hass, user_input, decision.command)
+            except Exception:  # noqa: BLE001
+                return _speech(user_input, "The home action failed.")
+            return _speech(user_input, "Done.")
+
+        def _start_shadow(
+            self, request: dict[str, Any]
+        ) -> asyncio.Task[ShadowResult] | None:
+            if self._shadow_active:
+                _LOGGER.info("jarvis_shadow skipped reason=busy")
+                return None
+            self._shadow_active = True
+
+            async def run() -> ShadowResult:
+                try:
+                    return await request_shadow(
+                        async_get_clientsession(self.hass),
+                        SHADOW_URL,
+                        request,
+                        SHADOW_TIMEOUT_SECONDS,
+                    )
+                finally:
+                    self._shadow_active = False
+
+            return self.hass.async_create_task(run(), "local decision shadow")
+
+        def _schedule_shadow_observation(
+            self,
+            request_id: str,
+            task: asyncio.Task[ShadowResult] | None,
+            authoritative: Any,
+        ) -> None:
+            if task is None:
+                return
+            self.hass.async_create_task(
+                self._observe_shadow(request_id, task, authoritative),
+                "observe local decision shadow",
+            )
+
+        async def _observe_shadow(
+            self,
+            request_id: str,
+            task: asyncio.Task[ShadowResult],
+            authoritative: Any,
+        ) -> None:
+            result = await task
+            if result.error is not None:
+                _LOGGER.info(
+                    "jarvis_shadow id=%s result=error error=%s latency_seconds=%.6f",
+                    request_id,
+                    result.error,
+                    result.latency_seconds,
+                )
+                return
+            agreed, compared, all_agree = compare_answers(authoritative, result.payload)
+            _LOGGER.info(
+                "jarvis_shadow id=%s result=ok agreed=%d compared=%d all_agree=%s latency_seconds=%.6f",
+                request_id,
+                agreed,
+                compared,
+                str(all_agree).lower(),
+                result.latency_seconds,
+            )
+
+
+    async def _execute(
+        hass: HomeAssistant,
+        user_input: conversation.ConversationInput,
+        command: Command,
+    ) -> None:
+        target = TARGETS[command.target]
+        domain = target.entity_id.split(".", 1)[0]
+        service = command.action
+        data: dict[str, Any] = {}
+
+        if command.action == "toggle":
+            domain, service = "homeassistant", "toggle"
+        elif command.action in {"turn_on", "turn_off"}:
+            service = command.action
+        elif command.action == "set_brightness":
+            domain, service = "light", "turn_on"
+            data["brightness_pct"] = command.value
+        elif command.action in {"adjust_brightness_up", "adjust_brightness_down"}:
+            domain, service = "light", "turn_on"
+            data["brightness_step_pct"] = 30 if command.action.endswith("up") else -30
+        elif command.action == "set_color":
+            domain, service = "light", "turn_on"
+            if command.color == "neon_pink":
+                data["rgb_color"] = [255, 16, 240]
+            elif command.color == "warm_white":
+                data["color_temp_kelvin"] = 3000
+            else:
+                data["color_name"] = command.color.replace("_", " ")
+        elif command.action == "activate_scene":
+            domain, service = "scene", "turn_on"
+        elif command.action == "pause_media":
+            domain, service = "media_player", "media_pause"
+        elif command.action == "set_temperature":
+            domain, service = "climate", "set_temperature"
+            _validate_temperature(hass, target.entity_id, command.value)
+            data["temperature"] = command.value
+        elif command.action in {"adjust_temperature_up", "adjust_temperature_down"}:
+            domain, service = "climate", "set_temperature"
+            state = hass.states.get(target.entity_id)
+            if state is None or not isinstance(
+                state.attributes.get("temperature"), (int, float)
+            ):
+                raise ValueError("thermostat temperature is unavailable")
+            value = float(state.attributes["temperature"]) + (
+                1 if command.action.endswith("up") else -1
+            )
+            _validate_temperature(hass, target.entity_id, value)
+            data["temperature"] = value
+        else:
+            raise ValueError("unsupported action")
+
+        await hass.services.async_call(
+            domain,
+            service,
+            service_data=data,
+            target={"entity_id": target.entity_id},
+            blocking=True,
+            context=user_input.context,
+        )
+
+
+    def _validate_temperature(
+        hass: HomeAssistant, entity_id: str, value: float | None
+    ) -> None:
+        state = hass.states.get(entity_id)
+        if state is None or value is None:
+            raise ValueError("thermostat state is unavailable")
+        minimum = state.attributes.get("min_temp")
+        maximum = state.attributes.get("max_temp")
+        if not isinstance(minimum, (int, float)) or not isinstance(maximum, (int, float)):
+            raise TypeError("thermostat range is unavailable")
+        if not float(minimum) <= value <= float(maximum):
+            raise ValueError("temperature is outside the thermostat range")
+
+
+    def _speech(
+        user_input: conversation.ConversationInput, text: str
+    ) -> conversation.ConversationResult:
+        response = intent.IntentResponse(language=user_input.language)
+        response.async_set_speech(text)
+        return conversation.ConversationResult(
+            response=response,
+            conversation_id=user_input.conversation_id,
+        )
+  component.jarvis_jev.config_flow.py: |
+    from __future__ import annotations
+
+    import os
+    from typing import Any
+
+    import probatio
+    from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+    from homeassistant.helpers.selector import ConversationAgentSelector
+
+    from .const import CONF_FALLBACK_AGENT, DOMAIN
+
+
+    class JarvisJevConfigFlow(ConfigFlow, domain=DOMAIN):
+        VERSION = 1
+
+        async def async_step_user(
+            self, user_input: dict[str, Any] | None = None
+        ) -> ConfigFlowResult:
+            errors: dict[str, str] = {}
+            if user_input is not None:
+                if not os.environ.get("TYPESAFE_API_KEY"):
+                    errors["base"] = "missing_api_key"
+                else:
+                    await self.async_set_unique_id(DOMAIN)
+                    self._abort_if_unique_id_configured()
+                    return self.async_create_entry(
+                        title="Jarvis Jev Router", data=user_input
+                    )
+
+            schema = probatio.Schema(
+                {probatio.Required(CONF_FALLBACK_AGENT): ConversationAgentSelector()}
+            )
+            return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
+  component.jarvis_jev.const.py: |
+    DOMAIN = "jarvis_jev"
+    CONF_FALLBACK_AGENT = "fallback_agent"
+
+    API_URL = "https://api.typesafe.ai/v1/systemone"
+    MODEL = "jev-1.13.0"
+    REQUEST_TIMEOUT_SECONDS = 1.5
+    SHADOW_URL = "http://local-decision.voice.svc.cluster.local:8080/v1/systemone"
+    SHADOW_TIMEOUT_SECONDS = 15.0
+
+    LIGHT_THRESHOLD = 0.95
+    CLIMATE_THRESHOLD = 0.98
+    CLARIFY_THRESHOLD = 0.75
+  component.jarvis_jev.manifest.json: |
+    {
+      "domain": "jarvis_jev",
+      "name": "Jarvis Jev Router",
+      "codeowners": ["@JEFF7712"],
+      "config_flow": true,
+      "documentation": "https://gitlab.com/JEFF7712/homelab-new",
+      "integration_type": "service",
+      "iot_class": "cloud_polling",
+      "version": "0.1.0"
+    }
+  component.jarvis_jev.router.py: |
+    from __future__ import annotations
+
+    import re
+    from dataclasses import dataclass
+    from typing import Any
+
+    from .const import CLARIFY_THRESHOLD, CLIMATE_THRESHOLD, LIGHT_THRESHOLD, MODEL
+
+
+    @dataclass(frozen=True)
+    class Target:
+        entity_id: str
+        actions: frozenset[str]
+
+
+    @dataclass(frozen=True)
+    class Command:
+        target: str
+        action: str
+        confidence: float
+        value: float | None = None
+        color: str | None = None
+
+
+    @dataclass(frozen=True)
+    class Decision:
+        route: str
+        command: Command | None = None
+        speech: str | None = None
+
+
+    TARGETS = {
+        "downstairs_lights": Target(
+            "light.downstairs_lights",
+            frozenset(
+                {
+                    "turn_on",
+                    "turn_off",
+                    "toggle",
+                    "set_brightness",
+                    "adjust_brightness_up",
+                    "adjust_brightness_down",
+                    "set_color",
+                }
+            ),
+        ),
+        "kitchen_lights": Target(
+            "light.kitchen_lights",
+            frozenset(
+                {
+                    "turn_on",
+                    "turn_off",
+                    "toggle",
+                    "set_brightness",
+                    "adjust_brightness_up",
+                    "adjust_brightness_down",
+                    "set_color",
+                }
+            ),
+        ),
+        "living_room_lights": Target(
+            "light.living_room_lights",
+            frozenset(
+                {
+                    "turn_on",
+                    "turn_off",
+                    "toggle",
+                    "set_brightness",
+                    "adjust_brightness_up",
+                    "adjust_brightness_down",
+                    "set_color",
+                }
+            ),
+        ),
+        "bedroom_lights": Target(
+            "light.bedroom_roku_lights",
+            frozenset(
+                {
+                    "turn_on",
+                    "turn_off",
+                    "toggle",
+                    "set_brightness",
+                    "adjust_brightness_up",
+                    "adjust_brightness_down",
+                    "set_color",
+                }
+            ),
+        ),
+        "all_govee_lights": Target(
+            "light.all_govee_lights",
+            frozenset(
+                {
+                    "turn_on",
+                    "turn_off",
+                    "toggle",
+                    "set_brightness",
+                    "adjust_brightness_up",
+                    "adjust_brightness_down",
+                    "set_color",
+                }
+            ),
+        ),
+        "kitchen_mushroom_lamp": Target(
+            "light.kitchen_mushroom_lamp", frozenset({"turn_on", "turn_off", "toggle"})
+        ),
+        "bedroom_window_plug": Target(
+            "light.bedroom_window_plug", frozenset({"turn_on", "turn_off", "toggle"})
+        ),
+        "bedroom_mushroom_plug": Target(
+            "light.bedroom_mushroom_plug", frozenset({"turn_on", "turn_off", "toggle"})
+        ),
+        "good_vibes_sign": Target(
+            "light.living_room_good_vibes_sign",
+            frozenset({"turn_on", "turn_off", "toggle"}),
+        ),
+        "stairs_light": Target(
+            "switch.stairs_light", frozenset({"turn_on", "turn_off", "toggle"})
+        ),
+        "living_room_thermostat": Target(
+            "climate.living_room_ac_living_room_ac_thermostat",
+            frozenset(
+                {"set_temperature", "adjust_temperature_up", "adjust_temperature_down"}
+            ),
+        ),
+        "satellite_media_player": Target(
+            "media_player.homelab_05_satellite_media_player", frozenset({"pause_media"})
+        ),
+        "movie_mode": Target("scene.movie_low_living_room", frozenset({"activate_scene"})),
+    }
+
+    COLORS = frozenset(
+        {
+            "white",
+            "red",
+            "orange",
+            "yellow",
+            "green",
+            "blue",
+            "purple",
+            "pink",
+            "neon_pink",
+            "warm_white",
+        }
+    )
+
+    _NUMBER = re.compile(
+        r"(?<![\w.])(-?\d+(?:\.\d+)?)(?:\s*(?:degrees?|percent)|\s*%|\s*°[fc]?)?(?![\w.])",
+        re.IGNORECASE,
+    )
+    _SPEAKER = re.compile(r"^speaker\s+[^\s]+\s+", re.IGNORECASE)
+
+
+    def normalized_text(text: str) -> str:
+        return _SPEAKER.sub("", text.strip(), count=1)
+
+
+    def build_request(text: str) -> dict[str, Any]:
+        return {
+            "state": normalized_text(text),
+            "model": MODEL,
+            "questions": {
+                "request_kind": {
+                    "type": "choice",
+                    "instructions": (
+                        "Classify this utterance. A home command requests one concrete "
+                        "smart-home action. Compound means two or more actions."
+                    ),
+                    "criteria": {
+                        "home_command": "One concrete smart-home action",
+                        "general_or_conversation": "General knowledge or conversation, with no home action",
+                        "compound": "Two or more requested actions",
+                        "unsupported": "A home request that cannot be represented by the available targets or actions",
+                    },
+                },
+                "target": {
+                    "type": "choice",
+                    "instructions": (
+                        "Select the explicitly requested smart-home target. Do not infer "
+                        "a room that was not stated."
+                    ),
+                    "criteria": {key: value.entity_id for key, value in TARGETS.items()}
+                    | {"none_or_unknown": "No explicit known target"},
+                },
+                "action": {
+                    "type": "choice",
+                    "instructions": "Select the single requested action.",
+                    "criteria": {
+                        "turn_on": "Turn on",
+                        "turn_off": "Turn off",
+                        "toggle": "Toggle",
+                        "set_brightness": "Set an exact brightness percentage",
+                        "adjust_brightness_up": "Increase brightness",
+                        "adjust_brightness_down": "Decrease brightness",
+                        "set_color": "Set a named light color",
+                        "set_temperature": "Set an exact thermostat temperature",
+                        "adjust_temperature_up": "Make the thermostat warmer",
+                        "adjust_temperature_down": "Make the thermostat cooler",
+                        "activate_scene": "Activate a scene",
+                        "pause_media": "Pause or stop media",
+                        "none_or_unsupported": "No supported action",
+                    },
+                },
+                "color": {
+                    "type": "choice",
+                    "instructions": "Select the explicitly requested color, or none if color is irrelevant or absent.",
+                    "criteria": {color: color.replace("_", " ") for color in sorted(COLORS)}
+                    | {"none_or_unknown": "No supported color stated"},
+                },
+                "reference": {
+                    "type": "choice",
+                    "instructions": (
+                        "Was the target explicitly named in this utterance? Pronouns and "
+                        "phrases such as it, them, there, or down here are ambiguous."
+                    ),
+                    "criteria": {
+                        "explicit_target": "A target or room is explicitly named",
+                        "missing_or_ambiguous": "The target is omitted or only referenced indirectly",
+                    },
+                },
+            },
+        }
+
+
+    def _choice(answers: dict[str, Any], name: str) -> tuple[str, float] | None:
+        answer = answers.get(name)
+        if not isinstance(answer, dict) or answer.get("type") != "choice":
+            return None
+        choice = answer.get("choice")
+        confidence = answer.get("confidence")
+        if not isinstance(choice, str) or not isinstance(confidence, (int, float)):
+            return None
+        if not 0 <= float(confidence) <= 1:
+            return None
+        return choice, float(confidence)
+
+
+    def _one_number(text: str) -> float | None:
+        values = [float(match.group(1)) for match in _NUMBER.finditer(text)]
+        return values[0] if len(values) == 1 else None
+
+
+    def decide(text: str, payload: Any) -> Decision:
+        if not isinstance(payload, dict) or payload.get("model") != MODEL:
+            return Decision("reject", speech="Jev is unavailable.")
+        answers = payload.get("answers")
+        if not isinstance(answers, dict):
+            return Decision("reject", speech="Jev is unavailable.")
+
+        kind = _choice(answers, "request_kind")
+        if kind is None:
+            return Decision("reject", speech="Jev is unavailable.")
+        kind_name, kind_confidence = kind
+        if kind_name == "general_or_conversation" and kind_confidence >= LIGHT_THRESHOLD:
+            return Decision("fallback")
+        if kind_name == "compound":
+            return Decision("clarify", speech="Please ask for one action at a time.")
+        if kind_name != "home_command":
+            return Decision(
+                "clarify", speech="Please repeat with one supported device and action."
+            )
+
+        target_answer = _choice(answers, "target")
+        action_answer = _choice(answers, "action")
+        reference_answer = _choice(answers, "reference")
+        if target_answer is None or action_answer is None or reference_answer is None:
+            return Decision("reject", speech="Jev is unavailable.")
+        target_name, target_confidence = target_answer
+        action, action_confidence = action_answer
+        reference, reference_confidence = reference_answer
+        target = TARGETS.get(target_name)
+        confidence = min(
+            kind_confidence, target_confidence, action_confidence, reference_confidence
+        )
+
+        if target is None or action not in target.actions or reference != "explicit_target":
+            return Decision(
+                "clarify", speech="Please repeat with the device or room and one action."
+            )
+
+        value: float | None = None
+        color: str | None = None
+        if action in {"set_brightness", "set_temperature"}:
+            value = _one_number(normalized_text(text))
+            if value is None:
+                return Decision("clarify", speech="Please repeat with one exact value.")
+            if action == "set_brightness" and not 0 <= value <= 100:
+                return Decision(
+                    "clarify",
+                    speech="Brightness must be between zero and one hundred percent.",
+                )
+        if action == "set_color":
+            color_answer = _choice(answers, "color")
+            if color_answer is None:
+                return Decision("reject", speech="Jev is unavailable.")
+            color, color_confidence = color_answer
+            confidence = min(confidence, color_confidence)
+            if color not in COLORS:
+                return Decision("clarify", speech="Please name a supported color.")
+
+        threshold = (
+            CLIMATE_THRESHOLD
+            if target_name == "living_room_thermostat"
+            else LIGHT_THRESHOLD
+        )
+        if confidence < threshold:
+            if confidence >= CLARIFY_THRESHOLD:
+                return Decision(
+                    "clarify", speech="Please repeat with the device or room and action."
+                )
+            return Decision("clarify", speech="I could not identify a safe home command.")
+
+        return Decision(
+            "execute",
+            command=Command(target_name, action, confidence, value=value, color=color),
+        )
+  component.jarvis_jev.shadow.py: |
+    from __future__ import annotations
+
+    import asyncio
+    import time
+    from dataclasses import dataclass
+    from typing import Any
+
+    LOCAL_MODEL = "local-qwen3-0.6b-rlcd-decision"
+
+
+    @dataclass(frozen=True)
+    class ShadowResult:
+        payload: dict[str, Any] | None
+        latency_seconds: float
+        error: str | None = None
+
+
+    async def request_shadow(
+        session: Any,
+        url: str,
+        request: dict[str, Any],
+        timeout_seconds: float,
+    ) -> ShadowResult:
+        started = time.monotonic()
+        try:
+            async with asyncio.timeout(timeout_seconds):
+                async with session.post(url, json=request) as response:
+                    if response.status != 200:
+                        return ShadowResult(
+                            None,
+                            time.monotonic() - started,
+                            f"http_{response.status}",
+                        )
+                    payload = await response.json()
+            if not isinstance(payload, dict) or payload.get("model") != LOCAL_MODEL:
+                return ShadowResult(
+                    None,
+                    time.monotonic() - started,
+                    "malformed_response",
+                )
+            return ShadowResult(payload, time.monotonic() - started)
+        except TimeoutError:
+            return ShadowResult(None, time.monotonic() - started, "timeout")
+        except Exception:  # noqa: BLE001
+            return ShadowResult(None, time.monotonic() - started, "request_failed")
+
+
+    def compare_answers(authoritative: Any, shadow: Any) -> tuple[int, int, bool | None]:
+        if not isinstance(authoritative, dict) or not isinstance(shadow, dict):
+            return 0, 0, None
+        authoritative_answers = authoritative.get("answers")
+        shadow_answers = shadow.get("answers")
+        if not isinstance(authoritative_answers, dict) or not isinstance(
+            shadow_answers, dict
+        ):
+            return 0, 0, None
+
+        compared = 0
+        agreed = 0
+        for name, expected in authoritative_answers.items():
+            observed = shadow_answers.get(name)
+            if not isinstance(expected, dict) or not isinstance(observed, dict):
+                continue
+            expected_choice = expected.get("choice")
+            observed_choice = observed.get("choice")
+            if not isinstance(expected_choice, str) or not isinstance(observed_choice, str):
+                continue
+            compared += 1
+            agreed += expected_choice == observed_choice
+        return agreed, compared, agreed == compared if compared else None
+  component.jarvis_jev.strings.json: |
+    {
+      "config": {
+        "step": {
+          "user": {
+            "title": "Jarvis Jev Router",
+            "description": "Choose the Ollama agent for general questions. The API key comes from TYPESAFE_API_KEY.",
+            "data": {
+              "fallback_agent": "Ollama fallback agent"
+            }
+          }
+        },
+        "error": {
+          "missing_api_key": "TYPESAFE_API_KEY is not configured in the Home Assistant container"
+        },
+        "abort": {
+          "already_configured": "Jarvis Jev Router is already configured"
+        }
+      }
+    }

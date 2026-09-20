@@ -4,8 +4,16 @@ namespace: voice
 resources:
   - namespace.yaml
   - ollama.yaml
+  - local-decision.yaml
   - whisper.yaml
   - piper.yaml
   - satellite.yaml
   - exporter.yaml
   - voice-id.yaml
+
+configMapGenerator:
+  - name: local-decision-runtime
+    files:
+      - local-decision/app.py
+      - local-decision/pyproject.toml
+      - local-decision/uv.lock

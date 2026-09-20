@@ -813,6 +813,45 @@
         "status": "unsupported"
       },
       "consumers": [
+        "gitops/voice/local-decision.yaml:30",
+        "gitops/voice/local-decision.yaml:87"
+      ],
+      "destination_repository": "upstream/ghcr.io/astral-sh/uv",
+      "destination_tags": [
+        "retention-deployed-e5b65587bce7de59"
+      ],
+      "digest": "sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58",
+      "id": "upstream-astral-sh-uv-01b199838511",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58",
+        "reference": "ghcr.io/astral-sh/uv@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58",
+        "registry": "ghcr.io",
+        "repository": "astral-sh/uv",
+        "tag": null
+      }
+    },
+    {
+      "authenticity": {
+        "reason": "no source verification policy is declared for this inventory record",
+        "status": "unsupported"
+      },
+      "consumers": [
         "observed:observability/ntfy-ntfy-5cc6bb76b7-kphmw/ntfy"
       ],
       "destination_repository": "upstream/docker.io/binwiederhier/ntfy",

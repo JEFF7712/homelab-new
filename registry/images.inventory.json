@@ -724,6 +724,24 @@
     },
     {
       "consumers": [
+        "gitops/voice/local-decision.yaml:30",
+        "gitops/voice/local-decision.yaml:87"
+      ],
+      "destination_repository": "upstream/ghcr.io/astral-sh/uv",
+      "id": "upstream-astral-sh-uv-01b199838511",
+      "kind": "upstream",
+      "producer": null,
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58",
+        "reference": "ghcr.io/astral-sh/uv@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58",
+        "registry": "ghcr.io",
+        "repository": "astral-sh/uv",
+        "tag": null
+      }
+    },
+    {
+      "consumers": [
         "observed:observability/ntfy-ntfy-5cc6bb76b7-kphmw/ntfy"
       ],
       "destination_repository": "upstream/docker.io/binwiederhier/ntfy",

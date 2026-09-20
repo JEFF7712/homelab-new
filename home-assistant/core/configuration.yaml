@@ -97,6 +97,15 @@ intent_script:
           entity_id: "{{ jarvis_alias }}"
     speech:
       text: "Done."
+  JarvisAliasColor:
+    action:
+      - service: light.turn_on
+        target:
+          entity_id: "{{ jarvis_alias }}"
+        data:
+          color_name: "{{ jarvis_general_color }}"
+    speech:
+      text: "Done."
 light:
   - platform: group
     name: Kitchen Lights

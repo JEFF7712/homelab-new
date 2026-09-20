@@ -10,6 +10,7 @@ from ..models import OwnerMode, PlanAction, ResourceDocument
 from .base import BaseAdapter
 
 CUSTOM_SENTENCES_DIR = Path("home-assistant") / "custom_sentences"
+CUSTOM_COMPONENTS_DIR = Path("home-assistant") / "custom_components"
 
 
 def iter_custom_sentences(repo_root: Path) -> list[tuple[str, str]]:
@@ -32,6 +33,20 @@ def iter_custom_sentences(repo_root: Path) -> list[tuple[str, str]]:
     return collected
 
 
+def iter_custom_components(repo_root: Path) -> list[tuple[str, str]]:
+    base = repo_root / CUSTOM_COMPONENTS_DIR
+    if not base.is_dir():
+        return []
+    collected: list[tuple[str, str]] = []
+    for domain_dir in sorted(path for path in base.iterdir() if path.is_dir()):
+        for component_file in sorted(
+            path for path in domain_dir.iterdir() if path.is_file()
+        ):
+            key = f"component.{domain_dir.name}.{component_file.name}"
+            collected.append((key, component_file.read_text(encoding="utf-8")))
+    return collected
+
+
 def render_config_configmap(repo_root: Path) -> tuple[str, str]:
     """Render gitops/home-assistant/config.yaml content plus its checksum.
 
@@ -43,7 +58,9 @@ def render_config_configmap(repo_root: Path) -> tuple[str, str]:
     core_content = core_file.read_text(encoding="utf-8")
 
     def _block(content: str) -> str:
-        indented = "\n".join("    " + line for line in content.splitlines())
+        indented = "\n".join(
+            f"    {line}" if line else "" for line in content.splitlines()
+        )
         return f"{indented}\n"
 
     parts = [
@@ -57,6 +74,9 @@ def render_config_configmap(repo_root: Path) -> tuple[str, str]:
     ]
     checksum_parts = [core_content]
     for key, content in iter_custom_sentences(repo_root):
+        parts.append(f"  {key}: |\n{_block(content)}")
+        checksum_parts.append(f"{key}\n{content}")
+    for key, content in iter_custom_components(repo_root):
         parts.append(f"  {key}: |\n{_block(content)}")
         checksum_parts.append(f"{key}\n{content}")
     cm_text = "".join(parts)

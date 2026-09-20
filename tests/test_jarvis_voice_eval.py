@@ -49,7 +49,12 @@ NUDGE_FILE = (
     REPO_ROOT / "home-assistant" / "custom_sentences" / "en" / "jarvis_nudge.yaml"
 )
 DONE_SCRIPTS = {"JarvisBrightnessNudge", "JarvisMovieMode"}
-ALIAS_INTENTS = {"JarvisAliasOn": "light.turn_on", "JarvisAliasOff": "light.turn_off"}
+ALIAS_INTENTS = {
+    "JarvisAliasOn": "light.turn_on",
+    "JarvisAliasOff": "light.turn_off",
+    "JarvisAliasColor": "light.turn_on",
+}
+ALIAS_COLOR_INTENT = "JarvisAliasColor"
 ALIAS_FILE = (
     REPO_ROOT / "home-assistant" / "custom_sentences" / "en" / "jarvis_alias.yaml"
 )
@@ -400,6 +405,21 @@ class EvalCorpusTest(unittest.TestCase):
             entry = scripts[intent]
             self.assertEqual(entry["speech"]["text"], "Done.")
             self.assertEqual(entry["action"][0]["service"], service)
+
+    def test_alias_color_cases_match_lists(self) -> None:
+        colors = {
+            v["in"] for v in self.alias["lists"]["jarvis_general_color"]["values"]
+        }
+        script = self.core["intent_script"][ALIAS_COLOR_INTENT]
+        self.assertEqual(script["speech"]["text"], "Done.")
+        self.assertEqual(script["action"][0]["service"], "light.turn_on")
+        self.assertIn("jarvis_general_color", script["action"][0]["data"]["color_name"])
+        for case in self.cases:
+            if case.get("intent") != ALIAS_COLOR_INTENT:
+                continue
+            self.assertEqual(case["response"], "Done.", case["id"])
+            say = case["say"].strip().rstrip(".?!").lower()
+            self.assertIn(say.rsplit(" ", 1)[-1], colors, case["id"])
 
     def test_home_sentences_match_cases(self) -> None:
         sentences: dict[str, list[str]] = {}
