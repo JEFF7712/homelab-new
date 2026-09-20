@@ -39,6 +39,10 @@ spec:
             digest: sha256:b6763ecb3c47f2408e0398518851b7f8c5fc46232b2649f8c78a321130c54266
   values:
     deploymentMode: SingleBinary
+    chunksCache:
+      enabled: false
+    resultsCache:
+      enabled: false
     backend:
       replicas: 0
     read:
