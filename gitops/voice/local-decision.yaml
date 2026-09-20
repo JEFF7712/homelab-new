@@ -42,6 +42,8 @@ spec:
             runAsGroup: 0
             allowPrivilegeEscalation: false
             capabilities:
+              add:
+                - CHOWN
               drop:
                 - ALL
             readOnlyRootFilesystem: true
