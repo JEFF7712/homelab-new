@@ -15,35 +15,22 @@ spec:
       labels:
         app: wyoming-whisper
     spec:
-      runtimeClassName: nvidia
       nodeSelector:
-        kubernetes.io/hostname: homelab-05
-        nvidia.com/gpu.present: "true"
+        kubernetes.io/hostname: homelab-04
       securityContext:
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: whisper
-          # Pinned upstream tag: gpu (linuxserver wraps ohf-voice wyoming-faster-whisper;
-          # s6 service takes env only, fixed port 10300, --device defaults from image)
-          image: registry.rupan.dev/upstream/lscr.io/linuxserver/faster-whisper@sha256:020bd4398e2d47b755daa8d523bc1b13bf5e0be5f127c8d8bcb223a5e0f517af  # yamllint disable-line rule:line-length
-          # Bypass s6: run the server directly so --device cuda and
-          # --initial-prompt (both unsupported by the image's service script) apply
-          command:
-            - "/lsiopy/bin/python3"
-            - "-m"
-            - "wyoming_faster_whisper"
+          # Pinned upstream tag: 3.8.1
+          image: docker.io/rhasspy/wyoming-whisper@sha256:ba6fcb6056ebe237d15a325381763a80af2fc8fcedaa04f6a714a7375eb20d80  # yamllint disable-line rule:line-length
           args:
-            - "--uri"
-            - "tcp://0.0.0.0:10300"
             - "--model"
-            - "small.en"
+            - "base.en"
             - "--language"
             - "en"
             - "--beam-size"
             - "5"
-            - "--device"
-            - "cuda"
             - "--initial-prompt"
             - >-
               Govee, Spotify, Young Thug, The Weeknd, Coldplay, Kendrick Lamar,
@@ -52,21 +39,13 @@ spec:
               good vibes sign, floor lamp, desk lamp, light strip, living room,
               bedroom, kitchen, downstairs, Jarvis.
             - "--data-dir"
-            - "/config"
+            - "/data"
             - "--download-dir"
-            - "/config"
-          env:
-            - name: HOME
-              value: /config
-            - name: TMPDIR
-              value: /tmp
-            # ctranslate2 dlopens CUDA libs by search path; the image ships them
-            # as nvidia pip wheels without setting LD_LIBRARY_PATH
-            - name: LD_LIBRARY_PATH
-              value: >-
-                /lsiopy/lib/python3.12/site-packages/nvidia/cublas/lib:/lsiopy/lib/python3.12/site-packages/nvidia/cudnn/lib:/lsiopy/lib/python3.12/site-packages/nvidia/cuda_nvrtc/lib
+            - "/data"
+            - "--uri"
+            - "tcp://0.0.0.0:10301"
           ports:
-            - containerPort: 10300
+            - containerPort: 10301
               name: whisper
           startupProbe:
             tcpSocket:
@@ -83,16 +62,14 @@ spec:
             periodSeconds: 30
           resources:
             requests:
-              cpu: 500m
-              memory: 2Gi
-              nvidia.com/gpu: "1"
+              cpu: "1"
+              memory: 1Gi
             limits:
-              cpu: "2"
-              memory: 4Gi
-              nvidia.com/gpu: "1"
+              cpu: "6"
+              memory: 8Gi
           volumeMounts:
             - name: model-cache
-              mountPath: /config
+              mountPath: /data
         - name: voice-id
           # Pinned upstream tag: 3.8.1
           image: docker.io/rhasspy/wyoming-whisper@sha256:ba6fcb6056ebe237d15a325381763a80af2fc8fcedaa04f6a714a7375eb20d80  # yamllint disable-line rule:line-length
@@ -103,17 +80,17 @@ spec:
             - "--host"
             - "0.0.0.0"
             - "--port"
-            - "10301"
+            - "10300"
             - "--upstream-host"
             - "127.0.0.1"
             - "--upstream-port"
-            - "10300"
+            - "10301"
             - "--model"
             - "/data/voice-id/model.onnx"
             - "--profiles"
             - "/app/profiles.json"
           ports:
-            - containerPort: 10301
+            - containerPort: 10300
               name: wyoming
           startupProbe:
             tcpSocket:
@@ -160,4 +137,4 @@ spec:
   ports:
     - name: wyoming
       port: 10300
-      targetPort: 10301
+      targetPort: 10300
