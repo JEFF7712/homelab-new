@@ -3837,7 +3837,6 @@
       ],
       "destination_repository": "upstream/nvcr.io/nvidia/k8s-device-plugin",
       "destination_tags": [
-        "v0.17.0",
         "retention-deployed-7089559ce615"
       ],
       "digest": "sha256:7089559ce6153018806857f5049085bae15b3bf6f1c8bd19d8b12f707d087dea",
