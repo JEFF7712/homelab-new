@@ -15,10 +15,8 @@ spec:
       labels:
         app: immich-machine-learning
     spec:
-      runtimeClassName: nvidia
       nodeSelector:
         kubernetes.io/hostname: homelab-05
-        nvidia.com/gpu.present: "true"
       securityContext:
         seccompProfile:
           type: RuntimeDefault
@@ -28,10 +26,6 @@ spec:
           env:
             - name: MPLCONFIGDIR
               value: /tmp/matplotlib
-            - name: NVIDIA_VISIBLE_DEVICES
-              value: all
-            - name: NVIDIA_DRIVER_CAPABILITIES
-              value: all
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -56,11 +50,9 @@ spec:
             requests:
               cpu: 500m
               memory: 1Gi
-              nvidia.com/gpu: "1"
             limits:
               cpu: "4"
               memory: 6Gi
-              nvidia.com/gpu: "1"
       volumes:
         - name: model-cache
           persistentVolumeClaim:
