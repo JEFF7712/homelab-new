@@ -30,7 +30,10 @@ data:
 
     GROQ_ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
 
+    # Govee needs dense priming: large-v3-turbo hears "Gobi" when Govee
+    # appears only once in a long list (verified 2026-09-20).
     DEFAULT_PROMPT = (
+        "Govee, Govee, Govee. Turn on all Govee lights. "
         "Govee, Spotify, Young Thug, The Weeknd, Coldplay, Kendrick Lamar, "
         "Drake, Travis Scott, Kanye West, Rauw Alejandro, Post Malone, "
         "Metro Boomin, 21 Savage, Gunna, Future, tulip lamp, mushroom lamp, "
