@@ -60,6 +60,11 @@ spec:
               value: /config
             - name: TMPDIR
               value: /tmp
+            # ctranslate2 dlopens CUDA libs by search path; the image ships them
+            # as nvidia pip wheels without setting LD_LIBRARY_PATH
+            - name: LD_LIBRARY_PATH
+              value: >-
+                /lsiopy/lib/python3.12/site-packages/nvidia/cublas/lib:/lsiopy/lib/python3.12/site-packages/nvidia/cudnn/lib:/lsiopy/lib/python3.12/site-packages/nvidia/cuda_nvrtc/lib
           ports:
             - containerPort: 10300
               name: whisper
