@@ -6,6 +6,7 @@ resources:
   - ollama.yaml
   - local-decision.yaml
   - whisper.yaml
+  - stt-groq.yaml
   - piper.yaml
   - satellite.yaml
   - exporter.yaml

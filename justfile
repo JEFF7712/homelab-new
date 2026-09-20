@@ -49,6 +49,9 @@ deploy-fleet *args:
 check-gitops:
     bash scripts/checks/gitops.sh
 
+voice-stt backend="local":
+    python3 scripts/voice_stt_switch.py {{backend}}
+
 check-registry:
     bash scripts/checks/registry.sh
 

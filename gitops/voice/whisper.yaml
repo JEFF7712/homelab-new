@@ -14,6 +14,7 @@ spec:
     metadata:
       labels:
         app: wyoming-whisper
+        backend: local
     spec:
       nodeSelector:
         kubernetes.io/hostname: homelab-04
@@ -134,6 +135,7 @@ metadata:
 spec:
   selector:
     app: wyoming-whisper
+    backend: local
   ports:
     - name: wyoming
       port: 10300
