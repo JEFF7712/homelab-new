@@ -2805,6 +2805,44 @@
     },
     {
       "authenticity": {
+        "reason": "surgical import for whisper GPU migration; publisher policy check deferred to review",
+        "status": "unsupported"
+      },
+      "consumers": [
+        "gitops/voice/whisper.yaml:26"
+      ],
+      "destination_repository": "upstream/lscr.io/linuxserver/faster-whisper",
+      "destination_tags": [
+        "gpu",
+        "retention-deployed-020bd4398e2d47b7"
+      ],
+      "digest": "sha256:020bd4398e2d47b755daa8d523bc1b13bf5e0be5f127c8d8bcb223a5e0f517af",
+      "id": "upstream-linuxserver-faster-whisper-f4b0d14eeeed",
+      "kind": "upstream",
+      "media_type": "application/vnd.oci.image.index.v1+json",
+      "platforms": [
+        "linux/amd64",
+        "unknown/unknown"
+      ],
+      "producer": null,
+      "referrers": {
+        "required": [],
+        "source_status": "not-enumerated"
+      },
+      "resolution": {
+        "status": "source-registry-verified"
+      },
+      "retention_class": "deployed",
+      "source": {
+        "digest": "sha256:020bd4398e2d47b755daa8d523bc1b13bf5e0be5f127c8d8bcb223a5e0f517af",
+        "reference": "lscr.io/linuxserver/faster-whisper:gpu@sha256:020bd4398e2d47b755daa8d523bc1b13bf5e0be5f127c8d8bcb223a5e0f517af",
+        "registry": "lscr.io",
+        "repository": "linuxserver/faster-whisper",
+        "tag": "gpu"
+      }
+    },
+    {
+      "authenticity": {
         "reason": "no source verification policy is declared for this inventory record",
         "status": "unsupported"
       },
