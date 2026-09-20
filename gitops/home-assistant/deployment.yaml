@@ -112,6 +112,7 @@ spec:
                 secretKeyRef:
                   name: home-assistant-secrets
                   key: typesafe_api_key
+                  optional: true
           ports:
             - name: http
               containerPort: 8123
