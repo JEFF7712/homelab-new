@@ -7,8 +7,11 @@
 {
   # The OPNsense API cert only carries DNS:OPNsense.internal (no IP SANs), so
   # CI jobs on this host must resolve that name to reach the firewall by TLS.
+  # registry.rupan.dev must resolve to the NAS directly: importer uploads go
+  # through Cloudflare on the public path and die with 502 on layers over ~100MB.
   networking.hosts = {
     "192.168.1.1" = [ "OPNsense.internal" ];
+    "10.0.30.20" = [ "registry.rupan.dev" ];
   };
 
   # The runner executes downloaded binaries (tofu providers) from its builds
