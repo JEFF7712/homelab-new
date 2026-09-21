@@ -14,3 +14,29 @@ SHADOW_TIMEOUT_SECONDS = 15.0
 LIGHT_THRESHOLD = 0.95
 CLIMATE_THRESHOLD = 0.98
 CLARIFY_THRESHOLD = 0.75
+
+# Risk tiers for execution. Every action the router can emit must appear in
+# exactly one set (enforced by test). STANDARD actions execute when they
+# pass the structural and confidence gates. RESTRICTED actions always route
+# to clarify: locks, garage doors, alarms, HVAC extremes, and anything
+# destructive require explicit confirmation, never silent execution.
+# The schema has no restricted actions today; adding one (e.g. a lock
+# domain) must add it here first or the tier test fails.
+STANDARD_ACTIONS = frozenset(
+    {
+        "turn_on",
+        "turn_off",
+        "toggle",
+        "set_brightness",
+        "adjust_brightness_up",
+        "adjust_brightness_down",
+        "set_color",
+        "set_temperature",
+        "adjust_temperature_up",
+        "adjust_temperature_down",
+        "activate_scene",
+        "pause_media",
+        "none_or_unsupported",
+    }
+)
+RESTRICTED_ACTIONS = frozenset()

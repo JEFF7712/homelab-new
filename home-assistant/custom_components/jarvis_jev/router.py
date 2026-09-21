@@ -4,7 +4,13 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from .const import CLARIFY_THRESHOLD, CLIMATE_THRESHOLD, LIGHT_THRESHOLD, MODEL
+from .const import (
+    CLARIFY_THRESHOLD,
+    CLIMATE_THRESHOLD,
+    LIGHT_THRESHOLD,
+    MODEL,
+    RESTRICTED_ACTIONS,
+)
 
 
 @dataclass(frozen=True)
@@ -276,6 +282,8 @@ def decide(text: str, payload: Any) -> Decision:
         return Decision(
             "clarify", speech="Please repeat with the device or room and one action."
         )
+    if action in RESTRICTED_ACTIONS:
+        return Decision("clarify", speech="That action needs confirmation.")
 
     value: float | None = None
     color = "none_or_unknown"

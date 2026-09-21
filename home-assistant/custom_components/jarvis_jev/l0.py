@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import re
 
+from .const import RESTRICTED_ACTIONS
 from .router import _NUMBER, COLORS, TARGETS, Command, normalized_text
 
 _POLITE = re.compile(r"^(?:please[,\s]+|hey jarvis[,\s]+)+")
@@ -150,6 +151,8 @@ def parse_canonical(text: str) -> Command | None:
             continue
         command = _build(kind, match, cleaned)
         if command is not None:
+            if command.action in RESTRICTED_ACTIONS:
+                return None
             return command
     return None
 

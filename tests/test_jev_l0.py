@@ -11,6 +11,7 @@ import importlib.util
 import sys
 import types
 import unittest
+import unittest.mock
 from pathlib import Path
 
 import yaml
@@ -235,6 +236,62 @@ class L1AdversarialSetTest(unittest.TestCase):
                 command.color, expected.get("color", "none_or_unknown"), cid
             )
             self.assertEqual(command.value, case.get("value"), cid)
+
+
+class RiskTierTest(unittest.TestCase):
+    def test_all_emittable_actions_are_tiered(self) -> None:
+        router_mod = sys.modules["jarvis_jev.router"]
+        const_mod = sys.modules["jarvis_jev.const"]
+        emittable = set()
+        for target in router_mod.TARGETS.values():
+            emittable |= set(target.actions)
+        tiered = const_mod.STANDARD_ACTIONS | const_mod.RESTRICTED_ACTIONS
+        self.assertEqual(emittable - tiered, set())
+        self.assertEqual(
+            const_mod.STANDARD_ACTIONS & const_mod.RESTRICTED_ACTIONS, set()
+        )
+
+    def test_restricted_action_clarifies(self) -> None:
+        router_mod = sys.modules["jarvis_jev.router"]
+        payload = {
+            "model": router_mod.MODEL if hasattr(router_mod, "MODEL") else "jev-1.13.0",
+            "answers": {
+                "request_kind": {
+                    "type": "choice",
+                    "choice": "home_command",
+                    "confidence": 0.99,
+                },
+                "target": {
+                    "type": "choice",
+                    "choice": "kitchen_lights",
+                    "confidence": 0.99,
+                },
+                "action": {"type": "choice", "choice": "turn_off", "confidence": 0.99},
+                "reference": {
+                    "type": "choice",
+                    "choice": "explicit_target",
+                    "confidence": 0.99,
+                },
+                "color": {
+                    "type": "choice",
+                    "choice": "none_or_unknown",
+                    "confidence": 0.99,
+                },
+            },
+        }
+        with unittest.mock.patch.object(
+            router_mod, "RESTRICTED_ACTIONS", frozenset({"turn_off"})
+        ):
+            decision = router_mod.decide("Turn off the kitchen lights.", payload)
+        self.assertEqual(decision.route, "clarify")
+        self.assertIn("confirmation", decision.speech or "")
+
+    def test_l0_refuses_restricted_action(self) -> None:
+        l0_mod = sys.modules["jarvis_jev.l0"]
+        with unittest.mock.patch.object(
+            l0_mod, "RESTRICTED_ACTIONS", frozenset({"turn_off"})
+        ):
+            self.assertIsNone(l0_mod.parse_canonical("Turn off the kitchen lights."))
 
 
 if __name__ == "__main__":
