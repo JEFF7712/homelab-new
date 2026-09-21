@@ -255,6 +255,7 @@ data:
             self._token = token
             self._timeout = timeout
             self._sock: socket.socket | None = None
+            self._buf: bytes = b""
             self._msg_id = 1
 
         def connect(self) -> None:
@@ -270,6 +271,8 @@ data:
             )
             sock.settimeout(self._timeout)
             self._sock = sock
+            self._buf = b""
+            self._read_handshake_response()
             auth_msg = self._read_message()
             if auth_msg.get("type") != "auth_required":
                 raise RuntimeError(f"unexpected handshake message: {auth_msg.get('type')}")
@@ -278,6 +281,26 @@ data:
             if auth_result.get("type") != "auth_ok":
                 raise RuntimeError(f"authentication failed: {auth_result.get('message')}")
             self._msg_id = 1
+
+        def _read_handshake_response(self) -> None:
+            assert self._sock is not None
+            chunks = []
+            while True:
+                chunk = self._sock.recv(4096)
+                if not chunk:
+                    raise RuntimeError("connection closed during handshake")
+                chunks.append(chunk)
+                data = b"".join(chunks)
+                if b"\r\n\r\n" in data:
+                    head, _, rest = data.partition(b"\r\n\r\n")
+                    self._buf = rest
+                    status_line = head.split(b"\r\n", 1)[0].decode("latin-1")
+                    parts = status_line.split(" ", 2)
+                    if len(parts) < 2 or parts[1] != "101":
+                        raise RuntimeError(
+                            f"websocket handshake failed: {status_line}"
+                        )
+                    return
 
         def call(self, cmd_type: str, timeout: float | None = None, **kwargs) -> object:
             if self._sock is None:
@@ -352,6 +375,11 @@ data:
         def _recv_exact(self, count: int) -> bytes:
             assert self._sock is not None
             chunks = []
+            if self._buf:
+                take = self._buf[:count]
+                chunks.append(take)
+                self._buf = self._buf[len(take):]
+                count -= len(take)
             while count > 0:
                 chunk = self._sock.recv(count)
                 if not chunk:

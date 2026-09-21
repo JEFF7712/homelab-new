@@ -142,5 +142,88 @@ class TurnTrackerTest(unittest.TestCase):
         self.assertNotIn('jarvis_requests_total{satellite="sat"} 1.0', text)
 
 
+class HandshakeTest(unittest.TestCase):
+    def _recv_exact(self, sock, count: int) -> bytes:
+        chunks = []
+        while count > 0:
+            chunk = sock.recv(count)
+            if not chunk:
+                raise RuntimeError("fake server: connection closed")
+            chunks.append(chunk)
+            count -= len(chunk)
+        return b"".join(chunks)
+
+    def _read_client_frame(self, sock) -> dict:
+        import json
+
+        header = self._recv_exact(sock, 2)
+        length = header[1] & 0x7F
+        if length == 126:
+            import struct
+
+            (length,) = struct.unpack("!H", self._recv_exact(sock, 2))
+        mask = self._recv_exact(sock, 4)
+        payload = self._recv_exact(sock, length)
+        return json.loads(
+            bytes(b ^ mask[i % 4] for i, b in enumerate(payload)).decode()
+        )
+
+    def _send_server_frame(self, sock, payload: bytes) -> None:
+        sock.sendall(bytes([0x81, len(payload)]) + payload)
+
+    def _fake_ha(self, sock, status_line: str) -> None:
+        import json
+
+        request = b""
+        while b"\r\n\r\n" not in request:
+            request += sock.recv(4096)
+        handshake = status_line.encode() + b"\r\nUpgrade: websocket\r\n\r\n"
+        if " 101 " not in status_line:
+            sock.sendall(handshake)
+            return
+        auth_required = json.dumps({"type": "auth_required"}).encode()
+        frame = bytes([0x81, len(auth_required)]) + auth_required
+        sock.sendall(handshake + frame)
+        auth = self._read_client_frame(sock)
+        assert auth.get("type") == "auth", auth
+        self._send_server_frame(sock, json.dumps({"type": "auth_ok"}).encode())
+
+    def _connect_through_pair(self, status_line: str):
+        import socket
+        import threading
+
+        client, server = socket.socketpair()
+        thread = threading.Thread(target=self._fake_ha, args=(server, status_line))
+        thread.start()
+        sock_class = EXPORTER["HomeAssistantSocket"]
+        sock = sock_class.__new__(sock_class)
+        sock._host = "fake"
+        sock._port = 1
+        sock._ssl = False
+        sock._token = "token"
+        sock._timeout = 5.0
+        sock._sock = client
+        sock._msg_id = 1
+        import socket as socket_module
+
+        real_create = socket_module.create_connection
+        socket_module.create_connection = lambda *args, **kwargs: client
+        try:
+            sock.connect()
+        finally:
+            socket_module.create_connection = real_create
+            thread.join(timeout=5.0)
+            client.close()
+            server.close()
+        return sock
+
+    def test_connect_consumes_http_handshake(self) -> None:
+        self._connect_through_pair("HTTP/1.1 101 Switching Protocols")
+
+    def test_connect_rejects_non_101_handshake(self) -> None:
+        with self.assertRaises(RuntimeError):
+            self._connect_through_pair("HTTP/1.1 400 Bad Request")
+
+
 if __name__ == "__main__":
     unittest.main()

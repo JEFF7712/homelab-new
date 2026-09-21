@@ -234,5 +234,27 @@ class TestFormatTranscript(unittest.TestCase):
         )
 
 
+class TestSpeakerTagContract(unittest.TestCase):
+    """The proxy's emitted tag and the canonical prompt must agree.
+
+    Runs without sherpa/wyoming deps: reads both sources as text. The live
+    HA copy is UI-managed with no read API, so this pins the two repo sides
+    and the runbook procedure covers pasting the prompt into HA.
+    """
+
+    def test_proxy_prefix_matches_canonical_prompt(self) -> None:
+        root = Path(__file__).resolve().parent.parent
+        proxy_src = (root / "scripts" / "voice_id" / "proxy.py").read_text(
+            encoding="utf-8"
+        )
+        prompt = (
+            root / "home-assistant" / "conversation" / "jarvis_prompt.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn('return f"speaker {speaker} {body}"', proxy_src)
+        self.assertIn("`speaker <Name>`", prompt)
+        self.assertNotIn("[Speaker:", proxy_src)
+        self.assertNotIn("[Speaker:", prompt)
+
+
 if __name__ == "__main__":
     unittest.main()
