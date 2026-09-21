@@ -17,6 +17,7 @@ spec:
       annotations:
         checksum/config: 0b409d90bc20b1b7106ad677a9a7cf640ccb1578375e799a6a659bb2155948ca
         checksum/dependencies: 8eac350ea6f0dc5b311c3b363345bb99229e5efa193aa69111e630103301751e
+        reloader.stakater.com/auto: 'true'
     spec:
       nodeSelector:
         kubernetes.io/hostname: homelab-03
