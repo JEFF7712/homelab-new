@@ -735,7 +735,10 @@ data:
   component.jarvis_jev.const.py: |
     DOMAIN = "jarvis_jev"
     CONF_FALLBACK_AGENT = "fallback_agent"
-    OLLAMA_FALLBACK_AGENT = "01M2PAGPG9CFFS4SZ85Y222DV6"
+    # Phase 0: no local LLM. Qwen/Ollama was removed to free the T1000 GPU and
+    # the cloud replacement is not wired yet, so new entries get no fallback
+    # and general conversation replies unavailable until one is configured.
+    OLLAMA_FALLBACK_AGENT = ""
 
     API_URL = "https://api.typesafe.ai/v1/systemone"
     MODEL = "jev-1.13.0"
