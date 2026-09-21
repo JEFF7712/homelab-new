@@ -195,9 +195,11 @@ class L1AdversarialSetTest(unittest.TestCase):
             self.adversarial["model_errors_l0_covered"],
             self.adversarial["primary_safe"],
             self.adversarial["canaries"],
+            self.adversarial["stress_synthetic"],
         ]
         self.assertEqual(len(self.adversarial["stress_unsafe"]), 12)
         self.assertEqual(len(self.adversarial["primary_safe"]), 14)
+        self.assertEqual(len(self.adversarial["stress_synthetic"]), 220)
         for group in groups:
             for cid in group:
                 self.assertIn(cid, self.cases, cid)
@@ -209,8 +211,17 @@ class L1AdversarialSetTest(unittest.TestCase):
             self.assertEqual(self.cases[cid]["expected_route"], "execute", cid)
 
     def test_l0_misses_stress_and_primary_sets(self) -> None:
-        for cid in self.adversarial["stress_unsafe"] + self.adversarial["primary_safe"]:
+        pending = (
+            self.adversarial["stress_unsafe"]
+            + self.adversarial["primary_safe"]
+            + self.adversarial["stress_synthetic"]
+        )
+        for cid in pending:
             self.assertIsNone(l0.parse_canonical(self.cases[cid]["say"]), cid)
+
+    def test_synthetic_all_expect_clarify(self) -> None:
+        for cid in self.adversarial["stress_synthetic"]:
+            self.assertEqual(self.cases[cid]["expected_route"], "clarify", cid)
 
     def test_l0_parses_canaries_exactly(self) -> None:
         for cid in self.adversarial["canaries"]:

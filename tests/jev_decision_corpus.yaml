@@ -933,6 +933,10 @@
 - id: mis-activate-light
   say: Activate the kitchen lights.
   expected_route: clarify
+  notes: Policy is strict by design, not a Jev score adjustment. `activate`
+    is scene vocabulary; for lights the utterance must clarify even though
+    turn_on would be a reasonable guess. Blessing activate->turn_on here
+    would gut the domain-mismatch category.
   expected:
     request_kind: home_command
     target: kitchen_lights
@@ -1478,3 +1482,1523 @@
   expected_route: fallback
   expected:
     request_kind: general_or_conversation
+
+# Synthetic L1 stress expansion (v2): 220 clarify-expected cases
+# across ambiguity, compounds, domain mismatch, negation,
+# corrections, undo, malformed values, STT corruption, and
+# near-vocabulary entities. All verified L0-misses.
+- id: ambx-001
+  say: Turn it off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-002
+  say: Turn it back on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-003
+  say: Switch it on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-004
+  say: Turn them off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-005
+  say: Switch them back on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-006
+  say: Put that on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-007
+  say: Turn this off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-008
+  say: Dim that a bit.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-009
+  say: Make it blue.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-010
+  say: Set it to 40 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-011
+  say: Turn the light on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-012
+  say: Turn the lights on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-013
+  say: Switch that off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-014
+  say: Make them warmer.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-015
+  say: Turn it up.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Pronoun with no antecedent; must not resolve.
+- id: ambx-016
+  say: Turn on the attic lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-017
+  say: Turn off the hallway light.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-018
+  say: Set the office lights to 50 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-019
+  say: Make the bathroom lights blue.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-020
+  say: Turn on the closet light.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-021
+  say: Turn off the pantry lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-022
+  say: Set the foyer lights to 30 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-023
+  say: Turn on the deck lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-024
+  say: Turn off the nursery light.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-025
+  say: Make the laundry room lights white.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-026
+  say: Turn on the basement lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-027
+  say: Set the garage thermostat to 70 degrees.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-028
+  say: Turn off the shed lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-029
+  say: Turn on the porch lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-030
+  say: Dim the hallway lights to 20 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-031
+  say: Turn off the guest room lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-032
+  say: Set the bathroom lights to red.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-033
+  say: Turn on the driveway lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-034
+  say: Turn off the sunroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-035
+  say: Turn on the balcony lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: Named area outside the known vocabulary.
+- id: ambx-036
+  say: Turn off the lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: No resolvable target device.
+- id: ambx-037
+  say: Turn the lamp on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: No resolvable target device.
+- id: ambx-038
+  say: Switch the plug off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: No resolvable target device.
+- id: ambx-039
+  say: Dim the thermostat.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: No resolvable target device.
+- id: ambx-040
+  say: Pause it.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: No resolvable target device.
+- id: compx-001
+  say: Turn on the kitchen and bedroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-002
+  say: Turn off the lights and lock the door.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-003
+  say: Turn the living room lights off and the kitchen lights on.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-004
+  say: Dim the bedroom lights and change the kitchen lights to blue.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-005
+  say: Set the thermostat to 72 and turn off the downstairs lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-006
+  say: Turn on movie mode and dim the living room lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-007
+  say: Pause the satellite speaker and turn off the good vibes sign.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-008
+  say: Turn off the kitchen, bedroom, and living room lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-009
+  say: Turn the kitchen lights pink then make them brighter.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-010
+  say: Set the kitchen lights to 50 percent and the bedroom lights to 30 percent.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-011
+  say: Turn on both the stairs light and the porch light.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-012
+  say: Switch off the kitchen lights while turning on the living room lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-013
+  say: Turn everything on.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-014
+  say: Turn all lights off.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-015
+  say: Turn on the lights and the thermostat.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-016
+  say: After turning off the kitchen lights, turn on the bedroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-017
+  say: Kitchen lights off, bedroom lights on.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-018
+  say: Turn the downstairs lights on and off.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-019
+  say: Stop the music and turn on the lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-020
+  say: Turn up the thermostat and turn down the lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-021
+  say: Make the kitchen lights red and the living room lights blue.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-022
+  say: Turn on the good vibes sign and the stairs light.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-023
+  say: Dim the lights and pause the music.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-024
+  say: Set movie mode and turn off the lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-025
+  say: Turn off the satellite speaker and the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-026
+  say: Brighten the kitchen lights and dim the bedroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-027
+  say: Turn the thermostat up and the lights down.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-028
+  say: Flip the living room lights and toggle the stairs light.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-029
+  say: Turn on the bedroom lights, then the bathroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: compx-030
+  say: First pause the speaker, then dim the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+  notes: Two or more actions; L1 must not execute the first and drop the rest.
+- id: misx-001
+  say: Lock the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Unsupported action for the domain.
+- id: misx-002
+  say: Open the bedroom blinds.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+  notes: Unsupported action for the domain.
+- id: misx-003
+  say: Start the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Unsupported action for the domain.
+- id: misx-004
+  say: Make the stairs light red.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: stairs_light
+  notes: Unsupported action for the domain.
+- id: misx-005
+  say: Set the good vibes sign to blue.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: good_vibes_sign
+  notes: Unsupported action for the domain.
+- id: misx-006
+  say: Dim the living room thermostat.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_thermostat
+  notes: Unsupported action for the domain.
+- id: misx-007
+  say: Set the thermostat to 50 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_thermostat
+  notes: Unsupported action for the domain.
+- id: misx-008
+  say: Pause the bedroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: bedroom_lights
+  notes: Unsupported action for the domain.
+- id: misx-009
+  say: Mute the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Unsupported action for the domain.
+- id: misx-010
+  say: Stop the downstairs lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: downstairs_lights
+  notes: Unsupported action for the domain.
+- id: misx-011
+  say: Turn off the thermostat.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_thermostat
+  notes: Unsupported action for the domain.
+- id: misx-012
+  say: Turn on the living room thermostat.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_thermostat
+  notes: Unsupported action for the domain.
+- id: misx-013
+  say: Activate the stairs light.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: stairs_light
+  notes: Unsupported action for the domain.
+- id: misx-014
+  say: Set the kitchen lights to movie mode.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Unsupported action for the domain.
+- id: misx-015
+  say: Make the satellite speaker blue.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: satellite_media_player
+  notes: Unsupported action for the domain.
+- id: misx-016
+  say: Set the bedroom window plug to 50 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: bedroom_window_plug
+  notes: Unsupported action for the domain.
+- id: misx-017
+  say: Brighten the good vibes sign.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: good_vibes_sign
+  notes: Unsupported action for the domain.
+- id: misx-018
+  say: Cool the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Unsupported action for the domain.
+- id: misx-019
+  say: Heat the bedroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: bedroom_lights
+  notes: Unsupported action for the domain.
+- id: misx-020
+  say: Water the living room plants.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+  notes: Unsupported action for the domain.
+- id: misx-021
+  say: Charge the bedroom mushroom plug.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: bedroom_mushroom_plug
+  notes: Unsupported action for the domain.
+- id: misx-022
+  say: Rename the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Unsupported action for the domain.
+- id: misx-023
+  say: Move the stairs light.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: stairs_light
+  notes: Unsupported action for the domain.
+- id: misx-024
+  say: Delete movie mode.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: movie_mode
+  notes: Unsupported action for the domain.
+- id: misx-025
+  say: Freeze the satellite speaker.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: satellite_media_player
+  notes: Unsupported action for the domain.
+- id: misx-026
+  say: Record the living room lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_lights
+  notes: Unsupported action for the domain.
+- id: misx-027
+  say: Arm the bedroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: bedroom_lights
+  notes: Unsupported action for the domain.
+- id: misx-028
+  say: Disarm the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Unsupported action for the domain.
+- id: misx-029
+  say: Paint the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Unsupported action for the domain.
+- id: misx-030
+  say: Fly the good vibes sign.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: good_vibes_sign
+  notes: Unsupported action for the domain.
+- id: neg-001
+  say: Don't turn off the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-002
+  say: Do not turn on the bedroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-003
+  say: Never dim the living room lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-004
+  say: Don't set the thermostat to 70 degrees.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-005
+  say: Don't change the kitchen lights to blue.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-006
+  say: Don't pause the satellite speaker.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-007
+  say: Don't turn on the stairs light.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-008
+  say: Do not activate movie mode.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-009
+  say: Never turn off all the Govee lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-010
+  say: Don't toggle the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-011
+  say: Don't set the kitchen lights to 40 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-012
+  say: Do not dim the downstairs lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-013
+  say: Don't make the bedroom lights red.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-014
+  say: Never pause the music.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-015
+  say: Don't stop the satellite speaker.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-016
+  say: Do not turn the living room lights off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-017
+  say: Don't switch on the good vibes sign.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-018
+  say: Never set the bedroom lights to 100 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-019
+  say: Don't crank the living room lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-020
+  say: Do not kill the downstairs lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-021
+  say: Don't put the living room lights at 75%.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-022
+  say: Never touch the thermostat.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-023
+  say: Don't change anything.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-024
+  say: Do not turn anything on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: neg-025
+  say: Don't you dare turn off the lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Negation is unsupported; executing would do the opposite.
+- id: corr-001
+  say: No, turn off the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-002
+  say: I meant the bedroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-003
+  say: Not the kitchen, the living room lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-004
+  say: Actually turn them back on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-005
+  say: I said off, not on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-006
+  say: Wrong room, I meant the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-007
+  say: No, make them blue instead.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-008
+  say: I meant 50 percent, not 40.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-009
+  say: Sorry, the bedroom lights, not the kitchen.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-010
+  say: Change that to the living room lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-011
+  say: No wait, don't turn anything on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-012
+  say: I meant the thermostat, not the lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-013
+  say: The other room, please.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-014
+  say: Not that one, the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-015
+  say: I said dim, not off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-016
+  say: 'Correction: bedroom lights off.'
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-017
+  say: 'Let me rephrase: kitchen lights on.'
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-018
+  say: Scratch that, pause the speaker.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-019
+  say: I meant turn it off, not on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: corr-020
+  say: The kitchen ones, not the living room ones.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Correction/countermand; no conversational state to resolve against.
+- id: undo-001
+  say: Undo that.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-002
+  say: Put it back.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-003
+  say: Put it back how it was.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-004
+  say: Revert the lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-005
+  say: Undo the last command.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-006
+  say: Go back to how the lights were.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-007
+  say: Restore the previous scene.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-008
+  say: Undo turning off the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-009
+  say: Put the kitchen lights back.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-010
+  say: Revert that last change.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-011
+  say: Cancel that.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-012
+  say: Forget I said that.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-013
+  say: Go back.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-014
+  say: Restore previous brightness.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: undo-015
+  say: Undo.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Undo requires history the router does not keep.
+- id: val-001
+  say: Set the kitchen lights to -5 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-002
+  say: Set the kitchen lights to 101 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-003
+  say: Set the kitchen lights to two hundred percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-004
+  say: Set the kitchen lights to percent 50.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-005
+  say: Set the downstairs lights to 40.5.5 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: downstairs_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-006
+  say: Set the thermostat to 32 degrees.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_thermostat
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-007
+  say: Set the thermostat to 120 degrees.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_thermostat
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-008
+  say: Set the thermostat to seventy.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_thermostat
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-009
+  say: Set the thermostat to 70 degrees Fahrenheit tomorrow.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_thermostat
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-010
+  say: Dim the kitchen lights to -10 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-011
+  say: Set the bedroom lights to 50.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: bedroom_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-012
+  say: Set the lights to 50 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-013
+  say: Turn the kitchen lights to eleven.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-014
+  say: Set the thermostat to 0 degrees.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_thermostat
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-015
+  say: Set the kitchen lights to 1000 lumens.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-016
+  say: Make the bedroom bluer.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: bedroom_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-017
+  say: Less bright in here.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-018
+  say: More light.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-019
+  say: Set the brightness to purple.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: kitchen_lights
+  notes: Malformed, out-of-range, or unitless value.
+- id: val-020
+  say: Set the thermostat to eighty-five.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: living_room_thermostat
+  notes: Malformed, out-of-range, or unitless value.
+- id: stt-001
+  say: Turn of the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-002
+  say: Turn off the kitchen light s.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-003
+  say: Set the kitchen lights two 50 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-004
+  say: Pause the satellite media player please please.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-005
+  say: Turn the kitchen lights off off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-006
+  say: Set thermostat seventy degrees living room.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-007
+  say: Movie mode activate.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-008
+  say: Kitchen lights turn off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-009
+  say: Blue the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-010
+  say: Lights kitchen off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-011
+  say: Turn off kitchen lights lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-012
+  say: Set the the kitchen lights to 40 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-013
+  say: Turn on on the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-014
+  say: Stairs light turn on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-015
+  say: Thermostat set seventy two.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-016
+  say: Good vibes sign off turn.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-017
+  say: Movie activate mode.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-018
+  say: Dim kitchen lights to ten.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-019
+  say: Satellite speaker stop now.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: stt-020
+  say: The kitchen lights, turn them off please please.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: STT or word-order corruption; structure is unreliable.
+- id: sim-001
+  say: Turn on the kitchenette lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-002
+  say: Turn off the living lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-003
+  say: Turn on the bed lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-004
+  say: Set the stair light to 50 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-005
+  say: Turn on the good vibe sign.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-006
+  say: Pause the satellite player.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: satellite_media_player
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-007
+  say: Activate film mode.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-008
+  say: Turn on the govee lamp.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-009
+  say: Set the downstairs lamp to 30 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-010
+  say: Dim the stairwell lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-011
+  say: Turn off the bedside lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-012
+  say: Set the kitchens lights to 40 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-013
+  say: Turn on the lounge lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-014
+  say: Pause the media satellite player.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: satellite_media_player
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-015
+  say: Turn off the bedrooms lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-016
+  say: Set the livingroom lights to 50 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-017
+  say: Turn on the kitchen light fixture.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-018
+  say: Brighten the living rooms lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-019
+  say: Switch the stair lights on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
+- id: sim-020
+  say: Turn off the main lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: explicit_target
+    target: none_or_unknown
+  notes: Near-vocabulary entity; must not snap to a neighbor.
