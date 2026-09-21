@@ -149,8 +149,12 @@ spec:
               value: /models
             - name: HF_HUB_OFFLINE
               value: "1"
+            # cpu: the T1000 holds 3.62 GiB usable with Nemotron resident
+            # at ~2.67 GiB, so Turbo cannot co-reside on CUDA. CPU mode
+            # brings the service up for protocol and latency baselining;
+            # GPU numbers need a maintenance window with STT swapped out.
             - name: CHATTERBOX_DEVICE
-              value: cuda
+              value: cpu
             - name: CHATTERBOX_REFERENCE
               value: /voices/jarvis.wav
             - name: OMP_NUM_THREADS
