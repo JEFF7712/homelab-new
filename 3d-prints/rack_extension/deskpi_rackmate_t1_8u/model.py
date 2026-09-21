@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from typing import cast
 
 from build123d import (
     Align,
@@ -24,7 +25,7 @@ from build123d import (
     extrude,
 )
 
-from . import corner, params
+from . import corner, params, seam
 
 Z0_LID_PLANE = 0.0
 
@@ -90,7 +91,7 @@ def column_body(z_base: float, length: float, with_bore: bool = True) -> Part:
             align=(Align.CENTER, Align.CENTER, Align.MIN),
         ).locate(Location((w / 2, d / 2, -1.0)))
         col = col - bore
-    return col.locate(Location((0, 0, z_base)))
+    return cast(Part, col.locate(Location((0, 0, z_base))))
 
 
 def lower_column_module(origin_x: float, origin_y: float) -> Part:
@@ -122,10 +123,11 @@ def lower_column_module(origin_x: float, origin_y: float) -> Part:
             )
         )
     )
-    return (
+    return cast(
+        Part,
         col.moved(Location((origin_x, origin_y, 0)))
         + spigot
-        - tie_bore_at(origin_x, origin_y, z_base + length, params.SPLICE_ENGAGEMENT_MM)
+        - tie_bore_at(origin_x, origin_y, z_base + length, params.SPLICE_ENGAGEMENT_MM),
     )
 
 
@@ -170,10 +172,11 @@ def upper_column_module(origin_x: float, origin_y: float) -> Part:
             )
         )
     )
-    return (
+    return cast(
+        Part,
         col.moved(Location((origin_x, origin_y, 0)))
         - socket
-        - tie_bore_at(origin_x, origin_y, z_base - 1.0, length + 2.0)
+        - tie_bore_at(origin_x, origin_y, z_base - 1.0, length + 2.0),
     )
 
 
@@ -250,7 +253,7 @@ def bottom_end_block(origin_x: float, origin_y: float, face_high: bool) -> Part:
     ).locate(Location((params.BORE_CENTER_X_MM, params.BORE_CENTER_Y_MM, -1.0)))
     boss, pilot = _boss_and_pilot(seam_first_hole_z(), face_high)
     part = block + boss - hex_solid - washer - bore - pilot
-    return part.moved(Location((origin_x, origin_y, 0)))
+    return cast(Part, part.moved(Location((origin_x, origin_y, 0))))
 
 
 def seam_first_hole_z() -> float:
@@ -297,7 +300,7 @@ def top_end_block(origin_x: float, origin_y: float, face_high: bool) -> Part:
     ).locate(Location((params.BORE_CENTER_X_MM, params.BORE_CENTER_Y_MM, bottom - 1.0)))
     boss, pilot = _boss_and_pilot(_seam.last_extension_hole(), face_high)
     part = block + boss - nut - washer - bore - pilot
-    return part.moved(Location((origin_x, origin_y, 0)))
+    return cast(Part, part.moved(Location((origin_x, origin_y, 0))))
 
 
 def splice_rail_strip(origin_x: float, origin_y: float, face_high: bool) -> Part:
@@ -331,7 +334,7 @@ def splice_rail_strip(origin_x: float, origin_y: float, face_high: bool) -> Part
     ).locate(Location((w / 2, d / 2, corner.SPLICE_Z - half - 1.0)))
     boss, pilot = _boss_and_pilot(corner.SPLICE_Z, face_high)
     part = strip + boss - relief - bore - pilot
-    return part.moved(Location((origin_x, origin_y, 0)))
+    return cast(Part, part.moved(Location((origin_x, origin_y, 0))))
 
 
 def end_blocks_and_strips() -> list[Part]:
@@ -379,15 +382,173 @@ def interface_coupon() -> Part:
         lip_h,
         align=(Align.MIN, Align.MIN, Align.MIN),
     ).locate(Location((rail_w + params.LIP_CLEARANCE_MM, y0, -params.LIP_DEPTH_MM)))
-    part: Part = rail + lip_out + lip_in
+    part = cast(Part, rail + lip_out + lip_in)
     for y in (25.0, 38.0):
         hole = Cylinder(
             radius=params.COUPON_HOLE_DIA_MM / 2,
             height=params.FRAME_ZONE_MM + 2.0,
             align=(Align.CENTER, Align.CENTER, Align.MIN),
         ).locate(Location((params.STRUCTURAL_HOLE_X_LEFT_MM, y, -1.0)))
-        part = part - hole
+        part = cast(Part, part - hole)
     return part
+
+
+def lateral_fit_coupon() -> Part:
+    """Short, hole-free slice of the interface coupon for lateral fit checks."""
+    root = params.LIP_CLEARANCE_MM + params.LIP_THICK_MM
+    clip = Box(
+        params.TOP_MEMBER_WIDTH_MM + 2 * root,
+        params.LATERAL_COUPON_LENGTH_MM,
+        params.FRAME_ZONE_MM + params.LIP_DEPTH_MM,
+        align=(Align.MIN, Align.MIN, Align.MIN),
+    ).locate(
+        Location(
+            (
+                -root,
+                params.COUPON_Y_START_MM,
+                -params.LIP_DEPTH_MM,
+            )
+        )
+    )
+    return cast(Part, interface_coupon() & clip)
+
+
+def _splice_strip_half(lower: bool) -> Part:
+    half = params.RAIL_STRIP_HALF_MM
+    z0 = corner.SPLICE_Z - half if lower else corner.SPLICE_Z
+    clip = Box(
+        100.0,
+        100.0,
+        half,
+        align=(Align.CENTER, Align.CENTER, Align.MIN),
+    ).locate(Location((params.COLUMN_INWARD_MM / 2, params.COLUMN_DEPTH_MM / 2, z0)))
+    return cast(Part, splice_rail_strip(0, 0, False) & clip)
+
+
+def phase2_corner_mount() -> Part:
+    """T1 interface and end block with top-accessible M4 attachment screws."""
+    spigot_w = params.COLUMN_INWARD_MM - 2 * params.COLUMN_WALL_MM - 0.5
+    spigot_d = params.COLUMN_DEPTH_MM - 2 * params.COLUMN_WALL_MM - 0.5
+    spigot = Box(
+        spigot_w,
+        spigot_d,
+        params.LOWER_MOUNT_SPIGOT_HEIGHT_MM + params.JOINT_OVERLAP_MM,
+        align=(Align.CENTER, Align.CENTER, Align.MIN),
+    ).locate(
+        Location(
+            (
+                params.COLUMN_INWARD_MM / 2,
+                params.COLUMN_DEPTH_MM / 2,
+                params.BOTTOM_BLOCK_TOP_Z_MM - params.JOINT_OVERLAP_MM,
+            )
+        )
+    )
+    prototype = cast(Part, interface_coupon() + bottom_end_block(0, 0, False) + spigot)
+    mount_top = params.BOTTOM_BLOCK_TOP_Z_MM + params.LOWER_MOUNT_SPIGOT_HEIGHT_MM
+    for y in params.ATTACH_Y_MM[:2]:
+        hole = Cylinder(
+            radius=params.COUPON_HOLE_DIA_MM / 2,
+            height=params.FRAME_ZONE_MM + 2.0,
+            align=(Align.CENTER, Align.CENTER, Align.MIN),
+        ).locate(Location((params.STRUCTURAL_HOLE_X_LEFT_MM, y, -1.0)))
+        prototype = cast(Part, prototype - hole)
+        access = Cylinder(
+            radius=params.ATTACH_ACCESS_DIA_MM / 2,
+            height=mount_top - params.FRAME_ZONE_MM + 1.0,
+            align=(Align.CENTER, Align.CENTER, Align.MIN),
+        ).locate(
+            Location(
+                (
+                    params.STRUCTURAL_HOLE_X_LEFT_MM,
+                    y,
+                    params.FRAME_ZONE_MM,
+                )
+            )
+        )
+        prototype = cast(Part, prototype - access)
+    _, pilot = _boss_and_pilot(seam_first_hole_z(), False)
+    tie_bore = tie_bore_at(0, 0, -1.0, mount_top + 2.0)
+    prototype = cast(Part, prototype - pilot - tie_bore)
+    return prototype
+
+
+def phase2_lower_upright() -> Part:
+    """Lower upright with a mount socket, top spigot, and lower seam half."""
+    bottom = params.BOTTOM_BLOCK_TOP_Z_MM
+    top = corner.SPLICE_Z
+    upright = column_body(bottom, top - bottom)
+    socket_w = (
+        params.COLUMN_INWARD_MM
+        - 2 * params.COLUMN_WALL_MM
+        - 0.5
+        + 2 * params.LOWER_MOUNT_SOCKET_CLEARANCE_MM
+    )
+    socket_d = (
+        params.COLUMN_DEPTH_MM
+        - 2 * params.COLUMN_WALL_MM
+        - 0.5
+        + 2 * params.LOWER_MOUNT_SOCKET_CLEARANCE_MM
+    )
+    socket = Box(
+        socket_w,
+        socket_d,
+        params.LOWER_MOUNT_SPIGOT_HEIGHT_MM + 1.0,
+        align=(Align.CENTER, Align.CENTER, Align.MIN),
+    ).locate(
+        Location(
+            (params.COLUMN_INWARD_MM / 2, params.COLUMN_DEPTH_MM / 2, bottom - 1.0)
+        )
+    )
+    spigot_w = (
+        params.COLUMN_INWARD_MM
+        - 2 * params.SPLICE_CLEARANCE_PER_SIDE_MM
+        - 2 * params.COLUMN_WALL_MM
+    )
+    spigot_d = (
+        params.COLUMN_DEPTH_MM
+        - 2 * params.SPLICE_CLEARANCE_PER_SIDE_MM
+        - 2 * params.COLUMN_WALL_MM
+    )
+    top_spigot = Box(
+        spigot_w,
+        spigot_d,
+        params.SPLICE_ENGAGEMENT_MM + params.JOINT_OVERLAP_MM,
+        align=(Align.CENTER, Align.CENTER, Align.MIN),
+    ).locate(
+        Location(
+            (
+                params.COLUMN_INWARD_MM / 2,
+                params.COLUMN_DEPTH_MM / 2,
+                top - params.JOINT_OVERLAP_MM,
+            )
+        )
+    )
+    prototype = cast(
+        Part,
+        upright
+        - socket
+        + top_spigot
+        + _splice_strip_half(lower=True)
+        - tie_bore_at(
+            0, 0, bottom - 1.0, top - bottom + params.SPLICE_ENGAGEMENT_MM + 2.0
+        ),
+    )
+    _, pilot = _boss_and_pilot(corner.SPLICE_Z, False)
+    prototype = cast(Part, prototype - pilot)
+    return cast(Part, prototype.moved(Location((0, 0, -bottom))))
+
+
+def phase2_upper_upright() -> Part:
+    """Upper half-splice, upper 4U module, and reinforced top corner."""
+    prototype = (
+        _splice_strip_half(lower=False)
+        + upper_column_module(0, 0)
+        + top_end_block(0, 0, False)
+    )
+    for z in (corner.SPLICE_Z, seam.last_extension_hole()):
+        _, pilot = _boss_and_pilot(z, False)
+        prototype = cast(Part, prototype - pilot)
+    return cast(Part, prototype.moved(Location((0, 0, -corner.SPLICE_Z))))
 
 
 def column_origins() -> list[tuple[float, float]]:
@@ -480,6 +641,14 @@ def export_assembly(out_dir: Path) -> dict[str, Path]:
     export_stl(splice_rail_strip(0, 0, False), str(strip))
     coupon = out_dir / "phase1_interface_coupon.stl"
     export_stl(interface_coupon(), str(coupon))
+    lateral_coupon = out_dir / "phase1_lateral_fit_coupon.stl"
+    export_stl(lateral_fit_coupon(), str(lateral_coupon))
+    phase2_mount = out_dir / "phase2_corner_mount.stl"
+    export_stl(phase2_corner_mount(), str(phase2_mount))
+    phase2_lower = out_dir / "phase2_lower_upright.stl"
+    export_stl(phase2_lower_upright(), str(phase2_lower))
+    phase2_upper = out_dir / "phase2_upper_upright.stl"
+    export_stl(phase2_upper_upright(), str(phase2_upper))
     return {
         "step": step_path,
         "stl": stl_path,
@@ -488,6 +657,10 @@ def export_assembly(out_dir: Path) -> dict[str, Path]:
         "top": top,
         "strip": strip,
         "coupon": coupon,
+        "lateral_coupon": lateral_coupon,
+        "phase2_mount": phase2_mount,
+        "phase2_lower_upright": phase2_lower,
+        "phase2_upper_upright": phase2_upper,
     }
 
 

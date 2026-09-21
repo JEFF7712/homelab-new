@@ -157,9 +157,21 @@ class ExtensionParamsTests(unittest.TestCase):
         self.assertLess(params.COUPON_Y_START_MM, 25.0)
         self.assertGreater(params.COUPON_Y_END_MM, 38.0)
         self.assertAlmostEqual(params.COUPON_HOLE_DIA_MM, 4.5)
-        self.assertAlmostEqual(params.coupon_channel_mm(), 30.6)
+        self.assertAlmostEqual(params.coupon_channel_mm(), 30.3)
+        self.assertLess(
+            params.LATERAL_COUPON_LENGTH_MM,
+            params.COUPON_Y_END_MM - params.COUPON_Y_START_MM,
+        )
         self.assertLess(
             params.COUPON_Y_END_MM - params.COUPON_Y_START_MM, params.BED_Y_MM
+        )
+
+    def test_phase2_mount_keeps_attachment_access(self) -> None:
+        self.assertGreater(params.ATTACH_ACCESS_DIA_MM, params.COUPON_HOLE_DIA_MM)
+        self.assertGreater(params.LOWER_MOUNT_SOCKET_CLEARANCE_MM, 0.0)
+        self.assertLess(
+            params.BOTTOM_BLOCK_TOP_Z_MM + params.LOWER_MOUNT_SPIGOT_HEIGHT_MM,
+            params.BED_Z_MM,
         )
 
 

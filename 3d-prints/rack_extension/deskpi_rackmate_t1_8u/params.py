@@ -213,10 +213,14 @@ def bore_wall_front_y_mm() -> float:
 # the 30 mm aluminum member. Print upside-down (seating face up): no supports.
 COUPON_Y_START_MM = 8.0
 COUPON_Y_END_MM = 68.0
+LATERAL_COUPON_LENGTH_MM = 12.0
 COUPON_HOLE_DIA_MM = 4.5
-LIP_CLEARANCE_MM = 0.3
+LIP_CLEARANCE_MM = 0.15
 LIP_THICK_MM = 2.0
 LIP_DEPTH_MM = 3.0
+LOWER_MOUNT_SPIGOT_HEIGHT_MM = 12.0
+LOWER_MOUNT_SOCKET_CLEARANCE_MM = 0.25
+ATTACH_ACCESS_DIA_MM = 8.0
 
 
 def coupon_channel_mm() -> float:
@@ -327,4 +331,8 @@ def validate() -> list[str]:
         errors.append("coupon must cover the corner attachment pair")
     if not LIP_CLEARANCE_MM > 0.0:
         errors.append("locating lips need positive clearance")
+    if not LOWER_MOUNT_SOCKET_CLEARANCE_MM > 0.0:
+        errors.append("lower mount socket needs positive clearance")
+    if not ATTACH_ACCESS_DIA_MM > COUPON_HOLE_DIA_MM:
+        errors.append("M4 attachment access must clear the screw head")
     return errors
