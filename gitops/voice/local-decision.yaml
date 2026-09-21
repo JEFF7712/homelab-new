@@ -81,6 +81,8 @@ spec:
               value: /runtime/venv
             - name: UV_CACHE_DIR
               value: /runtime/cache
+            - name: UV_PYTHON_INSTALL_DIR
+              value: /runtime/python
             - name: UV_LINK_MODE
               value: copy
             - name: HF_HUB_DISABLE_XET
