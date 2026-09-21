@@ -526,6 +526,49 @@ class EvalCorpusTest(unittest.TestCase):
             "default({}, true)", variable_steps[0]["variables"]["artist_uris"]
         )
 
+    def test_jarvis_play_media_autoplay(self) -> None:
+        script = yaml.safe_load(PLAY_MEDIA_SCRIPT.read_text(encoding="utf-8"))
+        fields = script.get("fields", {})
+        self.assertIn("autoplay", fields)
+        self.assertIn("boolean", fields["autoplay"]["selector"])
+        self.assertTrue(fields["autoplay"].get("default"))
+
+        # Verify variables derive use_radio_mode
+        sequence = script.get("sequence", [])
+        var_step = next(s for s in sequence if "variables" in s)
+        vars_dict = var_step["variables"]
+        self.assertIn("use_radio_mode", vars_dict)
+        radio_expr = vars_dict["use_radio_mode"]
+        self.assertIn("autoplay", radio_expr)
+        self.assertIn("music", radio_expr)
+        self.assertIn("track", radio_expr)
+
+        # Verify media_player.play_media actions pass extra with radio_mode
+        choose_step = next(s for s in sequence if "choose" in s)
+        branches = choose_step["choose"]
+        # Non-artist branches that play media
+        for branch in branches:
+            play_actions = [
+                a
+                for a in branch.get("sequence", [])
+                if a.get("action") == "media_player.play_media"
+            ]
+            for action in play_actions:
+                data = action.get("data", {})
+                self.assertIn("extra", data)
+                self.assertIn("radio_mode", data["extra"])
+
+        default_actions = [
+            a
+            for a in choose_step.get("default", [])
+            if a.get("action") == "media_player.play_media"
+        ]
+        self.assertTrue(default_actions)
+        for action in default_actions:
+            data = action.get("data", {})
+            self.assertIn("extra", data)
+            self.assertIn("radio_mode", data["extra"])
+
 
 if __name__ == "__main__":
     unittest.main()
