@@ -150,7 +150,8 @@ automation referencing them.
      ("play some X", "put on X") resolve the artist via search, then start
      an endless artist mix (`music_assistant.play_media`, `radio_mode: true`)
      so playback continues past the first track; song, album, and playlist
-     phrasings keep narrower lookups.
+     phrasings keep narrower lookups. Individual song requests continue autoplaying
+     related tracks via Music Assistant radio mode (`extra: radio_mode: true`).
    - Stopping is deterministic and local: `home-assistant/automations/jarvis_music_stop.yaml`
      pauses the satellite speaker on "turn off [the] music" / "turn [the] music
      off" (built-in intents already cover "stop the music"). Never route music
