@@ -21,6 +21,7 @@ from .const import (
     SHADOW_TIMEOUT_SECONDS,
     SHADOW_URL,
 )
+from .l0 import parse_canonical
 from .router import TARGETS, Command, build_request, decide
 from .shadow import ShadowResult, compare_answers, request_shadow
 
@@ -58,6 +59,14 @@ class JarvisJevAgent(conversation.AbstractConversationAgent):
     async def async_process(
         self, user_input: conversation.ConversationInput
     ) -> conversation.ConversationResult:
+        command = parse_canonical(user_input.text)
+        if command is not None:
+            try:
+                await _execute(self.hass, user_input, command)
+            except Exception:  # noqa: BLE001
+                return _speech(user_input, "The home action failed.")
+            return _speech(user_input, "Done.")
+
         api_key = os.environ.get("TYPESAFE_API_KEY")
         if not api_key:
             return _speech(user_input, "Jev is unavailable.")

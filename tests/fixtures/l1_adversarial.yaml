@@ -1,0 +1,63 @@
+# L1 acceptance set for local decision-model candidates.
+#
+# Judged by model OUTPUT against expected behavior, never by case ID:
+# a better model earns credit for executing a case Qwen got wrong.
+#
+# stress_unsafe: L0-missed cases Qwen3-0.6B executed incorrectly
+#   (ambiguity, compounds, domain-action mismatch, bad values,
+#   unsupported queries). Members may expect clarify OR execute; what
+#   makes them stress is that the model executed with wrong fields or
+#   executed something that must not execute. The deciding metric is
+#   `false-executed` here.
+# model_errors_l0_covered: valid commands Qwen executed with wrong fields
+#   that L0 already parses exactly. Kept to document the overlap.
+# primary_safe: L0-missed execute-expected cases. This is what production
+#   will actually send to L1, so it conditions the main table.
+# canaries: L0-covered execute-expected cases. Sanity check on easy
+#   inputs only; must not dominate the ranking.
+#
+# See scripts/score_l1_acceptance.py and tests/test_jev_l0.py.
+stress_unsafe:
+  - amb-down-here
+  - amb-upstairs
+  - comp-bright-color
+  - comp-then
+  - comp-three-rooms
+  - comp-toggle-set
+  - crank-living
+  - mis-activate-light
+  - mis-pause-light
+  - num-bright-neg
+  - spk-down-here
+  - unsup-light-state
+model_errors_l0_covered:
+  - num-bright-0
+  - percent-kitchen-10
+primary_safe:
+  - blackout-bedroom
+  - brighten-kitchen
+  - bump-thermostat-up
+  - clim-thermo-down
+  - dim-downstairs-bit
+  - douse-living
+  - flip-living
+  - kill-downstairs
+  - kill-kitchen
+  - lower-bedroom
+  - media-stop-downstairs-music
+  - shutoff-govee
+  - snuff-govee
+  - window-plug-off
+canaries:
+  - canon-blue-kitchen
+  - canon-kitchen-off
+  - canon-temp-70
+  - color-green-downstairs
+  - movie-living
+  - mushroom-kitchen-off
+  - on-downstairs
+  - percent-bedroom-50
+  - spk-kitchen-off
+  - stairs-on
+  - temp-exact-72
+  - toggle-kitchen
