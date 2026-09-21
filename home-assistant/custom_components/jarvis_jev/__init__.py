@@ -16,6 +16,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .const import (
     API_URL,
     CONF_FALLBACK_AGENT,
+    OLLAMA_FALLBACK_AGENT,
     REQUEST_TIMEOUT_SECONDS,
     SHADOW_TIMEOUT_SECONDS,
     SHADOW_URL,
@@ -24,6 +25,13 @@ from .router import TARGETS, Command, build_request, decide
 from .shadow import ShadowResult, compare_answers, request_shadow
 
 _LOGGER = logging.getLogger(__name__)
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    if entry.version == 1:
+        data = {**entry.data, CONF_FALLBACK_AGENT: OLLAMA_FALLBACK_AGENT}
+        hass.config_entries.async_update_entry(entry, data=data, version=2)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -77,20 +85,29 @@ class JarvisJevAgent(conversation.AbstractConversationAgent):
 
         decision = decide(user_input.text, payload)
         if decision.route == "fallback":
-            fallback_agent = self.entry.data[CONF_FALLBACK_AGENT]
-            if fallback_agent == self.entry.entry_id:
-                return _speech(user_input, "The fallback agent is misconfigured.")
-            return await conversation.async_converse(
-                self.hass,
-                text=user_input.text,
-                conversation_id=user_input.conversation_id,
-                context=user_input.context,
-                language=user_input.language,
-                agent_id=fallback_agent,
-                device_id=user_input.device_id,
-                satellite_id=user_input.satellite_id,
-                extra_system_prompt=user_input.extra_system_prompt,
-            )
+            fallback_agent = self.entry.data.get(CONF_FALLBACK_AGENT, "")
+            if not fallback_agent or fallback_agent == self.entry.entry_id:
+                return _speech(
+                    user_input,
+                    "General conversation is unavailable.",
+                )
+            try:
+                return await conversation.async_converse(
+                    self.hass,
+                    text=user_input.text,
+                    conversation_id=user_input.conversation_id,
+                    context=user_input.context,
+                    language=user_input.language,
+                    agent_id=fallback_agent,
+                    device_id=user_input.device_id,
+                    satellite_id=user_input.satellite_id,
+                    extra_system_prompt=user_input.extra_system_prompt,
+                )
+            except Exception:  # noqa: BLE001
+                return _speech(
+                    user_input,
+                    "General conversation is unavailable.",
+                )
         if decision.route != "execute" or decision.command is None:
             return _speech(
                 user_input, decision.speech or "I could not safely route that."

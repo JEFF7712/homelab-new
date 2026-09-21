@@ -460,6 +460,7 @@ data:
     from .const import (
         API_URL,
         CONF_FALLBACK_AGENT,
+        OLLAMA_FALLBACK_AGENT,
         REQUEST_TIMEOUT_SECONDS,
         SHADOW_TIMEOUT_SECONDS,
         SHADOW_URL,
@@ -468,6 +469,13 @@ data:
     from .shadow import ShadowResult, compare_answers, request_shadow
 
     _LOGGER = logging.getLogger(__name__)
+
+
+    async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+        if entry.version == 1:
+            data = {**entry.data, CONF_FALLBACK_AGENT: OLLAMA_FALLBACK_AGENT}
+            hass.config_entries.async_update_entry(entry, data=data, version=2)
+        return True
 
 
     async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -521,20 +529,29 @@ data:
 
             decision = decide(user_input.text, payload)
             if decision.route == "fallback":
-                fallback_agent = self.entry.data[CONF_FALLBACK_AGENT]
-                if fallback_agent == self.entry.entry_id:
-                    return _speech(user_input, "The fallback agent is misconfigured.")
-                return await conversation.async_converse(
-                    self.hass,
-                    text=user_input.text,
-                    conversation_id=user_input.conversation_id,
-                    context=user_input.context,
-                    language=user_input.language,
-                    agent_id=fallback_agent,
-                    device_id=user_input.device_id,
-                    satellite_id=user_input.satellite_id,
-                    extra_system_prompt=user_input.extra_system_prompt,
-                )
+                fallback_agent = self.entry.data.get(CONF_FALLBACK_AGENT, "")
+                if not fallback_agent or fallback_agent == self.entry.entry_id:
+                    return _speech(
+                        user_input,
+                        "General conversation is unavailable.",
+                    )
+                try:
+                    return await conversation.async_converse(
+                        self.hass,
+                        text=user_input.text,
+                        conversation_id=user_input.conversation_id,
+                        context=user_input.context,
+                        language=user_input.language,
+                        agent_id=fallback_agent,
+                        device_id=user_input.device_id,
+                        satellite_id=user_input.satellite_id,
+                        extra_system_prompt=user_input.extra_system_prompt,
+                    )
+                except Exception:  # noqa: BLE001
+                    return _speech(
+                        user_input,
+                        "General conversation is unavailable.",
+                    )
             if decision.route != "execute" or decision.command is None:
                 return _speech(
                     user_input, decision.speech or "I could not safely route that."
@@ -698,13 +715,11 @@ data:
 
     from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 
-    from .const import CONF_FALLBACK_AGENT, DOMAIN
-
-    FALLBACK_AGENT = "conversation.jarvis"
+    from .const import CONF_FALLBACK_AGENT, DOMAIN, OLLAMA_FALLBACK_AGENT
 
 
     class JarvisJevConfigFlow(ConfigFlow, domain=DOMAIN):
-        VERSION = 1
+        VERSION = 2
 
         async def async_step_user(
             self, user_input: dict[str, Any] | None = None
@@ -715,11 +730,12 @@ data:
             self._abort_if_unique_id_configured()
             return self.async_create_entry(
                 title="Jarvis Jev Router",
-                data={CONF_FALLBACK_AGENT: FALLBACK_AGENT},
+                data={CONF_FALLBACK_AGENT: OLLAMA_FALLBACK_AGENT},
             )
   component.jarvis_jev.const.py: |
     DOMAIN = "jarvis_jev"
     CONF_FALLBACK_AGENT = "fallback_agent"
+    OLLAMA_FALLBACK_AGENT = "01M2PAGPG9CFFS4SZ85Y222DV6"
 
     API_URL = "https://api.typesafe.ai/v1/systemone"
     MODEL = "jev-1.13.0"
@@ -1134,9 +1150,9 @@ data:
         "step": {
           "user": {
             "title": "Jarvis Jev Router",
-            "description": "Choose the Ollama agent for general questions. The API key comes from TYPESAFE_API_KEY.",
+            "description": "No local LLM is configured. General conversation is unavailable until a cloud fallback agent is set. The API key comes from TYPESAFE_API_KEY.",
             "data": {
-              "fallback_agent": "Ollama fallback agent"
+              "fallback_agent": "Cloud fallback agent (optional, currently unset)"
             }
           }
         },

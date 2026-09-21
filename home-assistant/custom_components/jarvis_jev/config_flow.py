@@ -5,13 +5,11 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 
-from .const import CONF_FALLBACK_AGENT, DOMAIN
-
-FALLBACK_AGENT = "conversation.jarvis"
+from .const import CONF_FALLBACK_AGENT, DOMAIN, OLLAMA_FALLBACK_AGENT
 
 
 class JarvisJevConfigFlow(ConfigFlow, domain=DOMAIN):
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -22,5 +20,5 @@ class JarvisJevConfigFlow(ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
         return self.async_create_entry(
             title="Jarvis Jev Router",
-            data={CONF_FALLBACK_AGENT: FALLBACK_AGENT},
+            data={CONF_FALLBACK_AGENT: OLLAMA_FALLBACK_AGENT},
         )

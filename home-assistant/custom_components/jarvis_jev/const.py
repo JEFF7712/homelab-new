@@ -1,5 +1,6 @@
 DOMAIN = "jarvis_jev"
 CONF_FALLBACK_AGENT = "fallback_agent"
+OLLAMA_FALLBACK_AGENT = "01M2PAGPG9CFFS4SZ85Y222DV6"
 
 API_URL = "https://api.typesafe.ai/v1/systemone"
 MODEL = "jev-1.13.0"
