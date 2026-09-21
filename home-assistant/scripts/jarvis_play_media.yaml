@@ -77,7 +77,10 @@ sequence:
             response_variable: mass_search
             continue_on_error: true
           - variables:
-              artist_uris: "{{ mass_search.artists | default([]) | map(attribute='uri') | list }}"
+              artist_uris: >-
+                {{ (mass_search | default({}, true)).artists | default([], true)
+                  | map(attribute='uri') | list }}
+          - variables:
               artist_uri: >-
                 {% if target_platform in ['youtube_music', 'youtube', 'ytmusic'] %}
                   {{ (artist_uris | select('search', '^ytmusic:') | list + artist_uris + [media_content_id]) | first }}
@@ -111,16 +114,17 @@ sequence:
             continue_on_error: true
           - variables:
               yt_uri: >-
-                {% set t = mass_search.tracks | default([])
+                {% set search = mass_search | default({}, true) %}
+                {% set t = search.tracks | default([], true)
                   | selectattr('uri', 'search', '^ytmusic:')
                   | map(attribute='uri') | list %}
-                {% set al = mass_search.albums | default([])
+                {% set al = search.albums | default([], true)
                   | selectattr('uri', 'search', '^ytmusic:')
                   | map(attribute='uri') | list %}
-                {% set ar = mass_search.artists | default([])
+                {% set ar = search.artists | default([], true)
                   | selectattr('uri', 'search', '^ytmusic:')
                   | map(attribute='uri') | list %}
-                {% set pl = mass_search.playlists | default([])
+                {% set pl = search.playlists | default([], true)
                   | selectattr('uri', 'search', '^ytmusic:')
                   | map(attribute='uri') | list %}
                 {{ (t + al + ar + pl) | first | default(media_content_id) }}

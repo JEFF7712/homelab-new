@@ -515,6 +515,16 @@ class EvalCorpusTest(unittest.TestCase):
             self.assertEqual(call["data"]["enqueue"], "replace")
             self.assertIn("artist_uri", call["data"]["media_id"])
         self.assertNotIn("media_player.play_media", json.dumps(artist_branch))
+        variable_steps = [
+            step for step in artist_branch["sequence"] if "variables" in step
+        ]
+        self.assertEqual(len(variable_steps), 2)
+        self.assertEqual(set(variable_steps[0]["variables"]), {"artist_uris"})
+        self.assertEqual(set(variable_steps[1]["variables"]), {"artist_uri"})
+        self.assertIn("artist_uris", variable_steps[1]["variables"]["artist_uri"])
+        self.assertIn(
+            "default({}, true)", variable_steps[0]["variables"]["artist_uris"]
+        )
 
 
 if __name__ == "__main__":
