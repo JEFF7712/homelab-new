@@ -1,0 +1,235 @@
+# Chatterbox Turbo Wyoming TTS (Jarvis primary voice; Piper stays as fallback).
+#
+# Custom Wyoming server (`chatterbox-bridge/server.py`, shipped via the
+# `chatterbox-bridge-code` ConfigMap): Chatterbox has no upstream Wyoming
+# image. The T1000 is time-shared with Nemotron STT, so this claims no
+# `nvidia.com/gpu` resource (the device plugin would otherwise park one
+# pod): the voice pipeline uses STT and TTS sequentially, and
+# NVIDIA_VISIBLE_DEVICES gives CUDA access without an allocation.
+# Do not point HA at this service until the runbook GPU bench passes.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wyoming-chatterbox
+  namespace: voice
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: wyoming-chatterbox
+  template:
+    metadata:
+      labels:
+        app: wyoming-chatterbox
+    spec:
+      runtimeClassName: nvidia
+      nodeSelector:
+        kubernetes.io/hostname: homelab-04
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: prepare-permissions
+          image: registry.rupan.dev/upstream/ghcr.io/astral-sh/uv@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58  # yamllint disable-line rule:line-length
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              chown -R 1000:1000 /models /runtime /voices
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - CHOWN
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: models
+              mountPath: /models
+            - name: runtime
+              mountPath: /runtime
+            - name: voices
+              mountPath: /voices
+        - name: prepare-runtime
+          image: registry.rupan.dev/upstream/ghcr.io/astral-sh/uv@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58  # yamllint disable-line rule:line-length
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              if [ ! -x /runtime/venv/bin/python ]; then
+                uv venv --python 3.12 /runtime/venv
+              fi
+              # Pinned package (verified 2026-09-21): pulls torch 2.6 cu126
+              # (~5 GB with CUDA libs) into /runtime on first start.
+              uv pip install --python /runtime/venv/bin/python 'chatterbox-tts==0.1.7'
+              REPO_CACHE=/models/hub/models--ResembleAI--chatterbox-turbo
+              if [ ! -d "$REPO_CACHE/snapshots" ]; then
+                HF_HOME=/models /runtime/venv/bin/python -c '
+              from huggingface_hub import snapshot_download
+              snapshot_download(
+                  repo_id="ResembleAI/chatterbox-turbo",
+                  revision="749d1c1a46eb10492095d68fbcf55691ccf137cd",
+                  allow_patterns=["*.safetensors", "*.json", "*.txt", "*.pt", "*.model"],
+              )
+              '
+              fi
+              # Pinned-revision downloads leave no refs/main, which offline
+              # from_pretrained needs to resolve the repo id. Point it at
+              # the pinned commit whose content was just verified.
+              mkdir -p "$REPO_CACHE/refs"
+              # No trailing newline: hub compares the ref bytes verbatim
+              # against snapshot dir names.
+              printf %s "749d1c1a46eb10492095d68fbcf55691ccf137cd" \
+                > "$REPO_CACHE/refs/main"
+              mkdir -p "$MODEL_DIR"
+              touch "$MODEL_DIR/.complete"
+          env:
+            - name: MODEL_DIR
+              value: /models/chatterbox-turbo-749d1c1
+            - name: UV_PROJECT_ENVIRONMENT
+              value: /runtime/venv
+            - name: UV_CACHE_DIR
+              value: /runtime/cache
+            - name: UV_PYTHON_INSTALL_DIR
+              value: /runtime/python
+            - name: UV_LINK_MODE
+              value: copy
+            - name: HF_HUB_DISABLE_XET
+              value: "1"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "4"
+              memory: 4Gi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: models
+              mountPath: /models
+            - name: runtime
+              mountPath: /runtime
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: chatterbox
+          image: registry.rupan.dev/upstream/ghcr.io/astral-sh/uv@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58  # yamllint disable-line rule:line-length
+          command:
+            - /runtime/venv/bin/python
+            - /config/server.py
+          args:
+            - "--port"
+            - "10201"
+          env:
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: compute,utility
+            - name: HF_HOME
+              value: /models
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: CHATTERBOX_DEVICE
+              value: cuda
+            - name: CHATTERBOX_REFERENCE
+              value: /voices/jarvis.wav
+            - name: OMP_NUM_THREADS
+              value: "4"
+          ports:
+            - containerPort: 10201
+              name: wyoming
+          startupProbe:
+            tcpSocket:
+              port: wyoming
+            failureThreshold: 60
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: wyoming
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: wyoming
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "4"
+              memory: 6Gi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: models
+              mountPath: /models
+              readOnly: true
+            - name: runtime
+              mountPath: /runtime
+              readOnly: true
+            - name: voices
+              mountPath: /voices
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: config
+          configMap:
+            name: chatterbox-bridge-code
+        - name: models
+          hostPath:
+            path: /persist/voice-models/chatterbox/models
+            type: DirectoryOrCreate
+        - name: runtime
+          hostPath:
+            path: /persist/voice-models/chatterbox/runtime
+            type: DirectoryOrCreate
+        - name: voices
+          hostPath:
+            path: /persist/voice-models/chatterbox/voices
+            type: DirectoryOrCreate
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wyoming-chatterbox
+  namespace: voice
+spec:
+  selector:
+    app: wyoming-chatterbox
+  ports:
+    - name: wyoming
+      port: 10201
+      targetPort: 10201

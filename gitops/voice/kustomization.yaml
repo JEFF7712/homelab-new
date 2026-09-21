@@ -9,6 +9,7 @@ resources:
   - stt-nemotron.yaml
   - stt-groq.yaml
   - piper.yaml
+  - chatterbox.yaml
   - satellite.yaml
   - exporter.yaml
 
@@ -22,6 +23,9 @@ configMapGenerator:
       - nemotron-bridge/bridge.py
       - voice-id/proxy.py
       - voice-id/profiles.json
+  - name: chatterbox-bridge-code
+    files:
+      - chatterbox-bridge/server.py
   - name: local-decision-runtime
     files:
       - local-decision/app.py
