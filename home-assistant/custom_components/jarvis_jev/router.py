@@ -19,7 +19,7 @@ class Command:
     action: str
     confidence: float
     value: float | None = None
-    color: str | None = None
+    color: str = "none_or_unknown"
 
 
 @dataclass(frozen=True)
@@ -278,7 +278,7 @@ def decide(text: str, payload: Any) -> Decision:
         )
 
     value: float | None = None
-    color: str | None = None
+    color = "none_or_unknown"
     if action in {"set_brightness", "set_temperature"}:
         value = _one_number(normalized_text(text))
         if value is None:

@@ -237,6 +237,22 @@ class BenchScoringTest(unittest.TestCase):
         self.assertFalse(outcome["field_ok"])
         self.assertTrue(outcome["false_action"])
 
+    def test_correct_noncolor_execute_matches_absent_color(self) -> None:
+        case = {
+            "id": "x",
+            "say": "Turn off the kitchen lights.",
+            "expected_route": "execute",
+            "expected": {
+                "target": "kitchen_lights",
+                "action": "turn_off",
+                "color": "none_or_unknown",
+            },
+        }
+        outcome = score_case(case, payload_for())
+        self.assertTrue(outcome["route_ok"])
+        self.assertTrue(outcome["field_ok"])
+        self.assertFalse(outcome["false_action"])
+
     def test_unexpected_execute_is_false_action(self) -> None:
         case = {
             "id": "y",
