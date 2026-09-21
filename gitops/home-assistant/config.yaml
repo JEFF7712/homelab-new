@@ -119,6 +119,7 @@ data:
         entities:
           - light.kitchen_light
           - light.kitchen_light_2
+          - light.kitchen_mushroom_lamp
       - platform: group
         name: Living Room Lights
         entities:
@@ -782,7 +783,7 @@ data:
         action: str
         confidence: float
         value: float | None = None
-        color: str | None = None
+        color: str = "none_or_unknown"
 
 
     @dataclass(frozen=True)
@@ -1041,7 +1042,7 @@ data:
             )
 
         value: float | None = None
-        color: str | None = None
+        color = "none_or_unknown"
         if action in {"set_brightness", "set_temperature"}:
             value = _one_number(normalized_text(text))
             if value is None:

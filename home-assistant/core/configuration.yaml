@@ -112,6 +112,7 @@ light:
     entities:
       - light.kitchen_light
       - light.kitchen_light_2
+      - light.kitchen_mushroom_lamp
   - platform: group
     name: Living Room Lights
     entities:

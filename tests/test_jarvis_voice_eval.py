@@ -388,6 +388,21 @@ class EvalCorpusTest(unittest.TestCase):
                 continue
             self.assertTrue(case.get("dynamic"), case["id"])
 
+    def test_kitchen_lights_group_covers_all_kitchen_lights(self) -> None:
+        kitchen_group = next(
+            group
+            for group in self.core["light"]
+            if group.get("name") == "Kitchen Lights"
+        )
+        self.assertEqual(
+            set(kitchen_group["entities"]),
+            {
+                "light.kitchen_light",
+                "light.kitchen_light_2",
+                "light.kitchen_mushroom_lamp",
+            },
+        )
+
     def test_builtin_dynamic(self) -> None:
         cases = [c for c in self.cases if c.get("intent") in BUILTIN_DYNAMIC]
         self.assertTrue(cases)
