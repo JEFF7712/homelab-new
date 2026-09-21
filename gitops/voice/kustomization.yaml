@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - local-decision.yaml
   - whisper.yaml
+  - stt-nemotron.yaml
   - stt-groq.yaml
   - piper.yaml
   - satellite.yaml
@@ -13,6 +14,11 @@ resources:
 configMapGenerator:
   - name: wyoming-voice-id-config
     files:
+      - voice-id/proxy.py
+      - voice-id/profiles.json
+  - name: nemotron-bridge-code
+    files:
+      - nemotron-bridge/bridge.py
       - voice-id/proxy.py
       - voice-id/profiles.json
   - name: local-decision-runtime

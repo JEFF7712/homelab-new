@@ -1,0 +1,117 @@
+# yamllint disable rule:line-length
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wyoming-nemotron
+  namespace: voice
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: wyoming-whisper
+      backend: nemotron
+  template:
+    metadata:
+      labels:
+        app: wyoming-whisper
+        backend: nemotron
+    spec:
+      runtimeClassName: nvidia
+      nodeSelector:
+        kubernetes.io/hostname: homelab-04
+        nvidia.com/gpu.present: "true"
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: bridge
+          # Same image as the production voice-ID proxy (python, wyoming,
+          # numpy, sherpa_onnx all present); native engine via hostPath.
+          # Pinned upstream tag: 3.8.1
+          image: docker.io/rhasspy/wyoming-whisper@sha256:ba6fcb6056ebe237d15a325381763a80af2fc8fcedaa04f6a714a7375eb20d80  # yamllint disable-line rule:line-length
+          # The native libs are built against NixOS glibc 2.42 while the
+          # image ships Debian glibc 2.36, so python itself runs under the
+          # staged Nix dynamic loader (glibc is backward compatible).
+          command:
+            - "/opt/nemo/lib64/ld-linux-x86-64.so.2"
+            - "/usr/src/.venv/bin/python3"
+            - "/app/bridge.py"
+          args:
+            - "--port"
+            - "10300"
+            - "--profiles"
+            - "/app/profiles.json"
+          env:
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: compute,utility
+            - name: LD_LIBRARY_PATH
+              value: /opt/nemo/lib64
+            - name: NEMO_LIB
+              value: /opt/nemo/lib64/libnemo_speech_asr_c.so
+            - name: NEMO_MODEL
+              value: /models/nemotron-speech-streaming-en-0.6b.q8_0.gguf
+            - name: NEMO_GPU
+              value: "0"
+            - name: NEMO_LANGUAGE
+              value: en-US
+            - name: NEMO_BOOST
+              value: "2.5"
+            - name: NEMO_RIGHT_CTX
+              value: "6"
+            - name: NEMO_BOOST_PHRASES
+              value: "Govee,Spotify,Young Thug,The Weeknd,Kendrick Lamar,Drake,Travis Scott,Kanye West,Frank Ocean,Marvin Gaye,Metro Boomin,21 Savage,Gunna,Future,tulip lamp,mushroom lamp,good vibes sign,floor lamp,desk lamp,light strip,living room,bedroom,kitchen,downstairs,Jarvis"
+          ports:
+            - containerPort: 10300
+              name: wyoming
+          startupProbe:
+            tcpSocket:
+              port: wyoming
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: wyoming
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: wyoming
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: "4"
+              memory: 4Gi
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: bridge-code
+              mountPath: /app
+            - name: nemo-lib
+              mountPath: /opt/nemo/lib64
+            - name: nemo-model
+              mountPath: /models
+            - name: whisper-cache
+              mountPath: /data
+              readOnly: true
+      volumes:
+        - name: bridge-code
+          configMap:
+            name: nemotron-bridge-code
+        - name: nemo-lib
+          hostPath:
+            path: /persist/nemo-install/lib64
+            type: Directory
+        - name: nemo-model
+          hostPath:
+            path: /persist/voice-models/nemotron
+            type: Directory
+        - name: whisper-cache
+          hostPath:
+            path: /persist/voice-models/whisper
+            type: Directory
