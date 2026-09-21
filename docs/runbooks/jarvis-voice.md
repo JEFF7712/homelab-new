@@ -18,7 +18,10 @@ top priority 2500 in WirePlumber) -> satellite container (`linux-voice-assistant
 wake word `hey_jarvis.tflite`, port 6053, device substring match `QuadCast`)
 -> Home Assistant on `homelab-03` -> Voice-ID proxy on `homelab-04` (port 10300)
 -> Whisper STT (`wyoming-whisper` localhost:10301) -> transcript with speaker tag
-`speaker <Name>` -> TTS/LLM on `homelab-04` (`wyoming-piper` 10200, `ollama` 11434)
+`speaker <Name>` -> TTS on `homelab-04` (`wyoming-piper` 10200;
+Chatterbox Turbo `wyoming-chatterbox` 10201 staged, see TTS section).
+There is no local LLM: Qwen/Ollama was removed in Phase 0 to free the
+T1000 GPU, and the cloud replacement is not wired yet.
 -> audio back to the `homelab-05` soundbar (HDMI-A-2 with continuous video clocking daemon,
 prioritized at 2000 in WirePlumber) -> face state via the HA websocket.
 
@@ -45,35 +48,44 @@ automation referencing them.
 1. Wyoming integrations pointing at the in-cluster services:
    `voice-satellite.voice:6053` is the satellite link from HA;
    `wyoming-whisper.voice:10300` for STT and `wyoming-piper.voice:10200`
-   for TTS.
+   for TTS. `wyoming-chatterbox.voice:10201` is the staged Turbo TTS;
+   keep its Wyoming entry configured but unselected until the TTS bench
+   below passes, so fallback to Piper is a one-click pipeline switch.
 2. One Assist pipeline with Whisper `base.en` as STT, Piper
-   `en_GB-alan-medium` as TTS, and the Ollama conversation agent
-   (`http://ollama.voice:11434`) as the brain, with model `qwen2.5:3b`
-   selected. Set it as the preferred pipeline and select it on the
+   `en_GB-alan-medium` as TTS (Chatterbox `jarvis` voice after the bench),
+   and the `Jarvis Jev Router` custom
+   conversation agent as the brain. There is no local LLM since Phase 0
+   (`gitops/voice/ollama.yaml` deleted, Qwen removed to free the T1000).
+   General conversation replies `General conversation is unavailable`
+   until a cloud fallback agent is configured. Set it as the preferred
+   pipeline and select it on the
    satellite device.
-   The Jarvis conversation subentry prompt carries the room semantics:
+   The Jarvis conversation prompt file carries the room semantics
+   (`home-assistant/conversation/jarvis_prompt.md`, kept in Git for the
+   future cloud agent):
    downstairs means Living Room plus Kitchen, light commands with no room
    default to all downstairs lights, light color changes default to
    Govee light bulbs, and music/artist/playlist requests explicitly call
    `script.jarvis_play_media` (`media_content_type='music'`). The canonical
-   prompt text is recorded below ("Conversation prompt"); the live copy is
-   UI-managed config-entry state, so keep the two in sync on any edit.
+   prompt source is `home-assistant/conversation/jarvis_prompt.md`
+   ("Conversation prompt" below); the live copy is UI-managed config-entry
+   state, so keep the two in sync on any edit.
    Required conversation-agent settings, in priority order:
    - `Prefer handling commands locally`: ON. Built-in intents answer basic
-     light, scene, and state commands without waking Qwen. Qwen is the
-     fallback for ambiguous, multi-step, music, and general questions.
-   - `Max history messages`: 4. Old turns hurt a 3B model more than they
-     help; follow-ups inside one continued conversation still work.
-   - `num_ctx`: 8192 (at 2048 Ollama truncates the 3.5k+ token prompt and
-     tool schemas). The 8k window is headroom, not a target; keep pruning
-     prompt and exposures instead of filling it.
-   - `llm_hass_api`: `assist` only (omitting SmartHQ saves ~1.2k tokens of
-     unused tool schemas).
+     light, scene, and state commands without reaching the conversation
+     agent. The conversation agent is the fallback for ambiguous,
+     multi-step, music, and general questions (currently unavailable
+     without a cloud fallback).
+   - `Max history messages`: 4. Applies to the future cloud agent;
+     follow-ups inside one continued conversation still work.
+   - `llm_hass_api`: `assist` only once a cloud agent lands (omitting
+     SmartHQ saves ~1.2k tokens of unused tool schemas).
    The `light.downstairs_lights` group in
    `home-assistant/core/configuration.yaml` is the deterministic backup for
    the room semantics.
-3. Terse local replies are enforced in Git, not in the LLM prompt: a local
-   command never reaches Ollama, so the prompt cannot shorten it.
+3. Terse local replies are enforced in Git, not in the conversation-agent
+   prompt: a local
+   command never reaches the conversation agent, so the prompt cannot shorten it.
    `home-assistant/custom_sentences/en/jarvis_terse.yaml` overrides the
    built-in action-intent responses (`HassTurnOn`, `HassTurnOff`,
    `HassToggle`, `HassLightSet`) with `Done.` It deploys via the
@@ -86,21 +98,23 @@ automation referencing them.
    dynamic built-in responses; do not override them with static text.
    Extend the override file only after inspecting Assist traces for the
    next most common intents.
-   Signature colors live one layer up: the Ollama `HassLightSet` tool
+   Signature colors live one layer up: the built-in `HassLightSet` handling
    accepts color *names* only (validated by `color_name_to_rgb`), so the
-   LLM can never emit exact hex and "pink" always lands on CSS pink
+   conversation agent can never emit exact hex and "pink" always lands on CSS pink
    (255, 192, 203). `home-assistant/custom_sentences/en/jarvis_colors.yaml`
    maps phrases like "neon pink" / "hot pink" onto room and plug targets,
    and `intent_script.JarvisSignatureColor` in `configuration.yaml` fires
    `light.turn_on` with hardcoded `rgb_color: [255, 16, 240]`, replying
    `Done.` To add a color: append its phrases to the `jarvis_color` list
    and add a `choose` branch on `{{ jarvis_color }}` in the intent script.
-   These requests resolve in the local intent engine, never reaching Qwen.
-4. Expose 15 to 25 conceptual controls to the Ollama agent, not every raw
+   These requests resolve in the local intent engine, never reaching the
+   conversation agent.
+4. Expose 15 to 25 conceptual controls to the future cloud conversation
+   agent, not every raw
    entity. Prefer groups (`light.downstairs_lights`), named lamps actually
    mentioned by voice, climate controls, scenes, music, and the shopping
    list. Diagnostic and status sensors stay available to deterministic local
-   queries but do not go into Qwen's tool schema. Exposure audit 2026-09-17:
+   queries but do not go into the conversation agent tool schema. Exposure audit 2026-09-17:
    59 down to 37, then cut to 19 managed controls (5 light groups, 4
    plug/sign singles, thermostat plus 2 AC sensors, 3 shared scenes,
    `script.jarvis_play_media`, shopping list, satellite media player,
@@ -132,7 +146,7 @@ automation referencing them.
 7. Music playback (Music Assistant & providers):
    - `script.jarvis_play_media` is exposed to Assist to handle music requests.
    - `home-assistant/automations/jarvis_voice_music_playback.yaml` catches
-     play commands before the LLM and routes by trigger id: artist phrasings
+     play commands before the conversation agent and routes by trigger id: artist phrasings
      ("play some X", "put on X") resolve the artist via search, then start
      an endless artist mix (`music_assistant.play_media`, `radio_mode: true`)
      so playback continues past the first track; song, album, and playlist
@@ -140,7 +154,8 @@ automation referencing them.
    - Stopping is deterministic and local: `home-assistant/automations/jarvis_music_stop.yaml`
      pauses the satellite speaker on "turn off [the] music" / "turn [the] music
      off" (built-in intents already cover "stop the music"). Never route music
-     stop through the LLM: on 2026-09-18 "turn off the music" fell to Qwen and
+     stop through the conversation agent: on 2026-09-18 "turn off the music" fell to the
+     local LLM and
      died on a poisoned chat log while "stop the music" paused in 13 ms.
    - Platform parameter supports `spotify` (default) and `youtube_music` (`ytmusic`).
    - Music Assistant runs on `homelab-05` host network
@@ -151,136 +166,110 @@ automation referencing them.
 
 ## Conversation prompt (canonical)
 
-Paste this verbatim into the Jarvis conversation subentry. Keep this copy
-and the live copy in sync; this file is the reviewable source.
+The canonical prompt source is
+`home-assistant/conversation/jarvis_prompt.md`. Paste its fenced text
+verbatim into the Jarvis conversation subentry. Keep that file and the live
+copy in sync on any edit; the live copy is UI-managed config-entry state
+with no read API, so behavioral regressions are caught by the live eval
+lane (`just jarvis-eval-live`) rather than a state diff.
 
-```text
-You are Jarvis, the voice assistant for this Home Assistant instance.
+## Jev semantic command layer
 
-Your primary job is to understand the user's request, perform the requested
-Home Assistant action when appropriate, and respond with as few words as
-possible.
+The `jarvis_jev` custom conversation agent is the constrained fallback between
+Home Assistant's local intents and the (currently unset) cloud conversation
+agent. The preferred Assist pipeline must
+keep `Prefer handling commands locally` enabled and select `Jarvis Jev Router`
+as its conversation agent. The router delegates only high-confidence general
+conversation to the fallback agent once one is configured; until then it
+replies `General conversation is unavailable.`
 
-RESPONSE STYLE
+The router sends the unmatched transcript to TypeSafe's hosted API using the
+pinned `jev-1.13.0` model. This is a cloud disclosure and is not zero-retention
+by default. It sends no entity registry, HA state dump, prompt, or chat history.
+The API key comes from GitLab CI/CD variable `TYPESAFE_API_KEY` through the
+`home-assistant-secrets` ExternalSecret and container environment. Never put the
+key in the config entry or Git.
 
-Voice responses must be extremely concise.
+Jev selects semantic IDs only. `router.py` owns the closed target and action
+allowlists, compatibility checks, exact-number parsing, and confidence gates.
+It maps accepted commands to fixed HA entity IDs and services. Jev never emits
+an entity ID or service name. The initial automatic thresholds are 0.95 for
+reversible controls and 0.98 for climate. The weakest required field wins.
+These are conservative starting values and must be calibrated from recorded
+distributions before lowering them.
 
-Respond in English.
+Fail-closed behavior is deliberate:
 
-For a successfully completed action, respond exactly:
+- medium or low-confidence home commands ask for a complete restatement;
+- unknown targets, pronouns without an explicit target, incompatible
+  target/action pairs, and malformed numeric arguments perform no action;
+- compound requests perform no partial action and ask for one action at a time;
+- TypeSafe timeout, authentication failure, overload, or malformed output does
+  not restore any local-LLM HA control path (there is none since Phase 0);
+- only a high-confidence `general_or_conversation` classification delegates to
+  the fallback agent with the original conversation context, and replies
+  `General conversation is unavailable` while no fallback is configured.
 
-Done.
+### Local decision shadow
 
-Do not describe the action you just performed unless the user asks.
+Every request accepted by the Jev router is also submitted asynchronously to
+`local-decision.voice.svc.cluster.local`. This shadow path cannot select the HA
+route, execute a service, change speech, or delay the hosted Jev response. Only
+one local request may be active at a time; another request is skipped rather
+than queued behind CPU inference.
 
-Bad: "I've turned off all of the lights downstairs for you."
-Good: "Done."
+The shadow service runs `anthonym21/qwen3-0.6b-rlcd-decision` on the
+`homelab-04` CPU. The model is pinned to Hugging Face revision
+`b327ec5efb5fdbf8bfafa3b369720ac5f6434b05`; its loader verifies the published
+weight hashes. The `eve-rlcd` inference package is pinned to commit
+`ce5ebf627058b65acfc41d49e0e334a722a14ba5`, Python dependencies are locked,
+and the CPU-only PyTorch wheel leaves the NVIDIA GPU free (Phase 0 removed
+Ollama/Qwen; the T1000 is now available for Nemotron and the local
+decision-model bench).
+The model and runtime cache live under `/persist/voice-models/local-decision`
+on `homelab-04`. First startup needs outbound access to GitHub, PyPI, the
+PyTorch CPU index, and Hugging Face; steady-state inference is local.
 
-For a successfully completed multi-step action, also respond: Done.
+Prometheus scrapes service request, failure, and inference-latency counters at
+`/metrics`. Home Assistant logs one `jarvis_shadow` record per completed
+comparison with a random request ID, field agreement count, total fields,
+overall agreement, and local latency. Logs and metrics never include the
+transcript, target, action, or other selected values. The hosted Jev result
+remains authoritative until a recorded HA-specific evaluation demonstrates
+acceptable accuracy and calibrated thresholds. The current model supports at
+most 26 choices per question and is a research checkpoint, not a production
+Jev reproduction.
 
-For a simple factual question about the home, answer with only the requested
-information. Examples: "What's the temperature downstairs?" -> "72 degrees."
-"Are the kitchen lights on?" -> "Yes." "What's playing?" ->
-"Nights by Frank Ocean."
+The initial CPU smoke test used about 2.15 GiB RSS, loaded in 2.10 seconds, and
+answered a two-choice light-action request in 0.30 seconds on the development
+machine. The T600 is intentionally unused: this checkpoint is fp32 and its
+published loader does not provide a validated 4-bit path that fits alongside
+the existing GPU workload.
 
-For general questions, answer concisely. Prefer one or two sentences unless
-the user explicitly asks for detail.
-
-Never add filler such as: "Certainly." "Of course." "Sure thing."
-"I'd be happy to." "Here you go." "Let me check." "Anything else?"
-
-Do not repeat the user's request back to them.
-
-SPEAKER RECOGNITION
-
-The user input begins with `speaker <Name>` (e.g. `speaker Rupan` or
-`speaker Sam`) when their voice is recognized.
-When the user asks "who am I", "who is speaking", or what their name is,
-identify them directly and concisely: "You are Rupan." or "You are Sam." If no
-speaker tag is present or voice is unknown, reply: "I don't recognize your voice."
-
-ACTION RULES
-
-When the user requests an action: perform the action first, wait for the
-tool result, and if it succeeds say "Done." Never claim success unless the
-tool confirms it. If an action fails, state the problem briefly
-("Couldn't reach the bedroom lights.", "Spotify is unavailable."). If only
-part of a request succeeds, say what failed in one short sentence.
-
-Do not explain Home Assistant internals, entity IDs, service names, tool
-names, or implementation details unless explicitly asked.
-
-Do not ask for confirmation for ordinary reversible actions such as lights,
-music, scenes, climate adjustments, or volume changes.
-
-If the request is genuinely ambiguous and acting could produce an incorrect
-result, ask one short clarification question.
-
-ROOM SEMANTICS
-
-"Downstairs" means the Living Room and Kitchen. When the user gives a light
-command without specifying a room, default to all downstairs lights unless
-conversational context clearly establishes another room. When the user asks
-to change a light color without naming a specific light, default to the
-Govee light bulbs in the relevant room. Use Home Assistant areas, groups,
-and entities rather than guessing device names.
-
-MUSIC
-
-For music, artist, album, song, or playlist requests, use
-`script.jarvis_play_media`. When a `speaker <Name>` tag is present, default
-platform to 'spotify' for Rupan and 'youtube_music' for Sam, passing
-speaker='Rupan' or speaker='Sam'. If the user explicitly requests another
-platform (e.g. "on youtube music" or "on spotify"), respect the user's explicit
-choice. A bare artist name or "play some X" means the artist: pass
-media_content_type='artist' and the script starts an endless artist mix.
-Never ask which album or song; just play. Specific songs use 'music', albums
-'album', playlists 'playlist'. After successful playback begins, say: Done,
-<Name>. (or Done. if speaker is unverified).
-
-CONTEXT
-
-Treat the current conversation as temporary. Use recent conversation context
-only to resolve natural follow-ups such as "turn it off", "make it
-brighter", "what about upstairs?", "yes", or "no". Do not invent context
-that is not present. Do not allow an unrelated earlier request to influence
-a new request.
-
-PRONOUN SAFETY
-
-Never perform an action based on "it", "them", "that", "those", "there",
-or similar references unless the referenced object is unambiguous from
-the current conversation.
-
-If this is the first message in a conversation, such pronouns never have
-an antecedent.
-
-Ask a short clarification question instead.
-
-KNOWLEDGE AND HOME STATE
-
-For questions about the current state of the home, use Home Assistant state
-information rather than guessing. Never fabricate temperatures, device
-states, media playback, light states, presence, or sensor readings. If the
-required information is unavailable, say so briefly.
-
-BEHAVIOR
-
-Be precise, quiet, and action-oriented. The ideal interaction is: user gives
-command, Jarvis performs it, Jarvis says "Done." Only speak more when the
-user actually needs information.
-```
+Deployment requires three operator steps after the Git change is reviewed and
+published: create the protected/masked `TYPESAFE_API_KEY` GitLab variable,
+reconcile Home Assistant through Flux, then add the `Jarvis Jev Router`
+integration in HA with an empty fallback agent. Finally, select the router
+in the preferred Assist pipeline and re-run
+`just jarvis-eval-live`. The local corpus must remain local; Jev-specific
+paraphrases must execute one expected action; ambiguous and failure cases must
+execute zero actions.
 
 ## Conversation lifetime
 
-Every new wake-word activation starts a new conversation. Do not persist
-context across separate "Hey Jarvis" invocations: a bare "turn them back
-on" twenty minutes later must ask for clarification, never resolve "them"
-from a stale turn. Multi-turn follow-ups ("Yes.", "make it brighter") work
-only inside a continued satellite conversation
-(`assist_satellite.start_conversation`). Never restart Ollama or clear its
-model cache on wake; `OLLAMA_KEEP_ALIVE=-1`, the Q8 KV cache, and the warmup
-Job stay as they are. Conversation state and model residency are separate.
+The Wyoming satellite entity reuses one conversation across wake-word
+activations until the chat session expires (verified against the running
+HA 2026.9.1 `assist_satellite` code: each run passes the previous
+conversation id, so separate "Hey Jarvis" invocations share context).
+There is no per-wake reset setting. The `Max history messages: 4` cap applies
+to the future cloud agent once configured, and the
+canonical prompt's pronoun-safety rules force a clarification question when
+"it" / "them" has no unambiguous antecedent. Note the `Prompt:` line in HA
+debug logs shows the pre-trim history, not what the model received.
+Prefer local intent handling for commands that must not depend on context
+at all. There is no local model residency to maintain since Phase 0
+(Qwen/Ollama removed, KV warmup automation deleted).
+Conversation state and decision-model residency are separate.
 
 ## Self-talk loop defenses
 
@@ -317,6 +306,57 @@ a TTS-text feed into the proxy that does not exist yet; the mute gate
 already covers the window where semantic echo occurs. Revisit if echo
 turns survive both layers.
 
+## TTS (Chatterbox Turbo staged, Piper fallback)
+
+`gitops/voice/chatterbox.yaml` runs a custom Wyoming TTS bridge
+(`gitops/voice/chatterbox-bridge/server.py`, offline-tested in
+`tests/test_chatterbox_bridge.py`) serving Chatterbox Turbo 350M
+(`chatterbox-tts==0.1.7`, weights `ResembleAI/chatterbox-turbo` pinned at
+`749d1c1a`) on the `homelab-04` T1000 as `wyoming-chatterbox:10201`.
+Chatterbox has no upstream Wyoming image, hence the in-repo server; it
+answers `describe`/`synthesize` (plus buffered streaming synthesize) with
+24 kHz 16-bit mono PCM. Piper stays deployed and selected until the
+bench passes; fallback is reselecting Piper in the Assist pipeline.
+
+GPU sharing: the bridge claims no `nvidia.com/gpu` resource (the device
+plugin would otherwise park it against Nemotron's claim) and sees the
+T1000 via `NVIDIA_VISIBLE_DEVICES=all`. This is safe because the
+pipeline uses STT and TTS sequentially, so peak VRAM is the max of the
+two, not the sum. Turbo needs roughly 2 GB at steady state.
+
+Voice enrollment: drop one clean 5+ second English reference clip at
+`/persist/voice-models/chatterbox/voices/jarvis.wav` on `homelab-04`
+(the directory is created empty by the manifest). Conditionals are
+prepared once at startup; a missing or rejected clip falls back to the
+model's builtin voice under the same `jarvis` name. `[laugh]`-style
+paralinguistic tags are stripped by default (`CHATTERBOX_ALLOW_TAGS=1`
+to keep them).
+
+Bench results 2026-09-21 (live, `wyoming-chatterbox:10201`):
+
+- GPU co-residency FAILED: the T1000 exposes 3.62 GiB usable with
+  Nemotron resident at ~2.67 GiB, and Turbo load OOMs (`CUDA out of
+  memory`, pod log). Sequential pipeline use does not help: both
+  models stay resident in their own pods.
+- CPU fallback (`CHATTERBOX_DEVICE=cpu`, 4 threads) serves correctly
+  but is too slow for interactive use: `Done.` TTFA 1.92 s (RTF
+  2.67x), a 2 s reply TTFA 3.05 s (RTF 1.52x).
+- T600 verdict 2026-09-21: the bridge moved to `homelab-05` with a
+  clean `nvidia.com/gpu` allocation after Immich ML was demoted to
+  CPU (its indexing jobs run slower; photo serving unaffected).
+  Turbo loads with ~2 GB headroom to spare, no OOM. Warmed latency:
+  `Done.` TTFA 0.91 s, a 2 s reply 1.26 s. Better than CPU but still
+  above Piper's sub-second steady state, so switching the Assist
+  pipeline to the `jarvis` voice trades roughly half a second of
+  responsiveness for voice quality plus cloning. That switch is a HA
+  UI step (select the `wyoming-chatterbox` TTS in the preferred
+  pipeline); no manifest change needed. To enroll the cloned voice,
+  drop the 5 s+ clip at
+  `/persist/voice-models/chatterbox/voices/jarvis.wav` on
+  `homelab-05` and roll the pod. The orphaned
+  `/persist/voice-models/chatterbox` tree on `homelab-04` can be
+  reclaimed by hand.
+
 ## Satellite health
 
 `gitops/voice/satellite.yaml` gates readiness on a TCP probe against port
@@ -337,61 +377,54 @@ sources for refresh:
 | satellite | `ghcr.io/ohf-voice/linux-voice-assistant` | `1.1.1` | tags list on GHCR; `latest` floats past releases, so pin the newest stable tag, not `latest` |
 | whisper | `docker.io/rhasspy/wyoming-whisper` | `3.8.1` | Docker Hub tags, newest `3.x` |
 | piper | `docker.io/rhasspy/wyoming-piper` | `2.5.2` | Docker Hub tags, newest non-`omnivoice` `2.x` |
-| ollama | `docker.io/ollama/ollama` | `0.34.1` | Docker Hub tags, newest stable (skip `-rc`) |
+| chatterbox bridge base | `registry.rupan.dev/upstream/ghcr.io/astral-sh/uv` | same digest as von/local-decision | GHCR tags, newest stable; `chatterbox-tts==0.1.7` and Turbo weights `749d1c1a` pinned in `gitops/voice/chatterbox.yaml` |
 | pot-provider | `docker.io/brainicism/bgutil-ytdlp-pot-provider` | `1.2.1` | Docker Hub tags, newest stable |
+
+Ollama (`docker.io/ollama/ollama`, was `0.34.1` with `qwen2.5:3b`) was
+removed in Phase 0 (`gitops/voice/ollama.yaml` deleted) to free the T1000
+GPU. Do not re-add a local LLM row without revisiting the cloud-LLM
+decision.
 
 Refresh with `just check-changed` and `just check` before handoff. Bumping the
 satellite past `1.1.1` re-derives entity behavior; re-verify the canonical IDs
 above after any satellite bump.
 
-## Model contract
+## Model contract (retired in Phase 0)
 
-The served model is declared in `gitops/voice/ollama.yaml` as the
-`ollama-qwen2-5-3b-ready` Job: an init step pulls `qwen2.5:3b` (1.9 GB, fits
-the 4 GB T1000 with context headroom), then a warmup step runs one short
-inference so the model is resident in VRAM before the first user turn. The
-pull is idempotent: reruns skip cached layers. `OLLAMA_KEEP_ALIVE=-1` keeps
-the model resident after first load.
-
-Limits of this scheme: `ollama pull` resolves tags, not digests, so the tag
-is mutable upstream. If a refresh misbehaves, the previous model blobs remain
-on disk until replaced.
-
-To switch models: change the pull and warmup args and rename the Job (Job
-specs are immutable, so a new name is required), update the HA conversation
-agent to the same model name, and update the canonical-model references in
-this runbook.
+There is no locally served LLM. `gitops/voice/ollama.yaml` (Deployment,
+Service, and the `ollama-qwen2-5-3b-ready` pull plus warmup Job for
+`qwen2.5:3b`, 1.9 GB) was deleted to free the 4 GB T1000. The HA Ollama
+config entry (`home-assistant/integrations/ollama_01M2PAGP.yaml`) was
+removed from Git and must also be deleted in the HA UI, and the
+`jarvis_prompt_warmup` KV-cache warmup automation was deleted with it.
+General conversation stays unavailable until a cloud fallback agent is
+configured on the `Jarvis Jev Router` entry.
 
 ## Model storage
 
-All three model caches live on `homelab-04` local NVMe at
-`/persist/voice-models/{ollama,whisper,piper}` via `hostPath`. This is
+All remaining model caches live on `homelab-04` local NVMe at
+`/persist/voice-models/{whisper,piper,local-decision,chatterbox}`
+via `hostPath` (chatterbox holds `models/`, the pip/CUDA `runtime/`,
+and the operator-supplied `voices/jarvis.wav` reference clip). This is
 deliberate: every consumer is already pinned to `homelab-04`, local disk
 removes the NAS as a voice dependency and loads multi-GB models off NVMe
 instead of 1 GbE NFS. The caches are fully re-derivable (re-pull on empty
-dir), so they are not backed up. The orphaned NFS directories from the
-retired PVCs can be reclaimed on the NAS by hand.
+dir), so they are not backed up. The orphaned `/persist/voice-models/ollama`
+directory on `homelab-04` and the orphaned NFS directories from the
+retired PVCs can be reclaimed by hand.
 
 ## Latency notes
 
-- LLM first-token time on the 4 GB T1000 dominates a turn. Keep
-  `OLLAMA_KEEP_ALIVE=-1` so the model stays loaded, and prefer a small model
-  that fits VRAM without spilling to system RAM. Check residency with the
-  Ollama `/api/ps` endpoint; a model larger than VRAM spills to system RAM
-  and every turn pays for it.
-- `gitops/voice/ollama.yaml` enables `OLLAMA_FLASH_ATTENTION: "true"` and
-  `OLLAMA_KV_CACHE_TYPE: "q8_0"`. On Turing (Compute 7.5), flash attention
-  accelerates attention computation while Q8_0 cuts the KV cache memory footprint
-  in half (~750 MB savings at 8k context), preventing CUDA memory pressure on
-  the 4 GB T1000.
-- Cold KV prompt evaluation vs. warm turn: Warm turns (hitting cached prompt
-  prefixes) take ~0.3–1.0s total. When cold (after model reloads or context resets),
-  evaluating the ~3.5k–3.8k token prefix (system prompt, tool schemas, exposed
-  entities) takes several seconds. Pruning unneeded entities and tool schemas from
-  Assist exposure keeps the prefix lean and directly lowers cold evaluation latency.
-- Whisper runs `base.en` (~140 MB) on `homelab-04` CPU with `--beam-size 1`
-  and fixed `--language en`. `base.en` completes transcription in ~300ms on
-  CPU. `turbo` (large-v3-turbo, ~800 MB) was benchmarked and rejected: without
+- There is no local LLM since Phase 0, so no VRAM residency to maintain
+  and no cold KV-cache evaluation. Per-turn latency is STT plus Jev API
+  plus TTS. Keep Assist exposures pruned anyway: a lean tool schema keeps
+  the future cloud prompt cheap.
+- Whisper runs `base.en` (~140 MB) on `homelab-04` CPU with `--beam-size 5`
+  (HA upstream default on non-ARM) and fixed `--language en`. `base.en`
+  completes transcription in ~300ms on CPU at beam 1; beam 5 keeps multiple
+  hypotheses alive through short ambiguous utterances at modest extra CPU
+  cost, still far below GPU-less `turbo`. `turbo` (large-v3-turbo, ~800 MB)
+  was benchmarked and rejected: without
   GPU acceleration, `turbo` on CPU incurs a ~6.0s transcription delay per turn,
   causing the satellite to appear to stall or listen long after the user stops
   speaking. `base.en` restores sub-second turn responsiveness.
@@ -399,11 +432,8 @@ retired PVCs can be reclaimed on the NAS by hand.
   restart unless its model cache persists. Voices persist on the
   `piper-voices` PVC (`gitops/voice/storage.yaml`); do not revert that volume
   to `emptyDir`.
-- Model pulls (Whisper, Piper, Ollama) hit the network only on first-ever
-  start; after that they load off local NVMe. The ready Job warms VRAM on
-  initial deploy and model switches (completed Jobs do not rerun). After a
-  node reboot, the first turn reloads the model off NVMe in seconds and
-  `KEEP_ALIVE=-1` holds it from there; the startup probes gate exactly this.
+- Model pulls (Whisper, Piper) hit the network only on first-ever
+  start; after that they load off local NVMe.
 - The face is a Cozmo-style procedural eye engine in
   `home-assistant/www/jarvis/app.js`: expression presets per state (eye
   scale plus upper/lower lids with y/angle/bend, with a right-eye
@@ -489,8 +519,9 @@ drives `assist_pipeline/run` from the `intent` stage to the `intent` stage
 with text input (real pipeline routing, bypassing only wake word and STT;
 local-path device actions still execute, so run it when someone is home).
 Local cases must route locally with the expected reply and no action outside
-`targets`; llm cases must fall through (`processed_locally: false`). Full
-LLM behavior (tool choice, phrasing) stays manual. Keep a smaller acoustic
+`targets`; llm cases must fall through (`processed_locally: false`) and,
+until a cloud fallback lands, reply `General conversation is unavailable`.
+Full cloud-LLM behavior (tool choice, phrasing) stays manual once configured. Keep a smaller acoustic
 suite (8 to 12 representative commands) for microphone to Whisper
 regressions; intent routing and STT are separate concerns.
 
@@ -514,7 +545,8 @@ routing and personalization without modifying Home Assistant core:
 4. Audio samples shorter than 3.5 seconds are tiled to 3.5s to provide the
    receptive field required by the neural network for high-confidence classification.
 5. The embedding is scored via cosine similarity against enrolled profiles
-   in `gitops/voice/voice-id.yaml` (ConfigMap `wyoming-voice-id-config`).
+   in `gitops/voice/voice-id/profiles.json` (shipped as ConfigMap
+   `wyoming-voice-id-config` via `configMapGenerator`).
 6. If the top score exceeds `threshold` (0.35) and exceeds the runner-up by
    `min_margin` (0.10), the speaker identity is confirmed (`Rupan` or `Sam`).
 7. When Whisper returns the `transcript` event, the proxy prefixes `speaker <Name>`
@@ -561,10 +593,9 @@ To add or update speaker voice profiles:
 - Face shows IDLE but never LISTENING: satellite pod not ready or HA Wyoming
   entry pointing at the wrong host. `just status cluster` plus the satellite
   pod events; confirm the HA Wyoming host is `voice-satellite.voice`.
-- First turn after deploy is very slow, later turns fine: model cold start.
-  Check probe status on whisper/piper/ollama before tuning anything.
-- Every turn slow: Ollama model spilling past 4 GB VRAM, or Whisper CPU
-  throttled. Check `ollama ps` output model size and pod resource usage.
+- First turn after deploy is very slow, later turns fine: Whisper or Piper
+  cold start. Check probe status on whisper/piper before tuning anything.
+- Every turn slow: Whisper CPU throttled. Check pod resource usage.
 - Face state frozen while voice works: HA websocket broken in
   `app.js`; use keys 1-5 on the kiosk keyboard to confirm the face itself
   still cycles states.
