@@ -90,6 +90,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--timeout", type=float, default=30.0)
     parser.add_argument("--corpus", default="tests/jev_decision_corpus.yaml")
     parser.add_argument("--out-dir", default="tests/fixtures/jev_decisions")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="skip cases that already have a payload in the output fixture",
+    )
     args = parser.parse_args(argv)
 
     repo_root = find_repo_root()
@@ -110,9 +115,23 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         headers["Authorization"] = f"Bearer {api_key}"
 
+    out_dir = repo_root / args.out_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{args.label}.json"
     results: dict[str, dict] = {}
+    if args.resume and out_path.is_file():
+        with open(out_path, encoding="utf-8") as f:
+            prior = json.load(f).get("results", {})
+        for case_id, record in prior.items():
+            if isinstance(record, dict) and record.get("payload") is not None:
+                results[case_id] = record
+        if results:
+            print(f"resuming: keeping {len(results)} recorded cases")
+
     errors = 0
     for case in cases:
+        if case["id"] in results:
+            continue
         record = post(
             args.endpoint, headers, router.build_request(case["say"]), args.timeout
         )
@@ -122,9 +141,6 @@ def main(argv: list[str] | None = None) -> int:
         status = "err" if record.get("payload") is None else "ok"
         print(f"[{status}] {case['id']}")
 
-    out_dir = repo_root / args.out_dir
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"{args.label}.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(
             {

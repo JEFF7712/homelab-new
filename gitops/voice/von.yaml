@@ -147,22 +147,29 @@ spec:
           ports:
             - name: http
               containerPort: 8000
+          # Probes tolerate CPU saturation: single-process uvicorn queues
+          # /health behind multi-second inference under bench load.
           startupProbe:
             httpGet:
               path: /health
               port: http
             failureThreshold: 30
             periodSeconds: 10
+            timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /health
               port: http
             periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health
               port: http
             periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
           resources:
             requests:
               cpu: "1"
