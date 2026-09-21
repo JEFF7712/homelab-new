@@ -135,7 +135,7 @@ metadata:
 spec:
   selector:
     app: wyoming-whisper
-    backend: local
+    backend: nemotron
   ports:
     - name: wyoming
       port: 10300

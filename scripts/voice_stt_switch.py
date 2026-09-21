@@ -1,7 +1,9 @@
-"""Flip the Jarvis STT backend between local CPU whisper and Groq cloud.
+"""Flip the Jarvis STT backend between local CPU whisper, Nemotron native,
+and Groq cloud.
 
 Edits the wyoming-whisper Service selector, commits, and pushes so Flux
-rolls the switch. Usage: just voice-stt cloud | just voice-stt local
+rolls the switch. Usage: just voice-stt local | just voice-stt nemotron |
+just voice-stt cloud
 """
 
 from __future__ import annotations
@@ -12,7 +14,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SELECTOR_FILE = REPO_ROOT / "gitops" / "voice" / "whisper.yaml"
-BACKENDS = ("local", "cloud")
+BACKENDS = ("local", "nemotron", "cloud")
 
 
 def run(*args: str) -> str:
