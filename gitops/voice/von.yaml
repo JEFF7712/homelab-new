@@ -1,0 +1,206 @@
+# Von local decision server (System One bench candidate 1).
+#
+# Von-1.0 (395M ModernBERT NLI head, Apache 2.0) behind its /v1/systemone
+# server on CPU. The T1000 is held by production Nemotron STT, so this
+# intentionally requests no GPU; homelab-04 CPU latency is what the bench
+# measures. Model repo wfzyx/von-1.0 pinned below; weights plus runtime are
+# hostPath-cached on homelab-04 like local-decision.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: von-decision
+  namespace: voice
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: von-decision
+  template:
+    metadata:
+      labels:
+        app: von-decision
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: homelab-04
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: prepare-permissions
+          image: registry.rupan.dev/upstream/ghcr.io/astral-sh/uv@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58  # yamllint disable-line rule:line-length
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              chown -R 1000:1000 /models /runtime
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - CHOWN
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: models
+              mountPath: /models
+            - name: runtime
+              mountPath: /runtime
+        - name: prepare-runtime
+          image: registry.rupan.dev/upstream/ghcr.io/astral-sh/uv@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58  # yamllint disable-line rule:line-length
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              if [ ! -x /runtime/venv/bin/python ]; then
+                uv venv /runtime/venv
+              fi
+              uv pip install --python /runtime/venv/bin/python 'von-sdk==1.0.1'
+              if [ ! -f "$MODEL_DIR/.complete" ]; then
+                HF_HOME=/models /runtime/venv/bin/python -c '
+              from huggingface_hub import snapshot_download
+              snapshot_download(
+                  repo_id="wfzyx/von-1.0",
+                  revision="f6b268ff47b449b688a8052dfb3c37c9518b18f1",
+              )
+              '
+                touch "$MODEL_DIR/.complete"
+              fi
+          env:
+            - name: MODEL_DIR
+              value: /models/von-1.0-f6b268f
+            - name: UV_PROJECT_ENVIRONMENT
+              value: /runtime/venv
+            - name: UV_CACHE_DIR
+              value: /runtime/cache
+            - name: UV_LINK_MODE
+              value: copy
+            - name: HF_HUB_DISABLE_XET
+              value: "1"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "4"
+              memory: 4Gi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: models
+              mountPath: /models
+            - name: runtime
+              mountPath: /runtime
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: von-decision
+          image: registry.rupan.dev/upstream/ghcr.io/astral-sh/uv@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58  # yamllint disable-line rule:line-length
+          command:
+            - /runtime/venv/bin/von
+            - serve
+            - --host
+            - "0.0.0.0"
+            - --port
+            - "8000"
+            - --device
+            - cpu
+          env:
+            - name: HF_HOME
+              value: /models
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: OMP_NUM_THREADS
+              value: "4"
+            - name: MKL_NUM_THREADS
+              value: "4"
+          ports:
+            - name: http
+              containerPort: 8000
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "1"
+              memory: 3Gi
+            limits:
+              cpu: "4"
+              memory: 6Gi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              readOnly: true
+            - name: runtime
+              mountPath: /runtime
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: models
+          hostPath:
+            path: /persist/voice-models/von/models
+            type: DirectoryOrCreate
+        - name: runtime
+          hostPath:
+            path: /persist/voice-models/von/runtime
+            type: DirectoryOrCreate
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: von-decision
+  namespace: voice
+  labels:
+    app: von-decision
+spec:
+  selector:
+    app: von-decision
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

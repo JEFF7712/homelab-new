@@ -4,6 +4,7 @@ namespace: voice
 resources:
   - namespace.yaml
   - local-decision.yaml
+  - von.yaml
   - whisper.yaml
   - stt-nemotron.yaml
   - stt-groq.yaml
