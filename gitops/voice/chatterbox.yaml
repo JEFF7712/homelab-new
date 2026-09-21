@@ -1,12 +1,13 @@
-# Chatterbox Turbo Wyoming TTS (Jarvis primary voice; Piper stays as fallback).
+# Chatterbox Turbo Wyoming TTS (candidate Jarvis voice; Piper stays selected).
 #
 # Custom Wyoming server (`chatterbox-bridge/server.py`, shipped via the
 # `chatterbox-bridge-code` ConfigMap): Chatterbox has no upstream Wyoming
-# image. The T1000 is time-shared with Nemotron STT, so this claims no
-# `nvidia.com/gpu` resource (the device plugin would otherwise park one
-# pod): the voice pipeline uses STT and TTS sequentially, and
-# NVIDIA_VISIBLE_DEVICES gives CUDA access without an allocation.
-# Do not point HA at this service until the runbook GPU bench passes.
+# image. Runs on homelab-05's T600 4GB, whose only other job is kiosk
+# display compositing (a few hundred MB), leaving room for Turbo's ~2 GB
+# with no other GPU workload, so this takes a clean `nvidia.com/gpu`
+# allocation. (homelab-04's T1000 was tried first and rejected: Nemotron
+# holds ~2.67 of 3.62 GiB usable and Turbo OOMs.)
+# Do not point HA at this service until the runbook bench passes.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,7 +27,8 @@ spec:
     spec:
       runtimeClassName: nvidia
       nodeSelector:
-        kubernetes.io/hostname: homelab-04
+        kubernetes.io/hostname: homelab-05
+        nvidia.com/gpu.present: "true"
       securityContext:
         seccompProfile:
           type: RuntimeDefault
@@ -149,12 +151,8 @@ spec:
               value: /models
             - name: HF_HUB_OFFLINE
               value: "1"
-            # cpu: the T1000 holds 3.62 GiB usable with Nemotron resident
-            # at ~2.67 GiB, so Turbo cannot co-reside on CUDA. CPU mode
-            # brings the service up for protocol and latency baselining;
-            # GPU numbers need a maintenance window with STT swapped out.
             - name: CHATTERBOX_DEVICE
-              value: cpu
+              value: cuda
             - name: CHATTERBOX_REFERENCE
               value: /voices/jarvis.wav
             - name: OMP_NUM_THREADS
@@ -183,9 +181,11 @@ spec:
             requests:
               cpu: 500m
               memory: 1Gi
+              nvidia.com/gpu: "1"
             limits:
               cpu: "4"
               memory: 6Gi
+              nvidia.com/gpu: "1"
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
