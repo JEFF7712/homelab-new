@@ -20,3 +20,4 @@ artifacts/
 *.m4a
 *.wav
 *.onnx
+trajectory-*.json
