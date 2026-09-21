@@ -130,6 +130,25 @@ def resolve_reference(path: str) -> str | None:
     return candidate
 
 
+def ensure_watermarker() -> None:
+    """No-op patch when resemble-perth cannot build its watermark object.
+
+    Its package imports but leaves PerthImplicitWatermarker as None on
+    some runtimes; Turbo construction then crashes. Local assistant
+    speech needs no provenance watermark, so fall back to passthrough.
+    """
+    import perth
+
+    if getattr(perth, "PerthImplicitWatermarker", None) is None:
+        LOG.warning("perth watermark unavailable, shipping unwatermarked audio")
+
+        class _Passthrough:
+            def apply_watermark(self, wav, sample_rate=None):
+                return wav
+
+        perth.PerthImplicitWatermarker = _Passthrough
+
+
 class ChatterboxEngine:
     """Thin wrapper over ChatterboxTurboTTS (imports torch lazily)."""
 
@@ -145,6 +164,7 @@ class ChatterboxEngine:
     def load(self) -> None:
         import torch
 
+        ensure_watermarker()
         from chatterbox.tts_turbo import ChatterboxTurboTTS
 
         config = self._config

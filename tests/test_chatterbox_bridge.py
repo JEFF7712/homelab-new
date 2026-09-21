@@ -235,6 +235,27 @@ class TtsTextTest(unittest.TestCase):
         self.assertIsNone(resolve(""))
         self.assertIsNone(resolve("/nonexistent/jarvis.wav"))
 
+    def test_watermark_passthrough_when_perth_broken(self) -> None:
+        import sys
+        import types
+
+        stub = types.ModuleType("perth")
+        stub.PerthImplicitWatermarker = None
+        saved = sys.modules.get("perth")
+        sys.modules["perth"] = stub
+        try:
+            SERVER.ensure_watermarker()
+            wav = [0.1, 0.2]
+            self.assertEqual(
+                stub.PerthImplicitWatermarker().apply_watermark(wav, sample_rate=24000),
+                wav,
+            )
+        finally:
+            if saved is not None:
+                sys.modules["perth"] = saved
+            else:
+                sys.modules.pop("perth", None)
+
 
 if __name__ == "__main__":
     unittest.main()
