@@ -83,7 +83,9 @@ spec:
               # from_pretrained needs to resolve the repo id. Point it at
               # the pinned commit whose content was just verified.
               mkdir -p "$REPO_CACHE/refs"
-              echo "f6b268ff47b449b688a8052dfb3c37c9518b18f1" \
+              # No trailing newline: hub compares the ref bytes verbatim
+              # against snapshot dir names.
+              printf %s "f6b268ff47b449b688a8052dfb3c37c9518b18f1" \
                 > "$REPO_CACHE/refs/main"
               mkdir -p "$MODEL_DIR"
               touch "$MODEL_DIR/.complete"
