@@ -69,7 +69,8 @@ spec:
                 uv venv /runtime/venv
               fi
               uv pip install --python /runtime/venv/bin/python 'von-sdk==1.0.1'
-              if [ ! -f "$MODEL_DIR/.complete" ]; then
+              REPO_CACHE=/models/hub/models--wfzyx--von-1.0
+              if [ ! -d "$REPO_CACHE/snapshots" ]; then
                 HF_HOME=/models /runtime/venv/bin/python -c '
               from huggingface_hub import snapshot_download
               snapshot_download(
@@ -77,9 +78,15 @@ spec:
                   revision="f6b268ff47b449b688a8052dfb3c37c9518b18f1",
               )
               '
-                mkdir -p "$MODEL_DIR"
-                touch "$MODEL_DIR/.complete"
               fi
+              # Pinned-revision downloads leave no refs/main, which offline
+              # from_pretrained needs to resolve the repo id. Point it at
+              # the pinned commit whose content was just verified.
+              mkdir -p "$REPO_CACHE/refs"
+              echo "f6b268ff47b449b688a8052dfb3c37c9518b18f1" \
+                > "$REPO_CACHE/refs/main"
+              mkdir -p "$MODEL_DIR"
+              touch "$MODEL_DIR/.complete"
           env:
             - name: MODEL_DIR
               value: /models/von-1.0-f6b268f
