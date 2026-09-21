@@ -155,6 +155,10 @@ spec:
               value: /voices/jarvis.wav
             - name: OMP_NUM_THREADS
               value: "4"
+            # numba (via librosa) caches compiled kernels next to its
+            # sources; the venv mount is read-only, so redirect to /tmp.
+            - name: NUMBA_CACHE_DIR
+              value: /tmp/numba-cache
           ports:
             - containerPort: 10201
               name: wyoming
