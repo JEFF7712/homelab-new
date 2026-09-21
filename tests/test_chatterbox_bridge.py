@@ -148,6 +148,16 @@ class TtsTurnTest(unittest.TestCase):
         self.assertEqual(
             (start["rate"], start["width"], start["channels"]), (24000, 2, 1)
         )
+        for chunk in [e for e in events if e["type"] == "audio-chunk"]:
+            self.assertEqual(
+                (
+                    chunk["data"]["rate"],
+                    chunk["data"]["width"],
+                    chunk["data"]["channels"],
+                ),
+                (24000, 2, 1),
+            )
+            self.assertTrue(chunk["payload"])
         pcm = b"".join(e["payload"] for e in events if e["type"] == "audio-chunk")
         self.assertEqual(pcm, b"\x00\x10" * (len("Done.") * 2400))
         self.assertEqual(engine.texts, ["Done."])

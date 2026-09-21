@@ -304,11 +304,12 @@ class TtsServer:
     async def _send_audio(
         self, writer: asyncio.StreamWriter, pcm: bytes, rate: int
     ) -> None:
-        writer.write(
-            encode_event("audio-start", {"rate": rate, "width": 2, "channels": 1})
-        )
+        # HA reads the format off every audio-chunk (AudioChunk.from_event
+        # requires rate/width/channels keys); bare chunks KeyError.
+        fmt = {"rate": rate, "width": 2, "channels": 1}
+        writer.write(encode_event("audio-start", dict(fmt)))
         for piece in chunk_pcm(pcm, self.config.chunk_bytes(rate)):
-            writer.write(encode_event("audio-chunk", {}, piece))
+            writer.write(encode_event("audio-chunk", dict(fmt), piece))
         writer.write(encode_event("audio-stop", {}))
         await writer.drain()
 
