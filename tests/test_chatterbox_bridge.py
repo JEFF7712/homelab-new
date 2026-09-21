@@ -218,6 +218,14 @@ class TtsTextTest(unittest.TestCase):
 
         self.assertEqual(struct.unpack("<5h", pcm), (0, 32767, -32767, 32767, -32768))
 
+    def test_normalize_peak_targets_full_scale(self) -> None:
+        norm = SERVER.normalize_peak
+        self.assertEqual(norm([0.0, 0.0]), [0.0, 0.0])
+        lifted = norm([0.1, -0.2, 0.05])
+        self.assertAlmostEqual(max(abs(v) for v in lifted), 0.89, places=6)
+        capped = norm([0.001, -0.001], max_gain=10.0)
+        self.assertAlmostEqual(max(abs(v) for v in capped), 0.01, places=9)
+
     def test_config_validation(self) -> None:
         bad = make_config(port=0)
         with self.assertRaises(ValueError):

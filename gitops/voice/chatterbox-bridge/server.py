@@ -42,6 +42,21 @@ def strip_paralinguistic_tags(text: str) -> str:
     return re.sub(r"[ \t]{2,}", " ", cleaned).strip(" \t")
 
 
+def normalize_peak(samples, target: float = 0.89, max_gain: float = 10.0):
+    """Lift quiet Turbo output toward full scale (pure).
+
+    Turbo ships unnormalized audio (often -11 dB peak); played at the
+    satellite's volume that is nearly inaudible next to Piper. Gain is
+    capped so near-silence never becomes amplified noise.
+    """
+    values = [float(v) for v in samples]
+    peak = max((abs(v) for v in values), default=0.0)
+    if peak <= 0.0:
+        return values
+    gain = min(target / peak, max_gain)
+    return [v * gain for v in values]
+
+
 def samples_to_pcm16(samples) -> bytes:
     """Convert float samples in [-1, 1] to little-endian int16 PCM."""
     out = bytearray()
@@ -202,7 +217,7 @@ class ChatterboxEngine:
             repetition_penalty=config.repetition_penalty,
         )
         samples = wav.squeeze(0).detach().cpu().numpy().tolist()
-        return samples_to_pcm16(samples), self._sample_rate
+        return samples_to_pcm16(normalize_peak(samples)), self._sample_rate
 
 
 def encode_event(type_: str, data: dict | None = None, payload: bytes = b"") -> bytes:
