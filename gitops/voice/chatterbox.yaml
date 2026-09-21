@@ -177,15 +177,20 @@ spec:
             tcpSocket:
               port: wyoming
             periodSeconds: 30
+          # No nvidia.com/gpu claim: immich-machine-learning holds the
+          # T600 allocation and the device plugin would park this pod.
+          # Time-shared CUDA access via NVIDIA_VISIBLE_DEVICES instead;
+          # Turbo (~2 GB) coexists with display compositing plus idle
+          # Immich, but a heavy Immich ML burst can OOM one side or the
+          # other. If pod logs show CUDA OOM under photo uploads, move
+          # Immich ML to CPU and reclaim a clean allocation here.
           resources:
             requests:
               cpu: 500m
               memory: 1Gi
-              nvidia.com/gpu: "1"
             limits:
               cpu: "4"
               memory: 6Gi
-              nvidia.com/gpu: "1"
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
