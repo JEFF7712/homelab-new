@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
-import probatio
+import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.helpers.selector import ConversationAgentSelector
 
@@ -27,7 +27,7 @@ class JarvisJevConfigFlow(ConfigFlow, domain=DOMAIN):
                     title="Jarvis Jev Router", data=user_input
                 )
 
-        schema = probatio.Schema(
-            {probatio.Required(CONF_FALLBACK_AGENT): ConversationAgentSelector()}
+        schema = vol.Schema(
+            {vol.Required(CONF_FALLBACK_AGENT): ConversationAgentSelector()}
         )
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
