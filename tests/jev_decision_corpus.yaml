@@ -1,0 +1,1480 @@
+# Jev decision-model benchmark corpus (v1).
+#
+# Offline bench for the local System One candidates (Von, Laya, Kev-0.8B,
+# Simple-Jev) against the hosted Jev reference. Each entry labels the exact
+# `router.build_request` questions for one utterance, plus the route that
+# `router.decide` must produce for it.
+#
+# Schema per entry:
+#   id: unique stable slug
+#   say: exact utterance, as transcribed (may carry a `speaker <Name>` prefix)
+#   expected_route: execute | clarify | fallback
+#   expected: question labels. request_kind is always required. target,
+#     action, color, reference are required bindings only when
+#     expected_route is execute; elsewhere they are optional hints and the
+#     scorer checks the route alone (plus that no action executes).
+#   value: exact number, required when action is set_brightness/set_temperature
+#   targets: HA entity IDs acted on, required when expected_route is execute
+#   service: domain.service invoked, required when expected_route is execute
+#   notes: free-form expectation or layering note
+#
+# Layering notes: the corpus scores the Jev decision layer in isolation.
+# Music play/stop, shopping, and state queries are caught earlier by
+# automations or local intents live; here they are labeled by what the
+# schema alone permits (usually unsupported -> clarify).
+#
+# Growth: append new cases with fresh ids; never renumber. Recorded model
+# outputs live in tests/fixtures/jev_decisions/<model>.json, produced by
+# scripts/record_jev_decisions.py. Scored by tests/test_jev_decision_bench.py.
+# Schema validated by tests/test_jev_decision_corpus.py against the live
+# router allowlists.
+
+# Paraphrase misses: deterministic intents fail these, the decision model
+# must nail them. All name an explicit room or device.
+- id: kill-downstairs
+  say: Kill the downstairs lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: downstairs_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.downstairs_lights]
+  service: light.turn_off
+- id: kill-kitchen
+  say: Cut the kitchen lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_off
+- id: douse-living
+  say: Douse the living room lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.living_room_lights]
+  service: light.turn_off
+- id: blackout-bedroom
+  say: Black out the bedroom lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_off
+- id: snuff-govee
+  say: Snuff out all the Govee lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: all_govee_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.all_govee_lights]
+  service: light.turn_off
+- id: shutoff-govee
+  say: Shut off all the Govee lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: all_govee_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.all_govee_lights]
+  service: light.turn_off
+- id: warmer-living
+  say: Make the living room warmer.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: adjust_temperature_up
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: cooler-living
+  say: Make the living room cooler.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: adjust_temperature_down
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: bump-thermostat-up
+  say: Bump the thermostat up a degree.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: adjust_temperature_up
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+  notes: Thermostat is unambiguous; only one exists.
+- id: dim-downstairs-bit
+  say: Dim the downstairs lights a little.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: downstairs_lights
+    action: adjust_brightness_down
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.downstairs_lights]
+  service: light.turn_on
+- id: brighten-kitchen
+  say: Brighten up the kitchen lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: adjust_brightness_up
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+- id: crank-living
+  say: Crank the living room lights up.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: adjust_brightness_up
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.living_room_lights]
+  service: light.turn_on
+- id: lower-bedroom
+  say: Lower the bedroom lights a bit.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: adjust_brightness_down
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
+- id: percent-downstairs-30
+  say: Set the downstairs lights to 30 percent.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: downstairs_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  value: 30
+  targets: [light.downstairs_lights]
+  service: light.turn_on
+- id: percent-living-75
+  say: Put the living room lights at 75%.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  value: 75
+  targets: [light.living_room_lights]
+  service: light.turn_on
+- id: percent-bedroom-50
+  say: Set the bedroom lights to 50 percent.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  value: 50
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
+- id: percent-kitchen-10
+  say: Dim the kitchen lights to 10 percent.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  value: 10
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+- id: temp-exact-72
+  say: Set the living room thermostat to 72 degrees.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  value: 72
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: pink-kitchen
+  say: Turn the kitchen lights pink.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_color
+    color: pink
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+- id: neon-downstairs
+  say: Make the downstairs lights neon pink.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: downstairs_lights
+    action: set_color
+    color: neon_pink
+    reference: explicit_target
+  targets: [light.downstairs_lights]
+  service: light.turn_on
+- id: warm-living
+  say: Set the living room lights to warm white.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: set_color
+    color: warm_white
+    reference: explicit_target
+  targets: [light.living_room_lights]
+  service: light.turn_on
+- id: blue-bedroom
+  say: Make the bedroom lights blue.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: set_color
+    color: blue
+    reference: explicit_target
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
+- id: red-govee
+  say: Turn all the Govee lights red.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: all_govee_lights
+    action: set_color
+    color: red
+    reference: explicit_target
+  targets: [light.all_govee_lights]
+  service: light.turn_on
+- id: green-kitchen
+  say: Make the kitchen lights green.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_color
+    color: green
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+- id: orange-living
+  say: Make the living room lights orange.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: set_color
+    color: orange
+    reference: explicit_target
+  targets: [light.living_room_lights]
+  service: light.turn_on
+- id: yellow-kitchen
+  say: Set the kitchen lights to yellow.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_color
+    color: yellow
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+- id: purple-bedroom
+  say: Turn the bedroom lights purple.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: set_color
+    color: purple
+    reference: explicit_target
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
+- id: white-downstairs
+  say: Set the downstairs lights to white.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: downstairs_lights
+    action: set_color
+    color: white
+    reference: explicit_target
+  targets: [light.downstairs_lights]
+  service: light.turn_on
+- id: movie-on
+  say: Put on movie mode.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: movie_mode
+    action: activate_scene
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [scene.movie_low_living_room]
+  service: scene.turn_on
+- id: movie-living
+  say: Activate movie mode in the living room.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: movie_mode
+    action: activate_scene
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [scene.movie_low_living_room]
+  service: scene.turn_on
+- id: pause-satellite
+  say: Pause the satellite media player.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    action: pause_media
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [media_player.homelab_05_satellite_media_player]
+  service: media_player.media_pause
+- id: stop-music-satellite
+  say: Stop the music on the satellite speaker.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    action: pause_media
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [media_player.homelab_05_satellite_media_player]
+  service: media_player.media_pause
+- id: stop-satellite-speaker
+  say: Stop the satellite speaker.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    action: pause_media
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [media_player.homelab_05_satellite_media_player]
+  service: media_player.media_pause
+- id: stairs-on
+  say: Turn on the stairs light.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: stairs_light
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [switch.stairs_light]
+  service: switch.turn_on
+- id: stairs-off
+  say: Switch off the stairs light.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: stairs_light
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [switch.stairs_light]
+  service: switch.turn_off
+- id: stairs-toggle
+  say: Toggle the stairs light.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: stairs_light
+    action: toggle
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [switch.stairs_light]
+  service: homeassistant.toggle
+- id: sign-off
+  say: Turn off the good vibes sign.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: good_vibes_sign
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.living_room_good_vibes_sign]
+  service: light.turn_off
+- id: sign-on
+  say: Switch the good vibes sign on.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: good_vibes_sign
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.living_room_good_vibes_sign]
+  service: light.turn_on
+- id: mushroom-kitchen-off
+  say: Turn the kitchen mushroom lamp off.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_mushroom_lamp
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_mushroom_lamp]
+  service: light.turn_off
+- id: mushroom-bedroom-on
+  say: Turn on the bedroom mushroom plug.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_mushroom_plug
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.bedroom_mushroom_plug]
+  service: light.turn_on
+- id: window-plug-off
+  say: Kill the bedroom window plug.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_window_plug
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.bedroom_window_plug]
+  service: light.turn_off
+- id: toggle-kitchen
+  say: Toggle the kitchen lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: toggle
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: homeassistant.toggle
+- id: flip-living
+  say: Flip the living room lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: toggle
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.living_room_lights]
+  service: homeassistant.toggle
+- id: on-downstairs
+  say: Turn the downstairs lights on.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: downstairs_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.downstairs_lights]
+  service: light.turn_on
+
+# Explicit canonical commands: control slice, also covered by local intents.
+- id: canon-kitchen-on
+  say: Turn on the kitchen lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+- id: canon-kitchen-off
+  say: Turn off the kitchen lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_off
+- id: canon-living-off
+  say: Turn off the living room lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.living_room_lights]
+  service: light.turn_off
+- id: canon-downstairs-off
+  say: Turn off the downstairs lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: downstairs_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.downstairs_lights]
+  service: light.turn_off
+- id: canon-bedroom-off
+  say: Turn off the bedroom lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_off
+- id: canon-govee-on
+  say: Turn on all the Govee lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: all_govee_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.all_govee_lights]
+  service: light.turn_on
+- id: canon-sign-off
+  say: Turn off the good vibes sign.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: good_vibes_sign
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.living_room_good_vibes_sign]
+  service: light.turn_off
+- id: canon-temp-70
+  say: Set the living room thermostat to 70 degrees.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  value: 70
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: canon-stairs-on
+  say: Turn on the stairs light.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: stairs_light
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [switch.stairs_light]
+  service: switch.turn_on
+- id: canon-movie
+  say: Activate movie mode.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: movie_mode
+    action: activate_scene
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [scene.movie_low_living_room]
+  service: scene.turn_on
+- id: canon-blue-kitchen
+  say: Set the kitchen lights to blue.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_color
+    color: blue
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+- id: canon-pause
+  say: Pause the satellite media player.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    action: pause_media
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [media_player.homelab_05_satellite_media_player]
+  service: media_player.media_pause
+
+# Ambiguous references: no explicit target, must clarify with zero actions.
+- id: amb-too-bright
+  say: That is too bright.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: No target named; must not guess a room.
+- id: amb-turn-that-on
+  say: Turn that back on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: amb-turn-them
+  say: Turn them back on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: amb-down-here
+  say: Kill the lights down here.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Router instructions name down here as ambiguous; no room fallback at this layer.
+- id: amb-warmer
+  say: Make it warmer.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: amb-in-there
+  say: Turn the lights off in there.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: amb-these
+  say: Dim these lights a bit.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: amb-put-it-on
+  say: Put it on.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: amb-upstairs
+  say: Turn off the upstairs lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+  notes: No upstairs target exists; explicit but unknown.
+- id: amb-garage
+  say: Turn on the garage lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+- id: amb-basement
+  say: Make the basement lights blue.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+- id: amb-porch
+  say: Turn off the porch light.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+- id: amb-which-room
+  say: Turn the light off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Singular light with no room; must not pick one.
+- id: amb-make-red
+  say: Make them red.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: amb-brighter-no-room
+  say: A little brighter please.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: amb-warmer-downstairs
+  say: Make it warmer downstairs.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Thermostat is living-room only; downstairs does not name it.
+
+# Compound requests: two or more actions, never partial execution.
+- id: comp-kitchen-living
+  say: Turn off the kitchen lights and turn on the living room lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+- id: comp-three-rooms
+  say: Turn off the kitchen, living room, and bedroom lights.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+- id: comp-bright-color
+  say: Dim the kitchen lights and make them blue.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+- id: comp-light-temp
+  say: Turn off the downstairs lights and set the thermostat to 70.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+- id: comp-music-lights
+  say: Turn off the living room lights and stop the music.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+- id: comp-scenes
+  say: Turn on movie mode and turn off the good vibes sign.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+- id: comp-then
+  say: Turn the kitchen lights pink then dim them to half.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+- id: comp-plugs
+  say: Turn on the bedroom mushroom plug and the window plug.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+- id: comp-toggle-set
+  say: Toggle the stairs light and set the kitchen lights to 40 percent.
+  expected_route: clarify
+  expected:
+    request_kind: compound
+- id: comp-all-off
+  say: Turn everything off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+  notes: Single action over an unbounded target set; must not invent one.
+
+# Unsupported home requests: no schema representation, clarify with no action.
+# Live, music play and shopping are caught by earlier layers; here the schema
+# alone decides.
+- id: unsup-disco
+  say: Turn on the garage disco ball.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+- id: unsup-lock
+  say: Lock the front door.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+  notes: No lock target exists.
+- id: unsup-blinds
+  say: Open the blinds.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+- id: unsup-vacuum
+  say: Start the robot vacuum.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+- id: unsup-play-jazz
+  say: Play some jazz.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+  notes: Music play is caught by automations live; unrepresentable here.
+- id: unsup-temp-query
+  say: What is the temperature downstairs?
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+  notes: State query; answered by local intents live, not the router.
+- id: unsup-light-state
+  say: Is the kitchen light on?
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+- id: unsup-shopping
+  say: Add oat milk to the shopping list.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+  notes: Handled by local shopping intent live.
+- id: unsup-remind
+  say: Remind me to buy milk.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+- id: unsup-timer
+  say: Set a timer for ten minutes.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+- id: unsup-volume
+  say: Turn the volume up.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+  notes: No volume action exists.
+- id: unsup-channel
+  say: Change the channel on the TV.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+
+# Target/action mismatches: known target, impossible action, clarify.
+- id: mis-color-plug
+  say: Make the kitchen mushroom lamp blue.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: kitchen_mushroom_lamp
+    reference: explicit_target
+  notes: Plug supports on/off/toggle only.
+- id: mis-bright-sign
+  say: Dim the good vibes sign to 50 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: good_vibes_sign
+    reference: explicit_target
+- id: mis-bright-switch
+  say: Set the stairs light to 50 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: stairs_light
+    reference: explicit_target
+- id: mis-scene-color
+  say: Make movie mode blue.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: movie_mode
+    reference: explicit_target
+- id: mis-pause-light
+  say: Pause the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    reference: explicit_target
+- id: mis-temp-color
+  say: Set the thermostat to blue.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    reference: explicit_target
+- id: mis-activate-light
+  say: Activate the kitchen lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    reference: explicit_target
+- id: mis-scene-temp
+  say: Set movie mode to 70 degrees.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: movie_mode
+    reference: explicit_target
+
+# Numeric edges: exact-value parsing and range gates.
+- id: num-bright-150
+  say: Set the kitchen lights to 150 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_brightness
+    reference: explicit_target
+  notes: Brightness above 100 is rejected.
+- id: num-bright-neg
+  say: Set the downstairs lights to -20 percent.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: downstairs_lights
+    action: set_brightness
+    reference: explicit_target
+- id: num-bright-0
+  say: Set the living room lights to 0 percent.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  value: 0
+  targets: [light.living_room_lights]
+  service: light.turn_on
+- id: num-bright-100
+  say: Set the bedroom lights to 100 percent.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  value: 100
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
+- id: num-temp-74
+  say: Set the thermostat to 74 degrees.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  value: 74
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: num-temp-68
+  say: Set the living room thermostat to 68.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  value: 68
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: num-temp-missing
+  say: Set the thermostat.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    reference: explicit_target
+  notes: Exact-temperature action with no number.
+- id: num-bright-comfy
+  say: Set the kitchen lights to a comfortable brightness.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    reference: explicit_target
+  notes: Exact-brightness action with no number.
+- id: num-temp-two
+  say: Set the thermostat to 70 or 72 degrees.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    reference: explicit_target
+  notes: Two numbers; exact-value parsing requires exactly one.
+- id: num-color-number
+  say: Make the kitchen lights red 3 times.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    reference: explicit_target
+  notes: Repeated-action phrasing is out of schema; must not blink lights.
+
+# Colors: systematic sweep plus unsupported and targetless variants.
+- id: color-red-living
+  say: Change the living room lights to red.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: set_color
+    color: red
+    reference: explicit_target
+  targets: [light.living_room_lights]
+  service: light.turn_on
+- id: color-green-downstairs
+  say: Change the downstairs lights to green.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: downstairs_lights
+    action: set_color
+    color: green
+    reference: explicit_target
+  targets: [light.downstairs_lights]
+  service: light.turn_on
+- id: color-yellow-bedroom
+  say: Change the bedroom lights to yellow.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: set_color
+    color: yellow
+    reference: explicit_target
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
+- id: color-orange-kitchen
+  say: Change the kitchen lights to orange.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_color
+    color: orange
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+- id: color-purple-govee
+  say: Change all the Govee lights to purple.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: all_govee_lights
+    action: set_color
+    color: purple
+    reference: explicit_target
+  targets: [light.all_govee_lights]
+  service: light.turn_on
+- id: color-white-kitchen
+  say: Change the kitchen lights to white.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_color
+    color: white
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+- id: color-pink-living
+  say: Change the living room lights to pink.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: set_color
+    color: pink
+    reference: explicit_target
+  targets: [light.living_room_lights]
+  service: light.turn_on
+- id: color-neon-kitchen
+  say: Make the kitchen lights neon pink.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_color
+    color: neon_pink
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+- id: color-warm-bedroom
+  say: Make the bedroom lights warm white.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: set_color
+    color: warm_white
+    reference: explicit_target
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
+- id: color-chartreuse
+  say: Make the kitchen lights chartreuse.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    reference: explicit_target
+  notes: Unsupported color name.
+- id: color-no-room
+  say: Make the lights red.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: color-plug
+  say: Turn the bedroom window plug pink.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: bedroom_window_plug
+    reference: explicit_target
+
+# Climate variants.
+- id: clim-heat-up
+  say: Turn up the heat in the living room.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: adjust_temperature_up
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: clim-thermo-down
+  say: Turn down the living room thermostat.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: adjust_temperature_down
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: clim-colder
+  say: Make the living room colder.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: adjust_temperature_down
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: clim-temp-71
+  say: Set the living room temperature to 71 degrees.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  value: 71
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: clim-query
+  say: What is the thermostat set to?
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+  notes: State query; answered by local intents live.
+- id: clim-ac-off
+  say: Turn off the air conditioning.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Thermostat supports temperature only, no on/off; target unnamed.
+- id: clim-fan
+  say: Turn on the thermostat fan.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    reference: explicit_target
+  notes: No fan action exists.
+- id: clim-freeze
+  say: Freeze the living room.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    reference: explicit_target
+  notes: Hyperbole with no exact value or direction word the schema trusts.
+
+# Media controls: pause only, explicit speaker naming.
+- id: media-stop-downstairs-music
+  say: Stop the downstairs music on the satellite speaker.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    action: pause_media
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [media_player.homelab_05_satellite_media_player]
+  service: media_player.media_pause
+- id: media-pause-speaker
+  say: Pause the speaker in the living room.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Satellite speaker not named; must not assume it.
+- id: media-music-off
+  say: Turn off the music.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Caught by the music-stop automation live; ambiguous here.
+- id: media-resume
+  say: Resume the music on the satellite speaker.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    reference: explicit_target
+  notes: No resume action exists.
+- id: media-mute
+  say: Mute the satellite speaker.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    reference: explicit_target
+  notes: No mute action exists.
+- id: media-louder
+  say: Make the satellite speaker louder.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    reference: explicit_target
+  notes: No volume action exists.
+- id: media-next
+  say: Skip this song on the satellite speaker.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    reference: explicit_target
+  notes: No track control exists.
+- id: media-living-music
+  say: Stop the living room music.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+  notes: Satellite speaker not named.
+
+# Scene controls: activation only.
+- id: scene-movie-evening
+  say: Set the scene to movie mode.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: movie_mode
+    action: activate_scene
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [scene.movie_low_living_room]
+  service: scene.turn_on
+- id: scene-movie-off
+  say: Turn off movie mode.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: movie_mode
+    reference: explicit_target
+  notes: No scene deactivation exists.
+- id: scene-movie-dim
+  say: Dim movie mode.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: movie_mode
+    reference: explicit_target
+- id: scene-party
+  say: Activate party mode.
+  expected_route: clarify
+  expected:
+    request_kind: unsupported
+  notes: Only movie mode exists.
+
+# General conversation: fallback, never a home action.
+- id: gen-ounces
+  say: How many ounces are in a cup?
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-weather
+  say: What is the weather tomorrow?
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-server-loud
+  say: Why is the server so loud?
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-joke
+  say: Tell me a joke.
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-capital
+  say: What is the capital of France?
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-thanks
+  say: Thank you.
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-morning
+  say: Good morning.
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-capabilities
+  say: What can you do?
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-song
+  say: Sing me a song.
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-photosynthesis
+  say: Explain photosynthesis in one sentence.
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-time
+  say: What time is it?
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-score
+  say: Who won the game last night?
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-recipe
+  say: Give me a pancake recipe.
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: gen-meaning
+  say: What is the meaning of life?
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+
+# Speaker-prefixed transcripts: normalization strips the tag first.
+- id: spk-kitchen-off
+  say: speaker Rupan turn off the kitchen lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_off
+- id: spk-blue-living
+  say: speaker Sam make the living room lights blue.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: set_color
+    color: blue
+    reference: explicit_target
+  targets: [light.living_room_lights]
+  service: light.turn_on
+- id: spk-down-here
+  say: speaker Rupan kill the lights down here.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: spk-weather
+  say: speaker Sam what is the weather tomorrow?
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
+- id: spk-that-off
+  say: speaker Rupan turn that off.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    reference: missing_or_ambiguous
+- id: spk-temp-71
+  say: speaker Sam set the thermostat to 71 degrees.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  value: 71
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
+- id: spk-garage
+  say: speaker Rupan turn on the garage lights.
+  expected_route: clarify
+  expected:
+    request_kind: home_command
+    target: none_or_unknown
+    reference: explicit_target
+- id: spk-thanks
+  say: speaker Sam thank you.
+  expected_route: fallback
+  expected:
+    request_kind: general_or_conversation
