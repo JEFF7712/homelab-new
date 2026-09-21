@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: voice
 resources:
   - namespace.yaml
-  - ollama.yaml
   - local-decision.yaml
   - whisper.yaml
   - stt-groq.yaml

@@ -3,9 +3,9 @@
     "step": {
       "user": {
         "title": "Jarvis Jev Router",
-        "description": "Choose the Ollama agent for general questions. The API key comes from TYPESAFE_API_KEY.",
+        "description": "No fallback agent is set, so general conversation is unavailable.",
         "data": {
-          "fallback_agent": "Ollama fallback agent"
+          "fallback_agent": "Cloud fallback agent (optional, currently unset)"
         }
       }
     },

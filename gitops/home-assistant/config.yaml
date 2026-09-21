@@ -1153,7 +1153,7 @@ data:
         "step": {
           "user": {
             "title": "Jarvis Jev Router",
-            "description": "No local LLM is configured. General conversation is unavailable until a cloud fallback agent is set. The API key comes from TYPESAFE_API_KEY.",
+            "description": "No fallback agent is set, so general conversation is unavailable.",
             "data": {
               "fallback_agent": "Cloud fallback agent (optional, currently unset)"
             }
