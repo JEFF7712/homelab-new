@@ -3,9 +3,9 @@
     "step": {
       "user": {
         "title": "Jarvis Jev Router",
-        "description": "No fallback agent is set, so general conversation is unavailable.",
+        "description": "General conversation falls back to the Google AI cloud agent.",
         "data": {
-          "fallback_agent": "Cloud fallback agent (optional, currently unset)"
+          "fallback_agent": "Cloud fallback agent"
         }
       }
     },

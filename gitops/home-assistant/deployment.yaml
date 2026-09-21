@@ -15,7 +15,7 @@ spec:
       labels:
         app: home-assistant
       annotations:
-        checksum/config: 4c29cd4bc9454233a2afbf06ec42ef0ace211704c0f9b316c55ab759a79a3fd3
+        checksum/config: a534a75a58230bc2f2cbee269985f897c3c9d9c80a22155f4756600f6e119dd3
         checksum/dependencies: 8eac350ea6f0dc5b311c3b363345bb99229e5efa193aa69111e630103301751e
         reloader.stakater.com/auto: 'true'
     spec:
@@ -113,6 +113,12 @@ spec:
                 secretKeyRef:
                   name: home-assistant-secrets
                   key: typesafe_api_key
+                  optional: true
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: home-assistant-secrets
+                  key: gemini_api_key
                   optional: true
           ports:
             - name: http

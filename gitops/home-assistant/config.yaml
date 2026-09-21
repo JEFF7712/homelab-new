@@ -735,10 +735,10 @@ data:
   component.jarvis_jev.const.py: |
     DOMAIN = "jarvis_jev"
     CONF_FALLBACK_AGENT = "fallback_agent"
-    # Phase 0: no local LLM. Qwen/Ollama was removed to free the T1000 GPU and
-    # the cloud replacement is not wired yet, so new entries get no fallback
-    # and general conversation replies unavailable until one is configured.
-    OLLAMA_FALLBACK_AGENT = ""
+    # Phase 0: no local LLM. Qwen/Ollama was removed to free the T1000 GPU;
+    # the cloud fallback is the Google AI conversation agent (tools enabled,
+    # assist-only exposure). Entity-id form resolves via conversation.get_entity.
+    OLLAMA_FALLBACK_AGENT = "conversation.google_ai_conversation"
 
     API_URL = "https://api.typesafe.ai/v1/systemone"
     MODEL = "jev-1.13.0"
@@ -1153,9 +1153,9 @@ data:
         "step": {
           "user": {
             "title": "Jarvis Jev Router",
-            "description": "No fallback agent is set, so general conversation is unavailable.",
+            "description": "General conversation falls back to the Google AI cloud agent.",
             "data": {
-              "fallback_agent": "Cloud fallback agent (optional, currently unset)"
+              "fallback_agent": "Cloud fallback agent"
             }
           }
         },
