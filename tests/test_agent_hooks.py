@@ -224,7 +224,7 @@ class AgentStopHookTest(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertIn("stop-scan", payload["followup_message"])
 
-    def test_codex_stop_reminds_with_block_decision(self) -> None:
+    def test_codex_stop_reminds_without_blocking(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = self.make_repo(directory)
             self.create_task(repository, "stop-codex")
@@ -249,10 +249,8 @@ class AgentStopHookTest(unittest.TestCase):
             )
         self.assertEqual(result.returncode, 0, result.stderr)
         payload = json.loads(result.stdout)
-        self.assertEqual(payload["decision"], "block")
-        self.assertIn("stop-codex", payload["reason"])
-        self.assertNotIn("hookSpecificOutput", payload)
-        self.assertNotIn("followup_message", payload)
+        self.assertNotIn("decision", payload)
+        self.assertIn("stop-codex", payload["systemMessage"])
 
     def test_clean_checkout_is_silent(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
