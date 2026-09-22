@@ -231,9 +231,7 @@ spec:
         passwordKey: admin-password
       grafana.ini:
         auth.anonymous:
-          enabled: true
-          org_name: "Main Org."
-          org_role: "Viewer"
+          enabled: false
       additionalDataSources:
         - name: Loki
           type: loki

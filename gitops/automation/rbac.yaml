@@ -18,15 +18,6 @@ rules:
   - get
   - list
 - apiGroups:
-  - batch
-  resources:
-  - cronjobs
-  - jobs
-  verbs:
-  - create
-  - get
-  - list
-- apiGroups:
   - ''
   resources:
   - nodes

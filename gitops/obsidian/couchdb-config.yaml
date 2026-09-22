@@ -22,7 +22,7 @@ data:
     WWW-Authenticate = Basic realm="couchdb"
 
     [cors]
-    origins = *
+    origins = https://notes.rupan.dev,https://obsidian.rupan.dev,app://obsidian.md,capacitor://localhost
     credentials = true
     headers = accept, authorization, content-type, origin, referer
     methods = GET, PUT, POST, HEAD, DELETE
