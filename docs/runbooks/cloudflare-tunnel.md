@@ -33,33 +33,39 @@ Cloudflare Access public bypass configured.
 
 1. `photos.rupan.dev -> http://immich-server.immich:80`
 2. `www.pulseagent.dev -> http://pulse-svc.pulse:80`
-3. `pulseagent.dev -> http://pulse-svc.pulse:80`
-4. `ism.rupan.dev -> http://ism-svc.ism:80`
-5. `nix-agent.rupan.dev -> http://nixagent-svc.nixagent:80`
-6. `rupanism.rupan.dev -> http://rupanism-svc.rupanism:80`
-7. `spatia.rupan.dev -> http://spatia-svc.spatia:80`
-8. `demo.rupan.dev -> http://cr-demo-svc.cr-demo:80`
-9. `soluble.rupan.dev -> http://soluble-rupan-svc.soluble-rupan:80`
-10. `photo.rupan.dev -> http://photography-svc.photography:80`
-11. `majorfinder.rupan.dev -> http://majorfinder-svc.majorfinder:80`
-12. `notes.rupan.dev -> http://quartz-notes.obsidian.svc.cluster.local:80`
-13. `ntfy.rupan.dev -> http://ntfy-ntfy.observability.svc.cluster.local:80`
-14. `obsidian.rupan.dev -> http://couchdb.obsidian.svc.cluster.local:5984`
-15. `renovate-approve.rupan.dev -> http://renovate-approval-webhook.automation:8080`
-16. `renovate-status.rupan.dev -> http://renovate-dashboard.automation:8080`
-17. `ha.rupan.dev -> http://home-assistant.home-assistant:8123`
-18. `rupan.dev -> http://rupan-dev-svc.rupan-dev:80`
-19. `www.rupan.dev -> http://rupan-dev-svc.rupan-dev:80`
-20. `grafana.rupan.dev -> http://kube-prometheus-stack-grafana.observability.svc.cluster.local:80`
-21. `distrojeff.com -> http://distrojeff-site-svc.distrojeff:80`
-22. `apollinestore.com -> http://apolline-svc.apolline:80`
-23. `darkbitapparel.com -> http://darkbit-svc.darkbit:80`
+3. `ism.rupan.dev -> http://ism-svc.ism:80`
+4. `nix-agent.rupan.dev -> http://nixagent-svc.nixagent:80`
+5. `rupanism.rupan.dev -> http://rupanism-svc.rupanism:80`
+6. `spatia.rupan.dev -> http://spatia-svc.spatia:80`
+7. `demo.rupan.dev -> http://cr-demo-svc.cr-demo:80`
+8. `soluble.rupan.dev -> http://soluble-rupan-svc.soluble-rupan:80`
+9. `photo.rupan.dev -> http://photography-svc.photography:80`
+10. `majorfinder.rupan.dev -> http://majorfinder-svc.majorfinder:80`
+11. `notes.rupan.dev -> http://quartz-notes.obsidian.svc.cluster.local:80`
+12. `ntfy.rupan.dev -> http://ntfy-ntfy.observability.svc.cluster.local:80`
+13. `obsidian.rupan.dev -> http://couchdb.obsidian.svc.cluster.local:5984`
+14. `renovate-status.rupan.dev -> http://renovate-dashboard.automation.svc.cluster.local:80`
+15. `renovate-approve.rupan.dev -> http://renovate-approval-webhook.automation.svc.cluster.local:80`
+16. `ha.rupan.dev -> http://home-assistant.home-assistant:8123`
+17. `rupan.dev -> http://rupan-dev-svc.rupan-dev:80`
+18. `www.rupan.dev -> http://rupan-dev-svc.rupan-dev:80`
+19. `grafana.rupan.dev -> http://kube-prometheus-stack-grafana.observability.svc.cluster.local:80`
+20. `distrojeff.com -> http://distrojeff-site-svc.distrojeff:80`
+21. `apollinestore.com -> http://apolline-svc.apolline:80`
+22. `darkbitapparel.com -> http://darkbit-svc.darkbit:80`
+23. `pulseagent.dev -> http://pulse-svc.pulse:80`
 24. `flux-wh-33b0c8004348.rupan.dev -> http://webhook-receiver.flux-system:80` (Flux GitLab push receiver, 2026-09-20; Access app `flux-webhook-bypass` reused Bypass policy, wildcard `*` app would otherwise force login)
 25. `http_status:404`
 
 Removed 2026-09-15 (v72):
 - `*.rupan.dev -> https://10.0.20.180:443` (defunct Talos Traefik VIP; caused grafana outage, then 404s for unmatched hosts after grafana fix)
 - `sandhufiles.site -> https://10.0.20.180:443` (defunct site)
+
+Removed 2026-09-22 (dead origins; no such Services in-cluster, verified via `kubectl -n cloudflare get svc`):
+- `glance.rupan.dev -> http://glance:8080`
+- `pihole.rupan.dev -> http://pihole:80`
+- `api.rupan.dev -> http://rupan-api:9000`
+- `homelab.rupan.dev -> http://homelab-api:9200`
 
 ## Add a new-cluster hostname
 
@@ -69,11 +75,12 @@ Removed 2026-09-15 (v72):
 
 ## Cutover from dashboard-managed ingress
 
-The Zero Trust dashboard still holds the old remote ingress config. After Flux applies the ConfigMap-backed config and `cloudflared` pods log `Updated to new configuration` with no error:
+The Zero Trust dashboard still holds the remote ingress config (v73), and for token-authenticated tunnels the remote config wins over the local `--config` file (verified: connectors log `Updated to new configuration ... version=73` with the remote rules). Cutover:
 
-1. Confirm each public hostname serves correctly from outside the LAN.
-2. Delete the remote ingress rules in the dashboard (or leave them; local `--config` takes precedence, but two sources will confuse the next reader).
-3. Update the Identity section below to `Config source: gitops/cloudflare/ingress-config.yaml`.
+1. Confirm the local config matches remote-minus-dead via `python -m unittest tests.test_cloudflare_tunnel` (already the case after push).
+2. Delete the remote ingress rules in the dashboard. On the next config refresh the connectors will log the local rules instead of `version=73`.
+3. Confirm each public hostname serves correctly from outside the LAN.
+4. Update the Identity section below to `Config source: gitops/cloudflare/ingress-config.yaml`.
 
 ## Known gap
 

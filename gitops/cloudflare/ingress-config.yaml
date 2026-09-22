@@ -11,8 +11,6 @@ data:
         service: http://immich-server.immich:80
       - hostname: www.pulseagent.dev
         service: http://pulse-svc.pulse:80
-      - hostname: pulseagent.dev
-        service: http://pulse-svc.pulse:80
       - hostname: ism.rupan.dev
         service: http://ism-svc.ism:80
       - hostname: nix-agent.rupan.dev
@@ -35,10 +33,10 @@ data:
         service: http://ntfy-ntfy.observability.svc.cluster.local:80
       - hostname: obsidian.rupan.dev
         service: http://couchdb.obsidian.svc.cluster.local:5984
-      - hostname: renovate-approve.rupan.dev
-        service: http://renovate-approval-webhook.automation:8080
       - hostname: renovate-status.rupan.dev
-        service: http://renovate-dashboard.automation:8080
+        service: http://renovate-dashboard.automation.svc.cluster.local:80
+      - hostname: renovate-approve.rupan.dev
+        service: http://renovate-approval-webhook.automation.svc.cluster.local:80
       - hostname: ha.rupan.dev
         service: http://home-assistant.home-assistant:8123
       - hostname: rupan.dev
@@ -53,6 +51,8 @@ data:
         service: http://apolline-svc.apolline:80
       - hostname: darkbitapparel.com
         service: http://darkbit-svc.darkbit:80
+      - hostname: pulseagent.dev
+        service: http://pulse-svc.pulse:80
       - hostname: flux-wh-33b0c8004348.rupan.dev
         service: http://webhook-receiver.flux-system:80
       - service: http_status:404
