@@ -49,7 +49,8 @@ class JarvisMetricsView(HomeAssistantView):
 
     async def get(self, _request: web.Request) -> web.Response:
         headers = {"Content-Type": CONTENT_TYPE_LATEST}
-        return web.Response(body=generate_latest(), headers=headers)
+        body = await asyncio.to_thread(generate_latest)
+        return web.Response(body=body, headers=headers)
 
 
 _LOGGER = logging.getLogger(__name__)

@@ -150,9 +150,9 @@ spec:
             - name: NVIDIA_DRIVER_CAPABILITIES
               value: compute,utility
             - name: HF_HOME
-              value: /runtime/cache/huggingface
+              value: /models
             - name: HF_HUB_CACHE
-              value: /runtime/cache/huggingface/hub
+              value: /models/hub
             - name: TRANSFORMERS_CACHE
               value: /runtime/cache/huggingface/transformers
             - name: TORCH_HOME
