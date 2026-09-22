@@ -9,6 +9,7 @@ triggers:
     entity_id:
       - person.rupan_sunderapandyan
       - person.sam
+      - person.jayanth
     to: "home"
     id: "arrive"
 conditions:

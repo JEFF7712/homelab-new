@@ -8,7 +8,7 @@ description: >-
 triggers:
   - trigger: template
     value_template: >-
-      {% set ignored = ['sensor.rupan_phone_battery_level', 'sensor.sm_s948u1_battery_level'] %}
+      {% set ignored = ['sensor.rupan_phone_battery_level', 'sensor.sm_s948u1_battery_level', 'sensor.jayanth_phone_battery_level'] %}
       {{ states.sensor | selectattr('attributes.device_class', 'defined') |
       selectattr('attributes.device_class', 'eq', 'battery') |
       rejectattr('entity_id', 'in', ignored) |
@@ -23,7 +23,7 @@ triggers:
 conditions:
   - condition: template
     value_template: >-
-      {% set ignored = ['sensor.rupan_phone_battery_level', 'sensor.sm_s948u1_battery_level'] %}
+      {% set ignored = ['sensor.rupan_phone_battery_level', 'sensor.sm_s948u1_battery_level', 'sensor.jayanth_phone_battery_level'] %}
       {{ states.sensor | selectattr('attributes.device_class', 'defined') |
       selectattr('attributes.device_class', 'eq', 'battery') |
       rejectattr('entity_id', 'in', ignored) |
@@ -37,7 +37,7 @@ actions:
     data:
       title: "Low Battery"
       message: >-
-        {% set ignored = ['sensor.rupan_phone_battery_level', 'sensor.sm_s948u1_battery_level'] %}
+        {% set ignored = ['sensor.rupan_phone_battery_level', 'sensor.sm_s948u1_battery_level', 'sensor.jayanth_phone_battery_level'] %}
         {% set ns = namespace(devs=[]) %}
         {% set limit = states('input_number.device_low_battery_threshold') | int(20) %}
         {% for s in states.sensor | selectattr('attributes.device_class', 'defined') |

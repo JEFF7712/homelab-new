@@ -10,12 +10,14 @@ triggers:
     entity_id:
       - person.rupan_sunderapandyan
       - person.sam
+      - person.jayanth
     to: "not_home"
     id: "left_empty"
   - trigger: state
     entity_id:
       - person.rupan_sunderapandyan
       - person.sam
+      - person.jayanth
     to: "home"
     id: "return"
   - trigger: state

@@ -1,4 +1,7 @@
 - disabled_by: integration
+  entity_id: binary_sensor.jayanth_phone_camera_motion
+  labels: []
+- disabled_by: integration
   entity_id: binary_sensor.rupan_phone_camera_motion
   labels: []
 - disabled_by: integration
@@ -238,6 +241,9 @@
   labels: []
 - disabled_by: user
   entity_id: sensor.issues
+  labels: []
+- disabled_by: integration
+  entity_id: sensor.jayanth_phone_camera_stream
   labels: []
 - disabled_by: integration
   entity_id: sensor.kitchen_light_2_last_command_sent

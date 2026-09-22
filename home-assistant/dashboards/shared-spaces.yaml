@@ -166,6 +166,9 @@ views:
           - type: custom:mushroom-person-card
             entity: person.sam
             fill_container: true
+          - type: custom:mushroom-person-card
+            entity: person.jayanth
+            fill_container: true
           - heading: Scenes
             type: heading
           - type: custom:mushroom-chips-card
