@@ -1,5 +1,7 @@
 # Homelab Workstream Map
 
+Status: historical (implemented; retained as a dated implementation record, not active state).
+
 1. OPNsense control plane: import, provider-backed DHCP, firewall, and Unbound state, typed API reconciliation for interface and FRR-global state, read-after-write checks, and encrypted pre-change backups.
 2. AdGuard and NetBird appliance: NixOS disko layout, impermanence, SOPS bootstrap, AdGuard data migration, NetBird routing policy, and live DNS and remote-access checks.
 3. NAS platform: disk burn-in, mirrored NVMe system pool, ZFS datasets and retention, NFS export, Attic, GitLab runner, and restore verification.

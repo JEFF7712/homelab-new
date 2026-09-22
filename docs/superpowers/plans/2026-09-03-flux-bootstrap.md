@@ -1,5 +1,7 @@
 # Flux Bootstrap Implementation Plan
 
+Status: historical (implemented; retained as a dated implementation record, not active state).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Bootstrap Flux from `gitops/clusters/homelab-01` and prove ESO syncs one GitLab variable, stopping before storage classes.

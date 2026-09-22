@@ -85,6 +85,7 @@ repository_tests_feature:
 jev_decision_gate:
   extends:
     - .shared_feature
+    - .nas_ci
   stage: test
   needs: []
   script:

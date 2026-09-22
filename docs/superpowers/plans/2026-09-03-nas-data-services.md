@@ -1,5 +1,7 @@
 # NAS Data Services Provisioning Plan
 
+Status: historical (implemented; retained as a dated implementation record, not active state).
+
 **Goal:** Bring `tank` and NAS services (NFS, snapshots, Attic, GitLab runner, 2 TB backup copy) online on `nas-01` after the base installation lands.
 
 **Status 2026-09-03: provisioned and verified.** `tank` created on the Exos, all 6 datasets mounted, NFS/sanoid/Attic/backup active, unattended reboot proven. GitLab runner online as a static service user driving CI on the NAS.

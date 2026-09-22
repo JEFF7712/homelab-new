@@ -1,5 +1,7 @@
 # Homelab 02 Installation Implementation Plan
 
+Status: historical (implemented; retained as a dated implementation record, not active state).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace Talos on CLI ar9070 unit 1 with a reproducible NixOS k3s server at `10.0.30.12`.

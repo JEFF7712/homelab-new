@@ -1,5 +1,7 @@
 # Multiuser homelab agent workspaces
 
+Status: historical (implemented; retained as a dated implementation record, not active state).
+
 Date: 2026-09-12. Status: implementation handoff draft. This session authorizes research and planning, not deployment, account enrollment, publishing, hardware purchases, or changes to shared infrastructure.
 
 ## 1. Outcome and agreed requirements

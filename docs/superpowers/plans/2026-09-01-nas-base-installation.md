@@ -1,5 +1,7 @@
 # NAS Base Installation Implementation Plan
 
+Status: historical (implemented; retained as a dated implementation record, not active state).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Reproducibly install the Jonsbo N2 as `nas-01` on a TPM-unlocked encrypted mirrored NVMe ZFS system pool without touching the existing 2 TB XFS disk or the 10 TB Exos data disk.

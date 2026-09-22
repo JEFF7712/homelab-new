@@ -1,5 +1,7 @@
 # OPNsense Bootstrap Convergence Implementation Plan
 
+Status: historical (implemented; retained as a dated implementation record, not active state).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Bootstrap persistent GitLab OpenTofu state and converge OPNsense on the final six-VLAN network using live VLAN device discovery.

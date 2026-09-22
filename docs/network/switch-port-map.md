@@ -57,10 +57,8 @@ their uplinks.
 | Location | Device | Switch port | Addressing | Required mode |
 |---|---|---:|---|---|
 | Upstairs | TP-Link RE505X (AX1500) | TL-SG108E port 7 | Static `10.0.20.2/24` | Access Point; DHCP, WPS, and guest network off |
-| Downstairs | NETGEAR R6400v2 | Downstairs port 3 | DHCP lease, last observed `10.0.20.145` | Access Point; DHCP, NAT, and routing off |
+| Downstairs | NETGEAR R6400v2 | Downstairs port 3 | Reserved static `10.0.20.3/24` (MAC `80:cc:9c:21:88:e7`, `tofu/opnsense/homelab.auto.tfvars`) | Access Point; DHCP, NAT, and routing off |
 
 Use a LAN port, never the WAN/Internet port, for each AP uplink. Both APs use
 the same SSID and security settings for client roaming. Assign different
-non-overlapping radio channels where their coverage overlaps. Reserve the
-downstairs AP's DHCP address in OPNsense by MAC address when its management
-address needs to remain stable.
+non-overlapping radio channels where their coverage overlaps.

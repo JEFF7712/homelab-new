@@ -24,7 +24,7 @@ and rollback rules.
 
 ## Deployment
 
-First installation uses `nixos-anywhere`. Subsequent NixOS activation uses `deploy-rs` from the NAS-hosted GitLab runner. OpenTofu applies and OPNsense reconciliation run only in CI. Flux reconciles Kubernetes state from Git.
+First installation uses `nixos-anywhere`. Subsequent NixOS activation uses `nixos-rebuild switch` via `scripts/deploy_fleet.py` from the NAS-hosted GitLab runner. OpenTofu applies and OPNsense reconciliation run only in CI. Flux reconciles Kubernetes state from Git.
 
 Do not apply infrastructure from a laptop.
 

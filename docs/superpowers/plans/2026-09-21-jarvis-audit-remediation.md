@@ -1,5 +1,7 @@
 # Jarvis Audit Remediation Plan
 
+Status: in progress (8 open checkboxes as of 2026-09-22; deployment-window evidence pending).
+
 **Goal:** Repair audit findings 1, 2, 4, and 5 without changing the command trust boundary or silently mutating UI-managed Home Assistant state.
 
 **Scope:** Exporter connectivity, Jev safety evidence, runbook accuracy, and Chatterbox runtime behavior. Stable gateway and network-policy work is owned separately and must be integrated before live verification.
