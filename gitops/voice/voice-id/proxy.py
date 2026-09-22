@@ -227,11 +227,17 @@ def format_transcript_with_speaker(transcript: str, speaker: str | None) -> str:
 
     clean = transcript.strip().rstrip(".!?").lower()
 
-    # Music requests: "play ...", "put on ...", "listen to ..."
-    music_prefixes = ("play ", "put on ", "listen to ")
+    # Music requests: "play ...", "put on ...", "put some ... on",
+    # "listen to ...". Each prefix mirrors a sentence in
+    # home-assistant/automations/jarvis_voice_music_playback.yaml; keep them
+    # in sync (see test_speaker_prefix_covers_automation_commands).
+    music_prefixes = ("play ", "put on ", "put some ", "listen to ")
     is_music = any(clean.startswith(p) for p in music_prefixes)
 
-    # Identity requests: "who am i", "who is speaking", etc.
+    # Identity requests: "who am i", "who is speaking", etc. Each phrase
+    # mirrors a command in
+    # home-assistant/automations/jarvis_voice_identity.yaml; keep them in
+    # sync (see test_speaker_prefix_covers_automation_commands).
     identity_phrases = (
         "who am i",
         "who is speaking",
@@ -240,6 +246,10 @@ def format_transcript_with_speaker(transcript: str, speaker: str | None) -> str:
         "what's my name",
         "who's speaking",
         "do you know who i am",
+        "do you know who this is",
+        "can you tell who i am",
+        "are you able to tell who is speaking",
+        "who do you think i am",
         "who are you speaking to",
         "who is talking",
     )

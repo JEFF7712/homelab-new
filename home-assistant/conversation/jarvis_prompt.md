@@ -1,7 +1,7 @@
 # Jarvis conversation prompt (canonical source)
 
 Paste the text inside the fence verbatim into the Jarvis conversation
-subentry (Ollama config entry) in the Home Assistant UI. The live copy is
+subentry (cloud fallback agent config entry) in the Home Assistant UI. The live copy is
 UI-managed config-entry state with no read API, so this file is the
 reviewable source: keep the two in sync on any edit.
 

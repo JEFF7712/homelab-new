@@ -27,3 +27,38 @@ spec:
           annotations:
             summary: Jarvis exporter subscription is stale
             description: Jarvis telemetry is not receiving a healthy subscribed event stream.
+        - alert: JarvisExporterMissing
+          expr: absent(jarvis_exporter_ha_connected)
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: Jarvis exporter metrics are absent
+            description: The exporter pod or ServiceMonitor may be gone; no scrape at all.
+        - alert: JarvisExporterAuthFailures
+          expr: increase(jarvis_exporter_auth_failures_total[15m]) > 0
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: Jarvis exporter authentication failures detected
+            description: HA token may be revoked or rotated incorrectly.
+        - alert: JarvisZeroTurns
+          expr: sum(increase(jarvis_requests_total[1h])) == 0 and jarvis_exporter_ha_connected == 1
+          for: 1h
+          labels:
+            severity: info
+          annotations:
+            summary: No Jarvis voice turns in the last hour
+            description: Satellite may be unhealthy or house is quiet; verify live state.
+        - alert: JarvisSlowTurnRatio
+          expr: >-
+            sum(increase(jarvis_turn_speed_class_total{class="slow"}[1h]))
+            / sum(increase(jarvis_turn_speed_class_total[1h]))
+            > 0.5
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: High ratio of slow Jarvis turns
+            description: More than 50% of turns exceed the fast threshold; check LLM/TTS latency.

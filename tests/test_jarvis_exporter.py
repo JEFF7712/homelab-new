@@ -44,6 +44,7 @@ class ExporterRenderTest(unittest.TestCase):
         text = "\n".join(histogram.render())
         self.assertIn('demo_seconds_bucket{satellite="x",le="0.25"} 0', text)
         self.assertIn('demo_seconds_bucket{satellite="x",le="0.5"} 1', text)
+        self.assertIn('demo_seconds_bucket{satellite="x",le="8.0"} 2', text)
         self.assertIn('demo_seconds_bucket{satellite="x",le="+Inf"} 2', text)
         self.assertIn('demo_seconds_count{satellite="x"} 2', text)
 
@@ -98,6 +99,35 @@ class TurnTrackerTest(unittest.TestCase):
             'jarvis_failed_requests_total{satellite="sat",stage="processing"} 1.0', text
         )
         self.assertNotIn('jarvis_requests_total{satellite="sat"} 1.0', text)
+
+    def test_listening_cancel_counts_aborted_not_failed(self) -> None:
+        self.drive("listening", "idle")
+        text = self.metrics.render()
+        self.assertIn('jarvis_aborted_requests_total{satellite="sat"} 1.0', text)
+        self.assertNotIn('jarvis_failed_requests_total{satellite="sat"', text)
+        self.assertNotIn('jarvis_requests_total{satellite="sat"} 1.0', text)
+
+    def test_concurrent_observe_and_render(self) -> None:
+        import threading
+
+        metrics = EXPORTER["Metrics"]("sat")
+        errors: list[Exception] = []
+
+        def hammer() -> None:
+            try:
+                for _ in range(200):
+                    metrics.requests.labels("sat").inc()
+                    metrics.stt.labels("sat").observe(0.1)
+                    metrics.render()
+            except Exception as exc:  # noqa: BLE001
+                errors.append(exc)
+
+        threads = [threading.Thread(target=hammer) for _ in range(4)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=30.0)
+        self.assertEqual(errors, [])
 
     def test_tool_calls_only_count_while_processing(self) -> None:
         self.tracker.observe_state("listening", 1000.0, None)

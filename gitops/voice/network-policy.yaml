@@ -132,7 +132,7 @@ spec:
     matchExpressions:
       - key: app
         operator: In
-        values: [wyoming-whisper, local-decision, von-decision]
+        values: [wyoming-whisper, wyoming-chatterbox, local-decision, von-decision]
   policyTypes: [Egress]
   egress:
     - ports:

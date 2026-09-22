@@ -117,7 +117,7 @@
   labels:
     - shared_space
 - name: Soundbar
-  entity_id: media_player.homelab_05_satellite_media_player
+  entity_id: media_player.homelab_05_satellite_media_player_2
   labels: []
 - disabled_by: integration
   entity_id: sensor.0xffffb40e0608c96f_linkquality

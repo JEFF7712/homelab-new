@@ -189,7 +189,7 @@
   say: Turn off the music.
   path: local
   intent: MusicStop
-  targets: [media_player.homelab_05_satellite_media_player]
+  targets: [media_player.homelab_05_satellite_media_player_2]
   response: Paused.
 - id: music-put-trailing-on
   say: Put some Travis Scott on.

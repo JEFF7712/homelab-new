@@ -42,22 +42,25 @@ data:
 
 
     class Counter:
-        def __init__(self, name: str, documentation: str, labelnames: tuple[str, ...] = ()) -> None:
+        def __init__(self, name: str, documentation: str, labelnames: tuple[str, ...] = (), lock: threading.RLock | None = None) -> None:
             self._name = name
             self._documentation = documentation
             self._labelnames = labelnames
             self._values: dict[tuple[str, ...], float] = {}
+            self._lock = lock if lock is not None else threading.RLock()
 
         def labels(self, *labelvalues: str) -> Counter:
-            self._values.setdefault(tuple(labelvalues), 0.0)
+            with self._lock:
+                self._values.setdefault(tuple(labelvalues), 0.0)
             return _BoundCounter(self, tuple(labelvalues))
 
         def render(self) -> list[str]:
-            lines = [f"# HELP {self._name} {self._documentation}", f"# TYPE {self._name} counter"]
-            for labelvalues, value in sorted(self._values.items()):
-                labels = ",".join(f'{k}="{v}"' for k, v in zip(self._labelnames, labelvalues))
-                lines.append(f"{self._name}{{{labels}}} {value}")
-            return lines
+            with self._lock:
+                lines = [f"# HELP {self._name} {self._documentation}", f"# TYPE {self._name} counter"]
+                for labelvalues, value in sorted(self._values.items()):
+                    labels = ",".join(f'{k}="{v}"' for k, v in zip(self._labelnames, labelvalues))
+                    lines.append(f"{self._name}{{{labels}}} {value}")
+                return lines
 
 
     class _BoundCounter:
@@ -66,33 +69,37 @@ data:
             self._labelvalues = labelvalues
 
         def inc(self, amount: float = 1.0) -> None:
-            self._parent._values[self._labelvalues] = self._parent._values.get(self._labelvalues, 0.0) + amount
+            with self._parent._lock:
+                self._parent._values[self._labelvalues] = self._parent._values.get(self._labelvalues, 0.0) + amount
 
 
     class Histogram:
-        def __init__(self, name: str, documentation: str, labelnames: tuple[str, ...] = (), buckets: tuple[float, ...] = BUCKETS) -> None:
+        def __init__(self, name: str, documentation: str, labelnames: tuple[str, ...] = (), buckets: tuple[float, ...] = BUCKETS, lock: threading.RLock | None = None) -> None:
             self._name = name
             self._documentation = documentation
             self._labelnames = labelnames
             self._buckets = buckets
             self._observations: dict[tuple[str, ...], list[float]] = {}
+            self._lock = lock if lock is not None else threading.RLock()
 
         def labels(self, *labelvalues: str) -> Histogram:
-            self._observations.setdefault(tuple(labelvalues), [])
+            with self._lock:
+                self._observations.setdefault(tuple(labelvalues), [])
             return _BoundHistogram(self, tuple(labelvalues))
 
         def render(self) -> list[str]:
-            lines = [f"# HELP {self._name} {self._documentation}", f"# TYPE {self._name} histogram"]
-            for labelvalues, values in sorted(self._observations.items()):
-                labels = ",".join(f'{k}="{v}"' for k, v in zip(self._labelnames, labelvalues))
-                cumulative = 0
-                for bound in self._buckets:
-                    cumulative += sum(1 for v in values if v <= bound)
-                    lines.append(f'{self._name}_bucket{{{labels},le="{bound}"}} {cumulative}')
-                lines.append(f'{self._name}_bucket{{{labels},le="+Inf"}} {len(values)}')
-                lines.append(f"{self._name}_sum{{{labels}}} {sum(values)!r}")
-                lines.append(f"{self._name}_count{{{labels}}} {len(values)}")
-            return lines
+            with self._lock:
+                lines = [f"# HELP {self._name} {self._documentation}", f"# TYPE {self._name} histogram"]
+                for labelvalues, values in sorted(self._observations.items()):
+                    labels = ",".join(f'{k}="{v}"' for k, v in zip(self._labelnames, labelvalues))
+                    cumulative = 0
+                    for bound in self._buckets:
+                        cumulative = sum(1 for v in values if v <= bound)
+                        lines.append(f'{self._name}_bucket{{{labels},le="{bound}"}} {cumulative}')
+                    lines.append(f'{self._name}_bucket{{{labels},le="+Inf"}} {len(values)}')
+                    lines.append(f"{self._name}_sum{{{labels}}} {sum(values)!r}")
+                    lines.append(f"{self._name}_count{{{labels}}} {len(values)}")
+                return lines
 
 
     class _BoundHistogram:
@@ -101,26 +108,28 @@ data:
             self._labelvalues = labelvalues
 
         def observe(self, value: float) -> None:
-            self._parent._observations.setdefault(self._labelvalues, []).append(value)
+            with self._parent._lock:
+                self._parent._observations.setdefault(self._labelvalues, []).append(value)
 
 
     class Metrics:
         def __init__(self, satellite: str) -> None:
             self._satellite = satellite
-            self._lock = threading.Lock()
-            self.requests = Counter("jarvis_requests_total", "Completed voice turns.", ("satellite",))
-            self.tool_calls = Counter("jarvis_tool_calls_total", "Service calls seen while the satellite was processing.", ("satellite",))
-            self.failed = Counter("jarvis_failed_requests_total", "Turns abandoned before responding.", ("satellite", "stage"))
-            self.by_room = Counter("jarvis_requests_by_room_total", "Completed voice turns by target room.", ("room",))
-            self.speed = Counter("jarvis_turn_speed_class_total", "Completed voice turns by processing-phase speed class.", ("satellite", "class"))
-            self.stt = Histogram("jarvis_stt_latency_seconds", "Listening phase duration: utterance plus transcription.", ("satellite",))
-            self.llm = Histogram("jarvis_llm_latency_seconds", "Processing phase duration.", ("satellite",))
-            self.tts = Histogram("jarvis_tts_latency_seconds", "Responding phase duration.", ("satellite",))
+            self._lock = threading.RLock()
+            self.requests = Counter("jarvis_requests_total", "Completed voice turns.", ("satellite",), lock=self._lock)
+            self.tool_calls = Counter("jarvis_tool_calls_total", "Service calls seen while the satellite was processing.", ("satellite",), lock=self._lock)
+            self.failed = Counter("jarvis_failed_requests_total", "Turns abandoned after processing started without ever responding.", ("satellite", "stage"), lock=self._lock)
+            self.aborted = Counter("jarvis_aborted_requests_total", "Turns cancelled from listening before processing.", ("satellite",), lock=self._lock)
+            self.by_room = Counter("jarvis_requests_by_room_total", "Completed voice turns by target room.", ("room",), lock=self._lock)
+            self.speed = Counter("jarvis_turn_speed_class_total", "Completed voice turns by processing-phase speed class.", ("satellite", "class"), lock=self._lock)
+            self.stt = Histogram("jarvis_stt_latency_seconds", "Listening phase duration: utterance plus transcription.", ("satellite",), lock=self._lock)
+            self.llm = Histogram("jarvis_llm_latency_seconds", "Processing phase duration.", ("satellite",), lock=self._lock)
+            self.tts = Histogram("jarvis_tts_latency_seconds", "Responding phase duration.", ("satellite",), lock=self._lock)
             self._connected = 0.0
             self._subscription_state = "disconnected"
             self._last_event_at = 0.0
-            self.reconnects = Counter("jarvis_exporter_reconnects_total", "HA websocket reconnect attempts.")
-            self.auth_failures = Counter("jarvis_exporter_auth_failures_total", "HA websocket authentication failures.")
+            self.reconnects = Counter("jarvis_exporter_reconnects_total", "HA websocket reconnect attempts.", lock=self._lock)
+            self.auth_failures = Counter("jarvis_exporter_auth_failures_total", "HA websocket authentication failures.", lock=self._lock)
 
         def set_connected(self, value: bool) -> None:
             with self._lock:
@@ -157,7 +166,7 @@ data:
                     "# TYPE jarvis_exporter_last_event_age_seconds gauge",
                     f"jarvis_exporter_last_event_age_seconds {max(0.0, time.monotonic() - self._last_event_at) if self._last_event_at else 1e9}",
                 ]
-                for metric in (self.requests, self.tool_calls, self.failed, self.by_room, self.speed, self.reconnects, self.auth_failures):
+                for metric in (self.requests, self.tool_calls, self.failed, self.aborted, self.by_room, self.speed, self.reconnects, self.auth_failures):
                     lines.extend(metric.render())
                 for metric in (self.stt, self.llm, self.tts):
                     lines.extend(metric.render())
@@ -243,7 +252,10 @@ data:
         def _abandon_locked(self, now: float) -> None:
             del now
             if self.phase != "idle" and self.emit:
-                self._metrics.failed.labels(self._satellite, self.phase).inc()
+                if self.phase == "listening":
+                    self._metrics.aborted.labels(self._satellite).inc()
+                else:
+                    self._metrics.failed.labels(self._satellite, self.phase).inc()
 
 
     class AreaResolver:
@@ -285,6 +297,7 @@ data:
             self._sock: socket.socket | None = None
             self._buf: bytes = b""
             self._msg_id = 1
+            self._pending_events: list[dict] = []
 
         def connect(self) -> None:
             raw = socket.create_connection((self._host, self._port), timeout=self._timeout)
@@ -350,16 +363,22 @@ data:
                     self._sock.settimeout(timeout or self._timeout)
                 while True:
                     message = self._read_message()
-                    if message.get("id") == msg_id:
-                        if not message.get("success", True):
-                            error = message.get("error", {})
-                            raise RuntimeError(f"{cmd_type} failed ({error.get('code')}): {error.get('message')}")
-                        return message.get("result")
+                    if message.get("id") != msg_id:
+                        self._pending_events.append(message)
+                        continue
+                    if not message.get("success", True):
+                        error = message.get("error", {})
+                        raise RuntimeError(f"{cmd_type} failed ({error.get('code')}): {error.get('message')}")
+                    return message.get("result")
             finally:
                 if self._sock and previous_timeout is not None:
                     self._sock.settimeout(previous_timeout)
 
         def read_event(self, timeout: float) -> dict | None:
+            if not hasattr(self, "_pending_events"):
+                self._pending_events = []
+            if self._pending_events:
+                return self._pending_events.pop(0)
             if self._sock is None:
                 return None
             self._sock.settimeout(timeout)
@@ -498,9 +517,12 @@ data:
 
     def watch_forever(metrics: Metrics, tracker: TurnTracker, resolver: AreaResolver, base_url: str, token: str, satellite: str) -> None:
         backoff = 5.0
+        first_connect = True
         while True:
             sock = HomeAssistantSocket(base_url, token)
-            metrics.mark_reconnect()
+            if not first_connect:
+                metrics.mark_reconnect()
+            first_connect = False
             try:
                 sock.connect()
                 metrics.set_subscription_state("authenticated")

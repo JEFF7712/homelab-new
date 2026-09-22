@@ -135,7 +135,9 @@ class TestVoiceIdConfigMapGenerator(unittest.TestCase):
         for manifest in ("whisper.yaml", "stt-nemotron.yaml"):
             text = (root / "gitops" / "voice" / manifest).read_text(encoding="utf-8")
             self.assertIn("secretName: voice-id-profiles", text, manifest)
-            self.assertIn("mountPath: /app/profiles.json", text, manifest)
+            self.assertIn("mountPath: /etc/voice-id", text, manifest)
+            self.assertIn("/etc/voice-id/profiles.json", text, manifest)
+            self.assertNotIn("subPath", text, manifest)
 
     def test_scripts_symlink_tracks_deploy_source(self) -> None:
         root = Path(__file__).resolve().parent.parent

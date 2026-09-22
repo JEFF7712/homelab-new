@@ -1,4 +1,5 @@
 alias: Jarvis — play media
+mode: restart
 description: >-
   Plays music, songs, artists, albums, or playlists on the Jarvis satellite
   speaker via Music Assistant. Supports Spotify and YouTube Music. Call this

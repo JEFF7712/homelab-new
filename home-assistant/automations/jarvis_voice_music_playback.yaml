@@ -29,9 +29,7 @@ triggers:
     id: track
     command:
       - "play the song {query}"
-      - "play {query}"
       - "[speaker {speaker}] play the song {query}"
-      - "[speaker {speaker}] play {query}"
   - trigger: conversation
     id: album
     command:

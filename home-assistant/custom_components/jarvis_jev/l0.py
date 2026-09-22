@@ -39,7 +39,8 @@ _THERMO = r"(?:the\s+)?(?:living\s+room\s+)?thermostat"
 _TEMP_WORD = r"(?:the\s+)?living\s+room\s+temperature"
 _MEDIA = (
     r"(?:the\s+)?(?:satellite\s+(?:media\s+player|speaker)"
-    r"|(?:downstairs\s+)?music\s+on\s+the\s+satellite\s+speaker)"
+    r"|(?:downstairs\s+)?music\s+on\s+the\s+satellite\s+speaker"
+    r"|music)"
 )
 _MOVIE = r"(?:movie|film)\s+mode"
 
@@ -59,6 +60,12 @@ _PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(rf"{_ON_OFF}\s+({_ANY_TARGET})\s+(on|off)"), "onoff_trail"),
     (
         re.compile(rf"{_ON_OFF}\s+the\s+lights\s+(on|off)\s+in\s+the\s+({_ROOM})"),
+        "onoff_area",
+    ),
+    (
+        re.compile(
+            rf"{_ON_OFF}\s+(on|off)\s+the\s+lights?\s+(?:in\s+the\s+)?({_ROOM})"
+        ),
         "onoff_area",
     ),
     (re.compile(rf"toggle\s+({_LIGHT_TARGET})"), "toggle"),
@@ -126,7 +133,7 @@ _PATTERNS: list[tuple[re.Pattern[str], str]] = [
         ),
         "temp_down",
     ),
-    (re.compile(rf"(?:pause|stop|halt|silence)\s+({_MEDIA})"), "media"),
+    (re.compile(rf"(?:pause|stop|halt|silence|turn\s+off)\s+({_MEDIA})"), "media"),
     (
         re.compile(
             rf"(?:activate|put\s+on|set\s+the\s+scene\s+to)\s+({_MOVIE})"
@@ -156,7 +163,7 @@ _TARGET_KEY: list[tuple[re.Pattern[str], str]] = [
     ),
     (
         re.compile(
-            r"^(?:satellite\s+(?:media\s+player|speaker)|(?:downstairs\s+)?music\s+on\s+the\s+satellite\s+speaker)$"
+            r"^(?:satellite\s+(?:media\s+player|speaker)|(?:downstairs\s+)?music\s+on\s+the\s+satellite\s+speaker|(?:the\s+)?music)$"
         ),
         "satellite_media_player",
     ),

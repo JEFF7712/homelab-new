@@ -154,7 +154,7 @@ views:
                 name: Sunset
                 icon: mdi:weather-sunset-down
           - type: media-control
-            entity: media_player.homelab_05_satellite_media_player
+            entity: media_player.homelab_05_satellite_media_player_2
             name: Speaker Output
       - cards:
           - heading: Family

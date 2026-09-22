@@ -376,7 +376,7 @@
     action: pause_media
     color: none_or_unknown
     reference: explicit_target
-  targets: [media_player.homelab_05_satellite_media_player]
+  targets: [media_player.homelab_05_satellite_media_player_2]
   service: media_player.media_pause
 - id: stop-music-satellite
   say: Stop the music on the satellite speaker.
@@ -387,7 +387,7 @@
     action: pause_media
     color: none_or_unknown
     reference: explicit_target
-  targets: [media_player.homelab_05_satellite_media_player]
+  targets: [media_player.homelab_05_satellite_media_player_2]
   service: media_player.media_pause
 - id: stop-satellite-speaker
   say: Stop the satellite speaker.
@@ -398,7 +398,7 @@
     action: pause_media
     color: none_or_unknown
     reference: explicit_target
-  targets: [media_player.homelab_05_satellite_media_player]
+  targets: [media_player.homelab_05_satellite_media_player_2]
   service: media_player.media_pause
 - id: stairs-on
   say: Turn on the stairs light.
@@ -654,7 +654,7 @@
     action: pause_media
     color: none_or_unknown
     reference: explicit_target
-  targets: [media_player.homelab_05_satellite_media_player]
+  targets: [media_player.homelab_05_satellite_media_player_2]
   service: media_player.media_pause
 
 # Ambiguous references: no explicit target, must clarify with zero actions.
@@ -1256,7 +1256,7 @@
     action: pause_media
     color: none_or_unknown
     reference: explicit_target
-  targets: [media_player.homelab_05_satellite_media_player]
+  targets: [media_player.homelab_05_satellite_media_player_2]
   service: media_player.media_pause
 - id: media-pause-speaker
   say: Pause the speaker in the living room.
@@ -1267,11 +1267,16 @@
   notes: Satellite speaker not named; must not assume it.
 - id: media-music-off
   say: Turn off the music.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-    reference: missing_or_ambiguous
-  notes: Caught by the music-stop automation live; ambiguous here.
+    target: satellite_media_player
+    action: pause_media
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [media_player.homelab_05_satellite_media_player_2]
+  service: media_player.media_pause
+  notes: L0 backstop mirrors the music-stop automation; same pause, same entity.
 - id: media-resume
   say: Resume the music on the satellite speaker.
   expected_route: clarify
@@ -3468,7 +3473,7 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
-  targets: [media_player.homelab_05_satellite_media_player]
+  targets: [media_player.homelab_05_satellite_media_player_2]
   service: media_player.media_pause
 - id: fz-030
   say: Silence the satellite speaker.
@@ -3480,5 +3485,5 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
-  targets: [media_player.homelab_05_satellite_media_player]
+  targets: [media_player.homelab_05_satellite_media_player_2]
   service: media_player.media_pause

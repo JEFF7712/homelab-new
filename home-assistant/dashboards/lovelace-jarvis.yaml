@@ -55,10 +55,10 @@ views:
             title: Recent Activity
             entities:
               - assist_satellite.homelab_05_satellite_assist_satellite
-              - media_player.homelab_05_satellite_media_player
+              - media_player.homelab_05_satellite_media_player_2
             hours_to_show: 2
           - type: media-control
-            entity: media_player.homelab_05_satellite_media_player
+            entity: media_player.homelab_05_satellite_media_player_2
             name: Speaker Output
       - title: Satellite Controls
         cards:

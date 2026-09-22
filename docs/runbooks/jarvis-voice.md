@@ -25,7 +25,7 @@ the gateways, so HA pipeline identifiers do not change during backend failover.
 There is no local LLM: Qwen/Ollama was removed in Phase 0 to free the
 T1000 GPU, and the cloud replacement is not wired yet.
 -> audio back to the `homelab-05` soundbar (HDMI-A-2 with continuous video clocking daemon,
-prioritized at 2000 in WirePlumber) -> face state via the HA websocket.
+prioritized at 3000 in WirePlumber) -> face state via the HA websocket.
 
 ## Canonical entity IDs
 
@@ -35,7 +35,7 @@ Do not rename these without updating `home-assistant/www/jarvis/config.json`,
 
 - `assist_satellite.homelab_05_satellite_assist_satellite`
 - `switch.homelab_05_satellite_mute`
-- `media_player.homelab_05_satellite_media_player`
+- `media_player.homelab_05_satellite_media_player_2`
 - `switch.homelab_05_satellite_thinking_sound`
 - `number.homelab_05_satellite_mic_volume`
 - `select.homelab_05_satellite_wake_word`
@@ -67,7 +67,7 @@ automation referencing them.
    downstairs means Living Room plus Kitchen, light commands with no room
    default to all downstairs lights, light color changes default to
    Govee light bulbs, and music/artist/playlist requests explicitly call
-   `script.jarvis_play_media` (`media_content_type='music'`). The canonical
+   `script.jarvis_play_media` (`media_content_type` varies: `artist`/`track`/`album`/`playlist`). The canonical
    prompt source is `home-assistant/conversation/jarvis_prompt.md`
    ("Conversation prompt" below); the live copy is UI-managed config-entry
    state, so keep the two in sync on any edit.
@@ -178,7 +178,7 @@ automation referencing them.
 
 The canonical prompt source is
 `home-assistant/conversation/jarvis_prompt.md`. Paste its fenced text
-verbatim into the Jarvis conversation subentry. Keep that file and the live
+verbatim into the Jarvis cloud fallback agent config entry. Keep that file and the live
 copy in sync on any edit; the live copy is UI-managed config-entry state
 with no read API, so behavioral regressions are caught by the live eval
 lane (`just jarvis-eval-live`) rather than a state diff.
@@ -195,7 +195,11 @@ replies `General conversation is unavailable.`
 
 The router sends the unmatched transcript to TypeSafe's hosted API using the
 pinned `jev-1.13.0` model. This is a cloud disclosure and is not zero-retention
-by default. It sends no entity registry, HA state dump, prompt, or chat history.
+by default. It sends the full target allowlist as `criteria` (real entity IDs
+including `climate.living_room_ac_living_room_ac_thermostat`,
+`media_player.homelab_05_satellite_media_player_2`,
+`scene.movie_low_living_room`); no entity registry, HA state dump, prompt,
+or chat history.
 The API key comes from GitLab CI/CD variable `TYPESAFE_API_KEY` through the
 `home-assistant-secrets` ExternalSecret and container environment. Never put the
 key in the config entry or Git.
@@ -231,7 +235,8 @@ Fail-closed behavior is deliberate:
 ### Local decision shadow
 
 Every request accepted by the Jev router is also submitted asynchronously to
-`local-decision.voice.svc.cluster.local`. This shadow path cannot select the HA
+`local-decision.voice.svc.cluster.local` when `JARVIS_SHADOW_ENABLED=1`
+and the shadow deployment is scaled up (currently `replicas: 0` in prod). This shadow path cannot select the HA
 route, execute a service, change speech, or delay the hosted Jev response. Only
 one local request may be active at a time; another request is skipped rather
 than queued behind CPU inference.
@@ -548,7 +553,8 @@ Metrics and their exact semantics:
 - `jarvis_tool_calls_total{satellite}`: service calls on the shared bus
   during processing. Adjacent automations firing mid-turn can inflate this.
 - `jarvis_failed_requests_total{satellite,stage}`: turns abandoned from
-  listening or processing without ever responding.
+  processing or responding without ever responding. Listening→idle cancels
+  are tracked separately in `jarvis_aborted_requests_total`.
 - `jarvis_requests_by_room_total{room}`: completed turns attributed to the
   area of the first targeted entity, else `unknown`.
 - `jarvis_turn_speed_class_total{satellite,class}`: completed turns split
@@ -560,8 +566,8 @@ Metrics and their exact semantics:
 - `jarvis_exporter_ha_connected`: 1 while the websocket is authenticated.
 - `jarvis_exporter_subscription_state{state}`: active websocket state, with
   `subscribed` required for readiness.
-- `jarvis_exporter_reconnects_total`: reconnect attempts, preserved across
-  websocket reconnects.
+- `jarvis_exporter_reconnects_total`: reconnect attempts (first connect is not
+  counted), preserved across websocket reconnects.
 - `jarvis_exporter_auth_failures_total`: rejected HA authentication attempts.
 - `jarvis_exporter_last_event_age_seconds`: age of the last received websocket
   frame, used to detect a stale subscription.
@@ -596,10 +602,13 @@ with text input (real pipeline routing, bypassing only wake word and STT;
 local-path device actions still execute, so run it when someone is home).
 Local cases must route locally with the expected reply and no action outside
 `targets`; llm cases must fall through (`processed_locally: false`) and,
-until a cloud fallback lands, reply `General conversation is unavailable`.
+until a cloud fallback lands, reply `General conversation is unavailable`
+(asserted by the live eval runner).
 Full cloud-LLM behavior (tool choice, phrasing) stays manual once configured. Keep a smaller acoustic
-suite (8 to 12 representative commands) for microphone to Whisper
-regressions; intent routing and STT are separate concerns.
+suite (10 to 20 representative commands) for microphone to Whisper
+regressions; intent routing and STT are separate concerns. The manifest file
+(`tests/acoustic/manifest.json`) must be committed (labels only; recordings
+stay gitignored per `.gitignore`).
 
 ## Voice-ID speaker recognition
 
@@ -621,8 +630,9 @@ routing and personalization without modifying Home Assistant core:
 4. Audio samples shorter than 3.5 seconds are tiled to 3.5s to provide the
    receptive field required by the neural network for high-confidence classification.
 5. The embedding is scored via cosine similarity against enrolled profiles
-   in `gitops/voice/voice-id/profiles.json` (shipped as ConfigMap
-   `wyoming-voice-id-config` via `configMapGenerator`).
+   in `profiles.json` (shipped as SOPS-encrypted Secret `voice-id-profiles`
+   in the `voice` namespace, mounted at `/app/profiles.json`; the plaintext
+   file stays out of git).
 6. If the top score exceeds `threshold` (0.35) and exceeds the runner-up by
    `min_margin` (0.10), the speaker identity is confirmed (`Rupan` or `Sam`).
 7. When Whisper returns the `transcript` event, the proxy prefixes `speaker <Name>`
@@ -653,12 +663,27 @@ To add or update speaker voice profiles:
      --model /persist/voice-models/whisper/voice-id/model.onnx \
      --speaker Rupan /tmp/rupan.wav \
      --speaker Sam /tmp/sam.wav \
-     --output gitops/voice/voice-id/profiles.json
+     --output /tmp/profiles.json
    ```
-4. Commit and let Flux apply the change. Kustomize hashes the ConfigMap
-   content into its name (`wyoming-voice-id-config-<hash>`) and rewrites
-   the whisper Deployment reference, so the pod rolls automatically.
-   No manual ConfigMap regeneration step.
+4. Fold the result into the tracked SOPS secret (never edit the
+   ciphertext by hand; re-encrypt through `sops` so the MAC stays valid):
+   ```sh
+   export SOPS_AGE_KEY_FILE=$PWD/secrets/keys/flux-age.key
+   sops -d gitops/secrets/voice-id-profiles.sops.yaml > /tmp/voice-id.dec.yaml
+   python3 - - <<'EOF'
+   import sys, base64, yaml
+   raw = open('/tmp/profiles.json','rb').read()
+   d = yaml.safe_load(open('/tmp/voice-id.dec.yaml'))
+   d['data']['profiles.json'] = base64.b64encode(raw).decode()
+   yaml.safe_dump(d, open('/tmp/voice-id.dec.yaml','w'))
+   EOF
+   sops -e --age age1k2vhn663mmw9ancuwm2hfmtfg4xyus9xlvp8rkep4fpvxlqa9gdsms9usl \
+     /tmp/voice-id.dec.yaml > gitops/secrets/voice-id-profiles.sops.yaml
+   shred -u /tmp/voice-id.dec.yaml /tmp/profiles.json
+   ```
+   Commit; Flux decrypts via the `secrets` Kustomization and the whisper /
+   nemotron pods mount the new Secret on roll. Never commit plaintext
+   `profiles.json`.
 
 
 ## Failure symptoms
@@ -678,8 +703,8 @@ To add or update speaker voice profiles:
   cold start. Check probe status on whisper/piper before tuning anything.
 - Every turn slow: Whisper CPU throttled. Check pod resource usage.
 - Face state frozen while voice works: HA websocket broken in
-  `app.js`; use keys 1-5 on the kiosk keyboard to confirm the face itself
-  still cycles states.
+`app.js`; use keys 1-6 on the kiosk keyboard to confirm the face itself
+still cycles states.
 - Mic not detected or satellite in CrashLoopBackOff: verify Pipewire/WirePlumber
   sees the QuadCast on `homelab-05` via `wpctl status`. WirePlumber assigns it
   top priority 2500 (`~alsa_input.*QuadCast.*`), and the satellite container

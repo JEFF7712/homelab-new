@@ -129,7 +129,7 @@ TARGETS = {
         ),
     ),
     "satellite_media_player": Target(
-        "media_player.homelab_05_satellite_media_player", frozenset({"pause_media"})
+        "media_player.homelab_05_satellite_media_player_2", frozenset({"pause_media"})
     ),
     "movie_mode": Target("scene.movie_low_living_room", frozenset({"activate_scene"})),
 }
@@ -157,12 +157,21 @@ _SPEAKER = re.compile(r"^speaker\s+[^\s]+\s+", re.IGNORECASE)
 _COMPOUND_COMMAND = re.compile(r";|\band\b|\bthen\b|\bwhile\b")
 
 _TARGET_EVIDENCE = {
-    "downstairs_lights": re.compile(r"\bdownstairs (?:lights?|lamp)\b"),
-    "kitchen_lights": re.compile(r"\bkitchen lights?\b(?!\s+fixture)"),
+    "downstairs_lights": re.compile(
+        r"\bdownstairs (?:lights?|lamp)\b|\blights?\s+downstairs\b"
+    ),
+    "kitchen_lights": re.compile(
+        r"(?:\bkitchen lights?\b|\blights?\s+(?:in\s+the\s+)?kitchen\b)"
+        r"(?!\s+fixture)"
+    ),
     "living_room_lights": re.compile(
         r"\b(?:living room lights?|living lights?|lounge lights?)\b"
+        r"|\blights?\s+(?:in\s+the\s+)?living\s+room\b"
     ),
-    "bedroom_lights": re.compile(r"\b(?:bedroom lights?|bed lights?)\b"),
+    "bedroom_lights": re.compile(
+        r"\b(?:bedroom lights?|bed lights?)\b"
+        r"|\blights?\s+(?:in\s+the\s+)?bedroom\b"
+    ),
     "all_govee_lights": re.compile(r"\b(?:all (?:the )?)?govee (?:lights?|lamp)\b"),
     "kitchen_mushroom_lamp": re.compile(r"\bkitchen mushroom lamp\b"),
     "bedroom_window_plug": re.compile(r"\bbedroom window plug\b"),
@@ -174,6 +183,7 @@ _TARGET_EVIDENCE = {
     ),
     "satellite_media_player": re.compile(
         r"\bsatellite (?:media player|speaker)\b|\bmusic (?:on|from) the satellite speaker\b"
+        r"|\bmusic\b"
     ),
     "movie_mode": re.compile(r"\b(?:movie|film) mode\b"),
 }

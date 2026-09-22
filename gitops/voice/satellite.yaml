@@ -43,7 +43,7 @@ spec:
             - name: XDG_RUNTIME_DIR
               value: "/tmp"
             - name: ENABLE_DEBUG
-              value: "1"
+              value: "0"
             - name: AUDIO_INPUT_DEVICE
               value: "QuadCast"
             - name: LISTEN_DURING_WAKE_SOUND
@@ -69,11 +69,8 @@ spec:
             failureThreshold: 30
             periodSeconds: 10
           readinessProbe:
-            exec:
-              command:
-                - pgrep
-                - -f
-                - linux_voice_assistant
+            tcpSocket:
+              port: satellite
             periodSeconds: 10
           livenessProbe:
             exec:

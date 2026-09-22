@@ -13,3 +13,8 @@ spec:
     - port: http
       path: /api/jarvis_jev/metrics
       interval: 15s
+      authorization:
+        type: Bearer
+        credentials:
+          name: home-assistant-secrets
+          key: ha_metrics_token

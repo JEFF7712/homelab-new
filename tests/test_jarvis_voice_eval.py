@@ -27,7 +27,7 @@ MUSIC_STOP_AUTOMATION = (
 )
 PLAY_MEDIA_SCRIPT = REPO_ROOT / "home-assistant" / "scripts" / "jarvis_play_media.yaml"
 MUSIC_STOP_INTENT = "MusicStop"
-SATELLITE_MEDIA_PLAYER = "media_player.homelab_05_satellite_media_player"
+SATELLITE_MEDIA_PLAYER = "media_player.homelab_05_satellite_media_player_2"
 VOICE_EXTRA_TARGETS = frozenset({SATELLITE_MEDIA_PLAYER})
 MUSIC_INTENTS = {
     "MusicArtist": "artist",

@@ -45,7 +45,7 @@ SERVICE_LATENCY = Histogram(
 class JarvisMetricsView(HomeAssistantView):
     url = "/api/jarvis_jev/metrics"
     name = "api:jarvis_jev:metrics"
-    requires_auth = False
+    requires_auth = True
 
     async def get(self, _request: web.Request) -> web.Response:
         headers = {"Content-Type": CONTENT_TYPE_LATEST}
