@@ -15,12 +15,20 @@ spec:
       labels:
         app: cloudflared
     spec:
+      priorityClassName: homelab-critical
       securityContext:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: cloudflared
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - sleep 15
           image: registry.rupan.dev/upstream/docker.io/cloudflare/cloudflared@sha256:ff69a2225ad7c6f85ed84fbd5f3087df46202426b2388ec60214098e0adf05e9  # yamllint disable-line rule:line-length
           resources:
             requests:
@@ -32,6 +40,8 @@ spec:
             - tunnel
             - --metrics
             - 0.0.0.0:2000
+            - --config
+            - /etc/cloudflared/config.yaml
             - run
             - --token
             - $(TUNNEL_TOKEN)
@@ -41,6 +51,10 @@ spec:
                 secretKeyRef:
                   name: cloudflare-tunnel
                   key: tunnel-token
+          volumeMounts:
+            - name: ingress-config
+              mountPath: /etc/cloudflared
+              readOnly: true
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -60,3 +74,7 @@ spec:
               port: 2000
             initialDelaySeconds: 10
             periodSeconds: 10
+      volumes:
+        - name: ingress-config
+          configMap:
+            name: cloudflared-ingress

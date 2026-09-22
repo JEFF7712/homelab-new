@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-ingress
+  namespace: cloudflare
+data:
+  config.yaml: |
+    tunnel: 0f08d8c5-6f2c-409e-ba80-dc0601e0227e
+    ingress:
+      - hostname: photos.rupan.dev
+        service: http://immich-server.immich:80
+      - hostname: www.pulseagent.dev
+        service: http://pulse-svc.pulse:80
+      - hostname: pulseagent.dev
+        service: http://pulse-svc.pulse:80
+      - hostname: ism.rupan.dev
+        service: http://ism-svc.ism:80
+      - hostname: nix-agent.rupan.dev
+        service: http://nixagent-svc.nixagent:80
+      - hostname: rupanism.rupan.dev
+        service: http://rupanism-svc.rupanism:80
+      - hostname: spatia.rupan.dev
+        service: http://spatia-svc.spatia:80
+      - hostname: demo.rupan.dev
+        service: http://cr-demo-svc.cr-demo:80
+      - hostname: soluble.rupan.dev
+        service: http://soluble-rupan-svc.soluble-rupan:80
+      - hostname: photo.rupan.dev
+        service: http://photography-svc.photography:80
+      - hostname: majorfinder.rupan.dev
+        service: http://majorfinder-svc.majorfinder:80
+      - hostname: notes.rupan.dev
+        service: http://quartz-notes.obsidian.svc.cluster.local:80
+      - hostname: ntfy.rupan.dev
+        service: http://ntfy-ntfy.observability.svc.cluster.local:80
+      - hostname: obsidian.rupan.dev
+        service: http://couchdb.obsidian.svc.cluster.local:5984
+      - hostname: renovate-approve.rupan.dev
+        service: http://renovate-approval-webhook.automation:8080
+      - hostname: renovate-status.rupan.dev
+        service: http://renovate-dashboard.automation:8080
+      - hostname: ha.rupan.dev
+        service: http://home-assistant.home-assistant:8123
+      - hostname: rupan.dev
+        service: http://rupan-dev-svc.rupan-dev:80
+      - hostname: www.rupan.dev
+        service: http://rupan-dev-svc.rupan-dev:80
+      - hostname: grafana.rupan.dev
+        service: http://kube-prometheus-stack-grafana.observability.svc.cluster.local:80
+      - hostname: distrojeff.com
+        service: http://distrojeff-site-svc.distrojeff:80
+      - hostname: apollinestore.com
+        service: http://apolline-svc.apolline:80
+      - hostname: darkbitapparel.com
+        service: http://darkbit-svc.darkbit:80
+      - hostname: flux-wh-33b0c8004348.rupan.dev
+        service: http://webhook-receiver.flux-system:80
+      - service: http_status:404

@@ -6,7 +6,7 @@ Remote-configured tunnel fronting the new k3s cluster. Dashboard edits apply dir
 
 - Name: `homelab`
 - ID: `0f08d8c5-6f2c-409e-ba80-dc0601e0227e`
-- Config source: `cloudflare` (Zero Trust dashboard, not `gitops/`)
+- Config source: `gitops/cloudflare/ingress-config.yaml` (cutover pending; dashboard remote config still present until the cutover checklist below is done)
 - Connectors: 2 replicas from `gitops/cloudflare/tunnel.yaml` (`cloudflared 2026.8.3`)
 - Health: `healthy`, 8 connections on `ord10, mci03, ord15, ord06, mci01, ord02`
 - Public origin IP seen by edge: `50.93.213.22` (connector pods live in `10.0.30.0/24`)
@@ -54,9 +54,8 @@ Cloudflare Access public bypass configured.
 21. `distrojeff.com -> http://distrojeff-site-svc.distrojeff:80`
 22. `apollinestore.com -> http://apolline-svc.apolline:80`
 23. `darkbitapparel.com -> http://darkbit-svc.darkbit:80`
-24. `pulseagent.dev -> http://pulse-svc.pulse:80`
-25. `flux-wh-33b0c8004348.rupan.dev -> http://webhook-receiver.flux-system:80` (Flux GitLab push receiver, 2026-09-20; Access app `flux-webhook-bypass` reused Bypass policy, wildcard `*` app would otherwise force login)
-26. `http_status:404`
+24. `flux-wh-33b0c8004348.rupan.dev -> http://webhook-receiver.flux-system:80` (Flux GitLab push receiver, 2026-09-20; Access app `flux-webhook-bypass` reused Bypass policy, wildcard `*` app would otherwise force login)
+25. `http_status:404`
 
 Removed 2026-09-15 (v72):
 - `*.rupan.dev -> https://10.0.20.180:443` (defunct Talos Traefik VIP; caused grafana outage, then 404s for unmatched hosts after grafana fix)
@@ -64,10 +63,18 @@ Removed 2026-09-15 (v72):
 
 ## Add a new-cluster hostname
 
-1. Add tunnel ingress `{hostname, service: http://<service>.<namespace>:<port>}` above `*.rupan.dev` via dashboard or API `PUT /accounts/{id}/cfd_tunnel/{id}/configurations`. (No `HTTPRoute`/`Gateway` step: the Gateway API layer was removed; tunnel is the public edge.)
-2. Confirm DNS `CNAME <host> -> <tunnel-id>.cfargotunnel.com` exists (dashboard creates it on hostname add).
-3. Verify: `GET cfd_tunnel/{id}` is `healthy` with connections on `ord/mci`, `GET configurations` shows the new hostname with the in-cluster service URL in the expected position.
+1. Add the `{hostname, service}` rule to `gitops/cloudflare/ingress-config.yaml` in Cloudflare-evaluated order (specifics first, catch-all last) and to the numbered list above in the same position.
+2. Run `python -m unittest tests.test_cloudflare_tunnel` — it asserts config order matches this runbook and every origin Service exists.
+3. Commit and push; Flux rolls `cloudflared` with the new config. DNS `CNAME <host> -> <tunnel-id>.cfargotunnel.com` must already exist (created once per hostname in the dashboard).
+
+## Cutover from dashboard-managed ingress
+
+The Zero Trust dashboard still holds the old remote ingress config. After Flux applies the ConfigMap-backed config and `cloudflared` pods log `Updated to new configuration` with no error:
+
+1. Confirm each public hostname serves correctly from outside the LAN.
+2. Delete the remote ingress rules in the dashboard (or leave them; local `--config` takes precedence, but two sources will confuse the next reader).
+3. Update the Identity section below to `Config source: gitops/cloudflare/ingress-config.yaml`.
 
 ## Known gap
 
-Tunnel ingress is still dashboard managed. Per ownership (`tofu/` owns API-managed systems), codify as `cloudflare_tunnel_config` under `tofu/` (only `tofu/opnsense/` exists today) to prevent drift.
+DNS records and Access policies remain dashboard managed. A `cloudflare_tunnel_config` under `tofu/` would close that loop (only `tofu/opnsense/` exists today).

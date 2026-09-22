@@ -4,4 +4,5 @@ resources:
   - namespace.yaml
   - tunnel.yaml
   - tunnel-token.yaml
+  - ingress-config.yaml
   - pdb.yaml
