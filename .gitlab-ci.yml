@@ -294,6 +294,8 @@ registry_lock_import:
     - export SSH_OPTS="-i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes"
     - export KH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts"
     - export NIX_SSHOPTS="$SSH_OPTS $KH_OPTS -o StrictHostKeyChecking=yes"
+  after_script:
+    - shred -u ~/.ssh/id_ed25519 ~/.ssh/known_hosts 2>/dev/null || rm -f ~/.ssh/id_ed25519 ~/.ssh/known_hosts
 
 deploy_registry_platform:
   extends: .registry_ssh
@@ -469,12 +471,29 @@ deploy_registry_node_03:
     DEPLOY_HOST: homelab-03
     DEPLOY_ADDR: 10.0.30.13
 
+deploy_registry_node_04:
+  extends: .deploy_registry_node
+  needs:
+    - registry_lock
+  variables:
+    DEPLOY_HOST: homelab-04
+    DEPLOY_ADDR: 10.0.30.14
+
+deploy_registry_node_05:
+  extends: .deploy_registry_node
+  needs:
+    - deploy_registry_node_04
+  variables:
+    DEPLOY_HOST: homelab-05
+    DEPLOY_ADDR: 10.0.30.15
+
 opnsense_inventory:
   stage: opnsense
   tags:
     - nas-privileged
   environment:
     name: production
+  resource_group: opnsense-control-plane
   needs:
     - repository_tests
     - flake_check
@@ -493,6 +512,7 @@ opnsense_plan:
     - nas-privileged
   environment:
     name: production
+  resource_group: opnsense-control-plane
   variables:
     # The firewall serves its default self-signed cert (SAN: OPNsense.internal,
     # no IP SANs) and the tofu provider has no TLS server-name override, so it
@@ -526,6 +546,7 @@ opnsense_dataplane:
   stage: opnsense
   tags:
     - nas-privileged
+  resource_group: opnsense-control-plane
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
@@ -539,6 +560,7 @@ opnsense_apply:
     - nas-privileged
   environment:
     name: production
+  resource_group: opnsense-control-plane
   variables:
     OPNSENSE_URI: "https://OPNsense.internal"
     SSL_CERT_FILE: $OPNSENSE_CA_FILE
@@ -571,6 +593,9 @@ opnsense_apply:
       --bgp-expected-routes opnsense_reconciler/bgp-expected-routes.json
       --outbound-nat-rules opnsense_reconciler/outbound-nat-rules.json
       --unbound-acls opnsense_reconciler/unbound-acls.json
+    - >-
+      nix develop ./flake -c python -m opnsense_reconciler.dataplane
+      --targets opnsense_reconciler/lb-data-plane-targets.json
 
 nas_proof:
   extends: .nas_ci
@@ -612,6 +637,8 @@ nas_proof:
       sed 's/127.0.0.1/10.0.30.11/' > ~/.kube/config
     - chmod 600 ~/.kube/config
     - export KUBECONFIG="$HOME/.kube/config"
+  after_script:
+    - shred -u ~/.ssh/id_ed25519 ~/.ssh/known_hosts ~/.kube/config 2>/dev/null || rm -f ~/.ssh/id_ed25519 ~/.ssh/known_hosts ~/.kube/config  # yamllint disable-line rule:line-length
 
 deploy_fleet_dry_run:
   extends: .deploy_fleet_base
@@ -687,6 +714,8 @@ deploy_agent_workspace_host:
       unreadable. Provision it once with: kubectl create secret -n
       home-assistant generic home-assistant-token
       --from-literal=token=<HA long-lived access token>' >&2; exit 1; fi
+  after_script:
+    - shred -u ~/.ssh/id_ed25519 ~/.ssh/known_hosts ~/.kube/config 2>/dev/null || rm -f ~/.ssh/id_ed25519 ~/.ssh/known_hosts ~/.kube/config  # yamllint disable-line rule:line-length
 
 deploy_home_assistant_dry_run:
   extends: .deploy_home_assistant_base
@@ -721,8 +750,12 @@ sync_to_github:
   script:
     - >-
       nix develop ./flake -c bash -e -c '
-        gh_url="https://oauth2:$GITHUB_TOKEN@github.com/JEFF7712/homelab-new.git"
-        git remote set-url github "$gh_url" 2>/dev/null || git remote add github "$gh_url"
+        export GIT_TERMINAL_PROMPT=0
+        printf "%s\n" "[credential \"https://github.com\"]" "helper =" > /tmp/gh-credential-config
+        printf "!f() { echo username=x-access-token; echo password=$GITHUB_TOKEN; }; f\n" >> /tmp/gh-credential-config
+        git config --local include.path /tmp/gh-credential-config
+        git remote set-url github https://github.com/JEFF7712/homelab-new.git 2>/dev/null ||
+          git remote add github https://github.com/JEFF7712/homelab-new.git
         git fetch --unshallow || git fetch --all
 
         mirror_warning="**NOTE - This repository is a mirror.** Active development happens "
@@ -741,3 +774,7 @@ sync_to_github:
         done
         exit 1
       '
+  after_script:
+    - git remote remove github 2>/dev/null || true
+    - git config --local --unset-all include.path 2>/dev/null || true
+    - rm -f /tmp/gh-credential-config
