@@ -46,6 +46,7 @@ spec:
   values:
     prometheus:
       prometheusSpec:
+        priorityClassName: homelab-critical
         image:
           registry: registry.rupan.dev
           repository: upstream/quay.io/prometheus/prometheus
@@ -109,6 +110,7 @@ spec:
       enabled: false
     alertmanager:
       alertmanagerSpec:
+        priorityClassName: homelab-critical
         image:
           registry: registry.rupan.dev
           repository: upstream/quay.io/prometheus/alertmanager
@@ -218,6 +220,7 @@ spec:
                     credentials_file: /etc/alertmanager/secrets/alertmanager-ntfy-token/token
           - name: "null"
     grafana:
+      priorityClassName: homelab-critical
       replicas: 1
       resources:
         requests:

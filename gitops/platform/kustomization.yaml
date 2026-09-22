@@ -8,3 +8,4 @@ resources:
   - reloader/release.yaml
   - nvidia-device-plugin/runtimeclass.yaml
   - nvidia-device-plugin/daemonset.yaml
+  - priorityclass.yaml
