@@ -48,6 +48,36 @@ primary_safe:
   - shutoff-govee
   - snuff-govee
   - window-plug-off
+  - fz-001
+  - fz-002
+  - fz-003
+  - fz-004
+  - fz-005
+  - fz-006
+  - fz-007
+  - fz-008
+  - fz-009
+  - fz-010
+  - fz-011
+  - fz-012
+  - fz-013
+  - fz-014
+  - fz-015
+  - fz-016
+  - fz-017
+  - fz-018
+  - fz-019
+  - fz-020
+  - fz-021
+  - fz-022
+  - fz-023
+  - fz-024
+  - fz-025
+  - fz-026
+  - fz-027
+  - fz-028
+  - fz-029
+  - fz-030
 canaries:
   - canon-blue-kitchen
   - canon-kitchen-off

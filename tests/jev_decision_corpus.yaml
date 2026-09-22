@@ -3002,3 +3002,317 @@
     reference: explicit_target
     target: none_or_unknown
   notes: Near-vocabulary entity; must not snap to a neighbor.
+
+# Valid fuzzy commands L0 skips by design (v3): power verbs,
+# adverbs/word-order variants, polite questions, telegraphic
+# forms, fuzzy color/thermostat/brightness verbs. L1 must
+# accept these with exact fields. All verified L0-misses.
+- id: fz-001
+  say: Power on the kitchen lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-002
+  say: Power off the bedroom lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-003
+  say: Power down the living room lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-004
+  say: Shut down the kitchen lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-005
+  say: Power the stairs light on.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: stairs_light
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-006
+  say: Turn the kitchen lights back on.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-007
+  say: Turn back on the kitchen lights.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-008
+  say: Switch the lights in the kitchen off.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-009
+  say: Turn the bedroom lights back off.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-010
+  say: Could you turn off the kitchen lights?
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-011
+  say: Can you turn on the bedroom lights?
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-012
+  say: Would you dim the kitchen lights to 10 percent?
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  value: 10
+- id: fz-013
+  say: Could you set the thermostat to 71 degrees?
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  value: 71
+- id: fz-014
+  say: Kitchen lights on.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-015
+  say: Bedroom lights off.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-016
+  say: Movie mode on.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: movie_mode
+    action: activate_scene
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-017
+  say: Thermostat to 70.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  value: 70
+- id: fz-018
+  say: I need the kitchen lights off.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-019
+  say: I want the bedroom lights on.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-020
+  say: Paint the kitchen lights red.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_color
+    color: red
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-021
+  say: Paint the bedroom lights blue.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: set_color
+    color: blue
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-022
+  say: Color the living room lights green.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_lights
+    action: set_color
+    color: green
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-023
+  say: Crank the thermostat to 72.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  value: 72
+- id: fz-024
+  say: Turn the thermostat to 71.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  value: 71
+- id: fz-025
+  say: Drop the living room temperature to 68.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: living_room_thermostat
+    action: set_temperature
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  value: 68
+- id: fz-026
+  say: Take the kitchen lights down to 30 percent.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  value: 30
+- id: fz-027
+  say: Bring the bedroom lights up to 80 percent.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: bedroom_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  value: 80
+- id: fz-028
+  say: Turn the kitchen lights down to 30 percent.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: kitchen_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  value: 30
+- id: fz-029
+  say: Halt the satellite speaker.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    action: pause_media
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+- id: fz-030
+  say: Silence the satellite speaker.
+  expected_route: execute
+  expected:
+    request_kind: home_command
+    target: satellite_media_player
+    action: pause_media
+    color: none_or_unknown
+    reference: explicit_target
+  notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
