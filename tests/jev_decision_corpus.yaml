@@ -1984,12 +1984,16 @@
   notes: Unsupported action for the domain.
 - id: misx-003
   say: Start the kitchen lights.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-    reference: explicit_target
     target: kitchen_lights
-  notes: Unsupported action for the domain.
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+  notes: "Lenient policy: `start` has no scene-vocabulary collision, unlike `activate`; unambiguous turn_on."
 - id: misx-004
   say: Make the stairs light red.
   expected_route: clarify
@@ -2069,7 +2073,7 @@
     request_kind: home_command
     reference: explicit_target
     target: stairs_light
-  notes: Unsupported action for the domain.
+  notes: "Unsupported action for the domain. Kept clarify: `activate` is scene vocabulary per the strict activate policy (see mis-activate-light)."
 - id: misx-014
   say: Set the kitchen lights to movie mode.
   expected_route: clarify
@@ -2357,10 +2361,16 @@
   notes: Negation is unsupported; executing would do the opposite.
 - id: corr-001
   say: No, turn off the kitchen lights.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-  notes: Correction/countermand; no conversational state to resolve against.
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_off
+  notes: "Lenient policy: discourse marker plus fully specified command; L1 executes the command."
 - id: corr-002
   say: I meant the bedroom lights.
   expected_route: clarify
@@ -2447,16 +2457,28 @@
   notes: Correction/countermand; no conversational state to resolve against.
 - id: corr-016
   say: 'Correction: bedroom lights off.'
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-  notes: Correction/countermand; no conversational state to resolve against.
+    target: bedroom_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_off
+  notes: "Lenient policy: self-contained correction; L1 executes."
 - id: corr-017
   say: 'Let me rephrase: kitchen lights on.'
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-  notes: Correction/countermand; no conversational state to resolve against.
+    target: kitchen_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+  notes: "Lenient policy: self-contained rephrase; L1 executes."
 - id: corr-018
   say: Scratch that, pause the speaker.
   expected_route: clarify
@@ -2528,7 +2550,7 @@
   expected_route: clarify
   expected:
     request_kind: home_command
-  notes: Undo requires history the router does not keep.
+  notes: "Undo requires history the router does not keep. Kept clarify: restore-previous-state is unknowable; turn_on would be a guess."
 - id: undo-010
   say: Revert that last change.
   expected_route: clarify
@@ -2730,10 +2752,16 @@
   notes: STT or word-order corruption; structure is unreliable.
 - id: stt-002
   say: Turn off the kitchen light s.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-  notes: STT or word-order corruption; structure is unreliable.
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_off
+  notes: "Lenient policy: transparent typo, intent unambiguous; L1 executes."
 - id: stt-003
   say: Set the kitchen lights two 50 percent.
   expected_route: clarify
@@ -2748,10 +2776,16 @@
   notes: STT or word-order corruption; structure is unreliable.
 - id: stt-005
   say: Turn the kitchen lights off off.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-  notes: STT or word-order corruption; structure is unreliable.
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_off
+  notes: "Lenient policy: duplicated word, intent unambiguous; L1 executes."
 - id: stt-006
   say: Set thermostat seventy degrees living room.
   expected_route: clarify
@@ -2784,22 +2818,41 @@
   notes: STT or word-order corruption; structure is unreliable.
 - id: stt-011
   say: Turn off kitchen lights lights.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-  notes: STT or word-order corruption; structure is unreliable.
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_off
+  notes: "Lenient policy: duplicated word, intent unambiguous; L1 executes."
 - id: stt-012
   say: Set the the kitchen lights to 40 percent.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-  notes: STT or word-order corruption; structure is unreliable.
+    target: kitchen_lights
+    action: set_brightness
+    color: none_or_unknown
+    reference: explicit_target
+  value: 40
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+  notes: "Lenient policy: duplicated determiner, value explicit; L1 executes."
 - id: stt-013
   say: Turn on on the kitchen lights.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-  notes: STT or word-order corruption; structure is unreliable.
+    target: kitchen_lights
+    action: turn_on
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+  notes: "Lenient policy: duplicated word, intent unambiguous; L1 executes."
 - id: stt-014
   say: Stairs light turn on.
   expected_route: clarify
@@ -2826,10 +2879,16 @@
   notes: STT or word-order corruption; structure is unreliable.
 - id: stt-018
   say: Dim kitchen lights to ten.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-  notes: STT or word-order corruption; structure is unreliable.
+    target: good_vibes_sign
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.living_room_good_vibes_sign]
+  service: light.turn_off
+  notes: "Lenient policy: scrambled word order but all content words present; L1 executes. Jev currently misses this."
 - id: stt-019
   say: Satellite speaker stop now.
   expected_route: clarify
@@ -2838,10 +2897,16 @@
   notes: STT or word-order corruption; structure is unreliable.
 - id: stt-020
   say: The kitchen lights, turn them off please please.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
-  notes: STT or word-order corruption; structure is unreliable.
+    target: kitchen_lights
+    action: turn_off
+    color: none_or_unknown
+    reference: explicit_target
+  targets: [light.kitchen_lights]
+  service: light.turn_off
+  notes: "Lenient policy: repeated politeness filler, intent unambiguous; L1 executes."
 - id: sim-001
   say: Turn on the kitchenette lights.
   expected_route: clarify
@@ -2852,20 +2917,28 @@
   notes: Near-vocabulary entity; must not snap to a neighbor.
 - id: sim-002
   say: Turn off the living lights.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
+    target: living_room_lights
+    action: turn_off
+    color: none_or_unknown
     reference: explicit_target
-    target: none_or_unknown
-  notes: Near-vocabulary entity; must not snap to a neighbor.
+  targets: [light.living_room_lights]
+  service: light.turn_off
+  notes: "Lenient policy: unique neighbor snap; L1 executes."
 - id: sim-003
   say: Turn on the bed lights.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
+    target: bedroom_lights
+    action: turn_on
+    color: none_or_unknown
     reference: explicit_target
-    target: none_or_unknown
-  notes: Near-vocabulary entity; must not snap to a neighbor.
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
+  notes: "Lenient policy: unique neighbor snap; L1 executes."
 - id: sim-004
   say: Set the stair light to 50 percent.
   expected_route: clarify
@@ -2892,28 +2965,41 @@
   notes: Near-vocabulary entity; must not snap to a neighbor.
 - id: sim-007
   say: Activate film mode.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
+    target: kitchen_lights
+    action: turn_on
+    color: none_or_unknown
     reference: explicit_target
-    target: none_or_unknown
-  notes: Near-vocabulary entity; must not snap to a neighbor.
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+  notes: "Lenient policy: unique neighbor snap; L1 executes. Jev currently misses this."
 - id: sim-008
   say: Turn on the govee lamp.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
+    target: all_govee_lights
+    action: turn_on
+    color: none_or_unknown
     reference: explicit_target
-    target: none_or_unknown
-  notes: Near-vocabulary entity; must not snap to a neighbor.
+  targets: [light.all_govee_lights]
+  service: light.turn_on
+  notes: "Lenient policy: unique neighbor snap; L1 executes."
 - id: sim-009
   say: Set the downstairs lamp to 30 percent.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
+    target: downstairs_lights
+    action: set_brightness
+    color: none_or_unknown
     reference: explicit_target
-    target: none_or_unknown
-  notes: Near-vocabulary entity; must not snap to a neighbor.
+  value: 30
+  targets: [light.downstairs_lights]
+  service: light.turn_on
+  notes: "Lenient policy: unique neighbor snap with explicit value; L1 executes."
 - id: sim-010
   say: Dim the stairwell lights.
   expected_route: clarify
@@ -2940,12 +3026,16 @@
   notes: Near-vocabulary entity; must not snap to a neighbor.
 - id: sim-013
   say: Turn on the lounge lights.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
+    target: living_room_lights
+    action: turn_on
+    color: none_or_unknown
     reference: explicit_target
-    target: none_or_unknown
-  notes: Near-vocabulary entity; must not snap to a neighbor.
+  targets: [light.living_room_lights]
+  service: light.turn_on
+  notes: "Lenient policy: unique neighbor snap; L1 executes."
 - id: sim-014
   say: Pause the media satellite player.
   expected_route: clarify
@@ -2956,20 +3046,29 @@
   notes: Near-vocabulary entity; must not snap to a neighbor.
 - id: sim-015
   say: Turn off the bedrooms lights.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
+    target: bedroom_lights
+    action: turn_off
+    color: none_or_unknown
     reference: explicit_target
-    target: none_or_unknown
-  notes: Near-vocabulary entity; must not snap to a neighbor.
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_off
+  notes: "Lenient policy: unique neighbor snap; L1 executes."
 - id: sim-016
   say: Set the livingroom lights to 50 percent.
-  expected_route: clarify
+  expected_route: execute
   expected:
     request_kind: home_command
+    target: living_room_lights
+    action: set_brightness
+    color: none_or_unknown
     reference: explicit_target
-    target: none_or_unknown
-  notes: Near-vocabulary entity; must not snap to a neighbor.
+  value: 50
+  targets: [light.living_room_lights]
+  service: light.turn_on
+  notes: "Lenient policy: unique neighbor snap with explicit value; L1 executes."
 - id: sim-017
   say: Turn on the kitchen light fixture.
   expected_route: clarify
@@ -2993,7 +3092,7 @@
     request_kind: home_command
     reference: explicit_target
     target: none_or_unknown
-  notes: Near-vocabulary entity; must not snap to a neighbor.
+  notes: "Near-vocabulary entity; must not snap to a neighbor. Kept clarify: `main` is genuinely ambiguous between rooms; no unique neighbor."
 - id: sim-020
   say: Turn off the main lights.
   expected_route: clarify

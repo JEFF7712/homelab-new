@@ -199,8 +199,8 @@ class L1AdversarialSetTest(unittest.TestCase):
             self.adversarial["stress_synthetic"],
         ]
         self.assertEqual(len(self.adversarial["stress_unsafe"]), 12)
-        self.assertEqual(len(self.adversarial["primary_safe"]), 44)
-        self.assertEqual(len(self.adversarial["stress_synthetic"]), 220)
+        self.assertEqual(len(self.adversarial["primary_safe"]), 63)
+        self.assertEqual(len(self.adversarial["stress_synthetic"]), 201)
         for group in groups:
             for cid in group:
                 self.assertIn(cid, self.cases, cid)

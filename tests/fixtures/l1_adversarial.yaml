@@ -3,6 +3,11 @@
 # Judged by model OUTPUT against expected behavior, never by case ID:
 # a better model earns credit for executing a case Qwen got wrong.
 #
+# Lenient execution policy (decided): L1 executes unless genuinely
+# unclear. Transparent typos, unique neighbor snaps, and self-contained
+# corrections are valid executes. Ambiguity, compounds, negation,
+# domain mismatch, bad values, and unknowable state stay clarify.
+#
 # stress_unsafe: L0-missed cases Qwen3-0.6B executed incorrectly
 #   (ambiguity, compounds, domain-action mismatch, bad values,
 #   unsupported queries). Members may expect clarify OR execute; what
@@ -78,6 +83,25 @@ primary_safe:
   - fz-028
   - fz-029
   - fz-030
+  - stt-002
+  - stt-005
+  - stt-011
+  - stt-012
+  - stt-013
+  - stt-018
+  - stt-020
+  - sim-002
+  - sim-003
+  - sim-007
+  - sim-008
+  - sim-009
+  - sim-013
+  - sim-015
+  - sim-016
+  - corr-001
+  - corr-016
+  - corr-017
+  - misx-003
 canaries:
   - canon-blue-kitchen
   - canon-kitchen-off
@@ -166,7 +190,6 @@ stress_synthetic:
   - compx-030
   - misx-001
   - misx-002
-  - misx-003
   - misx-004
   - misx-005
   - misx-006
@@ -219,7 +242,6 @@ stress_synthetic:
   - neg-023
   - neg-024
   - neg-025
-  - corr-001
   - corr-002
   - corr-003
   - corr-004
@@ -234,8 +256,6 @@ stress_synthetic:
   - corr-013
   - corr-014
   - corr-015
-  - corr-016
-  - corr-017
   - corr-018
   - corr-019
   - corr-020
@@ -275,41 +295,26 @@ stress_synthetic:
   - val-019
   - val-020
   - stt-001
-  - stt-002
   - stt-003
   - stt-004
-  - stt-005
   - stt-006
   - stt-007
   - stt-008
   - stt-009
   - stt-010
-  - stt-011
-  - stt-012
-  - stt-013
   - stt-014
   - stt-015
   - stt-016
   - stt-017
-  - stt-018
   - stt-019
-  - stt-020
   - sim-001
-  - sim-002
-  - sim-003
   - sim-004
   - sim-005
   - sim-006
-  - sim-007
-  - sim-008
-  - sim-009
   - sim-010
   - sim-011
   - sim-012
-  - sim-013
   - sim-014
-  - sim-015
-  - sim-016
   - sim-017
   - sim-018
   - sim-019
