@@ -43,8 +43,6 @@ spec:
               kubernetes.io/metadata.name: home-assistant
         - ipBlock:
             cidr: 10.0.30.13/32
-        - ipBlock:
-            cidr: 10.0.40.13/32
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -157,6 +155,8 @@ spec:
               kubernetes.io/metadata.name: home-assistant
         - ipBlock:
             cidr: 10.0.30.13/32
+        - ipBlock:
+            cidr: 10.0.40.13/32
       ports:
         - {protocol: TCP, port: 8123}
 ---
