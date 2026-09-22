@@ -154,6 +154,18 @@ spec:
               mountPath: /tmp
             - name: run
               mountPath: /run
+          readinessProbe:
+            httpGet:
+              path: /api/v2/app/version
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /api/v2/app/version
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 20
           resources:
             requests:
               cpu: 500m
@@ -208,6 +220,18 @@ spec:
               mountPath: /tmp
             - name: dotnet-bundle
               mountPath: /.net
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5030
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5030
+            initialDelaySeconds: 120
+            periodSeconds: 20
           resources:
             requests:
               cpu: 250m
