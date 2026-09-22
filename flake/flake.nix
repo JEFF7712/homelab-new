@@ -179,6 +179,9 @@
                   "--kubelet-arg=image-gc-high-threshold=80"
                   "--kubelet-arg=image-gc-low-threshold=70"
                   "--kubelet-arg=eviction-hard=memory.available<500Mi,nodefs.available<10%,imagefs.available<10%"
+                  "--etcd-snapshot-dir=/persist/etcd-snapshots"
+                  "--etcd-snapshot-retention=14"
+                  "--etcd-snapshot-schedule-cron=0 3 * * *"
                   "--kubelet-arg=system-reserved=cpu=2,memory=10Gi"
                   "--kubelet-arg=kube-reserved=cpu=500m,memory=1Gi"
                 ]

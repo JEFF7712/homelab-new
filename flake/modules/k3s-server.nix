@@ -184,6 +184,11 @@ in
           "--kubelet-arg=image-gc-low-threshold=70"
           "--kubelet-arg=eviction-hard=memory.available<500Mi,nodefs.available<10%,imagefs.available<10%"
         ]
+        ++ lib.optionals (cfg.role == "server") [
+          "--etcd-snapshot-dir=/persist/etcd-snapshots"
+          "--etcd-snapshot-retention=14"
+          "--etcd-snapshot-schedule-cron=0 3 * * *"
+        ]
         ++ lib.optional cfg.registry.enforceLocalImages "--disable-default-registry-endpoint";
     };
 
@@ -371,6 +376,7 @@ in
     systemd.tmpfiles.rules = [
       "d /persist/etc/ssh 0700 root root -"
       "d /persist/secrets 0700 root root -"
+      "d /persist/etcd-snapshots 0700 root root -"
     ];
 
     environment.persistence."/persist" = {
