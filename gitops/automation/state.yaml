@@ -6,8 +6,6 @@ metadata:
   namespace: automation
 data:
   cloudflare-tunnel: ok
-  longhorn-backups: ok
-  longhorn-snapshots: ok
   initialized: 'true'
 ---
 apiVersion: v1

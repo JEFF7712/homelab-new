@@ -159,40 +159,4 @@ data:
       check_change "certificates" "ok" "Certificate issue" "Certificates recovered" "All certificates are ready and at least 21 days from expiry."
     fi
 
-    longhorn_bad="$(kubectl get volumes.longhorn.io -n longhorn-system -o json 2>/dev/null | jq -r '
-      .items[]
-      | select((.status.robustness // "unknown") != "healthy" or (.status.state // "unknown") == "faulted")
-      | "\(.metadata.name): state=\(.status.state // "unknown") robustness=\(.status.robustness // "unknown")"
-    ' || true)"
-    if [ -n "${longhorn_bad}" ]; then
-      check_change "longhorn-volumes" "bad" "Longhorn volume issue" "Longhorn volumes recovered" "${longhorn_bad}"
-    else
-      check_change "longhorn-volumes" "ok" "Longhorn volume issue" "Longhorn volumes recovered" "All Longhorn volumes report healthy robustness."
-    fi
-
-    longhorn_snapshot_bad="$(kubectl get snapshots.longhorn.io -n longhorn-system -o json 2>/dev/null | jq -r '
-      [.items[] | .spec.volume] | group_by(.)[] | {volume: .[0], count: length} | select(.count >= 200) | "\(.volume): snapshots=\(.count)"
-    ' || true)"
-    if [ -n "${longhorn_snapshot_bad}" ]; then
-      check_change "longhorn-snapshots" "bad" "Longhorn snapshot pressure" "Longhorn snapshot pressure recovered" "${longhorn_snapshot_bad}"
-    else
-      check_change "longhorn-snapshots" "ok" "Longhorn snapshot pressure" "Longhorn snapshot pressure recovered" "No Longhorn volume is near the snapshot max count."
-    fi
-
-    longhorn_backup_bad="$(kubectl get backuptargets.longhorn.io -n longhorn-system -o json 2>/dev/null | jq -r '
-      .items[]
-      | select((.spec.backupTargetURL // "") != "" and (.status.available // false) != true)
-      | "\(.metadata.name): unavailable target=\(.spec.backupTargetURL)"
-    ' || true)"
-    failed_backups="$(kubectl get backups.longhorn.io -n longhorn-system -o json 2>/dev/null | jq -r '
-      .items[]
-      | select((.status.state // "") == "Error" or (.status.error // "") != "")
-      | "\(.metadata.name): state=\(.status.state // "unknown") error=\(.status.error // "")"
-    ' || true)"
-    longhorn_backup_bad="$(printf '%s\n%s\n' "${longhorn_backup_bad}" "${failed_backups}" | sed '/^$/d' | sort -u)"
-    if [ -n "${longhorn_backup_bad}" ]; then
-      check_change "longhorn-backups" "bad" "Longhorn backup issue" "Longhorn backups recovered" "${longhorn_backup_bad}"
-    else
-      check_change "longhorn-backups" "ok" "Longhorn backup issue" "Longhorn backups recovered" "No configured Longhorn backup target or backup object reports failure."
-    fi
 
