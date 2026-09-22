@@ -1,5 +1,5 @@
 {
-  "corpus_cases": 386,
+  "corpus_cases": 416,
   "endpoint": "http://127.0.0.1:18013/v1/systemone",
   "errors": 0,
   "model": "local-shadow",
@@ -5179,6 +5179,996 @@
           "target": {
             "choice": "living_room_lights",
             "confidence": 0.9222169101320898,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-001": {
+      "latency_ms": 2512.925255985465,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9808004083125461,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.30200629132586587,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8294362920186694,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6408612346937921,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9409184814058644,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-002": {
+      "latency_ms": 2477.413788990816,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.9761797654793561,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.6114730652727763,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.849027825132427,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7344810257184352,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.9550397972562508,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-003": {
+      "latency_ms": 2517.166998004541,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.9715856468320202,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.6020890487197218,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8350083356351903,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5577010429248058,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_lights",
+            "confidence": 0.9366134808897568,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-004": {
+      "latency_ms": 2475.525384012144,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.975564436776158,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.5849829308485207,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.83647996459007,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.45846600365190215,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9518793579632423,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-005": {
+      "latency_ms": 2466.804903000593,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.8538420361021054,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.3775153793989326,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8584324461688863,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "compound",
+            "confidence": 0.4313318495650865,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "stairs_light",
+            "confidence": 0.9790529003898853,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-006": {
+      "latency_ms": 2543.656147987349,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9475670931590279,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.4627281901427553,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8407565480583392,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5968712256990479,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9203295591990938,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-007": {
+      "latency_ms": 2500.3671840240713,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.924642524927052,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.4395568084260667,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8270802271550995,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5223043210749411,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.918789019761179,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-008": {
+      "latency_ms": 2504.7702380106784,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.9746976590624425,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.613520225590773,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.845437159862349,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5826173955654644,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9246091228578122,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-009": {
+      "latency_ms": 2483.028140006354,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.9668785129812703,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.5665988832651571,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8604852768561865,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7023500826297331,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.9183388086695564,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-010": {
+      "latency_ms": 2534.0133689751383,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.9751357868126554,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.7827123525773148,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.7950227264297958,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6477923803496005,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9424426719361858,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-011": {
+      "latency_ms": 2490.4254130087793,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9754220176865155,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.7298527940299814,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.6260652355532278,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.83834435143761,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.954676065843987,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-012": {
+      "latency_ms": 2464.6844329836313,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "adjust_brightness_down",
+            "confidence": 0.7690653528790145,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.5024060338441491,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8379882698951404,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7016749225182476,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.8937575239790179,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-013": {
+      "latency_ms": 2529.2261719878297,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 0.9804231894013958,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.6295217639117962,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.7466004339814445,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.752541091179501,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 0.9466015409165837,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-014": {
+      "latency_ms": 2454.5305479841772,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.912771009608029,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.3647293075695217,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8706488272741087,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5474327165824717,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9194828360533732,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-015": {
+      "latency_ms": 2453.737355011981,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.921594312453695,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.6942131286564538,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.903394798113522,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.44902219334046306,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.845528221787587,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-016": {
+      "latency_ms": 2460.984662990086,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.359569639469827,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.5817249709958225,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8543616278659812,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "compound",
+            "confidence": 0.5034054738726114,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "movie_mode",
+            "confidence": 0.8627586256272705,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-017": {
+      "latency_ms": 2498.7428289896343,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 0.9343149878461926,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.5185993342768364,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8068055029627381,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.42193676613035674,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 0.9046170854740687,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-018": {
+      "latency_ms": 2486.325489997398,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.9639370074487057,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.6399251121224689,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8060115219954109,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5346026321015762,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9415948484134351,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-019": {
+      "latency_ms": 2511.732575017959,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9760326874280488,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.7355048834561622,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.7268186970461191,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.8233095622180661,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.9685855882609121,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-020": {
+      "latency_ms": 2523.156409995863,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_color",
+            "confidence": 0.9187022452604331,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "red",
+            "confidence": 0.9657787115255593,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8193561542417911,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5865109693969258,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9266470725716791,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-021": {
+      "latency_ms": 2505.7898740051314,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_color",
+            "confidence": 0.9282354464395686,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "blue",
+            "confidence": 0.9135390681747741,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8424197937500354,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7080604249372222,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.8982793044623862,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-022": {
+      "latency_ms": 2527.034783997806,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_color",
+            "confidence": 0.9124235276231544,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "green",
+            "confidence": 0.9275753718289267,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8336343169212341,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7122004191324208,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_lights",
+            "confidence": 0.9372811051205977,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-023": {
+      "latency_ms": 2588.722915010294,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 0.9572822339591961,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.40474126346023775,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.7975463389984718,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6696683118517077,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 0.891790150661707,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-024": {
+      "latency_ms": 2564.4993479945697,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 0.9414493503880416,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.4373139468814393,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.7960058213470631,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7135135094861725,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 0.9095733905900037,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-025": {
+      "latency_ms": 2584.4085949938744,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "adjust_temperature_down",
+            "confidence": 0.8464593988092071,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "warm_white",
+            "confidence": 0.342942745550678,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8201751005753934,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7078259840542905,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 0.841831206099366,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-026": {
+      "latency_ms": 2615.803138993215,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "adjust_brightness_down",
+            "confidence": 0.9477801568666241,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.30973126676634377,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8492489546985057,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5518349799575292,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.8511793452430261,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-027": {
+      "latency_ms": 2602.8534549986944,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "adjust_brightness_up",
+            "confidence": 0.9393802864881046,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "warm_white",
+            "confidence": 0.3803018388706026,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8504949376429561,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6645084644276964,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_lights",
+            "confidence": 0.38152456443464433,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-028": {
+      "latency_ms": 2627.7790940075647,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "adjust_brightness_down",
+            "confidence": 0.9443779550915745,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.4172087485430018,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8306628094317253,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6026586192044974,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9064933314012176,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-029": {
+      "latency_ms": 2629.223733994877,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "pause_media",
+            "confidence": 0.45519755880339857,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.7365419316625162,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8362516885437323,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "compound",
+            "confidence": 0.6741779245681189,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "satellite_media_player",
+            "confidence": 0.8772356099625217,
+            "type": "choice"
+          }
+        },
+        "model": "local-qwen3-0.6b-rlcd-decision"
+      }
+    },
+    "fz-030": {
+      "latency_ms": 2590.9467239980586,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.625435633456676,
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.7240789697123188,
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.8535968534112446,
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "compound",
+            "confidence": 0.42203277978349896,
+            "type": "choice"
+          },
+          "target": {
+            "choice": "satellite_media_player",
+            "confidence": 0.8068297843517179,
             "type": "choice"
           }
         },

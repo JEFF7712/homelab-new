@@ -1,5 +1,5 @@
 {
-  "corpus_cases": 386,
+  "corpus_cases": 416,
   "endpoint": "https://api.typesafe.ai/v1/systemone",
   "errors": 0,
   "model": "jev-1-13-0",
@@ -14288,6 +14288,2736 @@
         "usage": {
           "input_tokens": 1248,
           "output_tokens": 488
+        }
+      }
+    },
+    "fz-001": {
+      "latency_ms": 331.47960901260376,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 1.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1248,
+          "output_tokens": 489
+        }
+      }
+    },
+    "fz-002": {
+      "latency_ms": 345.3512859996408,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 1.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.98,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.98,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.02,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1248,
+          "output_tokens": 490
+        }
+      }
+    },
+    "fz-003": {
+      "latency_ms": 393.8442819926422,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 1.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 1.0,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 1.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1249,
+          "output_tokens": 489
+        }
+      }
+    },
+    "fz-004": {
+      "latency_ms": 224.70099601196125,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 1.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.98,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1249,
+          "output_tokens": 489
+        }
+      }
+    },
+    "fz-005": {
+      "latency_ms": 302.85136500606313,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 1.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.98,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "stairs_light",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 1.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1248,
+          "output_tokens": 487
+        }
+      }
+    },
+    "fz-006": {
+      "latency_ms": 224.8437210218981,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.99,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.01,
+              "turn_off": 0.0,
+              "turn_on": 0.99
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.98,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1249,
+          "output_tokens": 489
+        }
+      }
+    },
+    "fz-007": {
+      "latency_ms": 248.04286597645842,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.97,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.02,
+              "turn_off": 0.0,
+              "turn_on": 0.98
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1249,
+          "output_tokens": 489
+        }
+      }
+    },
+    "fz-008": {
+      "latency_ms": 262.8712129953783,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 1.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1250,
+          "output_tokens": 489
+        }
+      }
+    },
+    "fz-009": {
+      "latency_ms": 259.1584239853546,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.99,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.01,
+              "turn_off": 0.99,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.97,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.99,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.98,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.98,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.02,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1249,
+          "output_tokens": 490
+        }
+      }
+    },
+    "fz-010": {
+      "latency_ms": 253.61811500624754,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 1.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 1.0,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1250,
+          "output_tokens": 489
+        }
+      }
+    },
+    "fz-011": {
+      "latency_ms": 257.0916580152698,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 1.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.98,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.99,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.01,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1250,
+          "output_tokens": 490
+        }
+      }
+    },
+    "fz-012": {
+      "latency_ms": 265.95902899862267,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_brightness",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 1.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1254,
+          "output_tokens": 491
+        }
+      }
+    },
+    "fz-013": {
+      "latency_ms": 259.0590509935282,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 1.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.13,
+            "probabilities": {
+              "explicit_target": 0.57,
+              "missing_or_ambiguous": 0.43
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "none_or_unknown",
+            "confidence": 0.67,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.3,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.7,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1253,
+          "output_tokens": 488
+        }
+      }
+    },
+    "fz-014": {
+      "latency_ms": 241.54502199962735,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.83,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.11,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.01,
+              "turn_off": 0.03,
+              "turn_on": 0.85
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.99,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.99,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.01,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.98,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.93,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.05,
+              "home_command": 0.95,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1246,
+          "output_tokens": 489
+        }
+      }
+    },
+    "fz-015": {
+      "latency_ms": 251.52290100231767,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.99,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 1.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.98,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.99,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.98,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.99,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.01,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1248,
+          "output_tokens": 490
+        }
+      }
+    },
+    "fz-016": {
+      "latency_ms": 250.07838301826268,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "activate_scene",
+            "confidence": 0.82,
+            "probabilities": {
+              "activate_scene": 0.84,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.16
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.99,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.37,
+            "probabilities": {
+              "explicit_target": 0.32,
+              "missing_or_ambiguous": 0.68
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.98,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 0.99,
+              "unsupported": 0.01
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "movie_mode",
+            "confidence": 0.89,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.9,
+              "none_or_unknown": 0.1,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1246,
+          "output_tokens": 491
+        }
+      }
+    },
+    "fz-017": {
+      "latency_ms": 271.8376770208124,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 1.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.03,
+            "probabilities": {
+              "explicit_target": 0.51,
+              "missing_or_ambiguous": 0.49
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "none_or_unknown",
+            "confidence": 0.57,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.4,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.6,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1250,
+          "output_tokens": 488
+        }
+      }
+    },
+    "fz-018": {
+      "latency_ms": 269.56346799852327,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 1.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 1.0,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1249,
+          "output_tokens": 489
+        }
+      }
+    },
+    "fz-019": {
+      "latency_ms": 239.0721150150057,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 1.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 1.0,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.98,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.99,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.01,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1249,
+          "output_tokens": 490
+        }
+      }
+    },
+    "fz-020": {
+      "latency_ms": 294.000875990605,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_color",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 1.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "red",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 1.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.78,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 0.84,
+              "unsupported": 0.16
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1248,
+          "output_tokens": 487
+        }
+      }
+    },
+    "fz-021": {
+      "latency_ms": 239.46962697664276,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_color",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 1.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "blue",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 1.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.84,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 0.89,
+              "unsupported": 0.11
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.99,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.99,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.01,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1248,
+          "output_tokens": 488
+        }
+      }
+    },
+    "fz-022": {
+      "latency_ms": 219.1437369911,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_color",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 1.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "green",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 1.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 1.0,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 1.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1249,
+          "output_tokens": 487
+        }
+      }
+    },
+    "fz-023": {
+      "latency_ms": 227.30292301275767,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 0.99,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 1.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.05,
+            "probabilities": {
+              "explicit_target": 0.47,
+              "missing_or_ambiguous": 0.53
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "none_or_unknown",
+            "confidence": 0.7,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.28,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.72,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1251,
+          "output_tokens": 492
+        }
+      }
+    },
+    "fz-024": {
+      "latency_ms": 222.48511400539428,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 1.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.24,
+            "probabilities": {
+              "explicit_target": 0.62,
+              "missing_or_ambiguous": 0.38
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "none_or_unknown",
+            "confidence": 0.6,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.37,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.63,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1250,
+          "output_tokens": 488
+        }
+      }
+    },
+    "fz-025": {
+      "latency_ms": 227.3359989922028,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 0.91,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.08,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.92,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.99,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 1.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1252,
+          "output_tokens": 491
+        }
+      }
+    },
+    "fz-026": {
+      "latency_ms": 312.4760659993626,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_brightness",
+            "confidence": 0.99,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.01,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.99,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.98,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1253,
+          "output_tokens": 491
+        }
+      }
+    },
+    "fz-027": {
+      "latency_ms": 370.0288260006346,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_brightness",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 1.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 1.0,
+              "missing_or_ambiguous": 0.0
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.98,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.98,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.02,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1253,
+          "output_tokens": 492
+        }
+      }
+    },
+    "fz-028": {
+      "latency_ms": 288.04568797932006,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_brightness",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 1.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.99,
+            "probabilities": {
+              "explicit_target": 0.99,
+              "missing_or_ambiguous": 0.01
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 1.0,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 1.0,
+              "unsupported": 0.0
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1253,
+          "output_tokens": 491
+        }
+      }
+    },
+    "fz-029": {
+      "latency_ms": 239.0910889953375,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.61,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.1,
+              "pause_media": 0.25,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.01,
+              "turn_off": 0.64,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.81,
+            "probabilities": {
+              "explicit_target": 0.91,
+              "missing_or_ambiguous": 0.09
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.85,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 0.89,
+              "unsupported": 0.11
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "satellite_media_player",
+            "confidence": 0.7,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.28,
+              "satellite_media_player": 0.72,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1248,
+          "output_tokens": 490
+        }
+      }
+    },
+    "fz-030": {
+      "latency_ms": 339.2670379835181,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.91,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.06,
+              "pause_media": 0.01,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.01,
+              "turn_off": 0.92,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.95,
+            "probabilities": {
+              "explicit_target": 0.97,
+              "missing_or_ambiguous": 0.03
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.98,
+            "probabilities": {
+              "compound": 0.0,
+              "general_or_conversation": 0.0,
+              "home_command": 0.99,
+              "unsupported": 0.01
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "satellite_media_player",
+            "confidence": 0.76,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.22,
+              "satellite_media_player": 0.78,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "jev-1.13.0",
+        "usage": {
+          "input_tokens": 1248,
+          "output_tokens": 490
         }
       }
     },

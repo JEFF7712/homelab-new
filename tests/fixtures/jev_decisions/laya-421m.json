@@ -1,5 +1,5 @@
 {
-  "corpus_cases": 386,
+  "corpus_cases": 416,
   "endpoint": "http://127.0.0.1:18012/v1/systemone",
   "errors": 0,
   "model": "laya-421m",
@@ -13656,6 +13656,2616 @@
               "none_or_unknown": 0.0001,
               "satellite_media_player": 0.0,
               "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-001": {
+      "latency_ms": 2948.3520110079553,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9973,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0001,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0001,
+              "none_or_unsupported": 0.0004,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.9993
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9272,
+            "probabilities": {
+              "blue": 0.0011,
+              "green": 0.0025,
+              "neon_pink": 0.0025,
+              "none_or_unknown": 0.9717,
+              "orange": 0.0155,
+              "pink": 0.0015,
+              "purple": 0.0017,
+              "red": 0.0015,
+              "warm_white": 0.0002,
+              "white": 0.0007,
+              "yellow": 0.0011
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.3351,
+            "probabilities": {
+              "explicit_target": 0.8269,
+              "missing_or_ambiguous": 0.1731
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6266,
+            "probabilities": {
+              "compound": 0.0349,
+              "general_or_conversation": 0.0273,
+              "home_command": 0.8705,
+              "unsupported": 0.0672
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-002": {
+      "latency_ms": 2822.5931400083937,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.4948,
+            "probabilities": {
+              "activate_scene": 0.0002,
+              "adjust_brightness_down": 0.0325,
+              "adjust_brightness_up": 0.0097,
+              "adjust_temperature_down": 0.0644,
+              "adjust_temperature_up": 0.0431,
+              "none_or_unsupported": 0.0272,
+              "pause_media": 0.0,
+              "set_brightness": 0.0027,
+              "set_color": 0.0001,
+              "set_temperature": 0.0345,
+              "toggle": 0.0027,
+              "turn_off": 0.6298,
+              "turn_on": 0.1531
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9717,
+            "probabilities": {
+              "blue": 0.0002,
+              "green": 0.0009,
+              "neon_pink": 0.0014,
+              "none_or_unknown": 0.9913,
+              "orange": 0.0022,
+              "pink": 0.0008,
+              "purple": 0.0017,
+              "red": 0.0005,
+              "warm_white": 0.0002,
+              "white": 0.0005,
+              "yellow": 0.0003
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.3686,
+            "probabilities": {
+              "explicit_target": 0.8412,
+              "missing_or_ambiguous": 0.1588
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7333,
+            "probabilities": {
+              "compound": 0.0265,
+              "general_or_conversation": 0.0203,
+              "home_command": 0.9186,
+              "unsupported": 0.0346
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.9994,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.9999,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0001,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-003": {
+      "latency_ms": 7582.425125990994,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "adjust_brightness_down",
+            "confidence": 0.4251,
+            "probabilities": {
+              "activate_scene": 0.0002,
+              "adjust_brightness_down": 0.4043,
+              "adjust_brightness_up": 0.0143,
+              "adjust_temperature_down": 0.1036,
+              "adjust_temperature_up": 0.0312,
+              "none_or_unsupported": 0.0415,
+              "pause_media": 0.0001,
+              "set_brightness": 0.0057,
+              "set_color": 0.0001,
+              "set_temperature": 0.0214,
+              "toggle": 0.0073,
+              "turn_off": 0.3582,
+              "turn_on": 0.0121
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9833,
+            "probabilities": {
+              "blue": 0.0001,
+              "green": 0.0005,
+              "neon_pink": 0.0005,
+              "none_or_unknown": 0.9952,
+              "orange": 0.0011,
+              "pink": 0.0003,
+              "purple": 0.0014,
+              "red": 0.0003,
+              "warm_white": 0.0001,
+              "white": 0.0003,
+              "yellow": 0.0002
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.2162,
+            "probabilities": {
+              "explicit_target": 0.7667,
+              "missing_or_ambiguous": 0.2333
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7507,
+            "probabilities": {
+              "compound": 0.0237,
+              "general_or_conversation": 0.0182,
+              "home_command": 0.9253,
+              "unsupported": 0.0328
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_lights",
+            "confidence": 0.9995,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.9999,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0001,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-004": {
+      "latency_ms": 8919.4458219863,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.2243,
+            "probabilities": {
+              "activate_scene": 0.0002,
+              "adjust_brightness_down": 0.2152,
+              "adjust_brightness_up": 0.1276,
+              "adjust_temperature_down": 0.0788,
+              "adjust_temperature_up": 0.0953,
+              "none_or_unsupported": 0.0463,
+              "pause_media": 0.0001,
+              "set_brightness": 0.0145,
+              "set_color": 0.0002,
+              "set_temperature": 0.0549,
+              "toggle": 0.0358,
+              "turn_off": 0.2925,
+              "turn_on": 0.0384
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9435,
+            "probabilities": {
+              "blue": 0.0024,
+              "green": 0.0032,
+              "neon_pink": 0.0019,
+              "none_or_unknown": 0.9803,
+              "orange": 0.0063,
+              "pink": 0.0018,
+              "purple": 0.0014,
+              "red": 0.0014,
+              "warm_white": 0.0001,
+              "white": 0.0006,
+              "yellow": 0.0005
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.3556,
+            "probabilities": {
+              "explicit_target": 0.8357,
+              "missing_or_ambiguous": 0.1643
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5957,
+            "probabilities": {
+              "compound": 0.041,
+              "general_or_conversation": 0.0309,
+              "home_command": 0.8563,
+              "unsupported": 0.0719
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-005": {
+      "latency_ms": 8562.98028997844,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9895,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0002,
+              "adjust_brightness_up": 0.0006,
+              "adjust_temperature_down": 0.0003,
+              "adjust_temperature_up": 0.0009,
+              "none_or_unsupported": 0.0011,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0001,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.9968
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9996,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.9999,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.0058,
+            "probabilities": {
+              "explicit_target": 0.5446,
+              "missing_or_ambiguous": 0.4554
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6447,
+            "probabilities": {
+              "compound": 0.0348,
+              "general_or_conversation": 0.0237,
+              "home_command": 0.8789,
+              "unsupported": 0.0626
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "stairs_light",
+            "confidence": 0.9999,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 1.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-006": {
+      "latency_ms": 7246.496040985221,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9831,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0007,
+              "adjust_brightness_up": 0.0008,
+              "adjust_temperature_down": 0.0005,
+              "adjust_temperature_up": 0.0013,
+              "none_or_unsupported": 0.0003,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0002,
+              "toggle": 0.0002,
+              "turn_off": 0.0011,
+              "turn_on": 0.9947
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9891,
+            "probabilities": {
+              "blue": 0.0002,
+              "green": 0.0006,
+              "neon_pink": 0.0001,
+              "none_or_unknown": 0.997,
+              "orange": 0.0009,
+              "pink": 0.0003,
+              "purple": 0.0003,
+              "red": 0.0002,
+              "warm_white": 0.0,
+              "white": 0.0002,
+              "yellow": 0.0001
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.0136,
+            "probabilities": {
+              "explicit_target": 0.4315,
+              "missing_or_ambiguous": 0.5685
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5886,
+            "probabilities": {
+              "compound": 0.047,
+              "general_or_conversation": 0.0314,
+              "home_command": 0.8536,
+              "unsupported": 0.0681
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9997,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.9999,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0001,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-007": {
+      "latency_ms": 7556.216027995106,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9769,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0014,
+              "adjust_brightness_up": 0.0013,
+              "adjust_temperature_down": 0.0006,
+              "adjust_temperature_up": 0.0005,
+              "none_or_unsupported": 0.0013,
+              "pause_media": 0.0,
+              "set_brightness": 0.0001,
+              "set_color": 0.0,
+              "set_temperature": 0.0002,
+              "toggle": 0.0003,
+              "turn_off": 0.002,
+              "turn_on": 0.9924
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9606,
+            "probabilities": {
+              "blue": 0.0008,
+              "green": 0.0022,
+              "neon_pink": 0.0012,
+              "none_or_unknown": 0.9871,
+              "orange": 0.0043,
+              "pink": 0.0013,
+              "purple": 0.0011,
+              "red": 0.0006,
+              "warm_white": 0.0001,
+              "white": 0.0009,
+              "yellow": 0.0003
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.0194,
+            "probabilities": {
+              "explicit_target": 0.4182,
+              "missing_or_ambiguous": 0.5818
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6105,
+            "probabilities": {
+              "compound": 0.0426,
+              "general_or_conversation": 0.029,
+              "home_command": 0.8641,
+              "unsupported": 0.0644
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9999,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-008": {
+      "latency_ms": 9179.068970988737,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.9881,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0008,
+              "adjust_brightness_up": 0.0002,
+              "adjust_temperature_down": 0.0003,
+              "adjust_temperature_up": 0.0001,
+              "none_or_unsupported": 0.002,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0001,
+              "turn_off": 0.9962,
+              "turn_on": 0.0004
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9611,
+            "probabilities": {
+              "blue": 0.0005,
+              "green": 0.0019,
+              "neon_pink": 0.0015,
+              "none_or_unknown": 0.9872,
+              "orange": 0.0043,
+              "pink": 0.0008,
+              "purple": 0.0018,
+              "red": 0.001,
+              "warm_white": 0.0001,
+              "white": 0.0005,
+              "yellow": 0.0003
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.502,
+            "probabilities": {
+              "explicit_target": 0.8906,
+              "missing_or_ambiguous": 0.1094
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.642,
+            "probabilities": {
+              "compound": 0.0401,
+              "general_or_conversation": 0.0273,
+              "home_command": 0.8794,
+              "unsupported": 0.0532
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9979,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.9994,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0001,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0004,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-009": {
+      "latency_ms": 9287.552542984486,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.9432,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.007,
+              "adjust_brightness_up": 0.0002,
+              "adjust_temperature_down": 0.0063,
+              "adjust_temperature_up": 0.0014,
+              "none_or_unsupported": 0.0055,
+              "pause_media": 0.0,
+              "set_brightness": 0.0001,
+              "set_color": 0.0,
+              "set_temperature": 0.0008,
+              "toggle": 0.0009,
+              "turn_off": 0.9773,
+              "turn_on": 0.0004
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9975,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0001,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.9994,
+              "orange": 0.0001,
+              "pink": 0.0001,
+              "purple": 0.0001,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.1484,
+            "probabilities": {
+              "explicit_target": 0.7228,
+              "missing_or_ambiguous": 0.2772
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6372,
+            "probabilities": {
+              "compound": 0.0388,
+              "general_or_conversation": 0.0252,
+              "home_command": 0.8762,
+              "unsupported": 0.0598
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 0.9965,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.9989,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0001,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.001,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-010": {
+      "latency_ms": 7678.746157995192,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 0.9999,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 1.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9996,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.9999,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.0223,
+            "probabilities": {
+              "explicit_target": 0.5876,
+              "missing_or_ambiguous": 0.4124
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.4705,
+            "probabilities": {
+              "compound": 0.0508,
+              "general_or_conversation": 0.0365,
+              "home_command": 0.78,
+              "unsupported": 0.1326
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9997,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.9999,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0001,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-011": {
+      "latency_ms": 7532.221116009168,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9999,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 1.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9925,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0003,
+              "neon_pink": 0.0002,
+              "none_or_unknown": 0.998,
+              "orange": 0.0004,
+              "pink": 0.0003,
+              "purple": 0.0004,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0002,
+              "yellow": 0.0001
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.0106,
+            "probabilities": {
+              "explicit_target": 0.5605,
+              "missing_or_ambiguous": 0.4395
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.3903,
+            "probabilities": {
+              "compound": 0.0658,
+              "general_or_conversation": 0.0519,
+              "home_command": 0.7323,
+              "unsupported": 0.1501
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 1.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-012": {
+      "latency_ms": 7219.051085994579,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "adjust_brightness_down",
+            "confidence": 0.8706,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.9349,
+              "adjust_brightness_up": 0.0031,
+              "adjust_temperature_down": 0.0029,
+              "adjust_temperature_up": 0.0005,
+              "none_or_unsupported": 0.0086,
+              "pause_media": 0.0,
+              "set_brightness": 0.0304,
+              "set_color": 0.0,
+              "set_temperature": 0.0005,
+              "toggle": 0.0184,
+              "turn_off": 0.0004,
+              "turn_on": 0.0002
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9988,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0001,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.9998,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.0639,
+            "probabilities": {
+              "explicit_target": 0.6477,
+              "missing_or_ambiguous": 0.3523
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7161,
+            "probabilities": {
+              "compound": 0.0209,
+              "general_or_conversation": 0.0173,
+              "home_command": 0.9088,
+              "unsupported": 0.053
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9997,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.9999,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0001,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-013": {
+      "latency_ms": 6765.007035981398,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 1.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.0444,
+            "probabilities": {
+              "explicit_target": 0.6234,
+              "missing_or_ambiguous": 0.3766
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.2319,
+            "probabilities": {
+              "compound": 0.0722,
+              "general_or_conversation": 0.0782,
+              "home_command": 0.5713,
+              "unsupported": 0.2783
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 0.9999,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 1.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-014": {
+      "latency_ms": 7758.708723005839,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9564,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0002,
+              "adjust_brightness_up": 0.0004,
+              "adjust_temperature_down": 0.0003,
+              "adjust_temperature_up": 0.0007,
+              "none_or_unsupported": 0.0181,
+              "pause_media": 0.0,
+              "set_brightness": 0.0001,
+              "set_color": 0.0,
+              "set_temperature": 0.0004,
+              "toggle": 0.0002,
+              "turn_off": 0.0,
+              "turn_on": 0.9795
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9981,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0001,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.9996,
+              "orange": 0.0001,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.1343,
+            "probabilities": {
+              "explicit_target": 0.7123,
+              "missing_or_ambiguous": 0.2877
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.4135,
+            "probabilities": {
+              "compound": 0.0583,
+              "general_or_conversation": 0.0638,
+              "home_command": 0.7539,
+              "unsupported": 0.1241
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9981,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.9995,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0002,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0002,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-015": {
+      "latency_ms": 6986.537207994843,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "none_or_unsupported",
+            "confidence": 0.9641,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.002,
+              "adjust_brightness_up": 0.001,
+              "adjust_temperature_down": 0.001,
+              "adjust_temperature_up": 0.0008,
+              "none_or_unsupported": 0.9877,
+              "pause_media": 0.0,
+              "set_brightness": 0.0005,
+              "set_color": 0.0,
+              "set_temperature": 0.0016,
+              "toggle": 0.0028,
+              "turn_off": 0.0019,
+              "turn_on": 0.0006
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9991,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.9998,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.347,
+            "probabilities": {
+              "explicit_target": 0.8321,
+              "missing_or_ambiguous": 0.1679
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.3131,
+            "probabilities": {
+              "compound": 0.0769,
+              "general_or_conversation": 0.0772,
+              "home_command": 0.6822,
+              "unsupported": 0.1637
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "none_or_unknown",
+            "confidence": 0.8909,
+            "probabilities": {
+              "all_govee_lights": 0.0006,
+              "bedroom_lights": 0.0201,
+              "bedroom_mushroom_plug": 0.0001,
+              "bedroom_window_plug": 0.001,
+              "downstairs_lights": 0.0075,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0016,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0254,
+              "living_room_thermostat": 0.0001,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.9435,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0001
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-016": {
+      "latency_ms": 6828.408394008875,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "none_or_unsupported",
+            "confidence": 0.9933,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0008,
+              "adjust_brightness_up": 0.0002,
+              "adjust_temperature_down": 0.0001,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.9981,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0004,
+              "turn_off": 0.0,
+              "turn_on": 0.0002
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9999,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.0455,
+            "probabilities": {
+              "explicit_target": 0.6249,
+              "missing_or_ambiguous": 0.3751
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.3016,
+            "probabilities": {
+              "compound": 0.0702,
+              "general_or_conversation": 0.0589,
+              "home_command": 0.6488,
+              "unsupported": 0.2221
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "none_or_unknown",
+            "confidence": 0.937,
+            "probabilities": {
+              "all_govee_lights": 0.0001,
+              "bedroom_lights": 0.0006,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.001,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0007,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0088,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0191,
+              "none_or_unknown": 0.9695,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-017": {
+      "latency_ms": 7120.02372299321,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 0.9998,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 1.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9998,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.059,
+            "probabilities": {
+              "explicit_target": 0.358,
+              "missing_or_ambiguous": 0.642
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.2317,
+            "probabilities": {
+              "compound": 0.0879,
+              "general_or_conversation": 0.0735,
+              "home_command": 0.5875,
+              "unsupported": 0.2511
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 0.9996,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0001,
+              "living_room_thermostat": 0.9999,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-018": {
+      "latency_ms": 7409.692289016675,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_off",
+            "confidence": 1.0,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 1.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9492,
+            "probabilities": {
+              "blue": 0.0014,
+              "green": 0.0038,
+              "neon_pink": 0.0007,
+              "none_or_unknown": 0.9826,
+              "orange": 0.0052,
+              "pink": 0.0009,
+              "purple": 0.0019,
+              "red": 0.0022,
+              "warm_white": 0.0002,
+              "white": 0.0006,
+              "yellow": 0.0006
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.3996,
+            "probabilities": {
+              "explicit_target": 0.8538,
+              "missing_or_ambiguous": 0.1462
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.4412,
+            "probabilities": {
+              "compound": 0.052,
+              "general_or_conversation": 0.0445,
+              "home_command": 0.7628,
+              "unsupported": 0.1408
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9989,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.9997,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0001,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0002,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-019": {
+      "latency_ms": 7755.463234992931,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "turn_on",
+            "confidence": 0.9983,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0003,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.9996
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.858,
+            "probabilities": {
+              "blue": 0.0021,
+              "green": 0.0129,
+              "neon_pink": 0.0036,
+              "none_or_unknown": 0.9414,
+              "orange": 0.0153,
+              "pink": 0.0056,
+              "purple": 0.0087,
+              "red": 0.0029,
+              "warm_white": 0.0008,
+              "white": 0.0051,
+              "yellow": 0.0017
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.1185,
+            "probabilities": {
+              "explicit_target": 0.6998,
+              "missing_or_ambiguous": 0.3002
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5433,
+            "probabilities": {
+              "compound": 0.0431,
+              "general_or_conversation": 0.0387,
+              "home_command": 0.8287,
+              "unsupported": 0.0895
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 1.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-020": {
+      "latency_ms": 6816.729778976878,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_color",
+            "confidence": 0.9569,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0016,
+              "adjust_brightness_up": 0.0018,
+              "adjust_temperature_down": 0.002,
+              "adjust_temperature_up": 0.001,
+              "none_or_unsupported": 0.006,
+              "pause_media": 0.0,
+              "set_brightness": 0.0001,
+              "set_color": 0.9843,
+              "set_temperature": 0.0003,
+              "toggle": 0.0011,
+              "turn_off": 0.0001,
+              "turn_on": 0.0017
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "red",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 1.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.4753,
+            "probabilities": {
+              "explicit_target": 0.8816,
+              "missing_or_ambiguous": 0.1184
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.4846,
+            "probabilities": {
+              "compound": 0.0618,
+              "general_or_conversation": 0.0463,
+              "home_command": 0.7989,
+              "unsupported": 0.0929
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.7454,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0003,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.6375,
+              "kitchen_mushroom_lamp": 0.0001,
+              "living_room_lights": 0.0022,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.3599,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-021": {
+      "latency_ms": 7400.60320799239,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_color",
+            "confidence": 0.9879,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0005,
+              "adjust_brightness_up": 0.0007,
+              "adjust_temperature_down": 0.0004,
+              "adjust_temperature_up": 0.0002,
+              "none_or_unsupported": 0.0014,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.9963,
+              "set_temperature": 0.0001,
+              "toggle": 0.0003,
+              "turn_off": 0.0,
+              "turn_on": 0.0001
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "blue",
+            "confidence": 0.5406,
+            "probabilities": {
+              "blue": 0.4124,
+              "green": 0.0017,
+              "neon_pink": 0.3802,
+              "none_or_unknown": 0.2007,
+              "orange": 0.002,
+              "pink": 0.0002,
+              "purple": 0.0005,
+              "red": 0.0002,
+              "warm_white": 0.0008,
+              "white": 0.001,
+              "yellow": 0.0004
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.5435,
+            "probabilities": {
+              "explicit_target": 0.9039,
+              "missing_or_ambiguous": 0.0961
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5072,
+            "probabilities": {
+              "compound": 0.0725,
+              "general_or_conversation": 0.0314,
+              "home_command": 0.8089,
+              "unsupported": 0.0872
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "none_or_unknown",
+            "confidence": 0.7445,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.3583,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0001,
+              "downstairs_lights": 0.0005,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0002,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0023,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.6386,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-022": {
+      "latency_ms": 7432.988055981696,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_color",
+            "confidence": 0.9994,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0001,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.9999,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "green",
+            "confidence": 0.9937,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.9979,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.002,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.0862,
+            "probabilities": {
+              "explicit_target": 0.6711,
+              "missing_or_ambiguous": 0.3289
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.4585,
+            "probabilities": {
+              "compound": 0.0599,
+              "general_or_conversation": 0.047,
+              "home_command": 0.781,
+              "unsupported": 0.1121
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_lights",
+            "confidence": 0.732,
+            "probabilities": {
+              "all_govee_lights": 0.0003,
+              "bedroom_lights": 0.0008,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0017,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0012,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.588,
+              "living_room_thermostat": 0.0001,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.4077,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-023": {
+      "latency_ms": 7999.969422002323,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 0.7621,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.2989,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.7011,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.999,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.9998,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0002,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.0673,
+            "probabilities": {
+              "explicit_target": 0.6515,
+              "missing_or_ambiguous": 0.3485
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.5563,
+            "probabilities": {
+              "compound": 0.0425,
+              "general_or_conversation": 0.0418,
+              "home_command": 0.8374,
+              "unsupported": 0.0783
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 0.9999,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 1.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-024": {
+      "latency_ms": 7325.416922016302,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 0.9998,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 1.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 1.0,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.078,
+            "probabilities": {
+              "explicit_target": 0.663,
+              "missing_or_ambiguous": 0.337
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6278,
+            "probabilities": {
+              "compound": 0.0349,
+              "general_or_conversation": 0.0257,
+              "home_command": 0.8706,
+              "unsupported": 0.0688
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 0.9999,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 1.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-025": {
+      "latency_ms": 8765.749097015942,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "set_temperature",
+            "confidence": 0.7965,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0006,
+              "adjust_brightness_up": 0.0001,
+              "adjust_temperature_down": 0.0058,
+              "adjust_temperature_up": 0.1855,
+              "none_or_unsupported": 0.0001,
+              "pause_media": 0.0,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.8078,
+              "toggle": 0.0001,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9992,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.9998,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0002,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.0367,
+            "probabilities": {
+              "explicit_target": 0.6123,
+              "missing_or_ambiguous": 0.3877
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7341,
+            "probabilities": {
+              "compound": 0.0231,
+              "general_or_conversation": 0.0176,
+              "home_command": 0.9179,
+              "unsupported": 0.0414
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "living_room_thermostat",
+            "confidence": 0.9934,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0023,
+              "living_room_thermostat": 0.9976,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0001,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-026": {
+      "latency_ms": 7971.458369982429,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "adjust_brightness_down",
+            "confidence": 0.9862,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.9952,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0005,
+              "pause_media": 0.0,
+              "set_brightness": 0.0033,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0007,
+              "turn_off": 0.0003,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.992,
+            "probabilities": {
+              "blue": 0.0014,
+              "green": 0.0004,
+              "neon_pink": 0.0,
+              "none_or_unknown": 0.9977,
+              "orange": 0.0001,
+              "pink": 0.0,
+              "purple": 0.0001,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0001,
+              "yellow": 0.0001
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.1188,
+            "probabilities": {
+              "explicit_target": 0.7001,
+              "missing_or_ambiguous": 0.2999
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.4438,
+            "probabilities": {
+              "compound": 0.0483,
+              "general_or_conversation": 0.0427,
+              "home_command": 0.7614,
+              "unsupported": 0.1476
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9998,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 1.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-027": {
+      "latency_ms": 8398.611454002094,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "adjust_brightness_up",
+            "confidence": 0.9527,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0005,
+              "adjust_brightness_up": 0.9763,
+              "adjust_temperature_down": 0.0001,
+              "adjust_temperature_up": 0.0001,
+              "none_or_unsupported": 0.0005,
+              "pause_media": 0.0,
+              "set_brightness": 0.022,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0001,
+              "turn_off": 0.0,
+              "turn_on": 0.0004
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "neon_pink",
+            "confidence": 0.7075,
+            "probabilities": {
+              "blue": 0.0002,
+              "green": 0.0004,
+              "neon_pink": 0.6077,
+              "none_or_unknown": 0.3878,
+              "orange": 0.002,
+              "pink": 0.0011,
+              "purple": 0.0002,
+              "red": 0.0001,
+              "warm_white": 0.0001,
+              "white": 0.0002,
+              "yellow": 0.0001
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.1611,
+            "probabilities": {
+              "explicit_target": 0.7318,
+              "missing_or_ambiguous": 0.2682
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7148,
+            "probabilities": {
+              "compound": 0.0255,
+              "general_or_conversation": 0.0182,
+              "home_command": 0.9097,
+              "unsupported": 0.0466
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "bedroom_lights",
+            "confidence": 1.0,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 1.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-028": {
+      "latency_ms": 7853.944190981565,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "adjust_brightness_down",
+            "confidence": 0.9571,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.9826,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0002,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.001,
+              "pause_media": 0.0,
+              "set_brightness": 0.009,
+              "set_color": 0.0,
+              "set_temperature": 0.0002,
+              "toggle": 0.0025,
+              "turn_off": 0.0044,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9919,
+            "probabilities": {
+              "blue": 0.0008,
+              "green": 0.0006,
+              "neon_pink": 0.0001,
+              "none_or_unknown": 0.9978,
+              "orange": 0.0001,
+              "pink": 0.0003,
+              "purple": 0.0001,
+              "red": 0.0001,
+              "warm_white": 0.0,
+              "white": 0.0001,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.2981,
+            "probabilities": {
+              "explicit_target": 0.8098,
+              "missing_or_ambiguous": 0.1902
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.6651,
+            "probabilities": {
+              "compound": 0.0323,
+              "general_or_conversation": 0.0248,
+              "home_command": 0.8891,
+              "unsupported": 0.0539
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "kitchen_lights",
+            "confidence": 0.9995,
+            "probabilities": {
+              "all_govee_lights": 0.0,
+              "bedroom_lights": 0.0,
+              "bedroom_mushroom_plug": 0.0,
+              "bedroom_window_plug": 0.0,
+              "downstairs_lights": 0.0,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.9999,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0,
+              "living_room_thermostat": 0.0,
+              "movie_mode": 0.0,
+              "none_or_unknown": 0.0001,
+              "satellite_media_player": 0.0,
+              "stairs_light": 0.0
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-029": {
+      "latency_ms": 8378.661924012704,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "none_or_unsupported",
+            "confidence": 0.7866,
+            "probabilities": {
+              "activate_scene": 0.0018,
+              "adjust_brightness_down": 0.0098,
+              "adjust_brightness_up": 0.0106,
+              "adjust_temperature_down": 0.0047,
+              "adjust_temperature_up": 0.0025,
+              "none_or_unsupported": 0.8942,
+              "pause_media": 0.0406,
+              "set_brightness": 0.0024,
+              "set_color": 0.0,
+              "set_temperature": 0.0073,
+              "toggle": 0.0138,
+              "turn_off": 0.0055,
+              "turn_on": 0.0067
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9999,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "missing_or_ambiguous",
+            "confidence": 0.0,
+            "probabilities": {
+              "explicit_target": 0.4974,
+              "missing_or_ambiguous": 0.5026
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.4341,
+            "probabilities": {
+              "compound": 0.0505,
+              "general_or_conversation": 0.0463,
+              "home_command": 0.7572,
+              "unsupported": 0.146
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "none_or_unknown",
+            "confidence": 0.8527,
+            "probabilities": {
+              "all_govee_lights": 0.0009,
+              "bedroom_lights": 0.0038,
+              "bedroom_mushroom_plug": 0.0003,
+              "bedroom_window_plug": 0.0002,
+              "downstairs_lights": 0.0073,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0036,
+              "kitchen_mushroom_lamp": 0.0001,
+              "living_room_lights": 0.0699,
+              "living_room_thermostat": 0.0003,
+              "movie_mode": 0.0012,
+              "none_or_unknown": 0.9096,
+              "satellite_media_player": 0.0025,
+              "stairs_light": 0.0002
+            },
+            "type": "choice"
+          }
+        },
+        "model": "laya-421m"
+      }
+    },
+    "fz-030": {
+      "latency_ms": 7839.660078985617,
+      "payload": {
+        "answers": {
+          "action": {
+            "choice": "pause_media",
+            "confidence": 0.998,
+            "probabilities": {
+              "activate_scene": 0.0,
+              "adjust_brightness_down": 0.0,
+              "adjust_brightness_up": 0.0,
+              "adjust_temperature_down": 0.0,
+              "adjust_temperature_up": 0.0,
+              "none_or_unsupported": 0.0005,
+              "pause_media": 0.9994,
+              "set_brightness": 0.0,
+              "set_color": 0.0,
+              "set_temperature": 0.0,
+              "toggle": 0.0,
+              "turn_off": 0.0,
+              "turn_on": 0.0
+            },
+            "type": "choice"
+          },
+          "color": {
+            "choice": "none_or_unknown",
+            "confidence": 0.9999,
+            "probabilities": {
+              "blue": 0.0,
+              "green": 0.0,
+              "neon_pink": 0.0,
+              "none_or_unknown": 1.0,
+              "orange": 0.0,
+              "pink": 0.0,
+              "purple": 0.0,
+              "red": 0.0,
+              "warm_white": 0.0,
+              "white": 0.0,
+              "yellow": 0.0
+            },
+            "type": "choice"
+          },
+          "reference": {
+            "choice": "explicit_target",
+            "confidence": 0.0002,
+            "probabilities": {
+              "explicit_target": 0.509,
+              "missing_or_ambiguous": 0.491
+            },
+            "type": "choice"
+          },
+          "request_kind": {
+            "choice": "home_command",
+            "confidence": 0.7083,
+            "probabilities": {
+              "compound": 0.0264,
+              "general_or_conversation": 0.0161,
+              "home_command": 0.9061,
+              "unsupported": 0.0515
+            },
+            "type": "choice"
+          },
+          "target": {
+            "choice": "none_or_unknown",
+            "confidence": 0.8938,
+            "probabilities": {
+              "all_govee_lights": 0.0004,
+              "bedroom_lights": 0.0011,
+              "bedroom_mushroom_plug": 0.0002,
+              "bedroom_window_plug": 0.0001,
+              "downstairs_lights": 0.0017,
+              "good_vibes_sign": 0.0,
+              "kitchen_lights": 0.0013,
+              "kitchen_mushroom_lamp": 0.0,
+              "living_room_lights": 0.0385,
+              "living_room_thermostat": 0.0001,
+              "movie_mode": 0.0017,
+              "none_or_unknown": 0.9426,
+              "satellite_media_player": 0.0123,
+              "stairs_light": 0.0001
             },
             "type": "choice"
           }
