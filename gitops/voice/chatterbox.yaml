@@ -99,6 +99,11 @@ spec:
               touch "$MODEL_DIR/.complete"
               mkdir -p /runtime/cache/huggingface /runtime/cache/torch \
                 /runtime/cache/triton /runtime/cache/xdg /runtime/cache/numba
+              RUNTIME_REPO_CACHE=/runtime/cache/huggingface/hub/models--ResembleAI--chatterbox-turbo
+              if [ ! -d "$RUNTIME_REPO_CACHE/snapshots" ]; then
+                mkdir -p "$(dirname "$RUNTIME_REPO_CACHE")"
+                cp -a "$REPO_CACHE" "$RUNTIME_REPO_CACHE"
+              fi
           env:
             - name: MODEL_DIR
               value: /models/chatterbox-turbo-749d1c1
@@ -150,9 +155,9 @@ spec:
             - name: NVIDIA_DRIVER_CAPABILITIES
               value: compute,utility
             - name: HF_HOME
-              value: /models
+              value: /runtime/cache/huggingface
             - name: HF_HUB_CACHE
-              value: /models/hub
+              value: /runtime/cache/huggingface/hub
             - name: TRANSFORMERS_CACHE
               value: /runtime/cache/huggingface/transformers
             - name: TORCH_HOME

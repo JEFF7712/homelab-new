@@ -545,7 +545,7 @@ data:
 
 
     def main() -> None:
-        base_url = os.environ.get("HA_URL", "http://home-assistant.home-assistant:8123")
+        base_url = os.environ.get("HA_URL", "http://10.0.40.13:8123")
         token = os.environ.get("HA_TOKEN", "")
         satellite = os.environ.get(
             "SATELLITE_ENTITY",
@@ -621,7 +621,7 @@ spec:
             - /app/exporter.py
           env:
             - name: HA_URL
-              value: "http://home-assistant.home-assistant:8123"
+              value: "http://10.0.40.13:8123"
             - name: SATELLITE_ENTITY
               value: "assist_satellite.homelab_05_satellite_assist_satellite"
             - name: FAST_TURN_MAX_SECONDS
