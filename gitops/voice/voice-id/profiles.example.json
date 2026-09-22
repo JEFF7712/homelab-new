@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "embedding_dim": 512,
+  "threshold": 0.35,
+  "min_margin": 0.1,
+  "speakers": {}
+}

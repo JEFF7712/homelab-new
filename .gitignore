@@ -22,3 +22,5 @@ tests/acoustic/recordings/
 *.wav
 *.onnx
 trajectory-*.json
+gitops/voice/voice-id/profiles.json
+scripts/voice_id/profiles.json

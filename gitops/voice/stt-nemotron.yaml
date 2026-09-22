@@ -94,6 +94,10 @@ spec:
           volumeMounts:
             - name: bridge-code
               mountPath: /app
+            - name: voice-id-profiles
+              mountPath: /app/profiles.json
+              subPath: profiles.json
+              readOnly: true
             - name: nemo-lib
               mountPath: /opt/nemo/lib64
             - name: nemo-model
@@ -105,6 +109,9 @@ spec:
         - name: bridge-code
           configMap:
             name: nemotron-bridge-code
+        - name: voice-id-profiles
+          secret:
+            secretName: voice-id-profiles
         - name: nemo-lib
           hostPath:
             path: /persist/nemo-install/lib64

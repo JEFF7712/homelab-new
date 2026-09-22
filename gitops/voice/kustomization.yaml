@@ -22,12 +22,10 @@ configMapGenerator:
   - name: wyoming-voice-id-config
     files:
       - voice-id/proxy.py
-      - voice-id/profiles.json
   - name: nemotron-bridge-code
     files:
       - nemotron-bridge/bridge.py
       - voice-id/proxy.py
-      - voice-id/profiles.json
   - name: chatterbox-bridge-code
     files:
       - chatterbox-bridge/server.py
