@@ -115,6 +115,13 @@ firewall_aliases = {
     description = "Roku bulb local API segment"
     enabled     = true
   }
+  netbird_allowed_dests = {
+    name        = "netbird_allowed_dests"
+    type        = "network"
+    content     = ["10.0.30.0/24", "10.0.40.0/24"]
+    description = "NetBird peers may reach infrastructure and load-balancer VIPs only"
+    enabled     = true
+  }
 }
 
 firewall_filters = {
@@ -486,8 +493,8 @@ firewall_filters = {
       destination = { net = "any", port = "" }
     }
   }
-  netbird-allow-private = {
-    description = "Allow NetBird policy segment to homelab VLANs"
+  netbird-allow-infrastructure = {
+    description = "Allow NetBird peers to infrastructure and LB VIPs"
     enabled     = true
     sequence    = 600
     interface   = { interface = ["opt6"] }
@@ -497,9 +504,9 @@ firewall_filters = {
       ip_protocol = "inet"
       protocol    = "any"
       quick       = true
-      log         = false
+      log         = true
       source      = { net = "10.0.60.0/24", port = "" }
-      destination = { net = "10.0.0.0/8", port = "" }
+      destination = { net = "netbird_allowed_dests", port = "" }
     }
   }
 }
