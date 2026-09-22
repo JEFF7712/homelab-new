@@ -211,13 +211,13 @@ class L1AdversarialSetTest(unittest.TestCase):
         ):
             self.assertEqual(self.cases[cid]["expected_route"], "execute", cid)
 
-    def test_l0_misses_stress_and_primary_sets(self) -> None:
+    def test_l0_misses_non_execute_stress_cases(self) -> None:
         pending = (
-            self.adversarial["stress_unsafe"]
-            + self.adversarial["primary_safe"]
-            + self.adversarial["stress_synthetic"]
+            self.adversarial["stress_unsafe"] + self.adversarial["stress_synthetic"]
         )
         for cid in pending:
+            if self.cases[cid]["expected_route"] == "execute":
+                continue
             self.assertIsNone(l0.parse_canonical(self.cases[cid]["say"]), cid)
 
     def test_synthetic_all_expect_clarify(self) -> None:

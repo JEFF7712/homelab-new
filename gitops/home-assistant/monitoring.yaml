@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: home-assistant-jarvis
+  namespace: home-assistant
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: home-assistant
+  endpoints:
+    - port: http
+      path: /api/jarvis_jev/metrics
+      interval: 15s

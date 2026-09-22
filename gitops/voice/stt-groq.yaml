@@ -243,7 +243,7 @@ metadata:
   name: wyoming-stt-groq
   namespace: voice
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate
   selector:
@@ -306,3 +306,17 @@ spec:
         - name: bridge-code
           configMap:
             name: stt-groq-bridge-code
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wyoming-stt-groq
+  namespace: voice
+spec:
+  selector:
+    app: wyoming-whisper
+    backend: cloud
+  ports:
+    - name: wyoming
+      port: 10300
+      targetPort: 10300

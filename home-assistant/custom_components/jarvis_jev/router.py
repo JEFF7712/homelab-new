@@ -154,10 +154,79 @@ _NUMBER = re.compile(
     re.IGNORECASE,
 )
 _SPEAKER = re.compile(r"^speaker\s+[^\s]+\s+", re.IGNORECASE)
+_COMPOUND_COMMAND = re.compile(r";|\band\b|\bthen\b|\bwhile\b")
+
+_TARGET_EVIDENCE = {
+    "downstairs_lights": re.compile(r"\bdownstairs (?:lights?|lamp)\b"),
+    "kitchen_lights": re.compile(r"\bkitchen lights?\b(?!\s+fixture)"),
+    "living_room_lights": re.compile(
+        r"\b(?:living room lights?|living lights?|lounge lights?)\b"
+    ),
+    "bedroom_lights": re.compile(r"\b(?:bedroom lights?|bed lights?)\b"),
+    "all_govee_lights": re.compile(r"\b(?:all (?:the )?)?govee (?:lights?|lamp)\b"),
+    "kitchen_mushroom_lamp": re.compile(r"\bkitchen mushroom lamp\b"),
+    "bedroom_window_plug": re.compile(r"\bbedroom window plug\b"),
+    "bedroom_mushroom_plug": re.compile(r"\bbedroom mushroom plug\b"),
+    "good_vibes_sign": re.compile(r"\bgood vibes sign\b"),
+    "stairs_light": re.compile(r"\bstairs lights?\b"),
+    "living_room_thermostat": re.compile(
+        r"\b(?:living room )?(?:thermostat|temperature)\b|\bheat in the living room\b"
+    ),
+    "satellite_media_player": re.compile(
+        r"\bsatellite (?:media player|speaker)\b|\bmusic (?:on|from) the satellite speaker\b"
+    ),
+    "movie_mode": re.compile(r"\b(?:movie|film) mode\b"),
+}
+
+_ACTION_EVIDENCE = {
+    "turn_on": re.compile(r"\bon\b"),
+    "turn_off": re.compile(
+        r"\boff\b|\bkill\b|\bblack out\b|\bdouse\b|\bsnuff out\b|\b(?:power|shut) down\b"
+    ),
+    "toggle": re.compile(r"\b(?:toggle|flip)\b"),
+    "set_brightness": re.compile(
+        r"\b(?:dim|set|put|take|bring|turn)\b.*\b(?:to|at)\b.*\b\d+(?:\.\d+)?\b"
+    ),
+    "adjust_brightness_up": re.compile(r"\b(?:brighten|crank)\b|\bbring\b.*\bup\b"),
+    "adjust_brightness_down": re.compile(r"\bdim\b|\blower\b|\bturn\b.*\bdown\b"),
+    "set_color": re.compile(r"\b(?:set|turn|change|make|paint|color)\b"),
+    "set_temperature": re.compile(r"\b(?:set|turn|crank|drop)\b.*\b(?:to|at)\b"),
+    "adjust_temperature_up": re.compile(
+        r"\bwarmer\b|\bbump\b.*\bup\b|\bturn up the heat\b"
+    ),
+    "adjust_temperature_down": re.compile(
+        r"\bcooler\b|\bbump\b.*\bdown\b|\bturn down the heat\b"
+    ),
+    "activate_scene": re.compile(r"\bactivate\b|\b(?:movie|film) mode on\b"),
+    "pause_media": re.compile(r"\b(?:pause|stop|halt|silence)\b"),
+}
 
 
 def normalized_text(text: str) -> str:
     return _SPEAKER.sub("", text.strip(), count=1)
+
+
+def _has_command_evidence(text: str, target: str, action: str, color: str) -> bool:
+    normalized = normalized_text(text).lower()
+    if _COMPOUND_COMMAND.search(normalized):
+        return False
+    target_pattern = _TARGET_EVIDENCE.get(target)
+    action_pattern = _ACTION_EVIDENCE.get(action)
+    if (
+        target_pattern is None
+        or action_pattern is None
+        or target_pattern.search(normalized) is None
+        or action_pattern.search(normalized) is None
+    ):
+        return False
+    if action != "set_color":
+        return True
+    requested = {
+        candidate
+        for candidate in COLORS
+        if re.search(rf"\b{re.escape(candidate.replace('_', ' '))}\b", normalized)
+    }
+    return requested == {color}
 
 
 def build_request(text: str) -> dict[str, Any]:
@@ -316,6 +385,11 @@ def decide(text: str, payload: Any) -> Decision:
                 "clarify", speech="Please repeat with the device or room and action."
             )
         return Decision("clarify", speech="I could not identify a safe home command.")
+
+    if not _has_command_evidence(normalized_text(text), target_name, action, color):
+        return Decision(
+            "clarify", speech="Please repeat with the exact device and action."
+        )
 
     return Decision(
         "execute",

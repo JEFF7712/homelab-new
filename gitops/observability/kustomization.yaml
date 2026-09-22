@@ -7,6 +7,7 @@ resources:
   - kube-prometheus-stack/registry-rules.yaml
   - kube-prometheus-stack/cluster-rules.yaml
   - kube-prometheus-stack/gpu-rules.yaml
+  - kube-prometheus-stack/jarvis-rules.yaml
   - loki/repository.yaml
   - loki/rules-configmap.yaml
   - loki/release.yaml

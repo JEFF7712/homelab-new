@@ -22,7 +22,7 @@ def load_server() -> types.ModuleType:
     module = types.ModuleType("chatterbox_bridge_under_test")
     module.__file__ = str(SERVER_PATH)
     sys.modules[module.__name__] = module
-    exec(compile(code, str(SERVER_PATH), "exec"), module.__dict__)
+    exec(compile(code, str(SERVER_PATH), "exec"), module.__dict__)  # noqa: S102
     return module
 
 
@@ -104,7 +104,7 @@ async def drive(script: list[tuple], engine: FakeEngine, config=None) -> bytes:
                 got += chunk
         except asyncio.TimeoutError:
             pass
-        if b'"audio-stop"' in got:
+        if b'"audio-stop"' in got or b'"error"' in got:
             await asyncio.sleep(0.2)
             try:
                 while True:
@@ -186,11 +186,11 @@ class TtsTurnTest(unittest.TestCase):
         self.assertGreaterEqual(sum(1 for e in events if e["type"] == "audio-chunk"), 1)
         self.assertEqual(engine.texts, ["Done."])
 
-    def test_engine_failure_sends_silence_and_survives(self) -> None:
+    def test_engine_failure_emits_error_and_survives(self) -> None:
         engine = FakeEngine(fail=True)
         raw = asyncio.run(drive(synth_script("Done."), engine))
         events = decode_frames(raw)
-        self.assertEqual([e["type"] for e in events], ["audio-start", "audio-stop"])
+        self.assertEqual([e["type"] for e in events], ["error"])
         engine.fail = False
         raw = asyncio.run(drive(synth_script("Done."), engine))
         events = decode_frames(raw)
@@ -252,6 +252,18 @@ class TtsTextTest(unittest.TestCase):
         resolve = SERVER.resolve_reference
         self.assertIsNone(resolve(""))
         self.assertIsNone(resolve("/nonexistent/jarvis.wav"))
+
+    def test_cache_paths_are_explicit_and_writable(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as root:
+            import os
+
+            os.environ["HF_HOME"] = f"{root}/hf"
+            os.environ["TORCH_HOME"] = f"{root}/torch"
+            os.environ["TRITON_CACHE_DIR"] = f"{root}/triton"
+            os.environ["XDG_CACHE_HOME"] = f"{root}/xdg"
+            SERVER.validate_cache_paths()
 
     def test_watermark_passthrough_when_perth_broken(self) -> None:
         import sys

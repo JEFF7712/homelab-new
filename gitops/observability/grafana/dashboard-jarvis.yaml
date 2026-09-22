@@ -382,6 +382,38 @@ data:
               "refId": "A"
             }
           ]
+        },
+        {
+          "id": 11,
+          "title": "Gateway fallback and TTS health",
+          "type": "timeseries",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 22
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(jarvis_gateway_fallbacks_total[5m])) by (mode, backend)",
+              "legendFormat": "fallback {{mode}}/{{backend}}",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(jarvis_tts_synthesis_failures_total[5m])) by (backend)",
+              "legendFormat": "TTS failure {{backend}}",
+              "refId": "B"
+            },
+            {
+              "expr": "max(jarvis_tts_unwatermarked_audio)",
+              "legendFormat": "unwatermarked audio",
+              "refId": "C"
+            }
+          ]
         }
       ],
       "refresh": "10s",

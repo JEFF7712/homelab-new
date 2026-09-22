@@ -130,12 +130,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: wyoming-whisper
+  name: wyoming-stt-local
   namespace: voice
 spec:
   selector:
     app: wyoming-whisper
-    backend: nemotron
+    backend: local
   ports:
     - name: wyoming
       port: 10300

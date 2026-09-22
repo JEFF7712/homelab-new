@@ -1,27 +1,27 @@
-"""Flip the Jarvis STT backend between local CPU whisper, Nemotron native,
-and Groq cloud.
+"""Change the reviewed GitOps preference order for the stable STT gateway.
 
-Edits the wyoming-whisper Service selector, commits, and pushes so Flux
-rolls the switch. Usage: just voice-stt local | just voice-stt nemotron |
-just voice-stt cloud
+The command edits one manifest and never stages, commits, pushes, or reconciles.
+It refuses to overwrite an existing edit so the resulting diff stays reviewable.
 """
 
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SELECTOR_FILE = REPO_ROOT / "gitops" / "voice" / "whisper.yaml"
+GATEWAY_FILE = REPO_ROOT / "gitops" / "voice" / "gateway.yaml"
 BACKENDS = ("local", "nemotron", "cloud")
+ADDRESSES = {
+    "local": "wyoming-stt-local:10300",
+    "nemotron": "wyoming-stt-nemotron:10300",
+    "cloud": "wyoming-stt-groq:10300",
+}
 
 
-def run(*args: str) -> str:
-    result = subprocess.run(args, cwd=REPO_ROOT, capture_output=True, text=True)
-    if result.returncode != 0:
-        raise SystemExit(f"command failed: {' '.join(args)}\n{result.stderr.strip()}")
-    return result.stdout.strip()
+def preference_value(primary: str) -> str:
+    ordered = [primary, *(backend for backend in BACKENDS if backend != primary)]
+    return ",".join(f"{name}={ADDRESSES[name]}" for name in ordered)
 
 
 def main() -> None:
@@ -29,25 +29,45 @@ def main() -> None:
         raise SystemExit(f"usage: voice_stt_switch.py [{'|'.join(BACKENDS)}]")
     backend = sys.argv[1]
 
-    text = SELECTOR_FILE.read_text()
-    old = None
-    for candidate in BACKENDS:
-        if f"    backend: {candidate}\n" in text:
-            old = candidate
-            break
-    if old is None:
-        raise SystemExit("no backend selector found in gitops/voice/whisper.yaml")
-    if old == backend:
+    import subprocess
+
+    dirty = subprocess.run(
+        [
+            "git",
+            "status",
+            "--porcelain",
+            "--",
+            str(GATEWAY_FILE.relative_to(REPO_ROOT)),
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    if dirty:
+        raise SystemExit(f"refusing to overwrite existing changes in {GATEWAY_FILE}")
+
+    text = GATEWAY_FILE.read_text()
+    marker = '              value: "'
+    lines = text.splitlines(keepends=True)
+    value_index = next(
+        (
+            index
+            for index, line in enumerate(lines)
+            if "WYOMING_BACKENDS" in lines[index - 1] and marker in line
+        ),
+        None,
+    )
+    if value_index is None:
+        raise SystemExit("STT WYOMING_BACKENDS setting not found")
+    current = lines[value_index].split(marker, 1)[1].rsplit('"', 1)[0]
+    replacement = preference_value(backend)
+    if current == replacement:
         print(f"STT backend already {backend}, nothing to do")
         return
-
-    SELECTOR_FILE.write_text(
-        text.replace(f"    backend: {old}\n", f"    backend: {backend}\n", 1)
-    )
-    run("git", "add", "gitops/voice/whisper.yaml")
-    run("git", "commit", "-m", f"feat(voice): switch STT backend to {backend}")
-    run("git", "push")
-    print(f"STT backend switched {old} -> {backend}; Flux will roll it out")
+    lines[value_index] = f'{marker}{replacement}"\n'
+    GATEWAY_FILE.write_text("".join(lines))
+    print(f"STT preference changed to {backend}; review the Git diff before publishing")
 
 
 if __name__ == "__main__":

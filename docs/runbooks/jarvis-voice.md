@@ -16,10 +16,12 @@ recorded here so a rebuild restores them exactly.
 Microphone on `homelab-05` (`HyperX QuadCast S` via Pipewire, pinned with
 top priority 2500 in WirePlumber) -> satellite container (`linux-voice-assistant`,
 wake word `hey_jarvis.tflite`, port 6053, device substring match `QuadCast`)
--> Home Assistant on `homelab-03` -> Voice-ID proxy on `homelab-04` (port 10300)
--> Whisper STT (`wyoming-whisper` localhost:10301) -> transcript with speaker tag
-`speaker <Name>` -> TTS on `homelab-04` (`wyoming-piper` 10200;
-Chatterbox Turbo `wyoming-chatterbox` 10201 staged, see TTS section).
+-> Home Assistant on `homelab-03` -> stable STT gateway
+(`wyoming-whisper.voice:10300`) -> Nemotron primary, local Whisper fallback,
+and optional Groq fallback -> transcript with an optional `speaker <Name>` tag.
+TTS uses the stable `wyoming-chatterbox.voice:10201` gateway with Chatterbox
+Turbo primary and Piper fallback. Backend preference and circuit state belong to
+the gateways, so HA pipeline identifiers do not change during backend failover.
 There is no local LLM: Qwen/Ollama was removed in Phase 0 to free the
 T1000 GPU, and the cloud replacement is not wired yet.
 -> audio back to the `homelab-05` soundbar (HDMI-A-2 with continuous video clocking daemon,
@@ -47,12 +49,11 @@ automation referencing them.
 
 1. Wyoming integrations pointing at the in-cluster services:
    `voice-satellite.voice:6053` is the satellite link from HA;
-   `wyoming-whisper.voice:10300` for STT and `wyoming-piper.voice:10200`
-   for TTS. `wyoming-chatterbox.voice:10201` is the staged Turbo TTS;
-   keep its Wyoming entry configured but unselected until the TTS bench
-   below passes, so fallback to Piper is a one-click pipeline switch.
-2. One Assist pipeline with Whisper `base.en` as STT, Piper
-   `en_GB-alan-medium` as TTS (Chatterbox `jarvis` voice after the bench),
+   `wyoming-whisper.voice:10300` for stable STT and
+   `wyoming-chatterbox.voice:10201` for stable TTS. HA never points directly at
+   a backend Service. Gateway preference order owns routine backend failover.
+2. One Assist pipeline with the stable STT gateway and Chatterbox `jarvis`
+   through the stable TTS gateway,
    and the `Jarvis Jev Router` custom
    conversation agent as the brain. There is no local LLM since Phase 0
    (`gitops/voice/ollama.yaml` deleted, Qwen removed to free the T1000).
@@ -131,9 +132,17 @@ automation referencing them.
    "how warm / is it on" queries. When adding devices, expose only the
    control entity, never diagnostic sensors.
 5. The kiosk bypass in `configuration.yaml` `trusted_networks` must keep
-   `10.0.30.15/32` so the face websocket authenticates without a prompt.
-   The long-lived token remains the fallback and is stored only in the kiosk
-   browser profile, never in Git.
+   `10.0.30.15/32` so an interactive HA login from the kiosk stays
+   passwordless. The face websocket itself always needs a long-lived
+   token: `homelab.kiosk.haTokenFile`
+   (`flake/modules/kiosk.nix`, set to
+   `/persist/secrets/jarvis-kiosk-ha-token` on `homelab-05`) holds it,
+   and `kiosk-ha-token-seed.service` re-seeds it into the kiosk
+   browser over its local DevTools port on every boot. The token lives
+   only in that host file and the browser profile, never in Git.
+   To rotate: create a new long-lived token in the HA UI and overwrite
+   `/persist/secrets/jarvis-kiosk-ha-token` (root, mode 600) on
+   `homelab-05`, then reboot or restart `kiosk-ha-token-seed.service`.
 6. Satellite audio and VAD tuning (on device `Homelab 05 Satellite`):
    - `select.homelab_05_satellite_finished_speaking_detection`: set to `aggressive`
      (0.25s silence detection vs. 0.7s default).
@@ -198,6 +207,14 @@ an entity ID or service name. The initial automatic thresholds are 0.95 for
 reversible controls and 0.98 for climate. The weakest required field wins.
 These are conservative starting values and must be calibrated from recorded
 distributions before lowering them.
+
+The production decision stack runs the full-string deterministic L0 grammar
+before calling hosted Jev. L1 output is advisory until the router independently
+finds the selected target and action in the utterance. Color actions also
+require the exact supported color, and compound syntax is rejected before any
+service call. The release gate replays this same L0 then L1 path, excludes L0
+cases from hosted latency, and calculates calibration only for commands the
+stack would execute. It does not lower confidence thresholds to improve recall.
 
 Fail-closed behavior is deliberate:
 
@@ -307,31 +324,41 @@ a TTS-text feed into the proxy that does not exist yet; the mute gate
 already covers the window where semantic echo occurs. Revisit if echo
 turns survive both layers.
 
-## TTS (Chatterbox Turbo staged, Piper fallback)
+## TTS (Chatterbox Turbo primary, Piper fallback)
 
 `gitops/voice/chatterbox.yaml` runs a custom Wyoming TTS bridge
 (`gitops/voice/chatterbox-bridge/server.py`, offline-tested in
 `tests/test_chatterbox_bridge.py`) serving Chatterbox Turbo 350M
 (`chatterbox-tts==0.1.7`, weights `ResembleAI/chatterbox-turbo` pinned at
-`749d1c1a`) on the `homelab-04` T1000 as `wyoming-chatterbox:10201`.
+`749d1c1a`) on the `homelab-05` T600 as `wyoming-chatterbox:10201`.
 Chatterbox has no upstream Wyoming image, hence the in-repo server; it
 answers `describe`/`synthesize` (plus buffered streaming synthesize) with
-24 kHz 16-bit mono PCM. Piper stays deployed and selected until the
-bench passes; fallback is reselecting Piper in the Assist pipeline.
+24 kHz 16-bit mono PCM. The stable TTS gateway selects Chatterbox first and
+Piper second. HA remains bound to the gateway during backend failure.
 
-GPU sharing: the bridge claims no `nvidia.com/gpu` resource (the device
-plugin would otherwise park it against Nemotron's claim) and sees the
-T1000 via `NVIDIA_VISIBLE_DEVICES=all`. This is safe because the
-pipeline uses STT and TTS sequentially, so peak VRAM is the max of the
-two, not the sum. Turbo needs roughly 2 GB at steady state.
+GPU sharing: the bridge claims one `nvidia.com/gpu` resource on the T600 and
+uses `NVIDIA_VISIBLE_DEVICES=all`. Immich ML was moved to CPU before this
+allocation, leaving Turbo as the only model resident on that GPU. Turbo needs
+roughly 2 GB at steady state.
 
 Voice enrollment: drop one clean 5+ second English reference clip at
-`/persist/voice-models/chatterbox/voices/jarvis.wav` on `homelab-04`
+`/persist/voice-models/chatterbox/voices/jarvis.wav` on `homelab-05`
 (the directory is created empty by the manifest). Conditionals are
 prepared once at startup; a missing or rejected clip falls back to the
 model's builtin voice under the same `jarvis` name. `[laugh]`-style
 paralinguistic tags are stripped by default (`CHATTERBOX_ALLOW_TAGS=1`
 to keep them).
+
+The bridge permits unwatermarked audio when Perth watermark support is
+unavailable, and exports `jarvis_tts_unwatermarked_audio` as `1` in that
+case. Set `CHATTERBOX_REQUIRE_WATERMARK=1` to fail startup instead. Synthesis
+exceptions emit a Wyoming `error` event before any audio; the TTS gateway
+buffers only the small text request and retries Piper once. If Chatterbox has
+already emitted `audio-start`, the gateway closes that turn and never splices
+Piper audio into the partial response.
+
+Hugging Face, Torch, Triton, XDG, and Numba caches use writable subdirectories
+under `/runtime/cache`; the model volume remains read-only to the bridge.
 
 Bench results 2026-09-21 (live, `wyoming-chatterbox:10201`):
 
@@ -467,6 +494,42 @@ retired PVCs can be reclaimed by hand.
 
 ## Observability
 
+### Generated topology and drift checks
+
+The non-secret topology report is generated from the Flux manifests and, when
+requested, read-only Kubernetes and Home Assistant inspection:
+
+```sh
+just voice-topology
+just voice-topology-check
+```
+
+The report records every voice Deployment and desired replica count, the
+ordered STT and TTS gateway backends, Service selectors and targets, live
+endpoints, and the Assist pipeline engines. A failed live read is reported as
+`unknown`; it is not evidence that a resource was deleted or unhealthy. The
+drift check validates the Git-owned invariants only. Deployment and live
+reconciliation remain Flux and operator actions.
+
+The stable HA targets are `wyoming-whisper.voice:10300` for STT and
+`wyoming-chatterbox.voice:10201` for TTS. The gateways choose their backend
+preference internally, so replacing Nemotron with Whisper or Chatterbox with
+Piper does not change the HA pipeline identity.
+
+Recovery follows the same boundary:
+
+- If a gateway pod is unavailable, restore its Deployment and Service through
+  Flux. HA should remain pointed at the stable Service names.
+- If the primary backend is unavailable, the gateway opens its circuit and
+  uses the configured fallback. Check the gateway backend availability and
+  fallback counters before changing HA.
+- If all backends are unavailable, the gateway stays unavailable and HA must
+  surface the failed pipeline. Do not point HA directly at a backend as a
+  manual workaround.
+- If the generated report shows HA pipeline drift, inspect the UI-managed
+  config-entry state and correct the pipeline in HA. Do not silently edit or
+  overwrite UI-managed state from Git.
+
 `gitops/voice/exporter.yaml` runs `jarvis-exporter`, a dependency-free
 Python exporter that holds the HA websocket, tracks satellite state
 transitions per turn, and counts `call_service` bus events seen while the
@@ -495,6 +558,18 @@ Metrics and their exact semantics:
   turns as slow. Routing ground truth is the `processed_locally` field on
   Assist intent traces, never this series.
 - `jarvis_exporter_ha_connected`: 1 while the websocket is authenticated.
+- `jarvis_exporter_subscription_state{state}`: active websocket state, with
+  `subscribed` required for readiness.
+- `jarvis_exporter_reconnects_total`: reconnect attempts, preserved across
+  websocket reconnects.
+- `jarvis_exporter_auth_failures_total`: rejected HA authentication attempts.
+- `jarvis_exporter_last_event_age_seconds`: age of the last received websocket
+  frame, used to detect a stale subscription.
+
+The exporter liveness probe only proves its process and HTTP loop are alive.
+Readiness requires authenticated HA subscriptions. Prometheus should alert
+when `jarvis_exporter_ha_connected` is zero, the subscription state is not
+`subscribed`, or the last event age is stale.
 
 The exporter needs a Home Assistant long-lived token in the GitLab project
 variable `JARVIS_EXPORTER_HA_TOKEN` (consumed via the `gitlab-project`
@@ -588,9 +663,14 @@ To add or update speaker voice profiles:
 
 ## Failure symptoms
 
-- Face stuck on `CONNECT SATELLITE` prompt: kiosk token missing and
-  `trusted_networks` bypass not matching. Check the bypass and re-enter the
-  long-lived token once.
+- Face stuck on `CONNECT SATELLITE` prompt: kiosk token missing from
+  the browser profile. Every reboot wipes it by design (tmpfs root,
+  `flake/modules/common-base.nix`): `/home/kiosk` is recreated empty,
+  so a fresh Chromium profile has no token until
+  `kiosk-ha-token-seed.service` runs. Check
+  `systemctl status kiosk-ha-token-seed` on `homelab-05` and confirm
+  `/persist/secrets/jarvis-kiosk-ha-token` exists (root, mode 600).
+  Manual fallback is entering the token once in the kiosk browser.
 - Face shows IDLE but never LISTENING: satellite pod not ready or HA Wyoming
   entry pointing at the wrong host. `just status cluster` plus the satellite
   pod events; confirm the HA Wyoming host is `voice-satellite.voice`.

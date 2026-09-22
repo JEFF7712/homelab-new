@@ -3,6 +3,8 @@ kind: Kustomization
 namespace: voice
 resources:
   - namespace.yaml
+  - gateway.yaml
+  - network-policy.yaml
   - local-decision.yaml
   - von.yaml
   - whisper.yaml
@@ -14,6 +16,9 @@ resources:
   - exporter.yaml
 
 configMapGenerator:
+  - name: wyoming-gateway-code
+    files:
+      - gateway/gateway.py
   - name: wyoming-voice-id-config
     files:
       - voice-id/proxy.py

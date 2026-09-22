@@ -27,7 +27,9 @@ import ctypes
 import json
 import logging
 import os
+import threading
 import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 try:
     import numpy as np
@@ -54,8 +56,52 @@ except ImportError:
 
 
 LOG = logging.getLogger("nemotron-bridge")
+SPEAKER_COUNTS = {"accepted": 0, "unknown": 0, "ambiguous": 0}
+SPEAKER_LOCK = threading.Lock()
 
 OK = 0
+
+
+def record_speaker_result(speaker: str | None, scores: dict, classifier: object) -> None:
+    outcome = "accepted"
+    if speaker is None:
+        ordered = sorted(scores.values(), reverse=True)
+        top = ordered[0] if ordered else -1.0
+        margin = top - ordered[1] if len(ordered) > 1 else 0.0
+        outcome = (
+            "ambiguous"
+            if top >= float(getattr(classifier, "threshold", 1.0))
+            and margin < float(getattr(classifier, "min_margin", 1.0))
+            else "unknown"
+        )
+    with SPEAKER_LOCK:
+        SPEAKER_COUNTS[outcome] += 1
+
+
+def start_metrics_server(port: int = 9100) -> None:
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            if self.path != "/metrics":
+                self.send_error(404)
+                return
+            with SPEAKER_LOCK:
+                body = "".join(
+                    f'jarvis_speaker_id_total{{outcome="{outcome}"}} {count}\n'
+                    for outcome, count in SPEAKER_COUNTS.items()
+                ).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; version=0.0.4")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *_args: object) -> None:
+            pass
+
+    threading.Thread(
+        target=ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever,
+        daemon=True,
+    ).start()
 
 # Closed-vocabulary ASR normalization. Only exact (variant, device-word)
 # bigrams rewrite; bare "gov" and words like "governor"/"government" never
@@ -591,9 +637,10 @@ async def handle_client(
                             return None
                         t0 = time.monotonic()
                         try:
-                            speaker, _ = await asyncio.to_thread(
+                            speaker, scores = await asyncio.to_thread(
                                 classifier.identify_pcm, data, rate
                             )
+                            record_speaker_result(speaker, scores, classifier)
                             stage_ms["speaker"] = (time.monotonic() - t0) * 1000.0
                             return speaker
                         except Exception:
@@ -618,7 +665,8 @@ async def handle_client(
                     if classifier is not None and bytes(pcm):
                         t_speaker = time.monotonic()
                         try:
-                            speaker, _ = classifier.identify_pcm(bytes(pcm), rate)
+                            speaker, scores = classifier.identify_pcm(bytes(pcm), rate)
+                            record_speaker_result(speaker, scores, classifier)
                         except Exception:
                             LOG.exception("speaker ID failed for %s", peer)
                             speaker = None
@@ -665,6 +713,7 @@ async def handle_client(
 async def serve(
     port: int, recognizer: NativeRecognizer, classifier: object | None, model_name: str
 ) -> None:
+    start_metrics_server()
     server = await asyncio.start_server(
         lambda r, w: handle_client(r, w, recognizer, classifier, model_name),
         "0.0.0.0",

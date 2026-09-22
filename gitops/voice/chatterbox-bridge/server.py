@@ -10,9 +10,8 @@ tolerated by buffering the text and synthesizing once on `stop`.
 
 The Chatterbox model (torch, chatterbox-tts) is imported lazily inside
 ChatterboxEngine.load so unit tests and `--help` never need the GPU
-stack. Turns are serialized behind one asyncio lock; any engine
-failure fails one turn (empty audio, which HA renders as silence)
-and never kills the service.
+stack. Turns are serialized behind one asyncio lock; synthesis failures emit
+a Wyoming error event so the upstream gateway can retry Piper before audio.
 """
 
 from __future__ import annotations
@@ -25,6 +24,8 @@ import os
 import re
 import struct
 from dataclasses import dataclass, field
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from threading import Lock, Thread
 
 LOG = logging.getLogger("chatterbox-bridge")
 
@@ -34,6 +35,7 @@ DEFAULT_LANGUAGE = "en"
 TURBO_REPO = "ResembleAI/chatterbox-turbo"
 
 _TAG_RE = re.compile(r"\[[^\[\]]{1,32}\]")
+WATERMARK_AVAILABLE = True
 
 
 def strip_paralinguistic_tags(text: str) -> str:
@@ -90,6 +92,7 @@ class TtsConfig:
     top_k: int = 1000
     top_p: float = 0.95
     repetition_penalty: float = 1.2
+    require_watermark: bool = False
 
     @classmethod
     def from_env(cls) -> TtsConfig:
@@ -106,6 +109,7 @@ class TtsConfig:
             top_k=int(get("CHATTERBOX_TOP_K", "1000")),
             top_p=float(get("CHATTERBOX_TOP_P", "0.95")),
             repetition_penalty=float(get("CHATTERBOX_REPETITION_PENALTY", "1.2")),
+            require_watermark=get("CHATTERBOX_REQUIRE_WATERMARK", "0") == "1",
         )
 
     def validate(self) -> None:
@@ -145,16 +149,22 @@ def resolve_reference(path: str) -> str | None:
     return candidate
 
 
-def ensure_watermarker() -> None:
+def ensure_watermarker(required: bool = False) -> None:
     """No-op patch when resemble-perth cannot build its watermark object.
 
     Its package imports but leaves PerthImplicitWatermarker as None on
     some runtimes; Turbo construction then crashes. Local assistant
     speech needs no provenance watermark, so fall back to passthrough.
     """
+    global WATERMARK_AVAILABLE
     import perth
 
     if getattr(perth, "PerthImplicitWatermarker", None) is None:
+        WATERMARK_AVAILABLE = False
+        if required:
+            raise RuntimeError(
+                "watermarking is required but PerthImplicitWatermarker is unavailable"
+            )
         LOG.warning("perth watermark unavailable, shipping unwatermarked audio")
 
         class _Passthrough:
@@ -162,6 +172,23 @@ def ensure_watermarker() -> None:
                 return wav
 
         perth.PerthImplicitWatermarker = _Passthrough
+
+
+def validate_cache_paths() -> None:
+    """Fail early if model libraries would write into the read-only image."""
+    paths = {
+        "HF_HOME": os.environ.get("HF_HOME", "/runtime/cache/huggingface"),
+        "TORCH_HOME": os.environ.get("TORCH_HOME", "/runtime/cache/torch"),
+        "TRITON_CACHE_DIR": os.environ.get("TRITON_CACHE_DIR", "/runtime/cache/triton"),
+        "XDG_CACHE_HOME": os.environ.get("XDG_CACHE_HOME", "/runtime/cache/xdg"),
+    }
+    for name, path in paths.items():
+        try:
+            os.makedirs(path, exist_ok=True)
+            if not os.access(path, os.W_OK):
+                raise PermissionError(path)
+        except OSError as exc:
+            raise RuntimeError(f"{name} cache is not writable: {path}") from exc
 
 
 class ChatterboxEngine:
@@ -179,7 +206,7 @@ class ChatterboxEngine:
     def load(self) -> None:
         import torch
 
-        ensure_watermarker()
+        ensure_watermarker(self._config.require_watermark)
         from chatterbox.tts_turbo import ChatterboxTurboTTS
 
         config = self._config
@@ -218,6 +245,34 @@ class ChatterboxEngine:
         )
         samples = wav.squeeze(0).detach().cpu().numpy().tolist()
         return samples_to_pcm16(normalize_peak(samples)), self._sample_rate
+
+
+class RuntimeMetrics:
+    def __init__(self) -> None:
+        self._lock = Lock()
+        self.counters: dict[str, int] = {}
+        self.samples: dict[str, list[float]] = {}
+        self.gauges = {"jarvis_tts_unwatermarked_audio": 0}
+
+    def inc(self, name: str) -> None:
+        with self._lock:
+            self.counters[name] = self.counters.get(name, 0) + 1
+
+    def observe(self, name: str, value: float) -> None:
+        with self._lock:
+            self.samples.setdefault(name, []).append(value)
+
+    def render(self) -> bytes:
+        with self._lock:
+            lines = []
+            for name, value in sorted(self.counters.items()):
+                lines.append(f"{name} {value}")
+            for name, values in sorted(self.samples.items()):
+                lines.append(f"{name}_sum {sum(values)}")
+                lines.append(f"{name}_count {len(values)}")
+            for name, value in sorted(self.gauges.items()):
+                lines.append(f"{name} {value}")
+            return ("\n".join(lines) + "\n").encode()
 
 
 def encode_event(type_: str, data: dict | None = None, payload: bytes = b"") -> bytes:
@@ -294,6 +349,7 @@ def info_event(config: TtsConfig, version: str = "0.1.7") -> bytes:
 class TtsServer:
     config: TtsConfig
     engine: object
+    metrics: RuntimeMetrics | None = None
     _lock: asyncio.Lock = field(default_factory=asyncio.Lock, init=False)
 
     def _prepare_text(self, text: str) -> str:
@@ -314,10 +370,14 @@ class TtsServer:
         await writer.drain()
 
     async def _send_silence(self, writer: asyncio.StreamWriter) -> None:
-        writer.write(
-            encode_event("audio-start", {"rate": 24000, "width": 2, "channels": 1})
-        )
+        writer.write(encode_event("audio-start", {"rate": 24000, "width": 2, "channels": 1}))
         writer.write(encode_event("audio-stop", {}))
+        await writer.drain()
+
+    async def _send_error(self, writer: asyncio.StreamWriter, error: Exception) -> None:
+        writer.write(
+            encode_event("error", {"text": f"Chatterbox synthesis failed: {error}"})
+        )
         await writer.drain()
 
     async def synthesize_turn(
@@ -330,11 +390,24 @@ class TtsServer:
             await self._send_silence(writer)
             return
         try:
+            started = asyncio.get_running_loop().time()
             async with self._lock:
                 pcm, rate = await asyncio.to_thread(self.engine.synthesize, prepared)
-        except Exception:
-            LOG.warning("synthesis failed, sending silence", exc_info=True)
-            await self._send_silence(writer)
+            if self.metrics:
+                self.metrics.inc("jarvis_tts_synthesis_success_total")
+                self.metrics.observe(
+                    "jarvis_tts_time_to_first_audio_seconds",
+                    asyncio.get_running_loop().time() - started,
+                )
+                self.metrics.observe(
+                    "jarvis_tts_generated_audio_seconds",
+                    len(pcm) / (rate * 2),
+                )
+        except Exception as error:
+            LOG.warning("synthesis failed", exc_info=True)
+            if self.metrics:
+                self.metrics.inc("jarvis_tts_synthesis_failures_total")
+            await self._send_error(writer, error)
             return
         await self._send_audio(writer, pcm, rate)
 
@@ -378,10 +451,31 @@ async def amain() -> None:
     if args.port is not None:
         config.port = args.port
     config.validate()
+    validate_cache_paths()
     logging.basicConfig(level=logging.INFO)
     engine = ChatterboxEngine(config)
     await asyncio.to_thread(engine.load)
-    server = TtsServer(config, engine)
+    metrics = RuntimeMetrics()
+    metrics.gauges["jarvis_tts_unwatermarked_audio"] = int(not WATERMARK_AVAILABLE)
+    server = TtsServer(config, engine, metrics)
+    class MetricsHandler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802
+            if self.path != "/metrics":
+                self.send_response(404)
+                self.end_headers()
+                return
+            body = metrics.render()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; version=0.0.4")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *_args: object) -> None:
+            pass
+
+    metrics_server = ThreadingHTTPServer(("0.0.0.0", int(os.environ.get("CHATTERBOX_METRICS_PORT", "8001"))), MetricsHandler)
+    Thread(target=metrics_server.serve_forever, daemon=True).start()
     tcp = await asyncio.start_server(server.handle_client, "0.0.0.0", config.port)
     LOG.info("listening on %d", config.port)
     async with tcp:

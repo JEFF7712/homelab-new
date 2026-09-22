@@ -8,4 +8,5 @@ resources:
   - postgres.yaml
   - deployment.yaml
   - service.yaml
+  - monitoring.yaml
   - spotify-credentials.yaml

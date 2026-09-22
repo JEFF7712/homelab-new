@@ -82,6 +82,14 @@ repository_tests_feature:
     - .shared_feature
     - .repository_tests
 
+jev_decision_gate:
+  extends:
+    - .shared_feature
+  stage: test
+  needs: []
+  script:
+    - nix develop ./flake -c python scripts/jev_decision_gate.py
+
 .flake_check:
   stage: test
   needs: []

@@ -67,6 +67,8 @@ spec:
           ports:
             - containerPort: 10300
               name: wyoming
+            - containerPort: 9100
+              name: metrics
           startupProbe:
             tcpSocket:
               port: wyoming
@@ -115,3 +117,49 @@ spec:
           hostPath:
             path: /persist/voice-models/whisper
             type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wyoming-stt-nemotron
+  namespace: voice
+spec:
+  selector:
+    app: wyoming-whisper
+    backend: nemotron
+  ports:
+    - name: wyoming
+      port: 10300
+      targetPort: 10300
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wyoming-stt-nemotron-metrics
+  namespace: voice
+  labels:
+    app: wyoming-stt-nemotron-metrics
+spec:
+  selector:
+    app: wyoming-whisper
+    backend: nemotron
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: wyoming-stt-nemotron
+  namespace: voice
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: wyoming-stt-nemotron-metrics
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s

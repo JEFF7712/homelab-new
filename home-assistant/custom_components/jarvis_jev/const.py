@@ -1,9 +1,8 @@
 DOMAIN = "jarvis_jev"
 CONF_FALLBACK_AGENT = "fallback_agent"
-# Phase 0: no local LLM. Qwen/Ollama was removed to free the T1000 GPU;
-# the cloud fallback is the Google AI conversation agent (tools enabled,
-# assist-only exposure). Entity-id form resolves via conversation.get_entity.
-OLLAMA_FALLBACK_AGENT = "conversation.google_ai_conversation"
+# General conversation is a separate trust domain. A fallback stays disabled
+# until its exposure, prompt, history, privacy, and recursion eval passes.
+OLLAMA_FALLBACK_AGENT = ""
 
 API_URL = "https://api.typesafe.ai/v1/systemone"
 MODEL = "jev-1.13.0"

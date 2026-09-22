@@ -41,8 +41,8 @@ def find_repo_root() -> Path:
         )
         if res.returncode == 0 and res.stdout.strip():
             return Path(res.stdout.strip())
-    except Exception:
-        pass
+    except (OSError, subprocess.SubprocessError):
+        return Path.cwd()
     return Path.cwd()
 
 
@@ -95,6 +95,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="skip cases that already have a payload in the output fixture",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="replace an existing fixture deliberately after reviewing its diff",
+    )
     args = parser.parse_args(argv)
 
     repo_root = find_repo_root()
@@ -118,6 +123,12 @@ def main(argv: list[str] | None = None) -> int:
     out_dir = repo_root / args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{args.label}.json"
+    if out_path.is_file() and not args.resume and not args.force:
+        print(
+            f"{out_path} already exists; use --resume or --force after review",
+            file=sys.stderr,
+        )
+        return 2
     results: dict[str, dict] = {}
     if args.resume and out_path.is_file():
         with open(out_path, encoding="utf-8") as f:

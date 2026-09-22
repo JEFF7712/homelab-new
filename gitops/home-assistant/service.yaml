@@ -5,6 +5,7 @@ metadata:
   namespace: home-assistant
   labels:
     bgp-advertise: "true"
+    app: home-assistant
 spec:
   type: LoadBalancer
   loadBalancerClass: io.cilium/bgp-control-plane

@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wyoming-stt-gateway
+  namespace: voice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wyoming-gateway
+      mode: stt
+  template:
+    metadata:
+      labels:
+        app: wyoming-gateway
+        mode: stt
+    spec:
+      containers:
+        - name: gateway
+          image: docker.io/library/python@sha256:be8ccd085666c34273c9dc5607c9842f8b2e3116128aae45148ce164c07ce09d
+          args: ["python3", "/app/gateway.py", "--mode", "stt", "--port", "10300"]
+          env:
+            - name: WYOMING_BACKENDS
+              value: "nemotron=wyoming-stt-nemotron:10300,local=wyoming-stt-local:10300,groq=wyoming-stt-groq:10300"
+          ports:
+            - {name: wyoming, containerPort: 10300}
+            - {name: metrics, containerPort: 8000}
+          resources:
+            requests: {cpu: 25m, memory: 32Mi}
+            limits: {cpu: 250m, memory: 128Mi}
+          readinessProbe: {httpGet: {path: /healthz, port: metrics}}
+          livenessProbe: {httpGet: {path: /healthz, port: metrics}}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: code, mountPath: /app, readOnly: true}
+      volumes:
+        - name: code
+          configMap: {name: wyoming-gateway-code}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wyoming-tts-gateway
+  namespace: voice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wyoming-gateway
+      mode: tts
+  template:
+    metadata:
+      labels:
+        app: wyoming-gateway
+        mode: tts
+    spec:
+      containers:
+        - name: gateway
+          image: docker.io/library/python@sha256:be8ccd085666c34273c9dc5607c9842f8b2e3116128aae45148ce164c07ce09d
+          args: ["python3", "/app/gateway.py", "--mode", "tts", "--port", "10201"]
+          env:
+            - name: WYOMING_BACKENDS
+              value: "chatterbox=wyoming-tts-chatterbox:10201,piper=wyoming-tts-piper:10200"
+          ports:
+            - {name: wyoming, containerPort: 10201}
+            - {name: metrics, containerPort: 8000}
+          resources:
+            requests: {cpu: 25m, memory: 32Mi}
+            limits: {cpu: 250m, memory: 128Mi}
+          readinessProbe: {httpGet: {path: /healthz, port: metrics}}
+          livenessProbe: {httpGet: {path: /healthz, port: metrics}}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: code, mountPath: /app, readOnly: true}
+      volumes:
+        - name: code
+          configMap: {name: wyoming-gateway-code}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: wyoming-whisper, namespace: voice}
+spec:
+  selector: {app: wyoming-gateway, mode: stt}
+  ports:
+    - {name: wyoming, port: 10300, targetPort: wyoming}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: wyoming-chatterbox, namespace: voice}
+spec:
+  selector: {app: wyoming-gateway, mode: tts}
+  ports:
+    - {name: wyoming, port: 10201, targetPort: wyoming}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wyoming-gateway-metrics
+  namespace: voice
+  labels: {app: wyoming-gateway}
+spec:
+  selector: {app: wyoming-gateway}
+  ports:
+    - {name: metrics, port: 8000, targetPort: metrics}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: wyoming-gateway
+  namespace: voice
+  labels: {release: kube-prometheus-stack}
+spec:
+  selector:
+    matchLabels: {app: wyoming-gateway}
+  endpoints:
+    - {port: metrics, path: /metrics, interval: 15s}

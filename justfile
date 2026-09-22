@@ -52,6 +52,15 @@ check-gitops:
 voice-stt backend="local":
     python3 scripts/voice_stt_switch.py {{backend}}
 
+jarvis-acoustic-eval *args:
+    python3 scripts/jarvis_acoustic_eval.py {{args}}
+
+voice-topology *args:
+    python3 scripts/voice_topology.py --live {{args}}
+
+voice-topology-check:
+    python3 scripts/voice_topology.py --check
+
 check-registry:
     bash scripts/checks/registry.sh
 

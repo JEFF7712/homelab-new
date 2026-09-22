@@ -2073,7 +2073,9 @@
     request_kind: home_command
     reference: explicit_target
     target: stairs_light
-  notes: "Unsupported action for the domain. Kept clarify: `activate` is scene vocabulary per the strict activate policy (see mis-activate-light)."
+  notes: >-
+    Unsupported action for the domain. Kept clarify: `activate` is scene
+    vocabulary per the strict activate policy (see mis-activate-light).
 - id: misx-014
   say: Set the kitchen lights to movie mode.
   expected_route: clarify
@@ -2550,7 +2552,9 @@
   expected_route: clarify
   expected:
     request_kind: home_command
-  notes: "Undo requires history the router does not keep. Kept clarify: restore-previous-state is unknowable; turn_on would be a guess."
+  notes: >-
+    Undo requires history the router does not keep. Kept clarify:
+    restore-previous-state is unknowable; turn_on would be a guess.
 - id: undo-010
   say: Revert that last change.
   expected_route: clarify
@@ -2882,13 +2886,14 @@
   expected_route: execute
   expected:
     request_kind: home_command
-    target: good_vibes_sign
-    action: turn_off
+    target: kitchen_lights
+    action: set_brightness
     color: none_or_unknown
     reference: explicit_target
-  targets: [light.living_room_good_vibes_sign]
-  service: light.turn_off
-  notes: "Lenient policy: scrambled word order but all content words present; L1 executes. Jev currently misses this."
+  value: 10
+  targets: [light.kitchen_lights]
+  service: light.turn_on
+  notes: Explicit dim action, target, and scalar; the omitted percent unit is safe for a light brightness command.
 - id: stt-019
   say: Satellite speaker stop now.
   expected_route: clarify
@@ -2968,13 +2973,13 @@
   expected_route: execute
   expected:
     request_kind: home_command
-    target: kitchen_lights
-    action: turn_on
+    target: movie_mode
+    action: activate_scene
     color: none_or_unknown
     reference: explicit_target
-  targets: [light.kitchen_lights]
-  service: light.turn_on
-  notes: "Lenient policy: unique neighbor snap; L1 executes. Jev currently misses this."
+  targets: [scene.movie_low_living_room]
+  service: scene.turn_on
+  notes: Film mode is a curated alias for the single allowlisted movie mode scene.
 - id: sim-008
   say: Turn on the govee lamp.
   expected_route: execute
@@ -3092,7 +3097,9 @@
     request_kind: home_command
     reference: explicit_target
     target: none_or_unknown
-  notes: "Near-vocabulary entity; must not snap to a neighbor. Kept clarify: `main` is genuinely ambiguous between rooms; no unique neighbor."
+  notes: >-
+    Near-vocabulary entity; must not snap to a neighbor. Kept clarify: `main`
+    is genuinely ambiguous between rooms; no unique neighbor.
 - id: sim-020
   say: Turn off the main lights.
   expected_route: clarify
@@ -3116,6 +3123,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.kitchen_lights]
+  service: light.turn_on
 - id: fz-002
   say: Power off the bedroom lights.
   expected_route: execute
@@ -3126,6 +3135,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_off
 - id: fz-003
   say: Power down the living room lights.
   expected_route: execute
@@ -3136,6 +3147,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.living_room_lights]
+  service: light.turn_off
 - id: fz-004
   say: Shut down the kitchen lights.
   expected_route: execute
@@ -3146,6 +3159,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.kitchen_lights]
+  service: light.turn_off
 - id: fz-005
   say: Power the stairs light on.
   expected_route: execute
@@ -3156,6 +3171,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [switch.stairs_light]
+  service: switch.turn_on
 - id: fz-006
   say: Turn the kitchen lights back on.
   expected_route: execute
@@ -3166,6 +3183,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.kitchen_lights]
+  service: light.turn_on
 - id: fz-007
   say: Turn back on the kitchen lights.
   expected_route: execute
@@ -3176,6 +3195,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.kitchen_lights]
+  service: light.turn_on
 - id: fz-008
   say: Switch the lights in the kitchen off.
   expected_route: execute
@@ -3186,6 +3207,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.kitchen_lights]
+  service: light.turn_off
 - id: fz-009
   say: Turn the bedroom lights back off.
   expected_route: execute
@@ -3196,6 +3219,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_off
 - id: fz-010
   say: Could you turn off the kitchen lights?
   expected_route: execute
@@ -3206,6 +3231,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.kitchen_lights]
+  service: light.turn_off
 - id: fz-011
   say: Can you turn on the bedroom lights?
   expected_route: execute
@@ -3216,6 +3243,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
 - id: fz-012
   say: Would you dim the kitchen lights to 10 percent?
   expected_route: execute
@@ -3227,6 +3256,8 @@
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
   value: 10
+  targets: [light.kitchen_lights]
+  service: light.turn_on
 - id: fz-013
   say: Could you set the thermostat to 71 degrees?
   expected_route: execute
@@ -3238,6 +3269,8 @@
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
   value: 71
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
 - id: fz-014
   say: Kitchen lights on.
   expected_route: execute
@@ -3248,6 +3281,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.kitchen_lights]
+  service: light.turn_on
 - id: fz-015
   say: Bedroom lights off.
   expected_route: execute
@@ -3258,6 +3293,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_off
 - id: fz-016
   say: Movie mode on.
   expected_route: execute
@@ -3268,6 +3305,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [scene.movie_low_living_room]
+  service: scene.turn_on
 - id: fz-017
   say: Thermostat to 70.
   expected_route: execute
@@ -3279,6 +3318,8 @@
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
   value: 70
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
 - id: fz-018
   say: I need the kitchen lights off.
   expected_route: execute
@@ -3289,6 +3330,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.kitchen_lights]
+  service: light.turn_off
 - id: fz-019
   say: I want the bedroom lights on.
   expected_route: execute
@@ -3299,6 +3342,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
 - id: fz-020
   say: Paint the kitchen lights red.
   expected_route: execute
@@ -3309,6 +3354,8 @@
     color: red
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.kitchen_lights]
+  service: light.turn_on
 - id: fz-021
   say: Paint the bedroom lights blue.
   expected_route: execute
@@ -3319,6 +3366,8 @@
     color: blue
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
 - id: fz-022
   say: Color the living room lights green.
   expected_route: execute
@@ -3329,6 +3378,8 @@
     color: green
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [light.living_room_lights]
+  service: light.turn_on
 - id: fz-023
   say: Crank the thermostat to 72.
   expected_route: execute
@@ -3340,6 +3391,8 @@
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
   value: 72
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
 - id: fz-024
   say: Turn the thermostat to 71.
   expected_route: execute
@@ -3351,6 +3404,8 @@
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
   value: 71
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
 - id: fz-025
   say: Drop the living room temperature to 68.
   expected_route: execute
@@ -3362,6 +3417,8 @@
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
   value: 68
+  targets: [climate.living_room_ac_living_room_ac_thermostat]
+  service: climate.set_temperature
 - id: fz-026
   say: Take the kitchen lights down to 30 percent.
   expected_route: execute
@@ -3373,6 +3430,8 @@
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
   value: 30
+  targets: [light.kitchen_lights]
+  service: light.turn_on
 - id: fz-027
   say: Bring the bedroom lights up to 80 percent.
   expected_route: execute
@@ -3384,6 +3443,8 @@
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
   value: 80
+  targets: [light.bedroom_roku_lights]
+  service: light.turn_on
 - id: fz-028
   say: Turn the kitchen lights down to 30 percent.
   expected_route: execute
@@ -3395,6 +3456,8 @@
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
   value: 30
+  targets: [light.kitchen_lights]
+  service: light.turn_on
 - id: fz-029
   say: Halt the satellite speaker.
   expected_route: execute
@@ -3405,6 +3468,8 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [media_player.homelab_05_satellite_media_player]
+  service: media_player.media_pause
 - id: fz-030
   say: Silence the satellite speaker.
   expected_route: execute
@@ -3415,3 +3480,5 @@
     color: none_or_unknown
     reference: explicit_target
   notes: Valid fuzzy form L0 skips by design; L1 must accept exactly.
+  targets: [media_player.homelab_05_satellite_media_player]
+  service: media_player.media_pause

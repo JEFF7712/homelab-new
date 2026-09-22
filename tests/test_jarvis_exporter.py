@@ -21,7 +21,7 @@ def load_exporter_module() -> dict:
         and doc["metadata"]["name"] == "jarvis-exporter-code"
     )
     module: dict = {"__name__": "jarvis_exporter_under_test"}
-    exec(compile(code, "exporter.py", "exec"), module)
+    exec(compile(code, "exporter.py", "exec"), module)  # noqa: S102
     return module
 
 
@@ -52,6 +52,19 @@ class ExporterRenderTest(unittest.TestCase):
         self.assertEqual(parse({"entity_id": "light.a"}), ["light.a"])
         self.assertEqual(parse({"entity_id": ["light.a", 7]}), ["light.a"])
         self.assertEqual(parse({}), [])
+
+    def test_connection_metrics_distinguish_ready_subscription(self) -> None:
+        metrics = EXPORTER["Metrics"]("sat")
+        metrics.mark_reconnect()
+        metrics.mark_auth_failure()
+        metrics.set_subscription_state("authenticated")
+        metrics.set_connected(True)
+        text = metrics.render()
+        self.assertIn(
+            'jarvis_exporter_subscription_state{state="authenticated"} 1', text
+        )
+        self.assertIn("jarvis_exporter_reconnects_total", text)
+        self.assertIn("jarvis_exporter_auth_failures_total", text)
 
 
 class TurnTrackerTest(unittest.TestCase):
@@ -172,12 +185,27 @@ class HandshakeTest(unittest.TestCase):
         sock.sendall(bytes([0x81, len(payload)]) + payload)
 
     def _fake_ha(self, sock, status_line: str) -> None:
+        import base64
+        import hashlib
         import json
 
         request = b""
         while b"\r\n\r\n" not in request:
             request += sock.recv(4096)
-        handshake = status_line.encode() + b"\r\nUpgrade: websocket\r\n\r\n"
+        key = next(
+            line.split(b":", 1)[1].strip()
+            for line in request.split(b"\r\n")
+            if line.lower().startswith(b"sec-websocket-key:")
+        )
+        accept = base64.b64encode(
+            hashlib.sha1(key + b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11").digest()
+        )
+        handshake = (
+            status_line.encode()
+            + b"\r\nUpgrade: websocket\r\nSec-WebSocket-Accept: "
+            + accept
+            + b"\r\n\r\n"
+        )
         if " 101 " not in status_line:
             sock.sendall(handshake)
             return
@@ -223,6 +251,62 @@ class HandshakeTest(unittest.TestCase):
     def test_connect_rejects_non_101_handshake(self) -> None:
         with self.assertRaises(RuntimeError):
             self._connect_through_pair("HTTP/1.1 400 Bad Request")
+
+    def test_fragmented_json_with_ping_is_reassembled(self) -> None:
+        import socket
+        import threading
+
+        client, server = socket.socketpair()
+        sock_class = EXPORTER["HomeAssistantSocket"]
+        sock = sock_class.__new__(sock_class)
+        sock._sock = client
+        sock._buf = b""
+        sock._timeout = 5.0
+
+        def send_frames() -> None:
+            server.sendall(bytes([0x01, 5]) + b'{"typ')
+            server.sendall(bytes([0x89, 1]) + b"?")
+            server.sendall(bytes([0x80, 8]) + b'e":"ok"}')
+
+        thread = threading.Thread(target=send_frames)
+        thread.start()
+        try:
+            self.assertEqual(sock._read_message(), {"type": "ok"})
+            pong = server.recv(32)
+            self.assertEqual(pong[0] & 0x0F, 0xA)
+            self.assertTrue(pong[1] & 0x80)
+            mask = pong[2:6]
+            payload = bytes(
+                value ^ mask[index % 4] for index, value in enumerate(pong[6:7])
+            )
+            self.assertEqual(payload, b"?")
+        finally:
+            thread.join(timeout=5.0)
+            client.close()
+            server.close()
+
+    def test_close_frame_is_acknowledged_and_idle_timeout_is_tolerated(self) -> None:
+        import socket
+
+        client, server = socket.socketpair()
+        sock_class = EXPORTER["HomeAssistantSocket"]
+        sock = sock_class.__new__(sock_class)
+        sock._sock = client
+        sock._buf = b""
+        sock._timeout = 0.01
+        server.sendall(bytes([0x88, 0x02]) + b"\x03\xe8")
+        with self.assertRaises(RuntimeError):
+            sock._read_message()
+        response = server.recv(32)
+        self.assertEqual(response[0] & 0x0F, 0x8)
+        server.close()
+
+        client, server = socket.socketpair()
+        sock._sock = client
+        sock._timeout = 0.01
+        self.assertIsNone(sock.read_event(0.01))
+        client.close()
+        server.close()
 
 
 if __name__ == "__main__":

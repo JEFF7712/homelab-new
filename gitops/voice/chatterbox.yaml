@@ -97,6 +97,8 @@ spec:
                 > "$REPO_CACHE/refs/main"
               mkdir -p "$MODEL_DIR"
               touch "$MODEL_DIR/.complete"
+              mkdir -p /runtime/cache/huggingface /runtime/cache/torch \
+                /runtime/cache/triton /runtime/cache/xdg /runtime/cache/numba
           env:
             - name: MODEL_DIR
               value: /models/chatterbox-turbo-749d1c1
@@ -148,7 +150,17 @@ spec:
             - name: NVIDIA_DRIVER_CAPABILITIES
               value: compute,utility
             - name: HF_HOME
-              value: /models
+              value: /runtime/cache/huggingface
+            - name: HF_HUB_CACHE
+              value: /runtime/cache/huggingface/hub
+            - name: TRANSFORMERS_CACHE
+              value: /runtime/cache/huggingface/transformers
+            - name: TORCH_HOME
+              value: /runtime/cache/torch
+            - name: TRITON_CACHE_DIR
+              value: /runtime/cache/triton
+            - name: XDG_CACHE_HOME
+              value: /runtime/cache/xdg
             - name: HF_HUB_OFFLINE
               value: "1"
             - name: CHATTERBOX_DEVICE
@@ -160,10 +172,14 @@ spec:
             # numba (via librosa) caches compiled kernels next to its
             # sources; the venv mount is read-only, so redirect to /tmp.
             - name: NUMBA_CACHE_DIR
-              value: /tmp/numba-cache
+              value: /runtime/cache/numba
+            - name: CHATTERBOX_REQUIRE_WATERMARK
+              value: "0"
           ports:
             - containerPort: 10201
               name: wyoming
+            - containerPort: 8001
+              name: metrics
           startupProbe:
             tcpSocket:
               port: wyoming
@@ -207,7 +223,6 @@ spec:
               readOnly: true
             - name: runtime
               mountPath: /runtime
-              readOnly: true
             - name: voices
               mountPath: /voices
               readOnly: true
@@ -235,8 +250,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: wyoming-chatterbox
+  name: wyoming-tts-chatterbox
   namespace: voice
+  labels:
+    app: wyoming-chatterbox
 spec:
   selector:
     app: wyoming-chatterbox
@@ -244,3 +261,22 @@ spec:
     - name: wyoming
       port: 10201
       targetPort: 10201
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: wyoming-chatterbox
+  namespace: voice
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: wyoming-chatterbox
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s

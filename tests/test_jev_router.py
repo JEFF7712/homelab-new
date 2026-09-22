@@ -128,6 +128,29 @@ class JevRouterTest(unittest.TestCase):
         decision = router.decide("make the kitchen lights blue", payload)
         self.assertEqual(decision.route, "clarify")
 
+    def test_model_cannot_invent_command_fields(self) -> None:
+        cases = (
+            (
+                "Turn on the kitchenette lights.",
+                response(target="kitchen_lights", action="turn_on"),
+            ),
+            (
+                "Activate the kitchen lights.",
+                response(target="kitchen_lights", action="turn_on"),
+            ),
+            (
+                "Make the kitchen lights chartreuse.",
+                response(action="set_color", color="green"),
+            ),
+            (
+                "Put the kitchen lights back.",
+                response(target="kitchen_lights", action="turn_on"),
+            ),
+        )
+        for say, payload in cases:
+            with self.subTest(say=say):
+                self.assertEqual(router.decide(say, payload).route, "clarify")
+
     def test_malformed_or_wrong_model_response_fails_closed(self) -> None:
         self.assertEqual(router.decide("turn it off", {}).route, "reject")
         payload = response()

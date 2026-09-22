@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: jarvis-voice
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: jarvis.voice
+      rules:
+        - alert: JarvisExporterDisconnected
+          expr: jarvis_exporter_ha_connected == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Jarvis exporter is disconnected from Home Assistant
+            description: The exporter has not held an authenticated HA websocket for 5 minutes.
+        - alert: JarvisExporterSubscriptionStale
+          expr: >-
+            jarvis_exporter_last_event_age_seconds > 120 or
+            jarvis_exporter_subscription_state{state!="subscribed"} == 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Jarvis exporter subscription is stale
+            description: Jarvis telemetry is not receiving a healthy subscribed event stream.

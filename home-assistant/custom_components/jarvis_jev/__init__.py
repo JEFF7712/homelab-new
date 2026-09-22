@@ -6,16 +6,20 @@ import os
 import uuid
 from typing import Any, Literal
 
+from aiohttp import web
 from homeassistant.components import conversation
+from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import MATCH_ALL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import intent
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
 from .const import (
     API_URL,
     CONF_FALLBACK_AGENT,
+    DOMAIN,
     OLLAMA_FALLBACK_AGENT,
     REQUEST_TIMEOUT_SECONDS,
     SHADOW_TIMEOUT_SECONDS,
@@ -24,6 +28,29 @@ from .const import (
 from .l0 import parse_canonical
 from .router import TARGETS, Command, build_request, decide
 from .shadow import ShadowResult, compare_answers, request_shadow
+
+JEV_REQUESTS = Counter(
+    "jarvis_jev_requests_total", "Jev routing outcomes.", ("outcome",)
+)
+JEV_LATENCY = Histogram(
+    "jarvis_jev_request_latency_seconds", "Hosted Jev request latency."
+)
+SERVICE_LATENCY = Histogram(
+    "jarvis_ha_service_call_latency_seconds",
+    "Service-call latency for commands executed by Jarvis Jev.",
+    ("domain", "service"),
+)
+
+
+class JarvisMetricsView(HomeAssistantView):
+    url = "/api/jarvis_jev/metrics"
+    name = "api:jarvis_jev:metrics"
+    requires_auth = False
+
+    async def get(self, _request: web.Request) -> web.Response:
+        headers = {"Content-Type": CONTENT_TYPE_LATEST}
+        return web.Response(body=generate_latest(), headers=headers)
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +63,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    if not hass.data.get(f"{DOMAIN}_metrics_registered"):
+        hass.http.register_view(JarvisMetricsView)
+        hass.data[f"{DOMAIN}_metrics_registered"] = True
     agent = JarvisJevAgent(hass, entry)
     conversation.async_set_agent(hass, entry, agent)
     entry.async_on_unload(lambda: conversation.async_unset_agent(hass, entry))
@@ -64,11 +94,14 @@ class JarvisJevAgent(conversation.AbstractConversationAgent):
             try:
                 await _execute(self.hass, user_input, command)
             except Exception:  # noqa: BLE001
+                JEV_REQUESTS.labels("l0_service_error").inc()
                 return _speech(user_input, "The home action failed.")
+            JEV_REQUESTS.labels("l0_execute").inc()
             return _speech(user_input, "Done.")
 
         api_key = os.environ.get("TYPESAFE_API_KEY")
         if not api_key:
+            JEV_REQUESTS.labels("missing_api_key").inc()
             return _speech(user_input, "Jev is unavailable.")
 
         request = build_request(user_input.text)
@@ -76,17 +109,22 @@ class JarvisJevAgent(conversation.AbstractConversationAgent):
         shadow_task = self._start_shadow(request)
 
         try:
-            async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
-                async with async_get_clientsession(self.hass).post(
-                    API_URL,
-                    headers={"Authorization": f"Bearer {api_key}"},
-                    json=request,
-                ) as response:
-                    if response.status != 200:
-                        self._schedule_shadow_observation(request_id, shadow_task, None)
-                        return _speech(user_input, "Jev is unavailable.")
-                    payload = await response.json()
+            with JEV_LATENCY.time():
+                async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
+                    async with async_get_clientsession(self.hass).post(
+                        API_URL,
+                        headers={"Authorization": f"Bearer {api_key}"},
+                        json=request,
+                    ) as response:
+                        if response.status != 200:
+                            JEV_REQUESTS.labels(f"http_{response.status}").inc()
+                            self._schedule_shadow_observation(
+                                request_id, shadow_task, None
+                            )
+                            return _speech(user_input, "Jev is unavailable.")
+                        payload = await response.json()
         except Exception:  # noqa: BLE001
+            JEV_REQUESTS.labels("request_error").inc()
             self._schedule_shadow_observation(request_id, shadow_task, None)
             return _speech(user_input, "Jev is unavailable.")
 
@@ -96,11 +134,13 @@ class JarvisJevAgent(conversation.AbstractConversationAgent):
         if decision.route == "fallback":
             fallback_agent = self.entry.data.get(CONF_FALLBACK_AGENT, "")
             if not fallback_agent or fallback_agent == self.entry.entry_id:
+                JEV_REQUESTS.labels("general_disabled").inc()
                 return _speech(
                     user_input,
                     "General conversation is unavailable.",
                 )
             try:
+                JEV_REQUESTS.labels("general_delegate").inc()
                 return await conversation.async_converse(
                     self.hass,
                     text=user_input.text,
@@ -113,11 +153,13 @@ class JarvisJevAgent(conversation.AbstractConversationAgent):
                     extra_system_prompt=user_input.extra_system_prompt,
                 )
             except Exception:  # noqa: BLE001
+                JEV_REQUESTS.labels("general_error").inc()
                 return _speech(
                     user_input,
                     "General conversation is unavailable.",
                 )
         if decision.route != "execute" or decision.command is None:
+            JEV_REQUESTS.labels(decision.route).inc()
             return _speech(
                 user_input, decision.speech or "I could not safely route that."
             )
@@ -125,12 +167,16 @@ class JarvisJevAgent(conversation.AbstractConversationAgent):
         try:
             await _execute(self.hass, user_input, decision.command)
         except Exception:  # noqa: BLE001
+            JEV_REQUESTS.labels("service_error").inc()
             return _speech(user_input, "The home action failed.")
+        JEV_REQUESTS.labels("execute").inc()
         return _speech(user_input, "Done.")
 
     def _start_shadow(
         self, request: dict[str, Any]
     ) -> asyncio.Task[ShadowResult] | None:
+        if os.environ.get("JARVIS_SHADOW_ENABLED", "0") != "1":
+            return None
         if self._shadow_active:
             _LOGGER.info("jarvis_shadow skipped reason=busy")
             return None
@@ -239,14 +285,15 @@ async def _execute(
     else:
         raise ValueError("unsupported action")
 
-    await hass.services.async_call(
-        domain,
-        service,
-        service_data=data,
-        target={"entity_id": target.entity_id},
-        blocking=True,
-        context=user_input.context,
-    )
+    with SERVICE_LATENCY.labels(domain, service).time():
+        await hass.services.async_call(
+            domain,
+            service,
+            service_data=data,
+            target={"entity_id": target.entity_id},
+            blocking=True,
+            context=user_input.context,
+        )
 
 
 def _validate_temperature(

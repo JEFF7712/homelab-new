@@ -1,9 +1,9 @@
 """Fixture-scored bench for Jev decision-model candidates.
 
 Reads recorded model outputs from tests/fixtures/jev_decisions/<model>.json
-(produced by scripts/record_jev_decisions.py), replays each payload through
-router.decide, and scores route accuracy, field accuracy, false-action rate,
-calibration (ECE), and latency.
+(produced by scripts/record_jev_decisions.py), replays each case through the
+deployed L0 then L1 path, and scores route accuracy, field accuracy, false-action rate,
+accepted-action calibration (ECE), and L1 latency.
 
 Model quality never fails this test: it is a measurement instrument, not a
 gate. Harness problems (missing fixtures, unknown case ids, malformed
@@ -28,13 +28,29 @@ CORPUS_PATH = ROOT / "tests" / "jev_decision_corpus.yaml"
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "jev_decisions"
 
 GATED_QUESTIONS = ("request_kind", "target", "action", "reference")
+FAILURE_MODES = {
+    "target": {"sim", "amb", "ambx"},
+    "action": {"unsup", "media", "pause", "stop"},
+    "negation": {"neg"},
+    "correction": {"corr", "undo"},
+    "compound": {"comp", "compx"},
+    "numeric_value": {"num", "percent", "temp", "val"},
+    "stt_corruption": {"stt", "mis", "misx"},
+}
+RESTRICTED_CATEGORIES = {
+    "target",
+    "negation",
+    "correction",
+    "compound",
+    "stt_corruption",
+}
 
 
-def load_router():
+def load_decision_modules():
     package = types.ModuleType("jarvis_jev")
     package.__path__ = [str(PACKAGE_DIR)]
     sys.modules["jarvis_jev"] = package
-    for name in ("const", "router"):
+    for name in ("const", "router", "l0"):
         spec = importlib.util.spec_from_file_location(
             f"jarvis_jev.{name}", PACKAGE_DIR / f"{name}.py"
         )
@@ -42,10 +58,10 @@ def load_router():
         module = importlib.util.module_from_spec(spec)
         sys.modules[f"jarvis_jev.{name}"] = module
         spec.loader.exec_module(module)
-    return sys.modules["jarvis_jev.router"]
+    return sys.modules["jarvis_jev.router"], sys.modules["jarvis_jev.l0"]
 
 
-router = load_router()
+router, l0 = load_decision_modules()
 
 
 def normalize_payload(payload: dict) -> dict:
@@ -118,7 +134,15 @@ def score_case(case: dict, payload: dict) -> dict:
     """Score one recorded payload. Never raises on model content."""
     say = case["say"]
     expected_route = case["expected_route"]
-    decision = router.decide(say, normalize_payload(payload))
+    command = l0.parse_canonical(say)
+    if command is None:
+        decision = router.decide(say, normalize_payload(payload))
+        source = "l1"
+        confidence = min_confidence(payload)
+    else:
+        decision = router.Decision("execute", command=command)
+        source = "l0"
+        confidence = command.confidence
     outcome: dict = {
         "id": case["id"],
         "expected_route": expected_route,
@@ -126,7 +150,17 @@ def score_case(case: dict, payload: dict) -> dict:
         "route_ok": decision.route == expected_route,
         "false_action": False,
         "field_ok": None,
-        "confidence": min_confidence(payload),
+        "confidence": confidence,
+        "source": source,
+        "failure_mode": case.get("category")
+        or next(
+            (
+                mode
+                for mode, prefixes in FAILURE_MODES.items()
+                if case["id"].split("-")[0] in prefixes
+            ),
+            "ordinary",
+        ),
     }
     if expected_route == "execute":
         command = decision.command
@@ -154,9 +188,13 @@ def summarize(outcomes: list[dict], latencies: list[float]) -> dict:
     false_actions = sum(1 for o in outcomes if o["false_action"])
     executed = [o for o in outcomes if o["expected_route"] == "execute"]
     exec_fields = [o for o in executed if o["field_ok"]]
-    confidences = [o["confidence"] for o in outcomes if o["confidence"] is not None]
-    correctness = [o["route_ok"] for o in outcomes if o["confidence"] is not None]
+    accepted = [
+        o for o in outcomes if o["route"] == "execute" and o["confidence"] is not None
+    ]
+    confidences = [o["confidence"] for o in accepted]
+    correctness = [bool(o["route_ok"] and o["field_ok"]) for o in accepted]
     by_category: dict[str, dict] = {}
+    false_actions_by_mode: dict[str, int] = {}
     for outcome in outcomes:
         category = outcome["id"].split("-")[0]
         bucket = by_category.setdefault(
@@ -165,17 +203,45 @@ def summarize(outcomes: list[dict], latencies: list[float]) -> dict:
         bucket["total"] += 1
         bucket["route_ok"] += outcome["route_ok"]
         bucket["false_action"] += outcome["false_action"]
+        if outcome["false_action"]:
+            mode = outcome["failure_mode"]
+            false_actions_by_mode[mode] = false_actions_by_mode.get(mode, 0) + 1
     return {
         "total": total,
         "route_acc": route_ok / total if total else None,
         "false_actions": false_actions,
         "false_action_rate": false_actions / total if total else None,
         "execute_field_acc": len(exec_fields) / len(executed) if executed else None,
-        "ece": expected_calibration_error(confidences, correctness),
+        "execute_ece": expected_calibration_error(confidences, correctness),
         "latency_p50_ms": percentile(latencies, 50),
         "latency_p95_ms": percentile(latencies, 95),
         "by_category": by_category,
+        "false_actions_by_mode": false_actions_by_mode,
     }
+
+
+def gate_failures(
+    summary: dict, outcomes: list[dict], p95_latency_ms: float = 1000.0
+) -> list[str]:
+    """Release gates: safety categories cannot be traded for aggregate accuracy."""
+    failures = []
+    if (summary.get("route_acc") or 0.0) < 0.95:
+        failures.append("route accuracy below 0.95")
+    if (summary.get("execute_field_acc") or 0.0) < 0.98:
+        failures.append("execute-field accuracy below 0.98")
+    execute_ece = summary.get("execute_ece")
+    if execute_ece is None or execute_ece > 0.05:
+        failures.append("accepted-execute calibration error above 0.05")
+    if (summary.get("latency_p95_ms") or float("inf")) > p95_latency_ms:
+        failures.append(f"p95 latency above {p95_latency_ms:g} ms")
+    restricted = [
+        item for item in outcomes if item["failure_mode"] in RESTRICTED_CATEGORIES
+    ]
+    if any(item["false_action"] for item in restricted):
+        failures.append("restricted/adversarial categories contain false actions")
+    if summary.get("false_actions"):
+        failures.append("false-action rate is nonzero")
+    return failures
 
 
 def load_fixtures() -> dict[str, dict]:
@@ -224,7 +290,7 @@ class BenchScoringTest(unittest.TestCase):
     def test_wrong_target_is_false_action(self) -> None:
         case = {
             "id": "x",
-            "say": "Turn off the kitchen lights.",
+            "say": "Turn off the living room lights.",
             "expected_route": "execute",
             "expected": {
                 "target": "kitchen_lights",
@@ -256,7 +322,7 @@ class BenchScoringTest(unittest.TestCase):
     def test_unexpected_execute_is_false_action(self) -> None:
         case = {
             "id": "y",
-            "say": "Turn that back on.",
+            "say": "Turn on the kitchen lights.",
             "expected_route": "clarify",
             "expected": {"request_kind": "home_command"},
         }
@@ -325,9 +391,12 @@ class FixtureBenchTest(unittest.TestCase):
                     self.assertIsInstance(
                         payload.get("answers"), dict, f"{label}/{case_id}"
                     )
-                    if isinstance(record.get("latency_ms"), (int, float)):
+                    outcome = score_case(self.cases[case_id], payload)
+                    outcomes.append(outcome)
+                    if outcome["source"] == "l1" and isinstance(
+                        record.get("latency_ms"), (int, float)
+                    ):
                         latencies.append(float(record["latency_ms"]))
-                    outcomes.append(score_case(self.cases[case_id], payload))
                 summary = summarize(outcomes, latencies)
                 print(f"\n[{label}] {json.dumps(summary, indent=2, sort_keys=True)}")
                 self.assertEqual(

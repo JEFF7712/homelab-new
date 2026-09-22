@@ -1,0 +1,172 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: voice
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: voice
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-home-assistant-clients
+  namespace: voice
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [wyoming-gateway, linux-voice-assistant]
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: home-assistant
+        - ipBlock:
+            cidr: 10.0.30.13/32
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-gateway-to-backends
+  namespace: voice
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [wyoming-whisper, wyoming-piper, wyoming-chatterbox]
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: wyoming-gateway
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-gateway-egress
+  namespace: voice
+spec:
+  podSelector:
+    matchLabels:
+      app: wyoming-gateway
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values: [wyoming-whisper, wyoming-piper, wyoming-chatterbox]
+      ports:
+        - {protocol: TCP, port: 10300}
+        - {protocol: TCP, port: 10200}
+        - {protocol: TCP, port: 10201}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scrapes
+  namespace: voice
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [wyoming-gateway, jarvis-exporter, local-decision, wyoming-whisper]
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-home-assistant-shadow
+  namespace: voice
+spec:
+  podSelector:
+    matchLabels:
+      app: local-decision
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: home-assistant
+        - ipBlock:
+            cidr: 10.0.30.13/32
+      ports:
+        - {protocol: TCP, port: 8080}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-https-egress
+  namespace: voice
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [wyoming-whisper, local-decision, von-decision]
+  policyTypes: [Egress]
+  egress:
+    - ports:
+        - {protocol: TCP, port: 443}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-exporter-to-home-assistant
+  namespace: voice
+spec:
+  podSelector:
+    matchLabels:
+      app: jarvis-exporter
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: home-assistant
+      ports:
+        - {protocol: TCP, port: 8123}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-satellite-runtime
+  namespace: voice
+spec:
+  podSelector:
+    matchLabels:
+      app: linux-voice-assistant
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
