@@ -19,6 +19,7 @@ spec:
         checksum/dependencies: 8eac350ea6f0dc5b311c3b363345bb99229e5efa193aa69111e630103301751e
         reloader.stakater.com/auto: 'true'
     spec:
+      priorityClassName: homelab-critical
       nodeSelector:
         kubernetes.io/hostname: homelab-03
       hostNetwork: true
