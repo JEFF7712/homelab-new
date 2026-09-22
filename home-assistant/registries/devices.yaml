@@ -2,8 +2,10 @@
   area_id: living_room
 - id: 15f836412b2cf37f53821e0085f776a6
   area_id: kitchen
+  name_by_user: Ceiling Light 1
 - id: 2fbb8dce9dad8760b4d40e387a536d59
   area_id: kitchen
+  name_by_user: Ceiling Light 2
 - id: 33a37c90447096c0165be4a62a9f0ca0
   area_id: living_room
   name_by_user: Floor Lamp

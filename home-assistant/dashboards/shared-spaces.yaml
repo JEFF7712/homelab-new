@@ -256,7 +256,7 @@ views:
             hold_action:
               action: more-info
           - entity: light.kitchen_light
-            name: Kitchen
+            name: Ceiling Light 1
             fill_container: true
             type: custom:mushroom-light-card
             show_brightness_control: true
@@ -265,7 +265,7 @@ views:
             hold_action:
               action: more-info
           - entity: light.kitchen_light_2
-            name: Kitchen 2
+            name: Ceiling Light 2
             fill_container: true
             type: custom:mushroom-light-card
             show_brightness_control: true
@@ -363,7 +363,7 @@ views:
             hold_action:
               action: more-info
           - entity: light.kitchen_light
-            name: Kitchen Light
+            name: Ceiling Light 1
             fill_container: true
             type: custom:mushroom-light-card
             show_brightness_control: true
@@ -375,7 +375,7 @@ views:
             hold_action:
               action: more-info
           - entity: light.kitchen_light_2
-            name: Kitchen Light 2
+            name: Ceiling Light 2
             fill_container: true
             type: custom:mushroom-light-card
             show_brightness_control: true
