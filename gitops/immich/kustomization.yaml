@@ -9,4 +9,3 @@ resources:
   - volumes.yaml
   - server.yaml
   - machine-learning.yaml
-  - route.yaml

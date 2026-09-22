@@ -12,4 +12,3 @@ resources:
   - books.yaml
   - music.yaml
   - frontend.yaml
-  - routes.yaml

@@ -47,9 +47,6 @@ spec:
       size: 2Gi
       storageClass: nfs-cluster
     gateway:
-      enabled: true
-      parentRefs:
-        - name: homelab
-          namespace: default
+      enabled: false
       hostnames:
         - ntfy.rupan.dev

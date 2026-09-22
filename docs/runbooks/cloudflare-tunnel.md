@@ -15,12 +15,11 @@ Remote-configured tunnel fronting the new k3s cluster. Dashboard edits apply dir
 
 Internet -> Cloudflare edge -> `cloudflared` pods -> `http://immich-server.immich:80` (in-cluster Service DNS) -> `Service immich-server:80 -> 2283`.
 
-Do not point tunnel origins at the Gateway LB VIP (`10.0.40.12`): Cilium implements it as a local redirect that only answers in host network namespaces, so `cloudflared` (pod netns) blackholes dialing it. Use in-cluster Service DNS names, consistent with the other new-cluster entries. The `HTTPRoute immich/immich` still exists for Gateway-routed access, but the tunnel bypasses it.
+Do not point tunnel origins at a Cilium LB VIP (`10.0.40.x`): Cilium implements it as a local redirect that only answers in host network namespaces, so `cloudflared` (pod netns) blackholes dialing it. Use in-cluster Service DNS names, consistent with the other new-cluster entries. The Gateway API layer was removed (tunnel is the public edge; NetBird covers remote LAN access), so the tunnel is the only path, not a bypass.
 
 Related manifests:
 
 - `gitops/cloudflare/tunnel.yaml`
-- `gitops/immich/route.yaml` (`photos.rupan.dev`, inert while `Gateway homelab` is parked)
 - `gitops/immich/server.yaml`
 
 ## Ingress order (v73, 2026-09-20)
@@ -65,7 +64,7 @@ Removed 2026-09-15 (v72):
 
 ## Add a new-cluster hostname
 
-1. Add tunnel ingress `{hostname, service: http://<service>.<namespace>:<port>}` above `*.rupan.dev` via dashboard or API `PUT /accounts/{id}/cfd_tunnel/{id}/configurations`. (Skip the `HTTPRoute`/`Gateway` step while `Gateway homelab` is parked; `3985d4f` and `98ef8df` removed it.)
+1. Add tunnel ingress `{hostname, service: http://<service>.<namespace>:<port>}` above `*.rupan.dev` via dashboard or API `PUT /accounts/{id}/cfd_tunnel/{id}/configurations`. (No `HTTPRoute`/`Gateway` step: the Gateway API layer was removed; tunnel is the public edge.)
 2. Confirm DNS `CNAME <host> -> <tunnel-id>.cfargotunnel.com` exists (dashboard creates it on hostname add).
 3. Verify: `GET cfd_tunnel/{id}` is `healthy` with connections on `ord/mci`, `GET configurations` shows the new hostname with the in-cluster service URL in the expected position.
 
