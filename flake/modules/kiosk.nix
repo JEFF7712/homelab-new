@@ -59,6 +59,12 @@ in
       default = [ ];
       description = "List of output names to disable via wlr-randr before launching Chromium";
     };
+
+    haTokenFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "File holding a Home Assistant long-lived token for the kiosk face. The tmpfs root wipes the Chromium profile every reboot, so when set, a boot service re-seeds the token into the kiosk browser over its local DevTools port. The file must live under /persist and is never part of the store closure.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -107,6 +113,25 @@ in
         Restart = "always";
         RestartSec = "3s";
       };
+    };
+
+    systemd.services."kiosk-ha-token-seed" = lib.mkIf (cfg.haTokenFile != null) {
+      description = "Seed Home Assistant token into kiosk browser";
+      after = [ "cage-tty1.service" ];
+      wantedBy = [ "multi-user.target" ];
+      restartIfChanged = lib.mkForce true;
+      unitConfig.ConditionPathExists = [ cfg.haTokenFile ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        Restart = "on-failure";
+        RestartSec = "30s";
+      };
+      path = [ pkgs.python3 ];
+      script = ''
+        exec ${pkgs.python3}/bin/python3 ${./kiosk-ha-token-seed.py} \
+          --token-file ${cfg.haTokenFile}
+      '';
     };
 
     systemd.services."getty@tty1".enable = false;
