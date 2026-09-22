@@ -67,6 +67,7 @@ views:
             - display: grid
             - grid-template-areas: '"b1 b2 b3 b4 b5"'
             - grid-template-columns: 1fr 1fr 1fr 1fr 1fr
+            - align-items: center
             - column-gap: 14px
             - justify-content: center
           custom_fields:
@@ -153,6 +154,9 @@ views:
                 entity: sensor.sun_next_setting
                 name: Sunset
                 icon: mdi:weather-sunset-down
+          - type: media-control
+            entity: media_player.homelab_05_satellite_media_player
+            name: Speaker Output
       - cards:
           - heading: Family
             type: heading

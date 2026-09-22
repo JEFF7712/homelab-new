@@ -67,6 +67,7 @@ views:
             - display: grid
             - grid-template-areas: '"b1 b2 b3 b4 b5"'
             - grid-template-columns: 1fr 1fr 1fr 1fr 1fr
+            - align-items: center
             - column-gap: 14px
             - justify-content: center
           custom_fields:
