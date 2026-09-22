@@ -42,7 +42,7 @@ spec:
             - "--port"
             - "10300"
             - "--profiles"
-            - "/app/profiles.json"
+            - "/etc/voice-id/profiles.json"
           env:
             - name: NVIDIA_VISIBLE_DEVICES
               value: all
@@ -95,8 +95,7 @@ spec:
             - name: bridge-code
               mountPath: /app
             - name: voice-id-profiles
-              mountPath: /app/profiles.json
-              subPath: profiles.json
+              mountPath: /etc/voice-id
               readOnly: true
             - name: nemo-lib
               mountPath: /opt/nemo/lib64

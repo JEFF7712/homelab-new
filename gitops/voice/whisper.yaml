@@ -89,7 +89,7 @@ spec:
             - "--model"
             - "/data/voice-id/model.onnx"
             - "--profiles"
-            - "/app/profiles.json"
+            - "/etc/voice-id/profiles.json"
           ports:
             - containerPort: 10300
               name: wyoming
@@ -119,8 +119,7 @@ spec:
             - name: voice-id-config
               mountPath: /app
             - name: voice-id-profiles
-              mountPath: /app/profiles.json
-              subPath: profiles.json
+              mountPath: /etc/voice-id
               readOnly: true
       volumes:
         - name: model-cache
