@@ -659,13 +659,13 @@
         "gitops/websites/rupan-dev/deployment.yaml:22"
       ],
       "destination_repository": "upstream/registry.rupan.dev/apps/rupan-dev",
-      "id": "upstream-apps-rupan-dev-c4610e707008",
+      "id": "upstream-apps-rupan-dev-c6b2262cbcf7",
       "kind": "upstream",
       "producer": null,
       "retention_class": "deployed",
       "source": {
-        "digest": "sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
-        "reference": "registry.rupan.dev/apps/rupan-dev@sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
+        "digest": "sha256:2696987cc982af459343da6cf258cd306fcb82c1138b18772a6c158e2f10c3ac",
+        "reference": "registry.rupan.dev/apps/rupan-dev@sha256:2696987cc982af459343da6cf258cd306fcb82c1138b18772a6c158e2f10c3ac",
         "registry": "registry.rupan.dev",
         "repository": "apps/rupan-dev",
         "tag": null

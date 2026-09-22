@@ -555,11 +555,11 @@
       ],
       "destination_repository": "apps/rupan-dev",
       "destination_tags": [
-        "0.0.2",
-        "retention-deployed-ab036b43bace3c77"
+        "0.0.11",
+        "retention-deployed-2696987cc982af45"
       ],
-      "digest": "sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
-      "id": "first-party-jeff7712-rupan-dev-04f11f62a2d1",
+      "digest": "sha256:2696987cc982af459343da6cf258cd306fcb82c1138b18772a6c158e2f10c3ac",
+      "id": "first-party-jeff7712-rupan-dev-157d71f1966e",
       "kind": "first-party",
       "media_type": "application/vnd.oci.image.index.v1+json",
       "platforms": [
@@ -580,11 +580,11 @@
       },
       "retention_class": "deployed",
       "source": {
-        "digest": "sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
-        "reference": "ghcr.io/jeff7712/rupan-dev:0.0.2@sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
+        "digest": "sha256:2696987cc982af459343da6cf258cd306fcb82c1138b18772a6c158e2f10c3ac",
+        "reference": "ghcr.io/jeff7712/rupan-dev:0.0.11@sha256:2696987cc982af459343da6cf258cd306fcb82c1138b18772a6c158e2f10c3ac",
         "registry": "ghcr.io",
         "repository": "jeff7712/rupan-dev",
-        "tag": "0.0.2"
+        "tag": "0.0.11"
       }
     },
     {
@@ -4126,8 +4126,8 @@
       "blocking": false,
       "class": "producer-pipeline",
       "consumer": "gitops/websites/rupan-dev/deployment.yaml:22",
-      "id": "producer:first-party-jeff7712-rupan-dev-04f11f62a2d1",
-      "input": "ghcr.io/jeff7712/rupan-dev:0.0.2@sha256:ab036b43bace3c77e7267cace45b1a7c23488b891cebdcb36170826faaa0c6d5",
+      "id": "producer:first-party-jeff7712-rupan-dev-157d71f1966e",
+      "input": "ghcr.io/jeff7712/rupan-dev:0.0.11@sha256:2696987cc982af459343da6cf258cd306fcb82c1138b18772a6c158e2f10c3ac",
       "reason": "producer pipeline location and local-registry publication are not proven by this repository"
     },
     {
